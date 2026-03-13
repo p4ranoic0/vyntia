@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Real Login Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .status-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Flujo Real de Login</h1>
+        
+        <div class="test-section info">
+            <h3>Estado Actual del Sistema</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <strong>Frontend:</strong> <span id="frontendStatus">Verificando...</span>
+                </div>
+                <div class="status-item">
+                    <strong>Backend:</strong> <span id="backendStatus">Verificando...</span>
+                </div>
+                <div class="status-item">
+                    <strong>Autenticación:</strong> <span id="authStatus">Verificando...</span>
+                </div>
+                <div class="status-item">
+                    <strong>Cookies:</strong> <span id="cookieStatus">Verificando...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Formulario de Login Real</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" value="admin123" required>
+                </div>
+                <button type="submit" id="loginBtn">Iniciar Sesión</button>
+            </form>
+        </div>
+
+        <div class="test-section">
+            <h3>Controles de Prueba</h3>
+            <button onclick="testBackendConnection()">Test Backend</button>
+            <button onclick="testFrontendConnection()">Test Frontend</button>
+            <button onclick="testAuthEndpoint()">Test Auth Endpoint</button>
+            <button onclick="checkCurrentAuth()">Verificar Auth Actual</button>
+            <button onclick="clearAllData()">Limpiar Todo</button>
+            <button onclick="testCookies()">Test Cookies</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Log de Actividades</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8000';
+        const FRONTEND_URL = 'http://localhost:5173';
+        
+        function logActivity(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            log.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function updateStatus(elementId, status, isSuccess = null) {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            if (isSuccess === true) {
+                element.style.color = '#28a745';
+                element.style.fontWeight = 'bold';
+            } else if (isSuccess === false) {
+                element.style.color = '#dc3545';
+                element.style.fontWeight = 'bold';
+            } else {
+                element.style.color = '#6c757d';
+            }
+        }
+
+        async function testBackendConnection() {
+            logActivity('=== PROBANDO CONEXIÓN AL BACKEND ===');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/test/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logActivity(`Backend conectado: ${JSON.stringify(data)}`, 'success');
+                    updateStatus('backendStatus', 'Conectado', true);
+                } else {
+                    logActivity(`Backend error: ${response.status} - ${response.statusText}`, 'error');
+                    updateStatus('backendStatus', 'Error', false);
+                }
+            } catch (error) {
+                logActivity(`Error de conexión al backend: ${error.message}`, 'error');
+                updateStatus('backendStatus', 'Sin conexión', false);
+            }
+        }
+
+        async function testFrontendConnection() {
+            logActivity('=== PROBANDO CONEXIÓN AL FRONTEND ===');
+            try {
+                const response = await fetch(FRONTEND_URL, {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                logActivity('Frontend accesible', 'success');
+                updateStatus('frontendStatus', 'Accesible', true);
+            } catch (error) {
+                logActivity(`Error de conexión al frontend: ${error.message}`, 'error');
+                updateStatus('frontendStatus', 'Sin conexión', false);
+            }
+        }
+
+        async function testAuthEndpoint() {
+            logActivity('=== PROBANDO ENDPOINT DE AUTENTICACIÓN ===');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    logActivity(`Login exitoso: ${JSON.stringify(data)}`, 'success');
+                    logActivity('Verificando cookies después del login...');
+                    
+                    // Verificar cookies
+                    setTimeout(() => {
+                        const cookies = document.cookie;
+                        logActivity(`Cookies después del login: ${cookies}`);
+                        checkCurrentAuth();
+                    }, 1000);
+                } else {
+                    logActivity(`Error en login: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                logActivity(`Error en test de auth: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkCurrentAuth() {
+            logActivity('=== VERIFICANDO ESTADO DE AUTENTICACIÓN ===');
+            
+            // Verificar localStorage
+            const userData = localStorage.getItem('userData');
+            const userRoles = localStorage.getItem('userRoles');
+            
+            logActivity(`localStorage userData: ${userData ? 'PRESENTE' : 'AUSENTE'}`);
+            logActivity(`localStorage userRoles: ${userRoles ? 'PRESENTE' : 'AUSENTE'}`);
+            
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    logActivity(`Datos de usuario: ${JSON.stringify(parsedUser)}`);
+                } catch (e) {
+                    logActivity('Error al parsear userData', 'error');
+                }
+            }
+            
+            // Verificar cookies
+            const cookies = document.cookie;
+            logActivity(`Cookies actuales: ${cookies || 'NINGUNA'}`);
+            
+            const hasAccessToken = cookies.includes('access_token');
+            const hasRefreshToken = cookies.includes('refresh_token');
+            
+            logActivity(`Cookie access_token: ${hasAccessToken ? 'PRESENTE' : 'AUSENTE'}`);
+            logActivity(`Cookie refresh_token: ${hasRefreshToken ? 'PRESENTE' : 'AUSENTE'}`);
+            
+            // Actualizar estado
+            const isAuthenticated = userData && (hasAccessToken || hasRefreshToken);
+            updateStatus('authStatus', isAuthenticated ? 'Autenticado' : 'No autenticado', isAuthenticated);
+            updateStatus('cookieStatus', (hasAccessToken && hasRefreshToken) ? 'Válidas' : 'Inválidas', (hasAccessToken && hasRefreshToken));
+        }
+
+        function clearAllData() {
+            logActivity('=== LIMPIANDO TODOS LOS DATOS ===');
+            
+            // Limpiar localStorage
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userRoles');
+            localStorage.removeItem('userPermissions');
+            localStorage.removeItem('userModules');
+            
+            // Limpiar cookies
+            document.cookie = 'access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            document.cookie = 'refresh_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            
+            logActivity('Todos los datos limpiados', 'success');
+            
+            // Actualizar estado
+            updateStatus('authStatus', 'Limpiado', null);
+            updateStatus('cookieStatus', 'Limpiadas', null);
+        }
+
+        function testCookies() {
+            logActivity('=== PROBANDO FUNCIONALIDAD DE COOKIES ===');
+            
+            // Test básico de cookies
+            const testCookieName = 'test_cookie_' + Date.now();
+            const testCookieValue = 'test_value_' + Date.now();
+            
+            // Establecer cookie
+            document.cookie = `${testCookieName}=${testCookieValue};path=/;SameSite=Lax`;
+            
+            // Verificar cookie
+            const cookies = document.cookie;
+            const cookieExists = cookies.includes(testCookieName);
+            
+            logActivity(`Cookie de prueba establecida: ${testCookieName}=${testCookieValue}`);
+            logActivity(`Cookie de prueba verificada: ${cookieExists ? 'ÉXITO' : 'FALLO'}`, cookieExists ? 'success' : 'error');
+            
+            // Limpiar cookie de prueba
+            document.cookie = `${testCookieName}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+            
+            logActivity('Test de cookies completado');
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            logActivity('=== INICIANDO LOGIN REAL ===');
+            logActivity(`Intentando login con usuario: ${username}`);
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Iniciando sesión...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    logActivity('✅ LOGIN EXITOSO', 'success');
+                    logActivity(`Respuesta del servidor: ${JSON.stringify(data, null, 2)}`);
+                    
+                    // Simular el comportamiento del authService
+                    if (data.access_token && data.refresh_token) {
+                        // Establecer cookies como lo hace el authService
+                        const accessExpires = new Date();
+                        accessExpires.setTime(accessExpires.getTime() + (1 * 24 * 60 * 60 * 1000)); // 1 día
+                        
+                        const refreshExpires = new Date();
+                        refreshExpires.setTime(refreshExpires.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 días
+                        
+                        document.cookie = `access_token=${data.access_token};expires=${accessExpires.toUTCString()};path=/;SameSite=Lax`;
+                        document.cookie = `refresh_token=${data.refresh_token};expires=${refreshExpires.toUTCString()};path=/;SameSite=Lax`;
+                        
+                        logActivity('Cookies establecidas correctamente');
+                        
+                        // Guardar datos en localStorage como lo hace el authService
+                        if (data.user) {
+                            const userData = {
+                                id: data.user.id,
+                                username: data.user.username,
+                                email: data.user.email,
+                                first_name: data.user.first_name,
+                                last_name: data.user.last_name,
+                                requiere_cambio_password: data.user.requiere_cambio_password
+                            };
+                            
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            logActivity('Datos de usuario guardados en localStorage');
+                        }
+                        
+                        if (data.roles) {
+                            localStorage.setItem('userRoles', JSON.stringify(data.roles));
+                            logActivity('Roles de usuario guardados en localStorage');
+                        }
+                        
+                        // Verificar estado después del login
+                        setTimeout(() => {
+                            checkCurrentAuth();
+                            logActivity('=== LOGIN COMPLETADO ===', 'success');
+                        }, 500);
+                        
+                    } else {
+                        logActivity('⚠️ Respuesta exitosa pero sin tokens', 'warning');
+                    }
+                } else {
+                    logActivity(`❌ ERROR EN LOGIN: ${data.message || 'Error desconocido'}`, 'error');
+                    if (data.errors) {
+                        logActivity(`Errores detallados: ${JSON.stringify(data.errors)}`, 'error');
+                    }
+                }
+            } catch (error) {
+                logActivity(`❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        // Inicializar al cargar la página
+        window.onload = function() {
+            logActivity('🚀 Página cargada, iniciando verificaciones...');
+            
+            // Verificar estado inicial
+            checkCurrentAuth();
+            
+            // Probar conexiones
+            setTimeout(() => {
+                testBackendConnection();
+                testFrontendConnection();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

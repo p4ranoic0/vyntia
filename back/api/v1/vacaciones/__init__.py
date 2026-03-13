@@ -1,0 +1,1 @@
+"""Módulo de APIs para gestión de vacaciones."""

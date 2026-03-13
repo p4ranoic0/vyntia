@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 40px;
+    color: #000;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+  }
+  .header img {
+    max-height: 80px;
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    margin: 4px 0;
+    font-size: 13pt;
+    text-transform: uppercase;
+  }
+  .header p {
+    margin: 2px 0;
+    font-size: 10pt;
+  }
+  h1.titulo {
+    text-align: center;
+    font-size: 14pt;
+    text-transform: uppercase;
+    margin: 25px 0 5px 0;
+    letter-spacing: 1px;
+  }
+  .subtitulo {
+    text-align: center;
+    font-size: 11pt;
+    margin: 0 0 5px 0;
+  }
+  .numero-contrato {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .base-legal {
+    text-align: center;
+    font-size: 10pt;
+    font-style: italic;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  p.parrafo {
+    text-align: justify;
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+  .clausula {
+    margin: 15px 0 8px 0;
+  }
+  .clausula-titulo {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11pt;
+  }
+  .clausula-cuerpo {
+    text-align: justify;
+    margin: 5px 0 5px 20px;
+    line-height: 1.5;
+  }
+  .firmas {
+    margin-top: 60px;
+    display: table;
+    width: 100%;
+  }
+  .firma-bloque {
+    display: table-cell;
+    width: 45%;
+    text-align: center;
+    padding: 0 20px;
+    vertical-align: top;
+  }
+  .firma-linea {
+    border-top: 1px solid #000;
+    margin: 50px auto 8px auto;
+    width: 80%;
+  }
+  .firma-nombre {
+    font-weight: bold;
+    font-size: 10pt;
+  }
+  .firma-cargo {
+    font-size: 10pt;
+  }
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #999;
+    padding-top: 8px;
+    font-size: 9pt;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  {% if empresa.logo_url %}<img src="{{ empresa.logo_url }}" alt="Logo"><br>{% endif %}
+  <h2>{{ empresa.nombre }}</h2>
+  <p>RUC: {{ empresa.ruc }}</p>
+  {% if empresa.direccion %}<p>{{ empresa.direccion }}{% if empresa.ciudad %} - {{ empresa.ciudad }}{% endif %}</p>{% endif %}
+  {% if empresa.telefono %}<p>Tel: {{ empresa.telefono }}</p>{% endif %}
+</div>
+
+<h1 class="titulo">
+  Contrato de Trabajo
+  {% if contrato.es_suplencia %}
+  — Sujeto a Modalidad por Suplencia
+  {% elif contrato.es_determinado %}
+  — Sujeto a Modalidad a Plazo Fijo
+  {% else %}
+  — a Plazo Indeterminado
+  {% endif %}
+</h1>
+<div class="subtitulo">Régimen Laboral Privado — D.Leg. 728 — Ley de Productividad y Competitividad Laboral (D.S. 003-97-TR)</div>
+<div class="numero-contrato">N° {{ contrato.numero }}</div>
+
+<div class="base-legal">
+  Conste por el presente instrumento el Contrato de Trabajo que celebran al amparo del
+  Decreto Legislativo N° 728 y sus normas reglamentarias y complementarias,
+  las partes que se identifican a continuación.
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PARTES CONTRATANTES</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      <strong>EL EMPLEADOR:</strong> {{ empresa.nombre }}, con RUC N° {{ empresa.ruc }},
+      con domicilio en {{ empresa.direccion }},
+      debidamente representada por {{ empresa.representante_legal }},
+      {% if empresa.cargo_representante %}{{ empresa.cargo_representante }},{% endif %}
+      identificado(a) con DNI N° {{ empresa.dni_representante }};
+      a quien en adelante se denominará <strong>EL EMPLEADOR</strong>.
+    </p>
+    <p class="parrafo">
+      <strong>EL TRABAJADOR:</strong> {{ empleado.nombre_completo }},
+      identificado(a) con DNI N° {{ empleado.numero_documento }},
+      {% if empleado.direccion %}con domicilio en {{ empleado.direccion }},{% endif %}
+      a quien en adelante se denominará <strong>EL TRABAJADOR</strong>.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PRIMERA: Objeto del Contrato</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL EMPLEADOR contrata a EL TRABAJADOR para desempeñar el cargo de
+      <strong>{{ contrato.cargo }}</strong>{% if contrato.area %}, en la {{ contrato.area }}{% endif %}.
+      Las funciones serán las propias del cargo, así como las que le sean asignadas por su superior jerárquico.
+    </p>
+    {% if contrato.funciones %}
+    <p class="parrafo">Las principales funciones son: {{ contrato.funciones }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEGUNDA: Duración del Contrato</span>
+  <div class="clausula-cuerpo">
+    {% if contrato.es_suplencia %}
+    <p class="parrafo">
+      El presente contrato es <strong>Sujeto a Modalidad por Suplencia</strong>, conforme al
+      artículo 61° del D.S. 003-97-TR, con vigencia a partir del
+      <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>
+      {% if contrato.fecha_fin %}hasta el <strong>{{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}</strong>{% endif %},
+      por cuanto EL TRABAJADOR ocupa temporalmente la plaza del servidor con licencia o suspensión.
+      El contrato se extingue automáticamente al retorno del titular.
+    </p>
+    {% elif contrato.es_determinado %}
+    <p class="parrafo">
+      El presente es un contrato de trabajo <strong>Sujeto a Modalidad a Plazo Fijo</strong>,
+      con vigencia desde el <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>
+      hasta el <strong>{{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}</strong>.
+      Vencido el plazo, el contrato se extinguirá automáticamente, salvo renovación expresa suscrita antes del vencimiento.
+    </p>
+    {% else %}
+    <p class="parrafo">
+      El presente es un contrato de trabajo a <strong>Plazo Indeterminado</strong>,
+      con vigencia a partir del <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>.
+      La relación laboral se mantendrá vigente hasta que alguna de las causales de extinción
+      previstas en el D.S. 003-97-TR opere.
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">TERCERA: Remuneración</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL EMPLEADOR abonará a EL TRABAJADOR una remuneración mensual de
+      <strong>S/ {{ contrato.salario_base }}</strong> ({{ contrato.salario_base }} Soles),
+      pagadera de acuerdo al calendario de pagos de la institución.
+    </p>
+    <p class="parrafo">
+      Asimismo, de conformidad con la ley, EL TRABAJADOR tendrá derecho a Compensación por
+      Tiempo de Servicios (CTS) y a gratificaciones de Fiestas Patrias y Navidad, según corresponda
+      y conforme a las normas presupuestales vigentes.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">CUARTA: Jornada de Trabajo</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      La jornada de trabajo será de {{ contrato.jornada }}, con un horario de
+      {% if contrato.horario_trabajo %}<strong>{{ contrato.horario_trabajo }}</strong>{% else %}cuarenta y ocho (48) horas semanales{% endif %},
+      de acuerdo a lo establecido en el Decreto Legislativo N° 854 y sus modificatorias.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">QUINTA: Lugar de Trabajo</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL TRABAJADOR prestará sus servicios en
+      {% if contrato.lugar_trabajo %}<strong>{{ contrato.lugar_trabajo }}</strong>{% else %}las instalaciones de EL EMPLEADOR ubicadas en {{ empresa.direccion }}{% endif %}.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEXTA: Vacaciones</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL TRABAJADOR tiene derecho a vacaciones remuneradas de treinta (30) días calendario
+      por cada año completo de servicios, conforme a lo establecido por el Decreto Legislativo N° 713.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SÉPTIMA: Obligaciones de las Partes</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      <strong>EL TRABAJADOR</strong> se obliga a prestar sus servicios con diligencia y dedicación,
+      guardar la confidencialidad sobre los asuntos de la institución, cumplir el reglamento interno
+      y las instrucciones de sus superiores, y devolver los bienes asignados al cese.
+    </p>
+    <p class="parrafo">
+      <strong>EL EMPLEADOR</strong> se obliga a pagar oportunamente la remuneración pactada,
+      proporcionar los medios necesarios para el cumplimiento de las funciones, y respetar los
+      derechos laborales del trabajador conforme a la legislación vigente.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">OCTAVA: Causas de Extinción</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      El presente contrato se extingue por las causales establecidas en el artículo 16° del
+      D.S. 003-97-TR: fallecimiento, renuncia, jubilación, mutuo disenso, invalidez absoluta permanente,
+      vencimiento del plazo, despido justificado, entre otras causales de ley.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">NOVENA: Disposiciones Finales</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      En todo lo no previsto en el presente contrato, las partes se remiten a las disposiciones
+      del Decreto Legislativo N° 728 — D.S. 003-97-TR y demás normas laborales aplicables.
+    </p>
+    <p class="parrafo">
+      Para la solución de controversias, las partes se someten a la jurisdicción de los
+      Juzgados Laborales de {{ empresa.ciudad|default:"Lima" }}.
+    </p>
+    <p class="parrafo">
+      En señal de conformidad, las partes suscriben el presente contrato en la ciudad de
+      {{ empresa.ciudad|default:"Lima" }}, a los
+      {{ generacion.fecha|date:"d \d\i\a\s \d\e\l \m\e\s \d\e F \d\e\l \a\ñ\o Y" }}.
+    </p>
+  </div>
+</div>
+
+<div class="firmas">
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empresa.representante_legal }}</div>
+    <div class="firma-cargo">{{ empresa.cargo_representante }}</div>
+    <div class="firma-cargo">{{ empresa.nombre }}</div>
+    <div class="firma-cargo">DNI: {{ empresa.dni_representante }}</div>
+  </div>
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empleado.nombre_completo }}</div>
+    <div class="firma-cargo">EL TRABAJADOR</div>
+    <div class="firma-cargo">DNI: {{ empleado.numero_documento }}</div>
+  </div>
+</div>
+
+<div class="footer">
+  Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }} — Sistema de Gestión RRHH
+</div>
+
+</body>
+</html>

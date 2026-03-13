@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adenda al Contrato - {{ empleado.nombres }} {{ empleado.apellidos }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+        }
+        .content {
+            text-align: justify;
+            margin: 20px 0;
+        }
+        .clause {
+            margin: 20px 0;
+            text-indent: 20px;
+        }
+        .clause-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0 10px 0;
+            text-indent: 0;
+        }
+        .contract-reference {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .modification-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .modification-table th,
+        .modification-table td {
+            padding: 10px;
+            border: 1px solid #000;
+            text-align: left;
+        }
+        .modification-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .modification-table .field {
+            font-weight: bold;
+            width: 25%;
+        }
+        .modification-table .before {
+            background-color: #ffe6e6;
+            width: 35%;
+        }
+        .modification-table .after {
+            background-color: #e6ffe6;
+            width: 35%;
+        }
+        .signatures {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 60px;
+            padding-top: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        .info-box {
+            border: 2px solid #4ecdc4;
+            background-color: #e6fffe;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .warning-box {
+            border: 2px solid #ff6b6b;
+            background-color: #ffe6e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .signatures {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo }}" alt="Logo {{ empresa.nombre }}" class="company-logo">
+        {% endif %}
+        <h1 class="title">{{ empresa.nombre }}</h1>
+        <p><strong>NIT:</strong> {{ empresa.nit }}</p>
+        <p>{{ empresa.direccion }}</p>
+        <p>{{ empresa.ciudad }}, {{ empresa.departamento }}</p>
+        <p><strong>Teléfono:</strong> {{ empresa.telefono }} | <strong>Email:</strong> {{ empresa.email }}</p>
+    </div>
+
+    <div class="content">
+        <h2 class="title">ADENDA AL CONTRATO DE TRABAJO</h2>
+        
+        <div class="info-box">
+            <strong>INFORMACIÓN DE LA ADENDA:</strong><br>
+            <strong>Número de Adenda:</strong> {{ adenda.numero_adenda }}<br>
+            <strong>Fecha de la Adenda:</strong> {{ adenda.fecha_adenda|date:"d \d\e F \d\e Y" }}<br>
+            <strong>Tipo de Modificación:</strong> {{ adenda.tipo_adenda }}<br>
+            <strong>Fecha de Vigencia:</strong> {{ adenda.fecha_vigencia|date:"d \d\e F \d\e Y" }}
+        </div>
+        
+        <div class="contract-reference">
+            <strong>REFERENCIA AL CONTRATO ORIGINAL:</strong><br>
+            <strong>Número de Contrato:</strong> {{ contrato.numero_contrato }}<br>
+            <strong>Fecha del Contrato:</strong> {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}<br>
+            <strong>Tipo de Contrato:</strong> {{ contrato.tipo_contrato }}<br>
+            <strong>Cargo:</strong> {{ contrato.cargo }}<br>
+            <strong>Área:</strong> {{ contrato.area }}
+        </div>
+        
+        <div class="clause">
+            <p>Entre los suscritos a saber: <span class="highlight uppercase">{{ empresa.nombre }}</span>, 
+            sociedad legalmente constituida, con domicilio en {{ empresa.ciudad }}, identificada con 
+            NIT {{ empresa.nit }}, representada legalmente por <span class="highlight uppercase">{{ empresa.representante_legal }}</span>, 
+            identificado(a) con cédula de ciudadanía No. {{ empresa.cedula_representante }}, 
+            quien en adelante se denominará <span class="highlight">EL EMPLEADOR</span>, y 
+            <span class="highlight uppercase">{{ empleado.nombres }} {{ empleado.apellidos }}</span>, 
+            identificado(a) con {{ empleado.tipo_documento }} No. {{ empleado.numero_documento }}, 
+            quien en adelante se denominará <span class="highlight">EL TRABAJADOR</span>, 
+            acordamos modificar el contrato de trabajo suscrito el {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}, 
+            mediante la presente adenda que se regirá por las siguientes cláusulas:</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">PRIMERA. - OBJETO DE LA ADENDA:</div>
+            <p>La presente adenda tiene por objeto modificar las siguientes cláusulas del contrato 
+            de trabajo original, manteniendo vigentes todas las demás condiciones que no se 
+            modifiquen expresamente en este documento.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEGUNDA. - MODIFICACIONES ACORDADAS:</div>
+            <p>Se acuerdan las siguientes modificaciones al contrato original:</p>
+            
+            <table class="modification-table">
+                <thead>
+                    <tr>
+                        <th class="field">Campo Modificado</th>
+                        <th class="before">Condición Anterior</th>
+                        <th class="after">Nueva Condición</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for modificacion in modificaciones %}
+                    <tr>
+                        <td class="field">{{ modificacion.campo }}</td>
+                        <td class="before">{{ modificacion.valor_anterior }}</td>
+                        <td class="after">{{ modificacion.valor_nuevo }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if adenda.tipo_adenda == 'AUMENTO_SALARIAL' %}
+        <div class="clause">
+            <div class="clause-title">TERCERA. - AUMENTO SALARIAL:</div>
+            <p>Se modifica la cláusula salarial del contrato original, estableciendo que a partir 
+            del {{ adenda.fecha_vigencia|date:"d \d\e F \d\e Y" }}, EL TRABAJADOR devengará un salario 
+            de <span class="highlight">{{ adenda.nuevo_salario|floatformat:0 }}</span> 
+            ({{ adenda.nuevo_salario_letras }}) {{ contrato.periodicidad_pago|lower }}.</p>
+            
+            <p><strong>Justificación del Aumento:</strong> {{ adenda.justificacion_aumento }}</p>
+            
+            {% if adenda.porcentaje_aumento %}
+            <p><strong>Porcentaje de Aumento:</strong> {{ adenda.porcentaje_aumento }}%</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if adenda.tipo_adenda == 'CAMBIO_CARGO' %}
+        <div class="clause">
+            <div class="clause-title">TERCERA. - CAMBIO DE CARGO:</div>
+            <p>Se modifica el cargo del trabajador, quien a partir del {{ adenda.fecha_vigencia|date:"d \d\e F \d\e Y" }} 
+            desempeñará el cargo de <span class="highlight">{{ adenda.nuevo_cargo }}</span> 
+            en el área de <span class="highlight">{{ adenda.nueva_area }}</span>.</p>
+            
+            <p><strong>Nuevas Funciones:</strong></p>
+            <ul>
+                {% for funcion in adenda.nuevas_funciones %}
+                <li>{{ funcion }}</li>
+                {% endfor %}
+            </ul>
+            
+            <p><strong>Justificación del Cambio:</strong> {{ adenda.justificacion_cambio }}</p>
+        </div>
+        {% endif %}
+
+        {% if adenda.tipo_adenda == 'CAMBIO_HORARIO' %}
+        <div class="clause">
+            <div class="clause-title">TERCERA. - MODIFICACIÓN DE HORARIO:</div>
+            <p>Se modifica la jornada laboral del trabajador, estableciendo que a partir del 
+            {{ adenda.fecha_vigencia|date:"d \d\e F \d\e Y" }}, la jornada será de 
+            <span class="highlight">{{ adenda.nueva_jornada }}</span>, 
+            de {{ adenda.nuevo_horario_inicio }} a {{ adenda.nuevo_horario_fin }}, 
+            de {{ adenda.nuevos_dias_laborales }}.</p>
+            
+            {% if adenda.nueva_modalidad_trabajo %}
+            <p><strong>Nueva Modalidad de Trabajo:</strong> {{ adenda.nueva_modalidad_trabajo }}</p>
+            {% endif %}
+            
+            <p><strong>Justificación del Cambio:</strong> {{ adenda.justificacion_cambio_horario }}</p>
+        </div>
+        {% endif %}
+
+        {% if adenda.tipo_adenda == 'PRORROGA_CONTRATO' %}
+        <div class="clause">
+            <div class="clause-title">TERCERA. - PRÓRROGA DEL CONTRATO:</div>
+            <p>Se prorroga el contrato de trabajo a término fijo hasta el 
+            {{ adenda.nueva_fecha_fin|date:"d \d\e F \d\e Y" }}, manteniendo todas las demás 
+            condiciones del contrato original.</p>
+            
+            <div class="warning-box">
+                <strong>IMPORTANTE:</strong> Esta prórroga se realiza de conformidad con las 
+                disposiciones del Código Sustantivo del Trabajo, específicamente el artículo 46.
+            </div>
+            
+            <p><strong>Duración de la Prórroga:</strong> {{ adenda.duracion_prorroga_meses }} meses</p>
+            <p><strong>Justificación:</strong> {{ adenda.justificacion_prorroga }}</p>
+        </div>
+        {% endif %}
+
+        <div class="clause">
+            <div class="clause-title">CUARTA. - VIGENCIA:</div>
+            <p>Las modificaciones establecidas en la presente adenda entrarán en vigencia 
+            a partir del {{ adenda.fecha_vigencia|date:"d \d\e F \d\e Y" }} y se mantendrán 
+            hasta la terminación del contrato de trabajo o hasta que sean modificadas 
+            por una nueva adenda.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">QUINTA. - RATIFICACIÓN:</div>
+            <p>En todo lo demás no modificado por la presente adenda, se ratifica íntegramente 
+            el contrato de trabajo original suscrito el {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}, 
+            el cual continúa vigente en todas sus partes.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEXTA. - ACEPTACIÓN:</div>
+            <p>Las partes manifiestan que han leído y entendido el contenido de la presente 
+            adenda, y que la suscriben de manera libre y voluntaria, sin que medie vicio 
+            alguno del consentimiento.</p>
+        </div>
+
+        {% if adenda.observaciones %}
+        <div class="clause">
+            <div class="clause-title">SÉPTIMA. - OBSERVACIONES ESPECIALES:</div>
+            <p>{{ adenda.observaciones }}</p>
+        </div>
+        {% endif %}
+
+        <div class="clause">
+            <div class="clause-title">DISPOSICIONES GENERALES:</div>
+            <p>En todo lo no previsto en esta adenda, se aplicarán las disposiciones 
+            del contrato original y las normas del Código Sustantivo del Trabajo.</p>
+        </div>
+
+        <div class="clause">
+            <p>Para constancia se firma en {{ empresa.ciudad }} a los {{ adenda.fecha_adenda|date:"d" }} 
+            días del mes de {{ adenda.fecha_adenda|date:"F" }} de {{ adenda.fecha_adenda|date:"Y" }}.</p>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL EMPLEADOR</strong><br>
+                {{ empresa.representante_legal }}<br>
+                {{ empresa.cargo_representante }}<br>
+                C.C. {{ empresa.cedula_representante }}
+            </div>
+        </div>
+        
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL TRABAJADOR</strong><br>
+                {{ empleado.nombres }} {{ empleado.apellidos }}<br>
+                {{ empleado.tipo_documento }} {{ empleado.numero_documento }}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Adenda generada el {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        <p>{{ empresa.nombre }} - Adenda No. {{ adenda.numero_adenda }}</p>
+        <p>Contrato Original: {{ contrato.numero_contrato }} - Vigencia: {{ adenda.fecha_vigencia|date:"d/m/Y" }}</p>
+    </div>
+</body>
+</html>

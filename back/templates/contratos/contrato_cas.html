@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 40px;
+    color: #000;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+  }
+  .header img {
+    max-height: 80px;
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    margin: 4px 0;
+    font-size: 13pt;
+    text-transform: uppercase;
+  }
+  .header p {
+    margin: 2px 0;
+    font-size: 10pt;
+  }
+  h1.titulo {
+    text-align: center;
+    font-size: 14pt;
+    text-transform: uppercase;
+    margin: 25px 0 5px 0;
+    letter-spacing: 1px;
+  }
+  .subtitulo {
+    text-align: center;
+    font-size: 11pt;
+    margin: 0 0 5px 0;
+  }
+  .numero-contrato {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .base-legal {
+    text-align: center;
+    font-size: 10pt;
+    font-style: italic;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  p.parrafo {
+    text-align: justify;
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+  .clausula {
+    margin: 15px 0 8px 0;
+  }
+  .clausula-titulo {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11pt;
+  }
+  .clausula-cuerpo {
+    text-align: justify;
+    margin: 5px 0 5px 20px;
+    line-height: 1.5;
+  }
+  .firmas {
+    margin-top: 60px;
+    display: table;
+    width: 100%;
+  }
+  .firma-bloque {
+    display: table-cell;
+    width: 45%;
+    text-align: center;
+    padding: 0 20px;
+    vertical-align: top;
+  }
+  .firma-linea {
+    border-top: 1px solid #000;
+    margin: 50px auto 8px auto;
+    width: 80%;
+  }
+  .firma-nombre {
+    font-weight: bold;
+    font-size: 10pt;
+  }
+  .firma-cargo {
+    font-size: 10pt;
+  }
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #999;
+    padding-top: 8px;
+    font-size: 9pt;
+    color: #555;
+    text-align: center;
+  }
+  table.datos {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  table.datos td {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+  }
+  table.datos td.label {
+    font-weight: bold;
+    width: 35%;
+    background: #f5f5f5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  {% if empresa.logo_url %}<img src="{{ empresa.logo_url }}" alt="Logo"><br>{% endif %}
+  <h2>{{ empresa.nombre }}</h2>
+  <p>RUC: {{ empresa.ruc }}</p>
+  {% if empresa.direccion %}<p>{{ empresa.direccion }}{% if empresa.ciudad %} - {{ empresa.ciudad }}{% endif %}</p>{% endif %}
+  {% if empresa.telefono %}<p>Tel: {{ empresa.telefono }}</p>{% endif %}
+</div>
+
+<h1 class="titulo">Contrato Administrativo de Servicios</h1>
+<div class="subtitulo">Régimen Especial CAS — D.L. 1057 y D.S. N° 075-2008-PCM</div>
+<div class="numero-contrato">N° {{ contrato.numero }}</div>
+
+<div class="base-legal">
+  Conste por el presente instrumento el Contrato Administrativo de Servicios que al amparo del
+  Decreto Legislativo N° 1057 y su Reglamento aprobado por Decreto Supremo N° 075-2008-PCM,
+  celebran las partes que se indican a continuación.
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PARTES CONTRATANTES</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      <strong>LA ENTIDAD:</strong> {{ empresa.nombre }}, con RUC N° {{ empresa.ruc }},
+      con domicilio en {{ empresa.direccion }},
+      debidamente representada por {{ empresa.representante_legal }},
+      {% if empresa.cargo_representante %}{{ empresa.cargo_representante }},{% endif %}
+      identificado(a) con DNI N° {{ empresa.dni_representante }};
+      a quien en adelante se le denominará <strong>LA ENTIDAD</strong>.
+    </p>
+    <p class="parrafo">
+      <strong>EL CONTRATADO:</strong> {{ empleado.nombre_completo }},
+      identificado(a) con DNI N° {{ empleado.numero_documento }},
+      {% if empleado.direccion %}con domicilio en {{ empleado.direccion }},{% endif %}
+      a quien en adelante se le denominará <strong>EL CONTRATADO</strong>.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PRIMERA: Objeto del Servicio</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      LA ENTIDAD contrata los servicios de EL CONTRATADO para desempeñar el cargo de
+      <strong>{{ contrato.cargo }}</strong>{% if contrato.area %}, en la {{ contrato.area }}{% endif %},
+      conforme a las funciones establecidas en el perfil del cargo y las instrucciones impartidas
+      por el superior jerárquico.
+    </p>
+    {% if contrato.funciones %}
+    <p class="parrafo">Las principales funciones a desempeñar son: {{ contrato.funciones }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEGUNDA: Vigencia del Contrato</span>
+  <div class="clausula-cuerpo">
+    {% if contrato.es_suplencia %}
+    <p class="parrafo">
+      El presente contrato es a <strong>Plazo Determinado por Suplencia</strong>, con vigencia
+      a partir del <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>
+      {% if contrato.fecha_fin %}hasta el <strong>{{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}</strong>{% endif %},
+      por cuanto EL CONTRATADO cubre la plaza de un servidor con licencia o suspensión temporal.
+      El contrato concluirá automáticamente cuando el titular retorne a sus funciones.
+    </p>
+    {% elif contrato.es_determinado %}
+    <p class="parrafo">
+      El presente contrato es a <strong>Plazo Determinado</strong>, con vigencia
+      a partir del <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>
+      hasta el <strong>{{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}</strong>.
+      Vencido dicho plazo, el contrato concluirá automáticamente, salvo renovación expresa.
+    </p>
+    {% else %}
+    <p class="parrafo">
+      El presente contrato es a <strong>Plazo Indeterminado</strong>, con vigencia
+      a partir del <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>,
+      pudiendo ser resuelto conforme a las causales establecidas en el marco normativo del régimen CAS.
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">TERCERA: Contraprestación Mensual</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      LA ENTIDAD se compromete a abonar a EL CONTRATADO la suma mensual de
+      <strong>S/ {{ contrato.salario_base }}</strong>
+      ({{ contrato.salario_base }} Soles), por los servicios prestados,
+      la cual se pagará de acuerdo al calendario de pagos institucional.
+      Dicha contraprestación incluye los descuentos de ley que correspondan (AFP/ONP, etc.).
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">CUARTA: Jornada de Servicio</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL CONTRATADO prestará sus servicios bajo la modalidad <strong>{{ contrato.jornada }}</strong>,
+      en un horario de
+      {% if contrato.horario_trabajo %}<strong>{{ contrato.horario_trabajo }}</strong>{% else %}cuarenta y ocho (48) horas semanales{% endif %},
+      de conformidad con las disposiciones legales vigentes para el régimen CAS.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">QUINTA: Lugar de Prestación del Servicio</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL CONTRATADO prestará sus servicios en
+      {% if contrato.lugar_trabajo %}<strong>{{ contrato.lugar_trabajo }}</strong>{% else %}las instalaciones de LA ENTIDAD ubicadas en {{ empresa.direccion }}{% endif %}.
+      LA ENTIDAD podrá, de acuerdo a las necesidades del servicio, variar el lugar de trabajo,
+      previa comunicación oportuna a EL CONTRATADO.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEXTA: Derechos del Contratado</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">De conformidad con el D.L. 1057 y su reglamento, EL CONTRATADO tiene derecho a:</p>
+    <ul>
+      <li>Vacaciones remuneradas de treinta (30) días calendario por año de servicios.</li>
+      <li>Afiliación al régimen contributivo de la Seguridad Social en Salud (ESSALUD).</li>
+      <li>Afiliación a un sistema pensionario (AFP u ONP), según elección del contratado.</li>
+      <li>Aguinaldo por Fiestas Patrias y Navidad, conforme a las normas presupuestales.</li>
+      <li>Compensación por Tiempo de Servicios (CTS), conforme a ley.</li>
+      <li>Protección contra el despido arbitrario, según las disposiciones del régimen CAS.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SÉPTIMA: Obligaciones del Contratado</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">EL CONTRATADO se obliga a:</p>
+    <ul>
+      <li>Prestar sus servicios con eficiencia, esmero y puntualidad.</li>
+      <li>Guardar reserva y confidencialidad sobre los asuntos de LA ENTIDAD.</li>
+      <li>Cumplir las normas internas, reglamentos y disposiciones de LA ENTIDAD.</li>
+      <li>No realizar actividades ajenas a sus funciones durante la jornada de servicio.</li>
+      <li>Devolver los bienes asignados al término del contrato.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">OCTAVA: Causales de Resolución</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">El presente contrato podrá resolverse por:</p>
+    <ul>
+      <li>Mutuo acuerdo entre las partes.</li>
+      <li>Decisión unilateral de LA ENTIDAD, previo procedimiento de acuerdo a ley.</li>
+      <li>Decisión unilateral de EL CONTRATADO, mediante comunicación escrita con quince (15) días de anticipación.</li>
+      <li>Incumplimiento injustificado de las obligaciones derivadas del contrato.</li>
+      <li>Vencimiento del plazo (en caso de contrato a plazo determinado).</li>
+      <li>Las demás causales previstas en la normativa vigente.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">NOVENA: Disposiciones Finales</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      Todo lo no previsto en el presente contrato se regirá por las disposiciones del
+      Decreto Legislativo N° 1057 y su Reglamento, así como por las normas que resulten aplicables.
+    </p>
+    <p class="parrafo">
+      Las partes se someten a la jurisdicción y competencia de los juzgados y tribunales de
+      {{ empresa.ciudad|default:"Lima" }} para resolver cualquier controversia derivada del presente contrato.
+    </p>
+    <p class="parrafo">
+      En señal de conformidad, las partes suscriben el presente contrato en la ciudad de
+      {{ empresa.ciudad|default:"Lima" }}, a los
+      {{ generacion.fecha|date:"d \d\i\a\s \d\e\l \m\e\s \d\e F \d\e\l \a\ñ\o Y" }}.
+    </p>
+  </div>
+</div>
+
+<div class="firmas">
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empresa.representante_legal }}</div>
+    <div class="firma-cargo">{{ empresa.cargo_representante }}</div>
+    <div class="firma-cargo">{{ empresa.nombre }}</div>
+    <div class="firma-cargo">DNI: {{ empresa.dni_representante }}</div>
+  </div>
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empleado.nombre_completo }}</div>
+    <div class="firma-cargo">EL CONTRATADO</div>
+    <div class="firma-cargo">DNI: {{ empleado.numero_documento }}</div>
+  </div>
+</div>
+
+<div class="footer">
+  Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }} — Sistema de Gestión RRHH
+</div>
+
+</body>
+</html>

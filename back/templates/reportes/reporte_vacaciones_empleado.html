@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ reporte_nombre }} - {{ empleado.nombre_completo }}</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 18mm 16mm 22mm 16mm;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        font-size: 10px;
+        color: #1f2937;
+        line-height: 1.4;
+      }
+      .report-header {
+        display: table;
+        width: 100%;
+        border-bottom: 2px solid #1e3a5f;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+      }
+      .report-header-left {
+        display: table-cell;
+        vertical-align: middle;
+      }
+      .report-header-right {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+      }
+      .report-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e3a5f;
+        letter-spacing: 0.8px;
+      }
+      .report-subtitle {
+        font-size: 9px;
+        color: #64748b;
+      }
+      .report-meta {
+        font-size: 9px;
+        color: #94a3b8;
+      }
+      .summary-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+      }
+      .summary-header {
+        display: table;
+        width: 100%;
+      }
+      .summary-info {
+        display: table-cell;
+        vertical-align: middle;
+      }
+      .summary-photo {
+        display: table-cell;
+        width: 90px;
+        text-align: right;
+        vertical-align: middle;
+      }
+      .photo-box {
+        width: 76px;
+        height: 76px;
+        border-radius: 6px;
+        border: 1px solid #cbd5f5;
+        background: #eff6ff;
+        overflow: hidden;
+        display: inline-block;
+      }
+      .photo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .summary-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e3a5f;
+      }
+      .summary-line {
+        font-size: 9px;
+        color: #64748b;
+        margin-top: 2px;
+      }
+      .summary-stats {
+        display: table;
+        width: 100%;
+        margin-top: 10px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 8px;
+      }
+      .summary-stat {
+        display: table-cell;
+        text-align: center;
+        width: 33%;
+      }
+      .summary-stat .value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e3a5f;
+      }
+      .summary-stat .label {
+        font-size: 8px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .section {
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1e3a5f;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+      }
+      table.report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+      }
+      table.report-table thead th {
+        background: #f1f5f9;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 8px;
+        letter-spacing: 0.4px;
+        padding: 6px 8px;
+        text-align: left;
+      }
+      table.report-table tbody td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 8px;
+        background: #e2e8f0;
+        color: #1f2937;
+      }
+      .badge-activo {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .badge-vencido {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-cerrado {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .footer {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 8px;
+        text-align: center;
+        font-size: 8px;
+        color: #94a3b8;
+      }
+      .grid-two {
+        display: table;
+        width: 100%;
+      }
+      .grid-two-cell {
+        display: table-cell;
+        width: 50%;
+        vertical-align: top;
+      }
+      .grid-two-cell:first-child {
+        padding-right: 6px;
+      }
+      .grid-two-cell:last-child {
+        padding-left: 6px;
+      }
+      .empty-msg {
+        background: #f8fafc;
+        border-radius: 4px;
+        padding: 10px;
+        text-align: center;
+        font-size: 9px;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-header">
+      <div class="report-header-left">
+        <div class="report-title">{{ reporte_nombre|upper }}</div>
+        <div class="report-subtitle">Sistema de Gestión de Vacaciones</div>
+      </div>
+      <div class="report-header-right">
+        <div class="report-meta">Generado: {{ fecha_generacion|date:"d/m/Y H:i" }}</div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="summary-info">
+          <div class="summary-name">{{ empleado.nombre_completo }}</div>
+          <div class="summary-line">
+            Documento: {{ empleado.numero_documento }} | Fecha de ingreso:
+            {% if datos_laborales %}{{ datos_laborales.fecha_ingreso|date:"d/m/Y" }}{% else %}-{% endif %}
+          </div>
+          <div class="summary-line">
+            Área:
+            {% if datos_laborales and datos_laborales.area %}
+              {{ datos_laborales.area.siglas_area }} - {{ datos_laborales.area.nombre_unidad_organica }}
+            {% else %}
+              Sin área
+            {% endif %}
+          </div>
+        </div>
+        <div class="summary-photo">
+          <div class="photo-box">
+            {% if foto_url %}
+            <img src="{{ foto_url }}" alt="Foto del empleado" />
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="summary-stats">
+        <div class="summary-stat">
+          <div class="value">{{ resumen.dias_pendientes }}</div>
+          <div class="label">Días pendientes</div>
+        </div>
+        <div class="summary-stat">
+          <div class="value">{{ resumen.dias_gozados }}</div>
+          <div class="label">Días gozados</div>
+        </div>
+        <div class="summary-stat">
+          <div class="value">{{ resumen.cantidad_periodos }}</div>
+          <div class="label">Períodos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-two section">
+      <div class="grid-two-cell">
+        <div class="section-title">Resumen por período</div>
+        {% if resumen_periodos %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Contrato</th>
+              <th>Días</th>
+              <th>Gozados</th>
+              <th>Pendientes</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for periodo in resumen_periodos %}
+            <tr>
+              <td>{{ periodo.periodo_label }}</td>
+              <td>{{ periodo.contrato_numero|default:"-" }}</td>
+              <td>{{ periodo.dias_correspondientes }}</td>
+              <td>{{ periodo.dias_gozados }}</td>
+              <td>{{ periodo.dias_pendientes }}</td>
+              <td>
+                <span class="badge {% if periodo.estado_periodo == 'activo' %}badge-activo{% elif periodo.estado_periodo == 'vencido' %}badge-vencido{% elif periodo.estado_periodo == 'cerrado' %}badge-cerrado{% endif %}">
+                  {{ periodo.estado_periodo|title }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-msg">No hay períodos registrados</div>
+        {% endif %}
+      </div>
+      <div class="grid-two-cell">
+        <div class="section-title">Detalle de días gozados</div>
+        {% if detalle_goces %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Solicitud</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Días</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for goce in detalle_goces %}
+            <tr>
+              <td>#{{ goce.solicitud_id }}</td>
+              <td>{{ goce.fecha_inicio|date:"d/m/Y" }}</td>
+              <td>{{ goce.fecha_fin|date:"d/m/Y" }}</td>
+              <td>{{ goce.dias_gozados }}</td>
+              <td>{{ goce.estado|title }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-msg">No hay goces registrados</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="footer">
+      Reporte generado automáticamente por el Sistema de Intranet RRHH
+    </div>
+  </body>
+</html>

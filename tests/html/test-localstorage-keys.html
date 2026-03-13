@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LocalStorage Keys Consistency</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .key-test {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .key-test h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.found { background: #d4edda; color: #155724; }
+        .status.not-found { background: #f8d7da; color: #721c24; }
+        .status.invalid { background: #fff3cd; color: #856404; }
+        .data-preview {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Consistencia de Claves de LocalStorage</h1>
+        
+        <div class="test-section info">
+            <h3>Problema Identificado</h3>
+            <p><strong>AuthService</strong> guarda datos con la clave <code>'user_data'</code></p>
+            <p><strong>Algunos archivos de prueba</strong> buscan datos con la clave <code>'userData'</code></p>
+            <p>Esta inconsistencia causa que el AuthContext no detecte usuarios autenticados.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Controles de Prueba</h3>
+            <button onclick="testRealLogin()">Hacer Login Real</button>
+            <button onclick="simulateAuthServiceSave()">Simular AuthService (user_data)</button>
+            <button onclick="simulateTestFileSave()">Simular Archivo de Prueba (userData)</button>
+            <button onclick="checkBothKeys()">Verificar Ambas Claves</button>
+            <button onclick="fixInconsistency()">Corregir Inconsistencia</button>
+            <button onclick="clearAllStorage()">Limpiar Todo</button>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="key-test">
+                <h4>Clave: 'user_data' (AuthService)</h4>
+                <div id="userDataStatus" class="status not-found">No encontrado</div>
+                <div id="userDataPreview" class="data-preview">Sin datos</div>
+            </div>
+            <div class="key-test">
+                <h4>Clave: 'userData' (Archivos de Prueba)</h4>
+                <div id="userDataAltStatus" class="status not-found">No encontrado</div>
+                <div id="userDataAltPreview" class="data-preview">Sin datos</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Análisis de AuthContext</h3>
+            <div id="authContextAnalysis"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Log de Actividades</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8000';
+        
+        function logActivity(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            log.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function updateKeyStatus(keyName, elementId, previewId) {
+            const data = localStorage.getItem(keyName);
+            const statusElement = document.getElementById(elementId);
+            const previewElement = document.getElementById(previewId);
+            
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    statusElement.textContent = 'Encontrado y válido';
+                    statusElement.className = 'status found';
+                    previewElement.textContent = JSON.stringify(parsed, null, 2);
+                    logActivity(`Clave '${keyName}': ENCONTRADA y VÁLIDA`);
+                } catch (e) {
+                    statusElement.textContent = 'Encontrado pero inválido';
+                    statusElement.className = 'status invalid';
+                    previewElement.textContent = `Error: ${e.message}\nDatos: ${data}`;
+                    logActivity(`Clave '${keyName}': ENCONTRADA pero INVÁLIDA - ${e.message}`, 'warning');
+                }
+            } else {
+                statusElement.textContent = 'No encontrado';
+                statusElement.className = 'status not-found';
+                previewElement.textContent = 'Sin datos';
+                logActivity(`Clave '${keyName}': NO ENCONTRADA`);
+            }
+        }
+
+        function checkBothKeys() {
+            logActivity('=== VERIFICANDO AMBAS CLAVES DE LOCALSTORAGE ===');
+            
+            // Verificar 'user_data' (AuthService)
+            updateKeyStatus('user_data', 'userDataStatus', 'userDataPreview');
+            
+            // Verificar 'userData' (Archivos de prueba)
+            updateKeyStatus('userData', 'userDataAltStatus', 'userDataAltPreview');
+            
+            // Análisis del AuthContext
+            analyzeAuthContext();
+        }
+
+        function analyzeAuthContext() {
+            logActivity('=== ANALIZANDO COMPORTAMIENTO DE AUTHCONTEXT ===');
+            
+            const analysisDiv = document.getElementById('authContextAnalysis');
+            
+            // Simular el comportamiento del AuthContext
+            const userDataFromAuthService = localStorage.getItem('user_data');
+            const userDataFromTestFiles = localStorage.getItem('userData');
+            
+            let analysis = '<h4>Simulación de AuthContext.tsx:</h4>';
+            
+            // Simular authService.isAuthenticated()
+            const hasValidCookies = document.cookie.includes('access_token') && document.cookie.includes('refresh_token');
+            const isAuthenticatedResult = userDataFromAuthService !== null && hasValidCookies;
+            
+            analysis += `<p><strong>authService.isAuthenticated():</strong> ${isAuthenticatedResult ? '✅ TRUE' : '❌ FALSE'}</p>`;
+            analysis += `<p>- user_data en localStorage: ${userDataFromAuthService ? '✅ SÍ' : '❌ NO'}</p>`;
+            analysis += `<p>- Cookies válidas: ${hasValidCookies ? '✅ SÍ' : '❌ NO'}</p>`;
+            
+            // Simular authService.getUserData()
+            if (userDataFromAuthService) {
+                try {
+                    const userData = JSON.parse(userDataFromAuthService);
+                    analysis += `<p><strong>authService.getUserData():</strong> ✅ DATOS VÁLIDOS</p>`;
+                    analysis += `<p>- Usuario: ${userData.user ? userData.user.username : 'No definido'}</p>`;
+                    analysis += `<p>- Roles: ${userData.roles ? userData.roles.length : 0} roles</p>`;
+                } catch (e) {
+                    analysis += `<p><strong>authService.getUserData():</strong> ❌ ERROR AL PARSEAR</p>`;
+                }
+            } else {
+                analysis += `<p><strong>authService.getUserData():</strong> ❌ NULL</p>`;
+            }
+            
+            // Resultado final
+            if (isAuthenticatedResult && userDataFromAuthService) {
+                analysis += '<div class="success"><strong>RESULTADO:</strong> AuthContext debería inicializar correctamente</div>';
+            } else {
+                analysis += '<div class="error"><strong>RESULTADO:</strong> AuthContext NO inicializará correctamente</div>';
+            }
+            
+            analysisDiv.innerHTML = analysis;
+        }
+
+        async function testRealLogin() {
+            logActivity('=== PROBANDO LOGIN REAL ===');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    logActivity('Login exitoso, simulando AuthService...', 'success');
+                    
+                    // Simular exactamente lo que hace AuthService
+                    const { access, refresh, user, roles } = data.data;
+                    
+                    // Establecer cookies
+                    const accessExpires = new Date();
+                    accessExpires.setTime(accessExpires.getTime() + (1 * 24 * 60 * 60 * 1000));
+                    const refreshExpires = new Date();
+                    refreshExpires.setTime(refreshExpires.getTime() + (7 * 24 * 60 * 60 * 1000));
+                    
+                    document.cookie = `access_token=${access};expires=${accessExpires.toUTCString()};path=/;SameSite=Lax`;
+                    document.cookie = `refresh_token=${refresh};expires=${refreshExpires.toUTCString()};path=/;SameSite=Lax`;
+                    
+                    // Guardar en localStorage con la clave correcta del AuthService
+                    const userData = {
+                        user: user,
+                        roles: roles || [],
+                        permissions: [],
+                        modules: []
+                    };
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    
+                    logActivity('Datos guardados con clave \'user_data\' como AuthService', 'success');
+                    
+                    setTimeout(() => {
+                        checkBothKeys();
+                    }, 500);
+                    
+                } else {
+                    logActivity(`Error en login: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                logActivity(`Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateAuthServiceSave() {
+            logActivity('=== SIMULANDO GUARDADO DE AUTHSERVICE ===');
+            
+            const userData = {
+                user: {
+                    usuario_id: 1,
+                    username: 'admin',
+                    nombres_usuario: 'Admin',
+                    apellidos_usuario: 'User',
+                    email: 'admin@example.com',
+                    tipo_usuario: 'admin',
+                    nivel_acceso: 'alto',
+                    is_active: true
+                },
+                roles: [
+                    {
+                        rol_id: 1,
+                        nombre_rol: 'Administrador',
+                        descripcion_rol: 'Acceso completo al sistema',
+                        nivel_jerarquico: 1,
+                        es_rol_sistema: true
+                    }
+                ],
+                permissions: [],
+                modules: []
+            };
+            
+            // Guardar con la clave que usa AuthService
+            localStorage.setItem('user_data', JSON.stringify(userData));
+            logActivity('Datos guardados con clave \'user_data\' (AuthService)', 'success');
+            
+            // Simular cookies
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (24 * 60 * 60 * 1000));
+            document.cookie = `access_token=fake_token_123;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+            document.cookie = `refresh_token=fake_refresh_123;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+            
+            setTimeout(() => {
+                checkBothKeys();
+            }, 100);
+        }
+
+        function simulateTestFileSave() {
+            logActivity('=== SIMULANDO GUARDADO DE ARCHIVO DE PRUEBA ===');
+            
+            const userData = {
+                id: 1,
+                username: 'admin',
+                email: 'admin@example.com',
+                first_name: 'Admin',
+                last_name: 'User',
+                requiere_cambio_password: false
+            };
+            
+            // Guardar con la clave que usan algunos archivos de prueba
+            localStorage.setItem('userData', JSON.stringify(userData));
+            logActivity('Datos guardados con clave \'userData\' (Archivos de prueba)', 'success');
+            
+            setTimeout(() => {
+                checkBothKeys();
+            }, 100);
+        }
+
+        function fixInconsistency() {
+            logActivity('=== CORRIGIENDO INCONSISTENCIA ===');
+            
+            const userDataCorrect = localStorage.getItem('user_data');
+            const userDataIncorrect = localStorage.getItem('userData');
+            
+            if (userDataCorrect && !userDataIncorrect) {
+                logActivity('Clave \'user_data\' existe, no hay inconsistencia', 'success');
+            } else if (!userDataCorrect && userDataIncorrect) {
+                // Migrar de 'userData' a 'user_data'
+                localStorage.setItem('user_data', userDataIncorrect);
+                localStorage.removeItem('userData');
+                logActivity('Migrado de \'userData\' a \'user_data\'', 'success');
+            } else if (userDataCorrect && userDataIncorrect) {
+                // Ambas existen, mantener la correcta y eliminar la incorrecta
+                localStorage.removeItem('userData');
+                logActivity('Eliminada clave duplicada \'userData\', mantenida \'user_data\'', 'success');
+            } else {
+                logActivity('No hay datos para corregir', 'warning');
+            }
+            
+            setTimeout(() => {
+                checkBothKeys();
+            }, 100);
+        }
+
+        function clearAllStorage() {
+            logActivity('=== LIMPIANDO TODO EL LOCALSTORAGE ===');
+            
+            localStorage.removeItem('user_data');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userRoles');
+            localStorage.removeItem('userPermissions');
+            localStorage.removeItem('userModules');
+            
+            // Limpiar cookies
+            document.cookie = 'access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            document.cookie = 'refresh_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            
+            logActivity('Todo limpiado', 'success');
+            
+            setTimeout(() => {
+                checkBothKeys();
+            }, 100);
+        }
+
+        // Inicializar al cargar la página
+        window.onload = function() {
+            logActivity('🚀 Página cargada, verificando estado inicial...');
+            checkBothKeys();
+        };
+    </script>
+</body>
+</html>

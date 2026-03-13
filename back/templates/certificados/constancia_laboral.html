@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 40px;
+    color: #000;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+  }
+  .header img {
+    max-height: 80px;
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    margin: 4px 0;
+    font-size: 13pt;
+    text-transform: uppercase;
+  }
+  .header p {
+    margin: 2px 0;
+    font-size: 10pt;
+  }
+  .meta-info {
+    display: table;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .meta-left {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+    font-size: 10pt;
+  }
+  .meta-right {
+    display: table-cell;
+    width: 50%;
+    text-align: right;
+    vertical-align: top;
+    font-size: 10pt;
+  }
+  h1.titulo {
+    text-align: center;
+    font-size: 16pt;
+    text-transform: uppercase;
+    margin: 30px 0 25px 0;
+    letter-spacing: 3px;
+    text-decoration: underline;
+  }
+  p.parrafo {
+    text-align: justify;
+    margin: 10px 0;
+    line-height: 1.6;
+  }
+  table.datos {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 10.5pt;
+  }
+  table.datos td {
+    padding: 6px 10px;
+    border: 1px solid #999;
+  }
+  table.datos td.label {
+    font-weight: bold;
+    width: 38%;
+    background: #f2f2f2;
+  }
+  .firma-seccion {
+    margin-top: 70px;
+    text-align: center;
+  }
+  .firma-linea {
+    border-top: 1px solid #000;
+    margin: 0 auto 8px auto;
+    width: 55%;
+  }
+  .firma-nombre {
+    font-weight: bold;
+    font-size: 11pt;
+  }
+  .firma-cargo {
+    font-size: 10pt;
+  }
+  .footer {
+    margin-top: 40px;
+    border-top: 1px solid #bbb;
+    padding-top: 8px;
+    font-size: 8.5pt;
+    color: #666;
+    text-align: center;
+  }
+  .salario-box {
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    margin: 15px 0;
+    background: #fafafa;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  {% if empresa.logo_url %}<img src="{{ empresa.logo_url }}" alt="Logo"><br>{% endif %}
+  <h2>{{ empresa.nombre }}</h2>
+  <p>RUC: {{ empresa.ruc }}</p>
+  {% if empresa.direccion %}<p>{{ empresa.direccion }}</p>{% endif %}
+  {% if empresa.telefono %}<p>Tel: {{ empresa.telefono }}{% if empresa.email %} | {{ empresa.email }}{% endif %}</p>{% endif %}
+</div>
+
+<div class="meta-info">
+  <div class="meta-left">
+    {% if certificado.numero_certificado %}<p><strong>Ref.:</strong> {{ certificado.numero_certificado }}</p>{% endif %}
+  </div>
+  <div class="meta-right">
+    <p>{{ empresa.ciudad|default:"Lima" }}, {{ certificado.fecha_expedicion|date:"d \d\e F \d\e Y" }}</p>
+  </div>
+</div>
+
+<h1 class="titulo">Constancia Laboral</h1>
+
+<p class="parrafo">
+  El que suscribe, <strong>{{ empresa.cargo_representante }}</strong> de
+  <strong>{{ empresa.nombre }}</strong>, hace constar que:
+</p>
+
+<table class="datos">
+  <tr>
+    <td class="label">Apellidos y Nombres</td>
+    <td>{{ empleado.nombre_completo }}</td>
+  </tr>
+  <tr>
+    <td class="label">DNI</td>
+    <td>{{ empleado.numero_documento }}</td>
+  </tr>
+  <tr>
+    <td class="label">Cargo</td>
+    <td>{% if datos_laborales %}{{ datos_laborales.cargo_empleado }}{% else %}{{ empleado.cargo|default:"—" }}{% endif %}</td>
+  </tr>
+  <tr>
+    <td class="label">Área / Unidad Orgánica</td>
+    <td>{% if datos_laborales %}{{ datos_laborales.area.nombre_completo }}{% else %}—{% endif %}</td>
+  </tr>
+  <tr>
+    <td class="label">Régimen Laboral</td>
+    <td>{% if datos_laborales %}{{ datos_laborales.get_regimen_laboral_display }}{% else %}—{% endif %}</td>
+  </tr>
+  <tr>
+    <td class="label">Fecha de Ingreso</td>
+    <td>{% if datos_laborales %}{{ datos_laborales.fecha_ingreso|date:"d \d\e F \d\e Y" }}{% else %}—{% endif %}</td>
+  </tr>
+  <tr>
+    <td class="label">Condición</td>
+    <td>Servidor Activo</td>
+  </tr>
+</table>
+
+{% if certificado.incluir_salario and datos_laborales %}
+<div class="salario-box">
+  <p class="parrafo">
+    Percibe una remuneración mensual de <strong>S/ {{ datos_laborales.sueldo_basico }}</strong>
+    ({{ datos_laborales.sueldo_basico }} Soles) como sueldo básico.
+  </p>
+</div>
+{% endif %}
+
+<p class="parrafo">
+  La presente constancia se expide a solicitud de la parte interesada
+  {% if certificado.proposito %}para ser presentada ante <strong>{{ certificado.proposito }}</strong>{% endif %},
+  para los fines que estime conveniente.
+</p>
+
+<div class="firma-seccion">
+  <div class="firma-linea"></div>
+  <div class="firma-nombre">{{ empresa.representante_legal }}</div>
+  <div class="firma-cargo">{{ empresa.cargo_representante }}</div>
+  <div class="firma-cargo">{{ empresa.nombre }}</div>
+</div>
+
+<div class="footer">
+  Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }} — Sistema de Gestión RRHH
+  {% if empresa.web %} | {{ empresa.web }}{% endif %}
+</div>
+
+</body>
+</html>

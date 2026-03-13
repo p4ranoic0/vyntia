@@ -1,0 +1,142 @@
+Project intranet_rrhh {
+  database_type: "MySQL"
+  Note: "Vista de alto nivel para documentacion. Derivado de modelos Django."
+}
+
+Table area {
+  area_id int [pk, increment]
+  siglas_area varchar
+  nombre_unidad_organica varchar
+  estado_area varchar
+}
+
+Table empleado {
+  empleado_id int [pk, increment]
+  numero_documento varchar
+  nombres_empleado varchar
+  apellido_paterno varchar
+  apellido_materno varchar
+  estado_empleado varchar
+}
+
+Table usuarios {
+  usuario_id int [pk, increment]
+  empleado_id int [ref: - empleado.empleado_id, note: "OneToOne"]
+  username varchar
+  email varchar
+  tipo_usuario varchar
+  estado_usuario varchar
+}
+
+Table datos_laborales {
+  dato_laboral_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  area_id int [ref: > area.area_id]
+  jefe_directo_id int [ref: > empleado.empleado_id]
+  cargo_empleado varchar
+  tipo_contrato varchar
+  estado_datos varchar
+}
+
+Table contratos_adendas {
+  contrato_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  area_id int [ref: > area.area_id]
+  creado_por_id int [ref: > usuarios.usuario_id]
+  modificado_por_id int [ref: > usuarios.usuario_id]
+  numero_contrato varchar
+  tipo_documento varchar
+  estado varchar
+}
+
+Table configuracion_vacaciones {
+  configuracion_id int [pk, increment]
+  area_id int [ref: > area.area_id]
+  empleado_id int [ref: > empleado.empleado_id]
+  creado_por_id int [ref: > usuarios.usuario_id]
+  tipo_configuracion varchar
+  dias_por_ano int
+  activo bool
+}
+
+Table periodos_vacacionales {
+  periodo_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  contrato_id int [ref: > contratos_adendas.contrato_id]
+  configuracion_id int [ref: > configuracion_vacaciones.configuracion_id]
+  creado_por_id int [ref: > usuarios.usuario_id]
+  ano_periodo int
+  estado_periodo varchar
+}
+
+Table solicitudes_vacaciones {
+  solicitud_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  periodo_vacacional_id int [ref: > periodos_vacacionales.periodo_id]
+  jefe_aprobador_id int [ref: > empleado.empleado_id]
+  rrhh_aprobador_id int [ref: > usuarios.usuario_id]
+  estado_solicitud varchar
+}
+
+Table goces_vacaciones {
+  goce_id int [pk, increment]
+  solicitud_vacaciones_id int [ref: > solicitudes_vacaciones.solicitud_id]
+  empleado_id int [ref: > empleado.empleado_id]
+  periodo_vacacional_id int [ref: > periodos_vacacionales.periodo_id]
+}
+
+Table historial_solicitudes_vacaciones {
+  historial_id int [pk, increment]
+  solicitud_vacaciones_id int [ref: > solicitudes_vacaciones.solicitud_id]
+  usuario_accion_id int [ref: > usuarios.usuario_id]
+  accion varchar
+}
+
+Table documentos_digitales {
+  documento_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  documento_padre_id int [ref: > documentos_digitales.documento_id]
+  validado_por_id int [ref: > usuarios.usuario_id]
+  digitalizado_por_id int [ref: > usuarios.usuario_id]
+  subido_por_id int [ref: > usuarios.usuario_id]
+  tipo_documento varchar
+  estado_documento varchar
+}
+
+Table onboarding_empleado {
+  onboarding_id int [pk, increment]
+  empleado_id int [ref: > empleado.empleado_id]
+  usuario_responsable_id int [ref: > usuarios.usuario_id]
+}
+
+Table modulos {
+  modulo_id int [pk, increment]
+  modulo_padre_id int [ref: > modulos.modulo_id]
+  nombre_modulo varchar
+}
+
+Table rol {
+  rol_id int [pk, increment]
+  nombre_rol varchar
+  estado_rol varchar
+}
+
+Table permiso {
+  permiso_id int [pk, increment]
+  modulo_id int [ref: > modulos.modulo_id]
+  nombre_permiso varchar
+  tipo_permiso varchar
+}
+
+Table usuario_roles {
+  usuario_rol_id int [pk, increment]
+  usuario_id int [ref: > usuarios.usuario_id]
+  rol_id int [ref: > rol.rol_id]
+}
+
+Table rol_permisos {
+  rol_permiso_id int [pk, increment]
+  rol_id int [ref: > rol.rol_id]
+  permiso_id int [ref: > permiso.permiso_id]
+  asignado_por_usuario_id int [ref: > usuarios.usuario_id]
+}

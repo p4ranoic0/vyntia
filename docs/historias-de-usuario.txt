@@ -1,0 +1,99 @@
+Historias de usuario detalladas para un Sistema de Recursos Humanos
+1. Proceso de Selección
+Se considera dos (2) etapas del proceso obligatorio, la etapa de evaluación de hoja de vida y la entrevista, siendo opcionales la etapa de evaluación de conocimiento, y evaluación psicológica.
+Como persona responsable de selección, quiero poder crear, editar y publicar ofertas laborales detalladas (cargo, requisitos, salario, tipo de contrato, competencias, ubicación, beneficios), y gestionar su visibilidad en portales internos y externos, para asegurar que la convocatoria llegue a personas que cumplan el perfil requerido.
+Como persona responsable de selección, quiero poder registrar y modificar evaluaciones de conocimiento, así como un banco de preguntas, y que estas sean calificadas automáticamente.
+Como persona candidata, quiero poder registrar mi perfil, adjuntar CV, certificados y completar formularios de presentación, para que mi aplicación sea considerada de manera integral por el área de selección.
+Como responsable de selección, quiero disponer de filtros avanzados (palabras clave, experiencia, estudios, competencias, ubicación) y un sistema de puntuación automática en base a los datos cargados, ya sea por la experiencia laboral y por estudios, para priorizar a quienes más se ajustan al perfil buscado.
+Como persona encargada de entrevistas, quiero agendar entrevistas en línea/presenciales, enviar recordatorios y gestionar la retroalimentación sobre cada persona entrevistada en el sistema, para mantener un historial ordenado y transparente, así como poder organizar a los miembros titulares y suplentes del comité de selección.
+Como postulante, quiero recibir notificaciones automáticas sobre el estado de mi postulación, evaluación de la hoja de vida, entrevistas, evaluaciones psicométricas y pruebas de conocimiento, para mantenerme informada/o en todo momento del avance del proceso.
+Como responsable de selección, quiero generar reportes estadísticos sobre el proceso de reclutamiento (número de postulaciones, tiempo promedio de selección, tasa de cumplimiento de perfiles, fuentes de reclutamiento) para analizar y mejorar la estrategia de talento.
+
+**PRIORIZADO**
+2. Proceso de Remuneraciones
+Como persona encargada de remuneraciones, quiero cargar y actualizar parámetros salariales (remuneración fija, bonos, incremento, gratificaciones o aguinaldo, comisiones, descuentos deducibles de la base imponible, descuentos no deducibles de la base imponible, retenciones, cargas sociales), para que el cálculo de la nómina sea preciso y conforme a la legislación vigente.
+Permitir la Generación de Planilla Detallada por Meta Presupuestal, diferenciando las modalidades a plazo indeterminado, plazo determinado, subsidios.
+Permitir la carga masiva de los descuentos.
+Generar reportes por bancos y modalidad,
+Generar reporte de descuentos por modalidad
+Generar reporte por sistema pensiones.
+Generar Excel para exportación de las planillas de AFP
+Generar Excel para la exportación al PDT, incluyendo las liquidaciones.
+Generar Excel respecto a los ingresos, descuentos y sueldo neto de servidores.
+Generar archivo excel y zipeado para cargar planilla web.
+Generar Certificado de Retención de 4ta categoría, anual y a la fecha de cese.
+Como responsable de RRHH, quiero definir calendarios de pagos y programar liquidaciones automáticas recurrentes, para cumplir con los plazos pactados con el personal.
+Como colaborador(a), quiero visualizar y descargar mis boletas de pago y comprobantes de remuneraciones pasadas, para llevar un registro personal de mis ingresos y poder consultarlos cuando lo necesite.
+Como responsable de TI/Seguridad, quiero recibir alertas de alta para gestionar accesos a sistemas, correo, plataformas y dispositivos.
+
+3. Proceso de Liquidaciones
+Como responsable de liquidaciones, quiero que el sistema identifique automáticamente los conceptos que deben incluirse en una liquidación final (sueldos proporcionales, vacaciones truncas, vacaciones no gozadas, indemnización por tiempo de servicio, otros beneficios), para acelerar el cierre de la relación laboral y evitar errores.
+Como persona colaboradora próxima a desvincularse, quiero recibir un detalle claro de los montos y conceptos liquidados, así como opciones para descargar constancias y documentos legales asociados a mi egreso.
+Generar Excel planilla Afpnet.
+Como persona de RRHH, quiero que el sistema notifique a las áreas involucradas (finanzas, TI, seguridad) sobre la fecha de salida de cada persona, para coordinar la baja de beneficios y accesos.
+
+**PRIORIZADO**
+4. Administración de Legajo Digital 
+Como responsable de RRHH, quiero cargar, organizar y proteger todos los documentos relevantes del legajo digital de cada persona (contratos, anexos, evaluaciones, certificados, constancias, permisos médicos, historial disciplinario, etc.), para cumplir las normativas legales y simplificar auditorías, en formato pdf.
+Como colaborador(a), quiero poder consultar mi legajo digital desde cualquier lugar, conocer el estado de mis documentos y recibir alertas cuando deba presentar información actualizada o cuando este faltando documentación para finalizar dicho trámite (DNI, seguros, certificados médicos, etc.).
+Como responsable de cumplimiento, quiero que el sistema registre quién y cuándo accede o modifica documentos del legajo, para asegurar la integridad y confidencialidad de la información.
+
+5. Inducción
+Como persona nueva en la organización, quiero completar un proceso de inducción virtual con videos, manuales, evaluaciones y recursos interactivos, para adaptarme rápidamente a la cultura, políticas y procedimientos internos.
+Como responsable de inducción, quiero visualizar el progreso de cada integrante, enviar recordatorios y resolver dudas en línea, para asegurar el cumplimiento de los pasos de bienvenida.
+Como responsable de área usuaria, quiero poder asignar tutores de integración, y evaluar el proceso de inducción, para mejorar la experiencia de cada colaborador/a nuevo/a.
+Generar un formulario de retroalimentación de la inducción.
+
+**PRIORIZADO**
+6. Administración de Información Personal y Laboral
+Como colaborador(a), quiero actualizar mis datos personales, de contacto, familiares de forma sencilla y segura, para que mi información siempre esté al día.
+Como persona responsable de RRHH, quiero recibir alertas de cambios realizados y aprobar o rechazar modificaciones antes de que se registren oficialmente, para mantener la calidad del dato, asimismo que se le permita el registro y actualización de los datos laborales de los servidores.
+Que permita generar formatos resumen de la hoja de vida, académicos, sobre desplazamiento de cada servidor, pdf, generar reportes en Excel.
+Como persona usuaria, quiero consultar la información relevante de mi contrato, antigüedad, categoría y condiciones laborales, para tener claridad sobre mi situación dentro de la empresa.
+Permitir la generación de Certificados y Constancia de Trabajo, según sus datos laborales, y desplazamientos.
+Permitir generar archivos Excel para carga masiva  para altas y bajas en el Airhsp.
+Permitir Generación de Contratos y Adendas.
+Permitir alertas al responsable de RRHH, sobre el vencimiento de las adendas, generar reportes de vencimiento de contrato o adendas desagregado por oficinas.
+
+7. Desplazamiento
+Como colaborador(a), quiero registrar solicitudes de desplazamientos temporales (rotación, traslados entre sedes, licencias sin goce, teletrabajo), indicando fechas, motivos, tipo de documento, nrop documento.
+Consolidar reporte para la elaboración de planilla y liquidaciones.
+
+**PRIORIZADO**
+8. Administración de Récord de Vacaciones por Contrato
+Como colaborador(a), quiero poder registrar la solicitud del goce vacacional y que esta sea aprobada por el jefe inmediato.
+Como colaborador(a), quiero consultar en línea mi saldo de vacaciones vigente, acumular días de acuerdo al tipo de contrato/antigüedad y solicitar días fraccionados en función del calendario laboral.
+Como responsable de RRHH, quiero gestionar solicitudes, revisar superposiciones o conflictos, aprobar/rechazar y actualizar el saldo de cada persona tras cada movimiento, se cuenta con parámetros establecidos según la normativa en materia.
+Como persona responsable de nómina, quiero que el sistema integre automáticamente el uso de vacaciones en las liquidaciones, evitando errores y omisiones, que genere un reporte del récord por servidor, vacaciones no gozadas y vacaciones truncas.
+Reporte total de récord vacacional y por oficinas.
+Para finanzas, debe generarse un reporte provisional de vacaciones, que evalué el récord vacacional y las posibles vacaciones truncas, teniendo un corte mensual, realizando el cálculo por mes y día trabajado, así como debe de disminuir las licencias sin goce de haber.
+
+9. Proceso de Desvinculación
+Como responsable de RRHH, Logística, Patrimonio, Finanzas, Jefe Inmediato, quiero iniciar el proceso de desvinculación, generando un checklist de pasos y documentos a cumplir (avisos legales, recupero de equipos, baja de accesos, entrevistas de egreso), para asegurar que se cumplan todos los requisitos legales y operativos.
+Permitir generar un informe sobre las metas establecidas en la Gestión de Rendimiento, evidenciando el nivel de avance.
+Como colaborador(a), quiero recibir acompañamiento y claridad sobre el proceso, incluyendo acceso a formularios, encuestas de salida y confirmaciones de trámites finalizados.
+Como responsable de TI/Seguridad, quiero recibir alertas de baja anticipada para gestionar accesos a sistemas, correo, plataformas y dispositivos.
+
+10. Capacitación
+Como colaborador(a), quiero inscribirme en actividades de capacitación interna o externa, realizar cursos virtuales, cargar certificados y llevar un historial formativo dentro del portal.
+Como colaborador(a), deberá permitir el registro de la necesidad de capacitación en base a su perfil, así como esta deberá ser validada por el jefe inmediato, a fin de consolidar sistemáticamente la matriz de requerimientos de capacitación de la entidad, para la elaboración del Plan de Desarrollo de Personas (PDP).
+Como responsable de capacitación, quiero crear nuevas actividades, asignar cupos, definir niveles de dificultad y monitorear el avance de cada persona, generando reportes por área, tema o competencia.
+Como responsable de liderazgo, quiero identificar brechas formativas y sugerir capacitaciones de acuerdo con los planes de carrera definidos en la organización.
+
+11. Diseño de Puesto
+Como área usuaria, quiero crear, modificar y eliminar perfiles de puesto, detallando funciones, competencias técnicas y blandas, nivel de responsabilidad, relaciones jerárquicas y transversales, para mantener el organigrama actualizado, así como estas deberán ser validadas por RRHH.
+Como colaborador(a), quiero consultar el perfil, responsabilidades, habilidades y oportunidades de mi puesto, para alinear mis expectativas y guiar mi desarrollo profesional.
+Como persona responsable de selección, quiero vincular los perfiles de puesto con los procesos de reclutamiento y evaluación de desempeño, para unificar criterios y métricas.
+
+12. Comunicación Interna
+Como colaborador(a), quiero recibir avisos, políticas, noticias y comunicados de manera segmentada (por área, tema, nivel jerárquico), garantizando que la información relevante llegue siempre a quien corresponda.
+Como responsable de comunicación interna, quiero programar envíos, monitorear el alcance y medir la interacción con los mensajes y campañas (lectura, confirmación, respuestas).
+Como responsable de eventos, quiero crear invitaciones digitales y confirmar participación de los y las asistentes por medio del sistema.
+
+13. Gestión de Rendimiento
+Como colaborador(a), quiero registrar las metas según el perfil de puesto, POI, PEI, para todos los servidores de la entidad y que estas sean validadas por el jefe inmediato mediante firma digital.
+Que se genere reportes por cada servidor, en formato Excel y en PDF, 
+Como responsable de RRHH, poder realizar una retroalimentación y que esta sea notificada a los jefes inmediatos respecto a la formulación metas, se necesita consolidar dicha información para SERVIR.
+Permitir el registro de cada jefe inmediato, respecto al seguimiento del cumplimiento de las metas.
+Permitir el cierre del ciclo de gestión de rendimiento, permitiendo a los jefes inmediatos puntuar y registrar la firma digital.
+Permitir compartir y comparar resultados por cada oficina sobre el porcentaje de cumplimiento de las metas, detectar tendencias y reconocer logros sobresalientes o áreas de bajo desempeño en mi equipo.

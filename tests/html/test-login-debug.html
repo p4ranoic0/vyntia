@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Login Frontend</h1>
+    
+    <div class="container">
+        <h3>Formulario de Login</h3>
+        <input type="text" id="username" placeholder="Usuario" value="admin">
+        <input type="password" id="password" placeholder="Contraseña" value="admin">
+        <button onclick="testLogin()">Probar Login</button>
+        <button onclick="clearLogs()">Limpiar Logs</button>
+    </div>
+
+    <div class="container">
+        <h3>Estado de Cookies</h3>
+        <button onclick="checkCookies()">Verificar Cookies</button>
+        <button onclick="clearCookies()">Limpiar Cookies</button>
+        <div id="cookieStatus"></div>
+    </div>
+
+    <div class="container">
+        <h3>Estado de LocalStorage</h3>
+        <button onclick="checkLocalStorage()">Verificar LocalStorage</button>
+        <button onclick="clearLocalStorage()">Limpiar LocalStorage</button>
+        <div id="localStorageStatus"></div>
+    </div>
+
+    <div class="container">
+        <h3>Logs de Debug</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        let logContainer = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logContainer.textContent += logEntry;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLogs() {
+            logContainer.textContent = '';
+        }
+        
+        // Funciones de utilidad para cookies
+        function setCookie(name, value, days = 7) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+        }
+        
+        function hasAuthCookies() {
+            return getCookie('access_token') !== null && getCookie('refresh_token') !== null;
+        }
+        
+        function clearAuthCookies() {
+            deleteCookie('access_token');
+            deleteCookie('refresh_token');
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('=== INICIANDO PROCESO DE LOGIN ===');
+            log(`Usuario: ${username}`);
+            
+            try {
+                log('1. Enviando petición de login al backend...');
+                
+                const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
+                
+                log(`2. Respuesta del servidor: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`3. Datos recibidos: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok && data.success) {
+                    log('4. Login exitoso, procesando tokens...');
+                    
+                    const { access, refresh, user, roles } = data.data;
+                    
+                    log(`5. Tokens recibidos:`);
+                    log(`   - Access token: ${access ? 'Presente' : 'Ausente'}`);
+                    log(`   - Refresh token: ${refresh ? 'Presente' : 'Ausente'}`);
+                    
+                    // Generar cookies con los tokens recibidos
+                    log('6. Estableciendo cookies...');
+                    setCookie('access_token', access, 1); // 1 día
+                    setCookie('refresh_token', refresh, 7); // 7 días
+                    
+                    log('7. Cookies establecidas, verificando...');
+                    checkCookies();
+                    
+                    // Guardar datos básicos del usuario
+                    log('8. Guardando datos del usuario en localStorage...');
+                    const userData = {
+                        user: user,
+                        roles: roles || [],
+                        permissions: [],
+                        modules: []
+                    };
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    
+                    log('9. Verificando localStorage...');
+                    checkLocalStorage();
+                    
+                    log('=== LOGIN COMPLETADO EXITOSAMENTE ===');
+                    
+                } else {
+                    log(`ERROR: ${data.message || 'Error en el login'}`, 'error');
+                    if (data.errors) {
+                        log(`Errores: ${JSON.stringify(data.errors)}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                log(`ERROR DE CONEXIÓN: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+        
+        function checkCookies() {
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            const hasAuth = hasAuthCookies();
+            
+            const status = `
+Estado de Cookies:
+- Access Token: ${accessToken ? 'Presente' : 'Ausente'}
+- Refresh Token: ${refreshToken ? 'Presente' : 'Ausente'}
+- Autenticación válida: ${hasAuth ? 'SÍ' : 'NO'}
+
+Todas las cookies: ${document.cookie || 'Ninguna'}`;
+            
+            document.getElementById('cookieStatus').textContent = status;
+            log('Cookies verificadas: ' + (hasAuth ? 'Válidas' : 'Inválidas'));
+        }
+        
+        function clearCookies() {
+            clearAuthCookies();
+            log('Cookies de autenticación eliminadas');
+            checkCookies();
+        }
+        
+        function checkLocalStorage() {
+            const userData = localStorage.getItem('user_data');
+            const status = `
+Estado de LocalStorage:
+- user_data: ${userData ? 'Presente' : 'Ausente'}
+
+Contenido: ${userData || 'Vacío'}`;
+            
+            document.getElementById('localStorageStatus').textContent = status;
+            log('LocalStorage verificado: ' + (userData ? 'Con datos' : 'Vacío'));
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('user_data');
+            log('LocalStorage limpiado');
+            checkLocalStorage();
+        }
+        
+        // Verificar estado inicial
+        window.onload = function() {
+            log('=== PÁGINA CARGADA ===');
+            checkCookies();
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

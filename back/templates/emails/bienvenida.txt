@@ -1,0 +1,37 @@
+Bienvenido a la Intranet - Sistema de Recursos Humanos
+======================================================
+
+Estimado/a {{ nombre_empleado }},
+
+Le damos la bienvenida a nuestra institucion. Se ha creado su cuenta de acceso al sistema de Intranet para que pueda completar su proceso de incorporacion.
+
+CREDENCIALES DE ACCESO
+----------------------
+Usuario: {{ username }}
+Contrasena temporal: {{ password_temporal }}
+
+IMPORTANTE: Debera cambiar su contrasena en el primer inicio de sesion.
+
+Para acceder al sistema, ingrese a: {{ frontend_url }}/login
+
+DOCUMENTOS REQUERIDOS PARA SU INCORPORACION
+--------------------------------------------
+Una vez que ingrese al sistema, debera completar sus datos personales y adjuntar los siguientes documentos escaneados:
+
+- Copia de DNI
+- Declaraciones juradas firmadas (formatos proporcionados por la entidad)
+- Certificados de formacion academica (titulos, diplomas, constancias)
+- Certificados de trabajo (experiencia profesional)
+- Documentos familiares:
+  * Copia de DNI de familiares directos
+  * Acta de matrimonio o union de hecho (si aplica)
+  * Copia de DNI de padres
+
+Si tiene alguna consulta, no dude en comunicarse con el area de Recursos Humanos.
+
+Cordialmente,
+Area de Recursos Humanos
+
+---
+Este es un correo automatico generado por el sistema de Intranet RRHH.
+Por favor, no responda a este correo.

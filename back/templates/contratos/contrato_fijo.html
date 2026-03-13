@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato a Término Fijo - {{ empleado.nombres }} {{ empleado.apellidos }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+        }
+        .content {
+            text-align: justify;
+            margin: 20px 0;
+        }
+        .clause {
+            margin: 20px 0;
+            text-indent: 20px;
+        }
+        .clause-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0 10px 0;
+            text-indent: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #000;
+        }
+        .data-table .label {
+            font-weight: bold;
+            background-color: #f0f0f0;
+            width: 30%;
+        }
+        .signatures {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 60px;
+            padding-top: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        .warning-box {
+            border: 2px solid #ff6b6b;
+            background-color: #ffe6e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-box {
+            border: 2px solid #4ecdc4;
+            background-color: #e6fffe;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .signatures {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo }}" alt="Logo {{ empresa.nombre }}" class="company-logo">
+        {% endif %}
+        <h1 class="title">{{ empresa.nombre }}</h1>
+        <p><strong>NIT:</strong> {{ empresa.nit }}</p>
+        <p>{{ empresa.direccion }}</p>
+        <p>{{ empresa.ciudad }}, {{ empresa.departamento }}</p>
+        <p><strong>Teléfono:</strong> {{ empresa.telefono }} | <strong>Email:</strong> {{ empresa.email }}</p>
+    </div>
+
+    <div class="content">
+        <h2 class="title">CONTRATO DE TRABAJO A TÉRMINO FIJO</h2>
+        
+        <div class="info-box">
+            <strong>INFORMACIÓN DEL CONTRATO:</strong><br>
+            <strong>Número de Contrato:</strong> {{ contrato.numero_contrato }}<br>
+            <strong>Fecha de Inicio:</strong> {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}<br>
+            <strong>Fecha de Terminación:</strong> {{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}<br>
+            <strong>Duración Total:</strong> {{ contrato.duracion_meses }} meses
+        </div>
+        
+        <div class="clause">
+            <p>Entre los suscritos a saber: <span class="highlight uppercase">{{ empresa.nombre }}</span>, 
+            sociedad legalmente constituida, con domicilio en {{ empresa.ciudad }}, identificada con 
+            NIT {{ empresa.nit }}, representada legalmente por <span class="highlight uppercase">{{ empresa.representante_legal }}</span>, 
+            identificado(a) con cédula de ciudadanía No. {{ empresa.cedula_representante }}, 
+            quien en adelante se denominará <span class="highlight">EL EMPLEADOR</span>, y 
+            <span class="highlight uppercase">{{ empleado.nombres }} {{ empleado.apellidos }}</span>, 
+            identificado(a) con {{ empleado.tipo_documento }} No. {{ empleado.numero_documento }}, 
+            quien en adelante se denominará <span class="highlight">EL TRABAJADOR</span>, 
+            hemos convenido celebrar el presente contrato de trabajo a término fijo, que se regirá por las siguientes cláusulas:</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">PRIMERA. - OBJETO DEL CONTRATO:</div>
+            <p>EL EMPLEADOR contrata los servicios personales de EL TRABAJADOR para desempeñar 
+            el cargo de <span class="highlight">{{ contrato.cargo }}</span> en el área de 
+            <span class="highlight">{{ contrato.area }}</span>, con las funciones y responsabilidades 
+            propias del cargo y aquellas que le sean asignadas por su jefe inmediato, 
+            de acuerdo con las políticas y procedimientos de la empresa.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEGUNDA. - DURACIÓN DEL CONTRATO:</div>
+            <p>El presente contrato es de carácter <span class="highlight">A TÉRMINO FIJO</span> 
+            y tendrá una duración de <span class="highlight">{{ contrato.duracion_meses }} meses</span>, 
+            contados a partir del {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }} 
+            y hasta el {{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}, fecha en la cual 
+            terminará automáticamente sin necesidad de previo aviso.</p>
+            
+            {% if contrato.duracion_meses <= 12 %}
+            <div class="warning-box">
+                <strong>IMPORTANTE:</strong> Este contrato tiene una duración inferior a un (1) año, 
+                por lo tanto, solo podrá prorrogarse hasta por tres (3) períodos iguales o inferiores, 
+                y en ningún caso la duración total del contrato inicial y sus prórrogas podrá 
+                exceder de tres (3) años.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">TERCERA. - RENOVACIÓN DEL CONTRATO:</div>
+            <p>Si las partes desean renovar el presente contrato, deberán manifestarlo por escrito 
+            con una antelación no inferior a treinta (30) días calendario antes de la fecha 
+            de vencimiento. La renovación se hará mediante la suscripción de un nuevo contrato 
+            o adenda al presente.</p>
+            
+            {% if contrato.es_renovacion %}
+            <p><strong>RENOVACIÓN:</strong> El presente contrato constituye la 
+            <span class="highlight">{{ contrato.numero_renovacion }}ª renovación</span> 
+            del contrato inicial suscrito el {{ contrato.fecha_contrato_inicial|date:"d \d\e F \d\e Y" }}.</p>
+            {% endif %}
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CUARTA. - PERÍODO DE PRUEBA:</div>
+            {% if contrato.tiene_periodo_prueba %}
+            <p>Se establece un período de prueba de <span class="highlight">{{ contrato.periodo_prueba_dias }} días</span> 
+            calendario, contados a partir de la fecha de inicio del contrato, durante el cual 
+            cualquiera de las partes podrá dar por terminado el contrato sin previo aviso 
+            y sin indemnización alguna.</p>
+            {% else %}
+            <p>No se establece período de prueba para el presente contrato, en virtud de 
+            tratarse de una renovación o por acuerdo expreso de las partes.</p>
+            {% endif %}
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">QUINTA. - SALARIO:</div>
+            <p>EL EMPLEADOR pagará a EL TRABAJADOR como salario la suma de 
+            <span class="highlight">{{ contrato.moneda }} ${{ contrato.salario_base|floatformat:0 }}</span> 
+            ({{ contrato.salario_base_letras }}) {{ contrato.periodicidad_pago|lower }}, 
+            que incluye el factor prestacional correspondiente.</p>
+            
+            <table class="data-table">
+                <tr>
+                    <td class="label">Salario Base:</td>
+                    <td>{{ contrato.moneda }} ${{ contrato.salario_base|floatformat:0 }}</td>
+                </tr>
+                {% if contrato.auxilio_transporte %}
+                <tr>
+                    <td class="label">Auxilio de Transporte:</td>
+                    <td>{{ contrato.moneda }} ${{ contrato.auxilio_transporte|floatformat:0 }}</td>
+                </tr>
+                {% endif %}
+                {% if contrato.bonificaciones %}
+                <tr>
+                    <td class="label">Bonificaciones:</td>
+                    <td>{{ contrato.bonificaciones }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td class="label">Forma de Pago:</td>
+                    <td>{{ contrato.forma_pago }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Días de Pago:</td>
+                    <td>{{ contrato.dias_pago }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEXTA. - JORNADA LABORAL:</div>
+            <p>La jornada de trabajo será de <span class="highlight">{{ contrato.jornada_laboral }}</span>, 
+            de {{ contrato.horario_inicio }} a {{ contrato.horario_fin }}, 
+            de lunes a {{ contrato.dias_laborales }}, para un total de 
+            <span class="highlight">{{ contrato.horas_semanales }} horas semanales</span>.</p>
+            
+            <p><strong>Modalidad de Trabajo:</strong> 
+            {% if contrato.modalidad_trabajo == 'PRESENCIAL' %}
+            El trabajo se realizará de manera presencial en las instalaciones de la empresa 
+            ubicadas en {{ empresa.direccion }}.
+            {% elif contrato.modalidad_trabajo == 'REMOTO' %}
+            El trabajo se realizará bajo la modalidad remota desde el domicilio del trabajador 
+            ubicado en {{ empleado.direccion }}.
+            {% elif contrato.modalidad_trabajo == 'HIBRIDO' %}
+            El trabajo se realizará bajo la modalidad híbrida, combinando trabajo presencial 
+            y remoto según las necesidades del servicio y los acuerdos establecidos.
+            {% endif %}
+            </p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SÉPTIMA. - TERMINACIÓN DEL CONTRATO:</div>
+            <p>El presente contrato terminará automáticamente al vencimiento del plazo pactado, 
+            sin necesidad de previo aviso por parte de ninguna de las partes. También podrá 
+            terminarse antes del vencimiento por las causales establecidas en el Código 
+            Sustantivo del Trabajo.</p>
+            
+            <div class="warning-box">
+                <strong>INDEMNIZACIÓN POR TERMINACIÓN UNILATERAL:</strong><br>
+                Si el empleador da por terminado unilateralmente el contrato sin justa causa 
+                antes del vencimiento del plazo pactado, pagará al trabajador una indemnización 
+                equivalente al valor de los salarios correspondientes al tiempo que faltare 
+                para cumplir el plazo estipulado del contrato.
+            </div>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">OCTAVA. - OBLIGACIONES DE LAS PARTES:</div>
+            <p><strong>Obligaciones del Trabajador:</strong></p>
+            <ul>
+                <li>Cumplir con las funciones propias de su cargo con diligencia y eficiencia.</li>
+                <li>Acatar las órdenes e instrucciones impartidas por sus superiores.</li>
+                <li>Guardar absoluta reserva sobre la información confidencial de la empresa.</li>
+                <li>Cumplir con el horario de trabajo establecido y las normas de puntualidad.</li>
+                <li>Observar las medidas de seguridad y salud en el trabajo.</li>
+                <li>Cuidar los bienes de la empresa que se pongan a su disposición.</li>
+            </ul>
+            
+            <p><strong>Obligaciones del Empleador:</strong></p>
+            <ul>
+                <li>Pagar el salario en la forma y fechas convenidas.</li>
+                <li>Proporcionar los elementos de trabajo necesarios.</li>
+                <li>Afiliar al trabajador al sistema de seguridad social integral.</li>
+                <li>Cumplir con las normas de seguridad y salud en el trabajo.</li>
+                <li>Respetar la dignidad del trabajador.</li>
+            </ul>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">NOVENA. - CLÁUSULAS ESPECIALES:</div>
+            {% if contrato.clausulas_especiales %}
+            <p>{{ contrato.clausulas_especiales }}</p>
+            {% else %}
+            <p>No se establecen cláusulas especiales adicionales a las contempladas 
+            en la legislación laboral vigente.</p>
+            {% endif %}
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">DÉCIMA. - DISPOSICIONES GENERALES:</div>
+            <p>En todo lo no previsto en este contrato, se aplicarán las disposiciones 
+            del Código Sustantivo del Trabajo y demás normas laborales vigentes. 
+            Las modificaciones a este contrato deberán hacerse por escrito y con 
+            la aceptación de ambas partes.</p>
+        </div>
+
+        <div class="clause">
+            <p>Para constancia se firma en {{ empresa.ciudad }} a los {{ contrato.fecha_inicio|date:"d" }} 
+            días del mes de {{ contrato.fecha_inicio|date:"F" }} de {{ contrato.fecha_inicio|date:"Y" }}.</p>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL EMPLEADOR</strong><br>
+                {{ empresa.representante_legal }}<br>
+                {{ empresa.cargo_representante }}<br>
+                C.C. {{ empresa.cedula_representante }}
+            </div>
+        </div>
+        
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL TRABAJADOR</strong><br>
+                {{ empleado.nombres }} {{ empleado.apellidos }}<br>
+                {{ empleado.tipo_documento }} {{ empleado.numero_documento }}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        <p>{{ empresa.nombre }} - Contrato a Término Fijo</p>
+        <p>Vigencia: {{ contrato.fecha_inicio|date:"d/m/Y" }} - {{ contrato.fecha_fin|date:"d/m/Y" }}</p>
+    </div>
+</body>
+</html>

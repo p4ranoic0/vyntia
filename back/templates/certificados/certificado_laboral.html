@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado Laboral - {{ empleado.nombres }} {{ empleado.apellidos }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .certificate-number {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .content {
+            text-align: justify;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+        .intro {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 14px;
+        }
+        .employee-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .info-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table .label {
+            font-weight: bold;
+            width: 30%;
+            color: #333;
+        }
+        .info-table .value {
+            width: 70%;
+        }
+        .salary-info {
+            background-color: #e8f5e8;
+            border: 1px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .signature-section {
+            margin-top: 80px;
+            text-align: center;
+        }
+        .signature-box {
+            margin: 60px auto 20px;
+            width: 300px;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            margin-top: 60px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        .date-location {
+            text-align: right;
+            margin: 30px 0;
+            font-style: italic;
+        }
+        .purpose {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .legal-note {
+            font-size: 10px;
+            text-align: justify;
+            margin-top: 30px;
+            color: #666;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .signature-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo }}" alt="Logo {{ empresa.nombre }}" class="company-logo">
+        {% endif %}
+        <h1 class="title">{{ empresa.nombre }}</h1>
+        <p><strong>NIT:</strong> {{ empresa.nit }}</p>
+        <p>{{ empresa.direccion }}</p>
+        <p>{{ empresa.ciudad }}, {{ empresa.departamento }}</p>
+        <p><strong>Teléfono:</strong> {{ empresa.telefono }} | <strong>Email:</strong> {{ empresa.email }}</p>
+    </div>
+
+    <div class="certificate-number">
+        <strong>Certificado No. {{ certificado.numero_certificado }}</strong>
+    </div>
+
+    <div class="content">
+        <h2 class="title">
+            {% if certificado.tipo == 'LABORAL' %}
+            CERTIFICACIÓN LABORAL
+            {% elif certificado.tipo == 'INGRESOS' %}
+            CERTIFICACIÓN DE INGRESOS
+            {% elif certificado.tipo == 'TIEMPO_SERVICIO' %}
+            CERTIFICACIÓN DE TIEMPO DE SERVICIO
+            {% elif certificado.tipo == 'RETIRO' %}
+            CERTIFICACIÓN DE RETIRO
+            {% else %}
+            CERTIFICACIÓN
+            {% endif %}
+        </h2>
+        
+        <div class="date-location">
+            {{ empresa.ciudad }}, {{ certificado.fecha_expedicion|date:"d \d\e F \d\e Y" }}
+        </div>
+        
+        <div class="intro">
+            <p><strong>EL SUSCRITO REPRESENTANTE LEGAL DE {{ empresa.nombre|upper }}</strong></p>
+            <p><strong>CERTIFICA QUE:</strong></p>
+        </div>
+        
+        <div class="employee-info">
+            <table class="info-table">
+                <tr>
+                    <td class="label">Nombre Completo:</td>
+                    <td class="value highlight uppercase">{{ empleado.nombres }} {{ empleado.apellidos }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Tipo de Documento:</td>
+                    <td class="value">{{ empleado.tipo_documento }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Número de Documento:</td>
+                    <td class="value highlight">{{ empleado.numero_documento }}</td>
+                </tr>
+                {% if empleado.fecha_nacimiento %}
+                <tr>
+                    <td class="label">Fecha de Nacimiento:</td>
+                    <td class="value">{{ empleado.fecha_nacimiento|date:"d \d\e F \d\e Y" }}</td>
+                </tr>
+                {% endif %}
+                {% if empleado.direccion %}
+                <tr>
+                    <td class="label">Dirección:</td>
+                    <td class="value">{{ empleado.direccion }}</td>
+                </tr>
+                {% endif %}
+                {% if empleado.telefono %}
+                <tr>
+                    <td class="label">Teléfono:</td>
+                    <td class="value">{{ empleado.telefono }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+
+        {% if certificado.tipo == 'LABORAL' or certificado.tipo == 'INGRESOS' or certificado.tipo == 'TIEMPO_SERVICIO' %}
+        <p>{% if datos_laborales.estado_datos == 'ACTIVO' %}Labora{% else %}Laboró{% endif %} 
+        en esta empresa desde el <span class="highlight">{{ datos_laborales.fecha_ingreso|date:"d \d\e F \d\e Y" }}</span>
+        {% if datos_laborales.fecha_retiro and certificado.tipo == 'RETIRO' %}
+        hasta el <span class="highlight">{{ datos_laborales.fecha_retiro|date:"d \d\e F \d\e Y" }}</span>
+        {% endif %}
+        desempeñando el cargo de <span class="highlight uppercase">{{ datos_laborales.cargo_empleado }}</span> 
+        en el área de <span class="highlight">{{ datos_laborales.area }}</span>.</p>
+        
+        <table class="info-table">
+            <tr>
+                <td class="label">Cargo:</td>
+                <td class="value highlight">{{ datos_laborales.cargo_empleado }}</td>
+            </tr>
+            <tr>
+                <td class="label">Área/Departamento:</td>
+                <td class="value">{{ datos_laborales.area }}</td>
+            </tr>
+            <tr>
+                <td class="label">Tipo de Contrato:</td>
+                <td class="value">{{ datos_laborales.tipo_contrato }}</td>
+            </tr>
+            <tr>
+                <td class="label">Modalidad de Trabajo:</td>
+                <td class="value">{{ datos_laborales.modalidad_trabajo }}</td>
+            </tr>
+            <tr>
+                <td class="label">Jornada Laboral:</td>
+                <td class="value">{{ datos_laborales.jornada_laboral }}</td>
+            </tr>
+            <tr>
+                <td class="label">Fecha de Ingreso:</td>
+                <td class="value highlight">{{ datos_laborales.fecha_ingreso|date:"d \d\e F \d\e Y" }}</td>
+            </tr>
+            {% if datos_laborales.fecha_retiro and certificado.tipo == 'RETIRO' %}
+            <tr>
+                <td class="label">Fecha de Retiro:</td>
+                <td class="value highlight">{{ datos_laborales.fecha_retiro|date:"d \d\e F \d\e Y" }}</td>
+            </tr>
+            {% endif %}
+            {% if datos_laborales.jefe_directo %}
+            <tr>
+                <td class="label">Jefe Directo:</td>
+                <td class="value">{{ datos_laborales.jefe_directo }}</td>
+            </tr>
+            {% endif %}
+        </table>
+        {% endif %}
+
+        {% if certificado.tipo == 'INGRESOS' or certificado.tipo == 'LABORAL' %}
+        {% if certificado.incluir_salario %}
+        <div class="salary-info">
+            <p><strong>INFORMACIÓN SALARIAL</strong></p>
+            <p>Devenga un salario básico de <span class="highlight">{{ datos_laborales.moneda }} ${{ datos_laborales.sueldo_basico|floatformat:0 }}</span> 
+            ({{ datos_laborales.sueldo_basico_letras }}) mensuales.</p>
+            
+            {% if certificado.incluir_prestaciones %}
+            <p><strong>Prestaciones Sociales:</strong> De acuerdo a la ley laboral colombiana vigente.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if certificado.tipo == 'TIEMPO_SERVICIO' %}
+        <div class="salary-info">
+            <p><strong>TIEMPO DE SERVICIO</strong></p>
+            <p>Tiempo total de servicio: <span class="highlight">{{ certificado.tiempo_servicio_anos }} años, 
+            {{ certificado.tiempo_servicio_meses }} meses y {{ certificado.tiempo_servicio_dias }} días</span></p>
+            
+            {% if certificado.incluir_interrupciones %}
+            <p><strong>Interrupciones:</strong> {{ certificado.detalle_interrupciones|default:"Ninguna" }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if certificado.tipo == 'RETIRO' %}
+        <p>Se retira de la empresa por <span class="highlight">{{ certificado.motivo_retiro }}</span> 
+        el {{ datos_laborales.fecha_retiro|date:"d \d\e F \d\e Y" }}, habiendo laborado un tiempo total de 
+        <span class="highlight">{{ certificado.tiempo_servicio_total }}</span>.</p>
+        
+        {% if certificado.observaciones_retiro %}
+        <p><strong>Observaciones:</strong> {{ certificado.observaciones_retiro }}</p>
+        {% endif %}
+        {% endif %}
+
+        {% if certificado.proposito %}
+        <div class="purpose">
+            <p><strong>PROPÓSITO:</strong> La presente certificación se expide a solicitud del interesado 
+            para {{ certificado.proposito }}.</p>
+        </div>
+        {% endif %}
+
+        {% if certificado.observaciones_adicionales %}
+        <p><strong>Observaciones Adicionales:</strong> {{ certificado.observaciones_adicionales }}</p>
+        {% endif %}
+
+        <p>Durante su {% if datos_laborales.estado_datos == 'ACTIVO' %}permanencia{% else %}tiempo de servicio{% endif %} 
+        en la empresa, el empleado se ha caracterizado por su 
+        {% if certificado.concepto_desempeno %}
+        {{ certificado.concepto_desempeno }}
+        {% else %}
+        responsabilidad, puntualidad y buen desempeño en las funciones asignadas
+        {% endif %}.</p>
+
+        <p>La presente certificación se expide en {{ empresa.ciudad }} a los {{ certificado.fecha_expedicion|date:"d" }} 
+        días del mes de {{ certificado.fecha_expedicion|date:"F" }} de {{ certificado.fecha_expedicion|date:"Y" }}.</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>{{ empresa.representante_legal|upper }}</strong><br>
+                {{ empresa.cargo_representante }}<br>
+                {{ empresa.nombre }}<br>
+                C.C. {{ empresa.cedula_representante }}
+            </div>
+        </div>
+    </div>
+
+    <div class="legal-note">
+        <p><strong>NOTA LEGAL:</strong> Esta certificación es expedida de conformidad con los registros 
+        que reposan en los archivos de la empresa. La información contenida en este documento 
+        corresponde a los datos registrados en el sistema de gestión humana a la fecha de expedición. 
+        Para efectos de verificación, este documento puede ser validado contactando directamente 
+        a la empresa en los datos de contacto indicados en el encabezado.</p>
+    </div>
+
+    <div class="footer">
+        <p>Certificado generado el {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        <p>{{ empresa.nombre }} - Certificado No. {{ certificado.numero_certificado }}</p>
+        <p>Válido únicamente con firma y sello de la empresa</p>
+    </div>
+</body>
+</html>

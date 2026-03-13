@@ -1,0 +1,18 @@
+flowchart TB
+    user[Usuario Interno RRHH]
+    jefe[Jefe de Area]
+    admin[Administrador del Sistema]
+
+    system[Sistema Intranet RRHH\nReact + Django API]
+
+    db[(MySQL)]
+    files[(Storage de Documentos)]
+    mail[Servicio Email SMTP]
+
+    user --> system
+    jefe --> system
+    admin --> system
+
+    system --> db
+    system --> files
+    system --> mail

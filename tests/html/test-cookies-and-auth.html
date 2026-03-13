@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cookies y Autenticación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .status-card {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .status-card h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.valid { background: #d4edda; color: #155724; }
+        .status.invalid { background: #f8d7da; color: #721c24; }
+        .status.missing { background: #fff3cd; color: #856404; }
+        .cookie-details {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .auth-flow {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Cookies y Autenticación</h1>
+        
+        <div class="test-section info">
+            <h3>Objetivo</h3>
+            <p>Verificar que las cookies se generen correctamente después del login y que el método <code>isAuthenticated()</code> funcione apropiadamente.</p>
+        </div>
+
+        <div class="form-section">
+            <h3>Login de Prueba</h3>
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" value="admin" placeholder="Ingrese usuario">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" value="admin123" placeholder="Ingrese contraseña">
+            </div>
+            <button onclick="performLogin()">Hacer Login</button>
+            <button onclick="checkAuthStatus()">Verificar Estado Auth</button>
+            <button onclick="clearAuth()">Limpiar Autenticación</button>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h4>Estado de Cookies</h4>
+                <div id="cookieStatus">
+                    <div class="status missing">No verificado</div>
+                </div>
+                <div id="cookieDetails" class="cookie-details">Sin datos</div>
+            </div>
+            <div class="status-card">
+                <h4>Estado de LocalStorage</h4>
+                <div id="localStorageStatus">
+                    <div class="status missing">No verificado</div>
+                </div>
+                <div id="localStorageDetails" class="cookie-details">Sin datos</div>
+            </div>
+        </div>
+
+        <div class="auth-flow">
+            <h4>Flujo de Autenticación Simulado</h4>
+            <div id="authFlowStatus">Esperando login...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>Log de Actividades</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8000';
+        
+        function logActivity(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            log.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function checkCookies() {
+            logActivity('=== VERIFICANDO COOKIES ===');
+            
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            
+            const cookieStatusDiv = document.getElementById('cookieStatus');
+            const cookieDetailsDiv = document.getElementById('cookieDetails');
+            
+            let status = '';
+            let details = '';
+            
+            if (accessToken && refreshToken) {
+                status = '<div class="status valid">✅ Cookies válidas</div>';
+                details = `Access Token: ${accessToken.substring(0, 20)}...\nRefresh Token: ${refreshToken.substring(0, 20)}...`;
+                logActivity('Cookies encontradas y válidas', 'success');
+            } else if (accessToken || refreshToken) {
+                status = '<div class="status invalid">⚠️ Cookies incompletas</div>';
+                details = `Access Token: ${accessToken ? 'Presente' : 'Ausente'}\nRefresh Token: ${refreshToken ? 'Presente' : 'Ausente'}`;
+                logActivity('Cookies incompletas encontradas', 'warning');
+            } else {
+                status = '<div class="status missing">❌ Sin cookies</div>';
+                details = 'No se encontraron cookies de autenticación';
+                logActivity('No se encontraron cookies de autenticación');
+            }
+            
+            cookieStatusDiv.innerHTML = status;
+            cookieDetailsDiv.textContent = details;
+            
+            return { accessToken, refreshToken };
+        }
+
+        function checkLocalStorage() {
+            logActivity('=== VERIFICANDO LOCALSTORAGE ===');
+            
+            const userData = localStorage.getItem('user_data');
+            
+            const localStorageStatusDiv = document.getElementById('localStorageStatus');
+            const localStorageDetailsDiv = document.getElementById('localStorageDetails');
+            
+            let status = '';
+            let details = '';
+            
+            if (userData) {
+                try {
+                    const parsed = JSON.parse(userData);
+                    status = '<div class="status valid">✅ Datos válidos</div>';
+                    details = `Usuario: ${parsed.user?.username || 'No definido'}\nRoles: ${parsed.roles?.length || 0} roles\nPermisos: ${parsed.permissions?.length || 0} permisos`;
+                    logActivity('Datos de usuario encontrados en localStorage', 'success');
+                } catch (e) {
+                    status = '<div class="status invalid">❌ Datos corruptos</div>';
+                    details = `Error: ${e.message}`;
+                    logActivity(`Error al parsear datos de localStorage: ${e.message}`, 'error');
+                }
+            } else {
+                status = '<div class="status missing">❌ Sin datos</div>';
+                details = 'No se encontraron datos de usuario en localStorage';
+                logActivity('No se encontraron datos en localStorage');
+            }
+            
+            localStorageStatusDiv.innerHTML = status;
+            localStorageDetailsDiv.textContent = details;
+            
+            return userData;
+        }
+
+        function simulateIsAuthenticated() {
+            logActivity('=== SIMULANDO isAuthenticated() ===');
+            
+            // Simular exactamente lo que hace AuthService.isAuthenticated()
+            const userData = localStorage.getItem('user_data');
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            
+            const hasValidCookies = accessToken && refreshToken;
+            const hasUserData = userData !== null;
+            
+            const isAuthenticated = hasUserData && hasValidCookies;
+            
+            const authFlowDiv = document.getElementById('authFlowStatus');
+            
+            let flowStatus = `
+                <strong>Verificación de Autenticación:</strong><br>
+                📄 Datos en localStorage: ${hasUserData ? '✅ SÍ' : '❌ NO'}<br>
+                🍪 Cookies válidas: ${hasValidCookies ? '✅ SÍ' : '❌ NO'}<br>
+                🔐 isAuthenticated(): ${isAuthenticated ? '✅ TRUE' : '❌ FALSE'}
+            `;
+            
+            if (isAuthenticated) {
+                authFlowDiv.innerHTML = `<div class="success">${flowStatus}</div>`;
+                logActivity('Usuario autenticado correctamente', 'success');
+            } else {
+                authFlowDiv.innerHTML = `<div class="error">${flowStatus}</div>`;
+                logActivity('Usuario NO autenticado', 'error');
+            }
+            
+            return isAuthenticated;
+        }
+
+        function checkAuthStatus() {
+            logActivity('🔍 Verificando estado completo de autenticación...');
+            
+            const cookies = checkCookies();
+            const localStorage = checkLocalStorage();
+            const isAuth = simulateIsAuthenticated();
+            
+            logActivity(`Resumen: Cookies=${cookies.accessToken ? 'OK' : 'NO'}, LocalStorage=${localStorage ? 'OK' : 'NO'}, Auth=${isAuth ? 'OK' : 'NO'}`);
+        }
+
+        async function performLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                logActivity('Por favor ingrese usuario y contraseña', 'error');
+                return;
+            }
+            
+            logActivity(`🚀 Iniciando login para usuario: ${username}`);
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    logActivity('✅ Login exitoso en el backend', 'success');
+                    
+                    // Simular exactamente lo que hace AuthService
+                    const { access, refresh, user, roles, permissions, modules } = data.data;
+                    
+                    logActivity(`Tokens recibidos: access=${access ? 'SÍ' : 'NO'}, refresh=${refresh ? 'SÍ' : 'NO'}`);
+                    
+                    // Establecer cookies como lo hace AuthService
+                    const accessExpires = new Date();
+                    accessExpires.setTime(accessExpires.getTime() + (1 * 24 * 60 * 60 * 1000)); // 1 día
+                    const refreshExpires = new Date();
+                    refreshExpires.setTime(refreshExpires.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 días
+                    
+                    document.cookie = `access_token=${access};expires=${accessExpires.toUTCString()};path=/;SameSite=Lax`;
+                    document.cookie = `refresh_token=${refresh};expires=${refreshExpires.toUTCString()};path=/;SameSite=Lax`;
+                    
+                    logActivity('🍪 Cookies establecidas correctamente', 'success');
+                    
+                    // Guardar en localStorage como lo hace AuthService
+                    const userData = {
+                        user: user,
+                        roles: roles || [],
+                        permissions: permissions || [],
+                        modules: modules || []
+                    };
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    
+                    logActivity('💾 Datos guardados en localStorage', 'success');
+                    
+                    // Verificar estado después del login
+                    setTimeout(() => {
+                        checkAuthStatus();
+                    }, 500);
+                    
+                } else {
+                    logActivity(`❌ Error en login: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                logActivity(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAuth() {
+            logActivity('🧹 Limpiando autenticación...');
+            
+            // Limpiar localStorage
+            localStorage.removeItem('user_data');
+            localStorage.removeItem('userData'); // Por si acaso
+            
+            // Limpiar cookies
+            document.cookie = 'access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            document.cookie = 'refresh_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+            
+            logActivity('✅ Autenticación limpiada', 'success');
+            
+            // Verificar estado después de limpiar
+            setTimeout(() => {
+                checkAuthStatus();
+            }, 100);
+        }
+
+        // Inicializar al cargar la página
+        window.onload = function() {
+            logActivity('🚀 Página cargada, verificando estado inicial...');
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>

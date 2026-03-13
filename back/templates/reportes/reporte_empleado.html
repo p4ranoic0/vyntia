@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reporte del Empleado - {{ empleado.nombre_completo }}</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm 18mm 25mm 18mm;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        font-size: 10px;
+        color: #1a1a2e;
+        line-height: 1.5;
+        background: #fff;
+      }
+
+      /* === HEADER === */
+      .report-header {
+        display: table;
+        width: 100%;
+        border-bottom: 3px solid #1e3a5f;
+        padding-bottom: 12px;
+        margin-bottom: 18px;
+      }
+      .report-header-left {
+        display: table-cell;
+        vertical-align: middle;
+        width: 70%;
+      }
+      .report-header-right {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+        width: 30%;
+      }
+      .report-header h1 {
+        font-size: 20px;
+        color: #1e3a5f;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+      }
+      .report-header .subtitle {
+        font-size: 10px;
+        color: #64748b;
+        letter-spacing: 0.5px;
+      }
+      .report-header .gen-date {
+        font-size: 9px;
+        color: #94a3b8;
+      }
+      .report-header .doc-type {
+        display: inline-block;
+        background: #1e3a5f;
+        color: #fff;
+        padding: 3px 10px;
+        border-radius: 3px;
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      /* === FICHA RESUMEN === */
+      .summary-card {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: #fff;
+        padding: 16px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+      }
+      .summary-card .name {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .summary-card .details {
+        font-size: 10px;
+        color: #bfdbfe;
+        margin-bottom: 6px;
+      }
+      .summary-stats {
+        display: table;
+        width: 100%;
+        margin-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 8px;
+      }
+      .summary-stat {
+        display: table-cell;
+        text-align: center;
+        width: 25%;
+      }
+      .summary-stat .stat-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .summary-stat .stat-label {
+        font-size: 8px;
+        color: #93c5fd;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* === SECCIONES === */
+      .section {
+        margin-bottom: 18px;
+        page-break-inside: avoid;
+      }
+      .section-header {
+        display: table;
+        width: 100%;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 6px;
+      }
+      .section-title {
+        display: table-cell;
+        vertical-align: middle;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e3a5f;
+        letter-spacing: 0.5px;
+      }
+      .section-badge {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+      }
+      .section-badge span {
+        display: inline-block;
+        background: #eff6ff;
+        color: #1e3a5f;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 9px;
+        font-weight: 600;
+      }
+
+      /* === GRID DE DATOS === */
+      .data-grid {
+        display: table;
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .data-grid-row {
+        display: table-row;
+      }
+      .data-grid-cell {
+        display: table-cell;
+        width: 50%;
+        padding: 5px 0;
+        vertical-align: top;
+      }
+      .data-grid-cell:first-child {
+        padding-right: 12px;
+      }
+      .data-grid-cell:last-child {
+        padding-left: 12px;
+      }
+      .field {
+        padding: 4px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .field-label {
+        font-size: 8px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        margin-bottom: 1px;
+      }
+      .field-value {
+        font-size: 10px;
+        color: #1e293b;
+        font-weight: 500;
+      }
+      .field-value.mono {
+        font-family: "Courier New", monospace;
+        letter-spacing: 0.5px;
+      }
+
+      /* === TABLAS === */
+      table.report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+      }
+      table.report-table thead th {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 7px 10px;
+        text-align: left;
+        font-size: 8px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+      table.report-table tbody td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 9px;
+        color: #334155;
+      }
+      table.report-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      table.report-table tbody tr:hover {
+        background: #f8fafc;
+      }
+
+      /* === BADGES === */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+      .badge-activo,
+      .badge-completado {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .badge-inactivo {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+      .badge-en-curso {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-dependiente {
+        background: #ede9fe;
+        color: #5b21b6;
+      }
+      .badge-beneficiario {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-emergencia {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      /* === MENSAJES VACIOS === */
+      .empty-msg {
+        text-align: center;
+        padding: 16px;
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 10px;
+        background: #f8fafc;
+        border-radius: 4px;
+      }
+
+      /* === FOOTER === */
+      .report-footer {
+        margin-top: 30px;
+        padding-top: 10px;
+        border-top: 2px solid #e2e8f0;
+        text-align: center;
+      }
+      .report-footer p {
+        font-size: 8px;
+        color: #94a3b8;
+        line-height: 1.6;
+      }
+      .report-footer .confidential {
+        display: inline-block;
+        border: 1px solid #e2e8f0;
+        padding: 2px 10px;
+        border-radius: 3px;
+        font-size: 7px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <div class="report-header">
+      <div class="report-header-left">
+        <h1>REPORTE DEL EMPLEADO</h1>
+        <span class="subtitle">Sistema de Gestion de Recursos Humanos</span>
+      </div>
+      <div class="report-header-right">
+        <div class="doc-type">
+          {% if seccion == 'todos' %}Reporte Integral{% elif seccion == 'personal' %}Datos Personales{% elif seccion == 'laboral' %}Datos Laborales{% elif seccion == 'academico' %}Formacion Academica{% elif seccion == 'familiar' %}Datos Familiares{% endif %}
+        </div>
+        <br />
+        <span class="gen-date"
+          >Generado: {{ fecha_generacion|date:"d/m/Y H:i" }}</span
+        >
+      </div>
+    </div>
+
+    <!-- FICHA RESUMEN -->
+    <div class="summary-card">
+      <div class="name">{{ empleado.nombre_completo }}</div>
+      <div class="details">
+        DNI: {{ empleado.numero_documento }}{% if empleado.edad %} &nbsp;|&nbsp; {{ empleado.edad }} anos{% endif %}{% if datos_laborales %} &nbsp;|&nbsp; {{ datos_laborales.cargo_empleado }}{% endif %}{% if datos_laborales and datos_laborales.area %} &nbsp;|&nbsp; {{ datos_laborales.area.siglas_area }} - {{ datos_laborales.area.nombre_unidad_organica }}{% endif %}
+      </div>
+      <div class="summary-stats">
+        <div class="summary-stat">
+          <div class="stat-value">{{ empleado.estado_empleado|upper }}</div>
+          <div class="stat-label">Estado</div>
+        </div>
+        <div class="summary-stat">
+          <div class="stat-value">
+            {% if datos_laborales %}{{ datos_laborales.fecha_ingreso|date:"d/m/Y" }}{% else %}-{% endif %}
+          </div>
+          <div class="stat-label">Ingreso</div>
+        </div>
+        <div class="summary-stat">
+          <div class="stat-value">{{ familiares|length }}</div>
+          <div class="stat-label">Familiares</div>
+        </div>
+        <div class="summary-stat">
+          <div class="stat-value">{{ formacion|length }}</div>
+          <div class="stat-label">Formacion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATOS PERSONALES -->
+    {% if seccion == 'todos' or seccion == 'personal' %}
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">DATOS PERSONALES</div>
+      </div>
+      <div class="data-grid">
+        <div class="data-grid-row">
+          <div class="data-grid-cell">
+            <div class="field">
+              <div class="field-label">Nombres</div>
+              <div class="field-value">{{ empleado.nombres_empleado }}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Apellido Paterno</div>
+              <div class="field-value">{{ empleado.apellido_paterno }}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">DNI</div>
+              <div class="field-value mono">
+                {{ empleado.numero_documento }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Fecha de Nacimiento</div>
+              <div class="field-value">
+                {{ empleado.fecha_nacimiento|date:"d/m/Y"|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Estado Civil</div>
+              <div class="field-value">
+                {{ empleado.estado_civil|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Direccion</div>
+              <div class="field-value">
+                {{ empleado.direccion_domicilio|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Entidad Bancaria</div>
+              <div class="field-value">
+                {{ empleado.entidad_bancaria|default:"-" }}
+              </div>
+            </div>
+          </div>
+          <div class="data-grid-cell">
+            <div class="field">
+              <div class="field-label">Apellido Materno</div>
+              <div class="field-value">{{ empleado.apellido_materno }}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Genero</div>
+              <div class="field-value">
+                {{ empleado.get_genero_empleado_display|default:empleado.genero_empleado }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Edad</div>
+              <div class="field-value">
+                {% if empleado.edad %}{{ empleado.edad }} anos{% else %}-{% endif %}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Telefono</div>
+              <div class="field-value">
+                {{ empleado.telefono_celular|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Correo Personal</div>
+              <div class="field-value">
+                {{ empleado.correo_personal|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Distrito</div>
+              <div class="field-value">
+                {{ empleado.distrito_domicilio|default:"-" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Cuenta Bancaria</div>
+              <div class="field-value mono">
+                {{ empleado.numero_cuenta_bancaria|default:"-" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- DATOS LABORALES -->
+    {% if seccion == 'todos' or seccion == 'laboral' %}
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">DATOS LABORALES</div>
+      </div>
+      {% if datos_laborales %}
+      <div class="data-grid">
+        <div class="data-grid-row">
+          <div class="data-grid-cell">
+            <div class="field">
+              <div class="field-label">Cargo</div>
+              <div class="field-value">
+                {{ datos_laborales.cargo_empleado }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Tipo de Contrato</div>
+              <div class="field-value">
+                {{ datos_laborales.get_tipo_contrato_display|default:datos_laborales.tipo_contrato }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Fecha de Ingreso</div>
+              <div class="field-value">
+                {{ datos_laborales.fecha_ingreso|date:"d/m/Y" }}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Modalidad</div>
+              <div class="field-value">
+                {{ datos_laborales.get_modalidad_trabajo_display|default:datos_laborales.modalidad_trabajo }}
+              </div>
+            </div>
+          </div>
+          <div class="data-grid-cell">
+            <div class="field">
+              <div class="field-label">Area</div>
+              <div class="field-value">
+                {% if datos_laborales.area %}{{ datos_laborales.area.siglas_area }} - {{ datos_laborales.area.nombre_unidad_organica }}{% else %}-{% endif %}
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Regimen Laboral</div>
+              <div class="field-value">
+                {{ datos_laborales.get_regimen_laboral_display|default:datos_laborales.regimen_laboral }}
+              </div>
+            </div>
+            {% if datos_laborales.fecha_cese %}
+            <div class="field">
+              <div class="field-label">Fecha de Cese</div>
+              <div class="field-value">
+                {{ datos_laborales.fecha_cese|date:"d/m/Y" }}
+              </div>
+            </div>
+            {% endif %}
+            <div class="field">
+              <div class="field-label">Jornada</div>
+              <div class="field-value">
+                {{ datos_laborales.get_jornada_laboral_display|default:datos_laborales.jornada_laboral }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="empty-msg">No hay datos laborales registrados</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- FORMACION ACADEMICA -->
+    {% if seccion == 'todos' or seccion == 'academico' %}
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">FORMACION ACADEMICA</div>
+        <div class="section-badge">
+          <span>{{ formacion|length }} registro{{ formacion|length|pluralize:"s" }}</span>
+        </div>
+      </div>
+      {% if formacion %}
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Nivel Educativo</th>
+            <th>Institucion</th>
+            <th>Carrera / Titulo</th>
+            <th>Estado</th>
+            <th>Fecha Graduacion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in formacion %}
+          <tr>
+            <td>
+              <strong>{{ f.get_nivel_educativo_display|default:f.nivel_educativo }}</strong>
+            </td>
+            <td>{{ f.nombre_institucion }}</td>
+            <td>
+              {{ f.nombre_carrera|default:f.carrera_especialidad|default:"-" }}
+            </td>
+            <td>
+              <span
+                class="badge {% if f.estado_estudios == 'completado' %}badge-completado{% elif f.estado_estudios == 'en_curso' %}badge-en-curso{% else %}badge-inactivo{% endif %}"
+              >
+                {{ f.get_estado_estudios_display|default:f.estado_estudios }}
+              </span>
+            </td>
+            <td>{{ f.fecha_graduacion|date:"d/m/Y"|default:f.fecha_termino_estudios|date:"d/m/Y"|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty-msg">No hay datos academicos registrados</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- DATOS FAMILIARES -->
+    {% if seccion == 'todos' or seccion == 'familiar' %}
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">DATOS FAMILIARES</div>
+        <div class="section-badge">
+          <span>{{ familiares|length }} familiar{{ familiares|length|pluralize:"es" }}</span>
+        </div>
+      </div>
+      {% if familiares %}
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Parentesco</th>
+            <th>DNI</th>
+            <th>F. Nacimiento</th>
+            <th>Edad</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in familiares %}
+          <tr>
+            <td>
+              <strong>{{ f.nombres_familiar }} {{ f.apellido_paterno }} {{ f.apellido_materno }}</strong>
+            </td>
+            <td>{{ f.get_parentesco_display|default:f.parentesco }}</td>
+            <td style="font-family: &quot;Courier New&quot;, monospace">
+              {{ f.numero_documento }}
+            </td>
+            <td>{{ f.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td>
+            <td>
+              {% if f.edad %}{{ f.edad }} anos{% else %}-{% endif %}{% if f.es_menor_edad %} <span style="color: #d97706; font-size: 8px">(menor)</span>{% endif %}
+            </td>
+            <td>
+              {% if f.es_dependiente %}<span class="badge badge-dependiente"
+                >Dependiente</span
+              >
+              {% endif %} {% if f.es_beneficiario %}<span
+                class="badge badge-beneficiario"
+                >Beneficiario</span
+              >
+              {% endif %} {% if f.es_contacto_emergencia %}<span
+                class="badge badge-emergencia"
+                >Emergencia</span
+              >
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty-msg">No hay datos familiares registrados</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- DOCUMENTOS DEL LEGAJO -->
+    {% if seccion == 'todos' %}
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">DOCUMENTOS DEL LEGAJO DIGITAL</div>
+        <div class="section-badge">
+          <span>{{ documentos|length }} documento{{ documentos|length|pluralize:"s" }}</span>
+        </div>
+      </div>
+      {% if documentos %}
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Categoria</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Fecha Subida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in documentos %}
+          <tr>
+            <td>{{ d.tipo_documento_texto }}</td>
+            <td>{{ d.categoria_texto }}</td>
+            <td>{{ d.nombre_documento }}</td>
+            <td>
+              <span
+                class="badge {% if d.estado_aprobacion == 'aprobado' %}badge-activo{% elif d.estado_aprobacion == 'pendiente' %}badge-en-curso{% else %}badge-inactivo{% endif %}"
+              >
+                {{ d.estado_texto }}
+              </span>
+            </td>
+            <td>{{ d.fecha_subida|date:"d/m/Y"|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty-msg">No hay documentos en el legajo digital</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- FOOTER -->
+    <div class="report-footer">
+      <p>
+        Reporte generado automaticamente por el
+        <strong>Sistema de Intranet RRHH</strong> | {{ fecha_generacion|date:"d/m/Y H:i" }}
+      </p>
+      <div class="confidential">Documento de uso interno y confidencial</div>
+    </div>
+  </body>
+</html>

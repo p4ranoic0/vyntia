@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth Initialization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Inicialización de Autenticación</h1>
+        
+        <div class="test-section info">
+            <h3>Estado Actual</h3>
+            <div id="currentStatus">Verificando...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>Controles de Prueba</h3>
+            <button onclick="testCookieUtils()">Test Cookie Utils</button>
+            <button onclick="simulateLogin()">Simular Login</button>
+            <button onclick="testAuthService()">Test Auth Service</button>
+            <button onclick="clearAllData()">Limpiar Todo</button>
+            <button onclick="checkAuthState()">Verificar Estado Auth</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Log de Actividades</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de cookieUtils
+        const cookieUtils = {
+            setCookie: function(name, value, days = 7) {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+                this.log(`Cookie establecida: ${name} = ${value}`);
+            },
+            
+            getCookie: function(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                
+                return null;
+            },
+            
+            deleteCookie: function(name) {
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+                this.log(`Cookie eliminada: ${name}`);
+            },
+            
+            hasCookie: function(name) {
+                return this.getCookie(name) !== null;
+            },
+            
+            hasAuthCookies: function() {
+                return this.hasCookie('access_token') && this.hasCookie('refresh_token');
+            },
+            
+            clearAuthCookies: function() {
+                this.deleteCookie('access_token');
+                this.deleteCookie('refresh_token');
+            },
+            
+            log: function(message) {
+                console.log(message);
+                logActivity(message);
+            }
+        };
+
+        // Simulación de AuthService
+        const authService = {
+            token: null,
+            
+            constructor: function() {
+                // Verificar cookies al inicializar
+                if (cookieUtils.hasAuthCookies()) {
+                    this.token = cookieUtils.getCookie('access_token');
+                    cookieUtils.log('AuthService: Cookies de autenticación encontradas al inicializar');
+                } else {
+                    cookieUtils.log('AuthService: No se encontraron cookies de autenticación al inicializar');
+                }
+            },
+            
+            login: async function(credentials) {
+                try {
+                    cookieUtils.log('AuthService: Iniciando login...');
+                    
+                    // Simular respuesta del backend
+                    const response = {
+                        success: true,
+                        data: {
+                            access_token: 'fake_access_token_' + Date.now(),
+                            refresh_token: 'fake_refresh_token_' + Date.now(),
+                            user: {
+                                id: 1,
+                                username: credentials.username,
+                                email: 'test@example.com',
+                                first_name: 'Test',
+                                last_name: 'User',
+                                requiere_cambio_password: false
+                            },
+                            roles: ['admin'],
+                            permissions: ['all'],
+                            modules: ['dashboard', 'users']
+                        }
+                    };
+                    
+                    // Guardar tokens en cookies
+                    cookieUtils.setCookie('access_token', response.data.access_token, 1);
+                    cookieUtils.setCookie('refresh_token', response.data.refresh_token, 7);
+                    
+                    // Guardar datos básicos del usuario en localStorage
+                    const userData = {
+                        id: response.data.user.id,
+                        username: response.data.user.username,
+                        email: response.data.user.email,
+                        first_name: response.data.user.first_name,
+                        last_name: response.data.user.last_name,
+                        requiere_cambio_password: response.data.user.requiere_cambio_password
+                    };
+                    
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    localStorage.setItem('userRoles', JSON.stringify(response.data.roles));
+                    
+                    this.token = response.data.access_token;
+                    
+                    cookieUtils.log('AuthService: Login exitoso, datos guardados');
+                    return response.data;
+                    
+                } catch (error) {
+                    cookieUtils.log('AuthService: Error en login - ' + error.message);
+                    throw error;
+                }
+            },
+            
+            isAuthenticated: function() {
+                const userData = localStorage.getItem('userData');
+                const hasValidCookies = cookieUtils.hasAuthCookies();
+                
+                const isAuth = userData && hasValidCookies;
+                cookieUtils.log(`AuthService: isAuthenticated() = ${isAuth} (userData: ${!!userData}, cookies: ${hasValidCookies})`);
+                
+                return isAuth;
+            },
+            
+            getUserData: function() {
+                try {
+                    const userData = localStorage.getItem('userData');
+                    if (userData) {
+                        const parsed = JSON.parse(userData);
+                        cookieUtils.log('AuthService: getUserData() - datos encontrados');
+                        return parsed;
+                    }
+                    cookieUtils.log('AuthService: getUserData() - no hay datos');
+                    return null;
+                } catch (error) {
+                    cookieUtils.log('AuthService: Error al obtener userData - ' + error.message);
+                    return null;
+                }
+            },
+            
+            logout: function() {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('userRoles');
+                cookieUtils.clearAuthCookies();
+                this.token = null;
+                cookieUtils.log('AuthService: Logout completado');
+            }
+        };
+
+        // Inicializar AuthService
+        authService.constructor();
+
+        function logActivity(message) {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('currentStatus');
+            const isAuth = authService.isAuthenticated();
+            const userData = authService.getUserData();
+            const hasTokens = cookieUtils.hasAuthCookies();
+            
+            status.innerHTML = `
+                <strong>Estado de Autenticación:</strong> ${isAuth ? 'AUTENTICADO' : 'NO AUTENTICADO'}<br>
+                <strong>Cookies de Auth:</strong> ${hasTokens ? 'PRESENTES' : 'AUSENTES'}<br>
+                <strong>Datos de Usuario:</strong> ${userData ? 'PRESENTES' : 'AUSENTES'}<br>
+                <strong>Access Token:</strong> ${cookieUtils.getCookie('access_token') ? 'PRESENTE' : 'AUSENTE'}<br>
+                <strong>Refresh Token:</strong> ${cookieUtils.getCookie('refresh_token') ? 'PRESENTE' : 'AUSENTE'}
+            `;
+        }
+
+        function testCookieUtils() {
+            logActivity('=== INICIANDO TEST DE COOKIE UTILS ===');
+            
+            // Test setCookie
+            cookieUtils.setCookie('test_cookie', 'test_value', 1);
+            
+            // Test getCookie
+            const value = cookieUtils.getCookie('test_cookie');
+            logActivity(`getCookie('test_cookie'): ${value}`);
+            
+            // Test hasCookie
+            const exists = cookieUtils.hasCookie('test_cookie');
+            logActivity(`hasCookie('test_cookie'): ${exists}`);
+            
+            // Test deleteCookie
+            cookieUtils.deleteCookie('test_cookie');
+            
+            // Verificar eliminación
+            const afterDelete = cookieUtils.hasCookie('test_cookie');
+            logActivity(`hasCookie después de delete: ${afterDelete}`);
+            
+            logActivity('=== TEST DE COOKIE UTILS COMPLETADO ===');
+            updateStatus();
+        }
+
+        function simulateLogin() {
+            logActivity('=== INICIANDO SIMULACIÓN DE LOGIN ===');
+            
+            const credentials = {
+                username: 'admin',
+                password: 'admin123'
+            };
+            
+            authService.login(credentials)
+                .then(data => {
+                    logActivity('Login simulado exitoso');
+                    logActivity(`Usuario: ${data.user.username}`);
+                    logActivity(`Roles: ${JSON.stringify(data.roles)}`);
+                    updateStatus();
+                })
+                .catch(error => {
+                    logActivity('Error en login simulado: ' + error.message);
+                    updateStatus();
+                });
+        }
+
+        function testAuthService() {
+            logActivity('=== INICIANDO TEST DE AUTH SERVICE ===');
+            
+            // Test isAuthenticated
+            const isAuth = authService.isAuthenticated();
+            logActivity(`isAuthenticated(): ${isAuth}`);
+            
+            // Test getUserData
+            const userData = authService.getUserData();
+            logActivity(`getUserData(): ${userData ? JSON.stringify(userData) : 'null'}`);
+            
+            // Test hasAuthCookies
+            const hasTokens = cookieUtils.hasAuthCookies();
+            logActivity(`hasAuthCookies(): ${hasTokens}`);
+            
+            logActivity('=== TEST DE AUTH SERVICE COMPLETADO ===');
+            updateStatus();
+        }
+
+        function clearAllData() {
+            logActivity('=== LIMPIANDO TODOS LOS DATOS ===');
+            authService.logout();
+            logActivity('Todos los datos limpiados');
+            updateStatus();
+        }
+
+        function checkAuthState() {
+            logActivity('=== VERIFICANDO ESTADO DE AUTENTICACIÓN ===');
+            
+            // Verificar localStorage
+            const userData = localStorage.getItem('userData');
+            const userRoles = localStorage.getItem('userRoles');
+            
+            logActivity(`localStorage userData: ${userData ? 'PRESENTE' : 'AUSENTE'}`);
+            logActivity(`localStorage userRoles: ${userRoles ? 'PRESENTE' : 'AUSENTE'}`);
+            
+            // Verificar cookies
+            const accessToken = cookieUtils.getCookie('access_token');
+            const refreshToken = cookieUtils.getCookie('refresh_token');
+            
+            logActivity(`Cookie access_token: ${accessToken ? 'PRESENTE' : 'AUSENTE'}`);
+            logActivity(`Cookie refresh_token: ${refreshToken ? 'PRESENTE' : 'AUSENTE'}`);
+            
+            // Verificar estado del servicio
+            const isAuth = authService.isAuthenticated();
+            logActivity(`AuthService.isAuthenticated(): ${isAuth}`);
+            
+            logActivity('=== VERIFICACIÓN COMPLETADA ===');
+            updateStatus();
+        }
+
+        // Inicializar estado al cargar
+        window.onload = function() {
+            logActivity('Página cargada, verificando estado inicial...');
+            updateStatus();
+            checkAuthState();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+[
+  {
+    "model": "app_rrhh.area",
+    "pk": 1,
+    "fields": {
+      "nombre_organo": "Gerencia General",
+      "nombre_unidad_organica": "Administración",
+      "siglas_area": "GG",
+      "descripcion_area": "Gerencia General de la empresa",
+      "estado_area": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.area",
+    "pk": 2,
+    "fields": {
+      "nombre_organo": "Gerencia de Tecnología",
+      "nombre_unidad_organica": "Desarrollo de Software",
+      "siglas_area": "GTS",
+      "descripcion_area": "Área de desarrollo de software y tecnología",
+      "estado_area": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.area",
+    "pk": 3,
+    "fields": {
+      "nombre_organo": "Gerencia de Recursos Humanos",
+      "nombre_unidad_organica": "Gestión de Personal",
+      "siglas_area": "RH",
+      "descripcion_area": "Área de recursos humanos y gestión de personal",
+      "estado_area": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.empleado",
+    "pk": 1,
+    "fields": {
+      "nombres_empleado": "Juan Carlos",
+      "apellido_paterno": "García",
+      "apellido_materno": "López",
+      "numero_documento": "12345678",
+      "fecha_nacimiento": "1990-05-15",
+      "genero_empleado": "M",
+      "estado_civil": "S",
+      "direccion_domicilio": "Av. Principal 123",
+      "distrito_domicilio": "Lima",
+      "telefono_celular": "987654321",
+      "correo_personal": "juan.garcia@email.com",
+      "es_padre_familia": false,
+      "entidad_bancaria": "BCP",
+      "numero_cuenta_bancaria": "1234567890",
+      "estado_empleado": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.empleado",
+    "pk": 2,
+    "fields": {
+      "nombres_empleado": "María Elena",
+      "apellido_paterno": "Rodríguez",
+      "apellido_materno": "Vásquez",
+      "numero_documento": "87654321",
+      "fecha_nacimiento": "1985-03-20",
+      "genero_empleado": "F",
+      "estado_civil": "C",
+      "direccion_domicilio": "Jr. Los Olivos 456",
+      "distrito_domicilio": "San Isidro",
+      "telefono_celular": "912345678",
+      "correo_personal": "maria.rodriguez@email.com",
+      "es_padre_familia": true,
+      "entidad_bancaria": "BBVA",
+      "numero_cuenta_bancaria": "0987654321",
+      "estado_empleado": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.empleado",
+    "pk": 3,
+    "fields": {
+      "nombres_empleado": "Carlos Alberto",
+      "apellido_paterno": "Mendoza",
+      "apellido_materno": "Torres",
+      "numero_documento": "11223344",
+      "fecha_nacimiento": "1988-07-20",
+      "genero_empleado": "M",
+      "estado_civil": "S",
+      "direccion_domicilio": "Calle Las Flores 789",
+      "distrito_domicilio": "Miraflores",
+      "telefono_celular": "998877665",
+      "correo_personal": "carlos.mendoza@email.com",
+      "es_padre_familia": false,
+      "entidad_bancaria": "Interbank",
+      "numero_cuenta_bancaria": "5566778899",
+      "estado_empleado": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.usuario",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$test$hash",
+      "last_login": null,
+      "is_superuser": true,
+      "nombre_usuario": "admin",
+      "correo_institucional": "admin@empresa.com",
+      "empleado": null,
+      "is_active": true,
+      "is_staff": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "ultimo_acceso": null,
+      "estado_usuario": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "app_rrhh.usuario",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$test$hash",
+      "last_login": null,
+      "is_superuser": false,
+      "nombre_usuario": "jgarcia",
+      "correo_institucional": "juan.garcia@empresa.com",
+      "empleado": 1,
+      "is_active": true,
+      "is_staff": false,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "ultimo_acceso": null,
+      "estado_usuario": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "app_rrhh.usuario",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$test$hash",
+      "last_login": null,
+      "is_superuser": false,
+      "nombre_usuario": "mrodriguez",
+      "correo_institucional": "maria.rodriguez@empresa.com",
+      "empleado": 2,
+      "is_active": true,
+      "is_staff": false,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "ultimo_acceso": null,
+      "estado_usuario": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "app_rrhh.datoslaborales",
+    "pk": 1,
+    "fields": {
+      "empleado": 1,
+      "area": 2,
+      "fecha_ingreso": "2020-01-15",
+      "puesto_trabajo": "Desarrollador Senior",
+      "regimen_laboral": "CAS",
+      "condicion_laboral": "NOMBRADO",
+      "correo_institucional": "juan.garcia@empresa.com",
+      "remuneracion_mensual": "5000.00",
+      "estado_laboral": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.datoslaborales",
+    "pk": 2,
+    "fields": {
+      "empleado": 2,
+      "area": 3,
+      "fecha_ingreso": "2021-06-01",
+      "puesto_trabajo": "Especialista en RRHH",
+      "regimen_laboral": "CAP",
+      "condicion_laboral": "CONTRATADO",
+      "correo_institucional": "maria.rodriguez@empresa.com",
+      "remuneracion_mensual": "4500.00",
+      "estado_laboral": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.datosfamiliares",
+    "pk": 1,
+    "fields": {
+      "empleado": 1,
+      "parentesco": "HIJO",
+      "nombres_familiar": "Pedro",
+      "apellido_paterno_familiar": "García",
+      "apellido_materno_familiar": "López",
+      "fecha_nacimiento_familiar": "2010-08-15",
+      "genero_familiar": "M",
+      "numero_documento_familiar": "12345679",
+      "tipo_documento_familiar": "DNI",
+      "es_beneficiario_seguro": true,
+      "es_dependiente_economico": true,
+      "estado_familiar": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.datosfamiliares",
+    "pk": 2,
+    "fields": {
+      "empleado": 2,
+      "parentesco": "ESPOSO",
+      "nombres_familiar": "Roberto",
+      "apellido_paterno_familiar": "Silva",
+      "apellido_materno_familiar": "Morales",
+      "fecha_nacimiento_familiar": "1983-11-10",
+      "genero_familiar": "M",
+      "numero_documento_familiar": "98765432",
+      "tipo_documento_familiar": "DNI",
+      "es_beneficiario_seguro": true,
+      "es_dependiente_economico": false,
+      "estado_familiar": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.datosacademicos",
+    "pk": 1,
+    "fields": {
+      "empleado": 1,
+      "tipo_formacion": "UNIVERSITARIA",
+      "nombre_institucion": "Universidad Nacional de Ingeniería",
+      "carrera_especialidad": "Ingeniería de Sistemas",
+      "fecha_inicio_estudios": "2008-03-01",
+      "fecha_termino_estudios": "2013-12-15",
+      "duracion_horas": 4000,
+      "titulo_obtenido": "Ingeniero de Sistemas",
+      "estado_estudios": "COMPLETADO",
+      "nivel_educativo": "SUPERIOR",
+      "duracion_creditos": 200,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "app_rrhh.datosacademicos",
+    "pk": 2,
+    "fields": {
+      "empleado": 2,
+      "tipo_formacion": "UNIVERSITARIA",
+      "nombre_institucion": "Universidad San Marcos",
+      "carrera_especialidad": "Administración de Empresas",
+      "fecha_inicio_estudios": "2003-03-01",
+      "fecha_termino_estudios": "2008-12-15",
+      "duracion_horas": 3800,
+      "titulo_obtenido": "Licenciada en Administración",
+      "estado_estudios": "COMPLETADO",
+      "nivel_educativo": "SUPERIOR",
+      "duracion_creditos": 190,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  }
+]

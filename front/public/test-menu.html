@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu Endpoint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Menu Endpoint</h1>
+        
+        <div>
+            <button class="button" onclick="checkCookies()">Verificar Cookies</button>
+            <button class="button" onclick="testMenuEndpoint()">Probar Endpoint del Menú</button>
+            <button class="button" onclick="clearResults()">Limpiar Resultados</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function addResult(content, type = 'result') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = content;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function checkCookies() {
+            const cookies = document.cookie;
+            console.log('Cookies disponibles:', cookies);
+            
+            if (cookies) {
+                addResult(`<h3>Cookies encontradas:</h3><pre>${cookies}</pre>`, 'success');
+            } else {
+                addResult('<h3>No se encontraron cookies</h3>', 'error');
+            }
+        }
+
+        async function testMenuEndpoint() {
+            try {
+                addResult('<h3>Probando endpoint del menú...</h3>');
+                
+                // Obtener token de las cookies
+                const cookies = document.cookie.split(';');
+                let accessToken = null;
+                
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'access_token') {
+                        accessToken = value;
+                        break;
+                    }
+                }
+                
+                if (!accessToken) {
+                    addResult('<h3>Error: No se encontró token de acceso en las cookies</h3>', 'error');
+                    return;
+                }
+                
+                console.log('Token encontrado:', accessToken);
+                addResult(`<h3>Token encontrado:</h3><pre>${accessToken.substring(0, 50)}...</pre>`, 'success');
+                
+                // Hacer petición al endpoint
+                const response = await fetch('http://127.0.0.1:8000/api/v1/auth/menu/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log('Respuesta del servidor:', response);
+                addResult(`<h3>Status de respuesta: ${response.status}</h3>`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Datos del menú:', data);
+                    
+                    addResult(`<h3>Respuesta exitosa:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                    
+                    // Analizar estructura del menú
+                    let menuItems = [];
+                    if (data.menu) {
+                        menuItems = data.menu;
+                    } else if (data.data && data.data.menu) {
+                        menuItems = data.data.menu;
+                    } else if (Array.isArray(data)) {
+                        menuItems = data;
+                    }
+                    
+                    addResult(`<h3>Elementos del menú encontrados: ${menuItems.length}</h3>`, 'success');
+                    
+                    if (menuItems.length > 0) {
+                        addResult(`<h3>Primer elemento del menú:</h3><pre>${JSON.stringify(menuItems[0], null, 2)}</pre>`);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error en la respuesta:', errorText);
+                    addResult(`<h3>Error en la respuesta:</h3><pre>${errorText}</pre>`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error al probar el endpoint:', error);
+                addResult(`<h3>Error al probar el endpoint:</h3><pre>${error.message}</pre>`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

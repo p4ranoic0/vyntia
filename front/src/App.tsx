@@ -1,0 +1,279 @@
+import LoginForm from '@/components/auth/LoginForm'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import AdminLayout from '@/components/layout/AdminLayout'
+import { Layout } from '@/components/layout/Layout'
+import { Toaster } from '@/components/ui/toaster'
+import { AuthProvider } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { useAuth } from '@/hooks/useAuth'
+import AccessDeniedPage from '@/pages/AccessDeniedPage'
+import AdminDashboard from '@/pages/admin/AdminDashboard'
+import HROverviewDashboard from '@/pages/HROverviewDashboard'
+import { AreaFormPage } from '@/pages/areas/AreaFormPage'
+import { AreasListPage } from '@/pages/areas/AreasListPage'
+import { AreasManagementPage } from '@/pages/areas/AreasManagementPage'
+import ChangePasswordPage from '@/pages/ChangePasswordPage'
+import ContratosPage from '@/pages/contratos/ContratosPage'
+import ConfiguracionEmpresaPage from '@/pages/configuracion/ConfiguracionEmpresaPage'
+import PlantillasDocumentosPage from '@/pages/PlantillasDocumentosPage'
+import { Dashboard } from '@/pages/Dashboard'
+import { Empleados } from '@/pages/Empleados'
+import DatosAcademicosPage from '@/pages/empleados/DatosAcademicosPage'
+import DatosFamiliaresPage from '@/pages/empleados/DatosFamiliaresPage'
+import DatosLaboralesPage from '@/pages/empleados/DatosLaboralesPage'
+import DatosPersonalesPage from '@/pages/empleados/DatosPersonalesPage'
+import EmpleadoReportPage from '@/pages/empleados/EmpleadoReportPage'
+import GestionDocumentosPage from '@/pages/legajo/GestionDocumentosPage'
+import LegajoPage from '@/pages/legajo/LegajoPage'
+import OnboardingAdminPage from '@/pages/onboarding/OnboardingAdminPage'
+import OnboardingPage from '@/pages/onboarding/OnboardingPage'
+import BoletasPagoPage from '@/pages/remuneraciones/BoletasPagoPage'
+import ConfiguracionRemuneracionesPage from '@/pages/remuneraciones/ConfiguracionRemuneracionesPage'
+import ConfiguracionUitPage from '@/pages/remuneraciones/ConfiguracionUitPage'
+import DescuentosMasivosPage from '@/pages/remuneraciones/DescuentosMasivosPage'
+import PlanillasMensualesPage from '@/pages/remuneraciones/PlanillasMensualesPage'
+import ProcesoPlanillasPage from '@/pages/remuneraciones/ProcesoPlanillasPage'
+import RemuneracionesHomePage from '@/pages/remuneraciones/RemuneracionesHomePage'
+import ReportesRemuneracionesPage from '@/pages/remuneraciones/ReportesRemuneracionesPage'
+import ResetPasswordPage from '@/pages/ResetPasswordPage'
+import PermissionsPage from '@/pages/security/PermissionsPage'
+import RolePermissionsPage from '@/pages/security/RolePermissionsPage'
+import RolesPage from '@/pages/security/RolesPage'
+import {
+    RoleManagement,
+    ChangePassword as UsersChangePassword,
+    UsersForm,
+    UsersList,
+    UsersManagement
+} from '@/pages/users'
+import ConfiguracionPage from '@/pages/vacaciones/ConfiguracionPage'
+import NuevaSolicitudPage from '@/pages/vacaciones/NuevaSolicitudPage'
+import PeriodosPage from '@/pages/vacaciones/PeriodosPage'
+import ReportesPage from '@/pages/vacaciones/ReportesPage'
+import SolicitudesPage from '@/pages/vacaciones/SolicitudesPage'
+import VacacionesManagementPage from '@/pages/vacaciones/VacacionesManagementPage'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import React from 'react'
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+/** Ruta protegida que requiere rol de admin/rrhh */
+function AdminRoute({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { isAuthenticated, isLoading, isAdminOrRRHH } = useAuth()
+
+  if (isLoading) return <LoadingSpinner />
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (!isAdminOrRRHH()) return <Navigate to="/acceso-denegado" replace />
+
+  return <>{children}</>
+}
+
+function AppRoutes() {
+  const { isAuthenticated, isLoading, user } = useAuth()
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="*" element={<LoginForm />} />
+      </Routes>
+    )
+  }
+
+  // Forzar cambio de password si es requerido
+  if (user?.requiere_cambio_password) {
+    return (
+      <Layout>
+        <Routes>
+          <Route path="/cambiar-password" element={<ChangePasswordPage />} />
+          <Route path="*" element={<Navigate to="/cambiar-password" replace />} />
+        </Routes>
+      </Layout>
+    )
+  }
+
+  return (
+    <Layout>
+      <Routes>
+        {/* --- Rutas comunes (todos los usuarios autenticados) --- */}
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/cambiar-password" element={<ChangePasswordPage />} />
+        <Route path="/acceso-denegado" element={<AccessDeniedPage />} />
+
+        {/* Vacaciones - usuario normal (solicitar, ver mis solicitudes) */}
+        <Route path="/vacaciones" element={<VacacionesManagementPage />} />
+        <Route path="/vacaciones/nueva-solicitud" element={<NuevaSolicitudPage />} />
+        <Route path="/vacaciones/solicitudes" element={<SolicitudesPage />} />
+
+        {/* Legajo Digital - el usuario puede ver su propio legajo */}
+        <Route path="/legajo" element={<LegajoPage />} />
+        <Route path="/legajo/:empleadoId" element={<LegajoPage />} />
+
+        {/* Datos del propio empleado (sin :id = datos propios) */}
+        <Route path="/empleados/datos-personales" element={<DatosPersonalesPage />} />
+        <Route path="/empleados/datos-laborales" element={<DatosLaboralesPage />} />
+        <Route path="/empleados/datos-academicos" element={<DatosAcademicosPage />} />
+        <Route path="/empleados/datos-familiares" element={<DatosFamiliaresPage />} />
+
+        {/* Onboarding - empleado nuevo */}
+        <Route path="/onboarding" element={<OnboardingPage />} />
+
+        {/* --- Rutas de Administracion (solo admin/rrhh) --- */}
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </AdminRoute>
+        } />
+
+        {/* Panel de métricas RRHH */}
+        <Route path="/rrhh/panel" element={
+          <AdminRoute>
+            <HROverviewDashboard />
+          </AdminRoute>
+        } />
+
+        {/* Empleados - gestion admin */}
+        <Route path="/empleados" element={
+          <AdminRoute><Empleados /></AdminRoute>
+        } />
+        <Route path="/empleados/reporte/:id" element={
+          <AdminRoute><EmpleadoReportPage /></AdminRoute>
+        } />
+
+        {/* Onboarding - gestion admin */}
+        <Route path="/onboarding/admin" element={
+          <AdminRoute><OnboardingAdminPage /></AdminRoute>
+        } />
+
+        {/* Legajo Digital - gestion admin */}
+        <Route path="/legajo/gestion" element={
+          <AdminRoute><GestionDocumentosPage /></AdminRoute>
+        } />
+
+        {/* Contratos y Adendas - gestion admin */}
+        <Route path="/contratos" element={
+          <AdminRoute><ContratosPage /></AdminRoute>
+        } />
+
+        <Route path="/plantillas-documentos" element={
+          <AdminRoute><AdminLayout><PlantillasDocumentosPage /></AdminLayout></AdminRoute>
+        } />
+
+        <Route path="/configuracion/empresa" element={
+          <AdminRoute><AdminLayout><ConfiguracionEmpresaPage /></AdminLayout></AdminRoute>
+        } />
+
+        <Route path="/empleados/datos-personales/:id" element={
+          <AdminRoute><DatosPersonalesPage /></AdminRoute>
+        } />
+        <Route path="/empleados/datos-laborales/:id" element={
+          <AdminRoute><DatosLaboralesPage /></AdminRoute>
+        } />
+        <Route path="/empleados/datos-academicos/:id" element={
+          <AdminRoute><DatosAcademicosPage /></AdminRoute>
+        } />
+        <Route path="/empleados/datos-familiares/:id" element={
+          <AdminRoute><DatosFamiliaresPage /></AdminRoute>
+        } />
+
+        {/* Usuarios */}
+        <Route path="/usuarios" element={<AdminRoute><Navigate to="/usuarios/listado" replace /></AdminRoute>} />
+        <Route path="/usuarios/listado" element={<AdminRoute><UsersList /></AdminRoute>} />
+        <Route path="/usuarios/crear" element={<AdminRoute><UsersForm /></AdminRoute>} />
+        <Route path="/usuarios/editar/:id" element={<AdminRoute><UsersForm /></AdminRoute>} />
+        <Route path="/usuarios/gestion/:id" element={<AdminRoute><UsersManagement /></AdminRoute>} />
+        <Route path="/usuarios/cambiar-password/:id" element={<AdminRoute><UsersChangePassword /></AdminRoute>} />
+        <Route path="/usuarios/roles/:id" element={<AdminRoute><RoleManagement /></AdminRoute>} />
+
+        {/* Seguridad */}
+        <Route path="/seguridad/permisos" element={<AdminRoute><PermissionsPage /></AdminRoute>} />
+        <Route path="/seguridad/roles" element={<AdminRoute><RolesPage /></AdminRoute>} />
+        <Route path="/seguridad/roles-permisos" element={<AdminRoute><RolePermissionsPage /></AdminRoute>} />
+
+        {/* Areas */}
+        <Route path="/areas/listado" element={<AdminRoute><AreasListPage /></AdminRoute>} />
+        <Route path="/areas/crear" element={<AdminRoute><AreaFormPage /></AdminRoute>} />
+        <Route path="/areas/editar/:id" element={<AdminRoute><AreaFormPage /></AdminRoute>} />
+        <Route path="/areas/gestion" element={<AdminRoute><AreasManagementPage /></AdminRoute>} />
+
+        {/* Vacaciones - gestion admin */}
+        <Route path="/vacaciones/periodos" element={<AdminRoute><PeriodosPage /></AdminRoute>} />
+        <Route path="/vacaciones/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
+        <Route path="/vacaciones/configuracion" element={<AdminRoute><ConfiguracionPage /></AdminRoute>} />
+
+        {/* Remuneraciones - modulo principal y submenus */}
+        <Route path="/remuneraciones" element={<AdminRoute><RemuneracionesHomePage /></AdminRoute>} />
+        <Route path="/remuneraciones/planillas-mensuales" element={<AdminRoute><PlanillasMensualesPage /></AdminRoute>} />
+        <Route path="/remuneraciones/proceso-planillas" element={<AdminRoute><ProcesoPlanillasPage /></AdminRoute>} />
+        <Route path="/remuneraciones/boletas-pago" element={<AdminRoute><BoletasPagoPage /></AdminRoute>} />
+        <Route path="/remuneraciones/descuentos-masivos" element={<AdminRoute><DescuentosMasivosPage /></AdminRoute>} />
+        <Route path="/remuneraciones/reportes" element={<AdminRoute><ReportesRemuneracionesPage /></AdminRoute>} />
+        <Route path="/remuneraciones/configuracion" element={<AdminRoute><ConfiguracionRemuneracionesPage /></AdminRoute>} />
+        <Route path="/remuneraciones/configuracion-uit" element={<AdminRoute><ConfiguracionUitPage /></AdminRoute>} />
+
+        {/* Desplazamiento - en desarrollo */}
+        <Route
+          path="/desplazamiento"
+          element={
+            <AdminRoute>
+              <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+                <h2 className="text-xl font-semibold text-foreground">Desplazamiento</h2>
+                <p className="text-sm">Modulo en desarrollo</p>
+              </div>
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/ubicaciones"
+          element={
+            <AdminRoute>
+              <div className="text-center py-8">
+                <h2 className="text-2xl font-bold">Ubicaciones</h2>
+                <p className="text-muted-foreground mt-2">Modulo en desarrollo</p>
+              </div>
+            </AdminRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  )
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="hr-system-theme">
+        <AuthProvider>
+          <Router>
+            <AppRoutes />
+            <Toaster />
+
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
+}
+
+export default App

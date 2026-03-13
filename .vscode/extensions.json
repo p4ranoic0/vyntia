@@ -1,0 +1,32 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.sublime-keybindings",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.powershell",
+        "batisteo.vscode-django",
+        "ms-python.django",
+        "ms-toolsai.jupyter",
+        "ms-vscode.vscode-thunder-client",
+        "humao.rest-client",
+        "ms-vscode.hexeditor",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-markdown",
+        "yzhang.markdown-all-in-one",
+        "ms-vscode.live-server",
+        "ritwickdey.liveserver"
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.vscode-typescript"
+    ]
+}

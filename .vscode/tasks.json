@@ -1,0 +1,77 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Iniciar Backend (Django)",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "args": ["manage.py", "runserver", "8000"],
+            "options": {
+                "cwd": "${workspaceFolder}/back"
+            },
+            "group": "build",
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "detail": "Inicia el servidor Django en el puerto 8000"
+        },
+        {
+            "label": "Iniciar Frontend (Vite)",
+            "type": "shell",
+            "command": "C:\\Program Files\\nodejs\\node.exe",
+            "args": ["${workspaceFolder}/front/node_modules/vite/bin/vite.js"],
+            "options": {
+                "cwd": "${workspaceFolder}/front"
+            },
+            "group": "build",
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "detail": "Inicia el servidor de desarrollo Vite en el puerto 5173"
+        },
+        {
+            "label": "Iniciar Proyecto Completo",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "Iniciar Backend (Django)",
+                "Iniciar Frontend (Vite)"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "detail": "Inicia tanto el backend como el frontend automáticamente"
+        }
+    ]
+}

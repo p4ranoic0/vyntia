@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login con localStorage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test de Autenticación con localStorage</h1>
+    
+    <div class="test-section info">
+        <h3>Estado Actual del Sistema</h3>
+        <div id="system-status">Verificando...</div>
+        <button onclick="checkSystemStatus()">🔄 Verificar Estado</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Paso 1: Limpiar localStorage</h3>
+        <button onclick="clearLocalStorage()">🗑️ Limpiar localStorage</button>
+        <div id="clear-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Paso 2: Probar Login</h3>
+        <div>
+            <input type="text" id="username" placeholder="Usuario" value="admin">
+            <input type="password" id="password" placeholder="Contraseña" value="admin123">
+            <button onclick="testLogin()">🔑 Hacer Login</button>
+        </div>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Paso 3: Verificar localStorage después del login</h3>
+        <button onclick="checkLocalStorage()">📋 Verificar localStorage</button>
+        <div id="localstorage-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Paso 4: Probar endpoint protegido</h3>
+        <button onclick="testProtectedEndpoint()">🛡️ Probar Endpoint Protegido</button>
+        <div id="protected-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Paso 5: Verificar interceptor automático</h3>
+        <button onclick="testAutoInterceptor()">⚡ Probar Interceptor Automático</button>
+        <div id="interceptor-result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML = `<div class="${className}"><pre>${message}</pre></div>`;
+        }
+
+        async function checkSystemStatus() {
+            try {
+                // Verificar backend
+                const backendResponse = await fetch(`${API_BASE_URL}/api/v1/health/`);
+                const backendStatus = backendResponse.ok ? '✅ Backend funcionando' : '❌ Backend no responde';
+                
+                // Verificar localStorage actual
+                const hasToken = localStorage.getItem('access_token') ? '✅ Token presente' : '❌ Sin token';
+                const hasUserData = localStorage.getItem('user_data') ? '✅ Datos de usuario presentes' : '❌ Sin datos de usuario';
+                
+                const status = `Backend: ${backendStatus}\nToken: ${hasToken}\nDatos de usuario: ${hasUserData}`;
+                log('system-status', status, 'info');
+            } catch (error) {
+                log('system-status', `Error verificando sistema: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_data');
+            log('clear-result', 'localStorage limpiado correctamente', 'success');
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Guardar tokens en localStorage
+                    localStorage.setItem('access_token', data.data.access);
+                    localStorage.setItem('refresh_token', data.data.refresh);
+                    localStorage.setItem('user_data', JSON.stringify({
+                        user: data.data.user,
+                        roles: data.data.roles || []
+                    }));
+                    
+                    log('login-result', `Login exitoso:\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    log('login-result', `Error en login:\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('login-result', `Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        function checkLocalStorage() {
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            const userData = localStorage.getItem('user_data');
+
+            const result = {
+                access_token: accessToken ? `${accessToken.substring(0, 50)}...` : 'No presente',
+                refresh_token: refreshToken ? `${refreshToken.substring(0, 50)}...` : 'No presente',
+                user_data: userData ? JSON.parse(userData) : 'No presente'
+            };
+
+            log('localstorage-result', JSON.stringify(result, null, 2), accessToken ? 'success' : 'error');
+        }
+
+        async function testProtectedEndpoint() {
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                log('protected-result', 'No hay token disponible. Haz login primero.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('protected-result', `Endpoint protegido funciona:\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    log('protected-result', `Error en endpoint protegido:\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('protected-result', `Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAutoInterceptor() {
+            // Simular una petición que debería incluir automáticamente el token
+            // Esto requeriría que el frontend esté corriendo y usando el apiClient
+            log('interceptor-result', 'Para probar el interceptor automático, usa la aplicación frontend en http://localhost:5173/', 'info');
+        }
+
+        // Verificar estado inicial
+        checkSystemStatus();
+    </script>
+</body>
+</html>

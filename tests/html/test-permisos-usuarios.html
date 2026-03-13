@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Permisos de Usuarios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+        }
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .status.info {
+            background-color: #e7f3fe;
+            border-left: 5px solid #2196F3;
+        }
+        .status.success {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+        }
+        .status.error {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+        }
+        .status.warning {
+            background-color: #fff8e1;
+            border-left: 5px solid #ff9800;
+        }
+        .result {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .user-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .user-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+        .user-card:hover, .user-card.selected {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        .user-card h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .user-card p {
+            margin: 0;
+            color: #666;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom-color: white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .permission-true {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .permission-false {
+            color: #f44336;
+        }
+        .debug-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+        }
+        .debug-section pre {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Permisos de Usuarios</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="login">Login</div>
+            <div class="tab" data-tab="permisos">Permisos</div>
+            <div class="tab" data-tab="menu">Menú</div>
+            <div class="tab" data-tab="debug">Debug</div>
+        </div>
+        
+        <div class="tab-content active" id="login-tab">
+            <div class="status info">
+                <p><strong>Instrucciones:</strong></p>
+                <p>1. Selecciona un usuario predefinido o ingresa credenciales manualmente</p>
+                <p>2. Haz clic en "Iniciar Sesión" para autenticarte</p>
+                <p>3. Una vez autenticado, ve a la pestaña "Permisos" para ver los permisos del usuario</p>
+            </div>
+            
+            <h2>Usuarios Predefinidos</h2>
+            <div class="user-selector">
+                <div class="user-card" data-username="admin" data-password="admin123">
+                    <h3>Admin</h3>
+                    <p>Usuario: admin</p>
+                    <p>Rol: Administrador</p>
+                </div>
+                <div class="user-card" data-username="jgarcia" data-password="admin123">
+                    <h3>Juan García</h3>
+                    <p>Usuario: jgarcia</p>
+                    <p>Rol: Usuario RRHH</p>
+                </div>
+                <div class="user-card" data-username="lvargas" data-password="admin123">
+                    <h3>Luis Vargas</h3>
+                    <p>Usuario: lvargas</p>
+                    <p>Rol: Usuario Estándar</p>
+                </div>
+            </div>
+            
+            <h2>Login Manual</h2>
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" placeholder="Nombre de usuario">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" placeholder="Contraseña">
+            </div>
+            <button id="login-btn">Iniciar Sesión</button>
+            <button id="clear-btn" class="btn-danger">Limpiar Datos</button>
+            
+            <div id="login-status" class="status info" style="display: none;"></div>
+            <div id="login-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="tab-content" id="permisos-tab">
+            <div class="status info">
+                <p><strong>Instrucciones:</strong></p>
+                <p>1. Haz clic en "Obtener Permisos" para consultar los permisos del usuario actual</p>
+                <p>2. Revisa la lista de permisos y roles asignados</p>
+            </div>
+            
+            <button id="get-permisos-btn">Obtener Permisos</button>
+            <button id="check-permisos-btn" class="btn-secondary">Verificar Permisos Críticos</button>
+            
+            <div id="permisos-status" class="status info" style="display: none;"></div>
+            <div id="permisos-result" class="result" style="display: none;">
+                <h3>Permisos del Usuario</h3>
+                <div id="permisos-visualization"></div>
+            </div>
+            
+            <div id="permisos-check-result" class="result" style="display: none;">
+                <h3>Verificación de Permisos Críticos</h3>
+                <div id="permisos-check-visualization"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="menu-tab">
+            <div class="status info">
+                <p><strong>Instrucciones:</strong></p>
+                <p>1. Haz clic en "Obtener Menú" para consultar el menú del usuario actual</p>
+                <p>2. Revisa la estructura del menú y los permisos asociados</p>
+            </div>
+            
+            <button id="get-menu-btn">Obtener Menú</button>
+            <button id="check-menu-btn" class="btn-secondary">Verificar Requisitos de Menú</button>
+            
+            <div id="menu-status" class="status info" style="display: none;"></div>
+            <div id="menu-result" class="result" style="display: none;">
+                <h3>Menú del Usuario</h3>
+                <div id="menu-visualization"></div>
+                <pre id="menu-json"></pre>
+            </div>
+            
+            <div id="menu-check-result" class="result" style="display: none;">
+                <h3>Verificación de Requisitos de Menú</h3>
+                <div id="menu-check-visualization"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="debug-tab">
+            <div class="status info">
+                <p><strong>Instrucciones:</strong></p>
+                <p>Esta sección permite realizar pruebas avanzadas para diagnosticar problemas con el menú y los permisos.</p>
+            </div>
+            
+            <h2>Depuración de Autenticación</h2>
+            <div class="debug-section">
+                <h3>Estado de Autenticación</h3>
+                <button id="check-auth-btn">Verificar Estado de Autenticación</button>
+                <div id="auth-debug-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <h2>Depuración de Menú</h2>
+            <div class="debug-section">
+                <h3>Solicitud HTTP Directa</h3>
+                <button id="debug-menu-request-btn">Realizar Solicitud HTTP Directa</button>
+                <div id="menu-debug-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <h2>Depuración de Permisos</h2>
+            <div class="debug-section">
+                <h3>Verificación de Permisos Específicos</h3>
+                <div class="form-group">
+                    <label for="permission-check">Permiso a verificar:</label>
+                    <input type="text" id="permission-check" placeholder="Nombre del permiso">
+                </div>
+                <button id="check-specific-permission-btn">Verificar Permiso</button>
+                <div id="permission-debug-result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let userPermissions = [];
+        let userRoles = [];
+        
+        // Lista de permisos críticos que afectan al menú
+        const criticalPermissions = [
+            'ver_dashboard',
+            'ver_empleados',
+            'crear_empleado',
+            'editar_empleado',
+            'eliminar_empleado',
+            'ver_vacaciones',
+            'solicitar_vacaciones',
+            'aprobar_vacaciones',
+            'rechazar_vacaciones',
+            'ver_reportes',
+            'generar_reportes',
+            'gestionar_usuarios',
+            'gestionar_roles',
+            'gestionar_permisos',
+            'gestionar_modulos'
+        ];
+        
+        // Funciones de utilidad
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+        
+        function updateStatus(element, message, type = 'info') {
+            element.className = `status ${type}`;
+            element.innerHTML = message;
+            element.style.display = 'block';
+        }
+        
+        function showResult(element, content) {
+            element.style.display = 'block';
+            if (typeof content === 'object') {
+                const pre = element.querySelector('pre');
+                if (pre) pre.textContent = JSON.stringify(content, null, 2);
+            } else if (element.tagName === 'PRE') {
+                element.textContent = content;
+            } else {
+                element.innerHTML = content;
+            }
+        }
+        
+        // Funciones principales
+        async function login(username, password) {
+            const loginStatus = document.getElementById('login-status');
+            const loginResult = document.getElementById('login-result');
+            
+            updateStatus(loginStatus, 'Iniciando sesión...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.success) {
+                    // Guardar tokens en cookies
+                    setCookie('access_token', data.data.access, 1); // 1 día
+                    setCookie('refresh_token', data.data.refresh, 7); // 7 días
+                    setCookie('user', JSON.stringify(data.data.user), 7); // 7 días
+                    
+                    currentUser = data.data.user;
+                    userPermissions = data.data.user.permissions || [];
+                    userRoles = data.data.user.roles || [];
+                    
+                    updateStatus(loginStatus, `
+                        <h3>✅ Login exitoso!</h3>
+                        <p><strong>Usuario:</strong> ${data.data.user.username}</p>
+                        <p><strong>Empleado:</strong> ${data.data.user.empleado ? data.data.user.empleado.nombres + ' ' + data.data.user.empleado.ape_paterno : 'N/A'}</p>
+                        <p><strong>Roles:</strong> ${data.data.user.roles ? data.data.user.roles.map(r => r.nombre).join(', ') : 'N/A'}</p>
+                        <p>🍪 Cookies guardadas correctamente</p>
+                    `, 'success');
+                    
+                    showResult(loginResult, `<h3>Datos del Usuario</h3><pre>${JSON.stringify(data.data.user, null, 2)}</pre>`);
+                    
+                    // Cambiar a la pestaña de permisos automáticamente
+                    setTimeout(() => {
+                        document.querySelector('.tab[data-tab="permisos"]').click();
+                    }, 1000);
+                } else {
+                    updateStatus(loginStatus, `❌ Error en login: ${data.message || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus(loginStatus, `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+        
+        function getPermisos() {
+            const permisosStatus = document.getElementById('permisos-status');
+            const permisosResult = document.getElementById('permisos-result');
+            const permisosVisualization = document.getElementById('permisos-visualization');
+            
+            if (!currentUser) {
+                updateStatus(permisosStatus, '❌ No hay usuario autenticado. Inicia sesión primero.', 'error');
+                return;
+            }
+            
+            updateStatus(permisosStatus, 'Obteniendo permisos...', 'info');
+            
+            // Extraer permisos y roles del usuario actual
+            userPermissions = currentUser.permissions || [];
+            userRoles = currentUser.roles || [];
+            
+            // Visualizar permisos
+            let permisosHTML = '<h3>Roles</h3>';
+            
+            if (userRoles.length > 0) {
+                permisosHTML += '<table>';
+                permisosHTML += '<tr><th>ID</th><th>Nombre</th><th>Descripción</th></tr>';
+                
+                userRoles.forEach(role => {
+                    permisosHTML += `<tr>
+                        <td>${role.id}</td>
+                        <td>${role.nombre}</td>
+                        <td>${role.descripcion || 'Sin descripción'}</td>
+                    </tr>`;
+                });
+                
+                permisosHTML += '</table>';
+            } else {
+                permisosHTML += '<p>No hay roles asignados</p>';
+            }
+            
+            permisosHTML += '<h3>Permisos</h3>';
+            
+            if (userPermissions.length > 0) {
+                permisosHTML += '<table>';
+                permisosHTML += '<tr><th>ID</th><th>Nombre</th><th>Descripción</th></tr>';
+                
+                userPermissions.forEach(permission => {
+                    permisosHTML += `<tr>
+                        <td>${permission.id}</td>
+                        <td>${permission.nombre}</td>
+                        <td>${permission.descripcion || 'Sin descripción'}</td>
+                    </tr>`;
+                });
+                
+                permisosHTML += '</table>';
+            } else {
+                permisosHTML += '<p>No hay permisos asignados</p>';
+            }
+            
+            permisosVisualization.innerHTML = permisosHTML;
+            permisosResult.style.display = 'block';
+            
+            updateStatus(permisosStatus, `✅ Permisos obtenidos: ${userPermissions.length} permisos, ${userRoles.length} roles`, 'success');
+        }
+        
+        function checkPermisos() {
+            const permisosCheckResult = document.getElementById('permisos-check-result');
+            const permisosCheckVisualization = document.getElementById('permisos-check-visualization');
+            
+            if (!currentUser) {
+                updateStatus(document.getElementById('permisos-status'), '❌ No hay usuario autenticado. Inicia sesión primero.', 'error');
+                return;
+            }
+            
+            // Verificar permisos críticos
+            let checkHTML = '<h3>Verificación de Permisos Críticos para el Menú</h3>';
+            checkHTML += '<table>';
+            checkHTML += '<tr><th>Permiso</th><th>Estado</th><th>Impacto en Menú</th></tr>';
+            
+            criticalPermissions.forEach(permissionName => {
+                const hasPermission = userPermissions.some(p => p.nombre === permissionName);
+                
+                checkHTML += `<tr>
+                    <td>${permissionName}</td>
+                    <td class="permission-${hasPermission}">${hasPermission ? '✅ Tiene permiso' : '❌ No tiene permiso'}</td>
+                    <td>${getPermissionImpact(permissionName)}</td>
+                </tr>`;
+            });
+            
+            checkHTML += '</table>';
+            
+            // Análisis de problemas potenciales
+            checkHTML += '<h3>Análisis de Problemas Potenciales</h3>';
+            
+            const problemsFound = [];
+            
+            // Verificar si tiene algún permiso crítico
+            const hasCriticalPermissions = criticalPermissions.some(permissionName => 
+                userPermissions.some(p => p.nombre === permissionName)
+            );
+            
+            if (!hasCriticalPermissions) {
+                problemsFound.push('El usuario no tiene ninguno de los permisos críticos necesarios para ver elementos del menú.');
+            }
+            
+            // Verificar permisos específicos para secciones comunes
+            if (!userPermissions.some(p => p.nombre === 'ver_dashboard')) {
+                problemsFound.push('El usuario no tiene permiso para ver el Dashboard.');
+            }
+            
+            if (!userPermissions.some(p => p.nombre === 'ver_empleados')) {
+                problemsFound.push('El usuario no tiene permiso para ver la sección de Empleados.');
+            }
+            
+            if (!userPermissions.some(p => p.nombre === 'ver_vacaciones')) {
+                problemsFound.push('El usuario no tiene permiso para ver la sección de Vacaciones.');
+            }
+            
+            if (problemsFound.length > 0) {
+                checkHTML += '<ul>';
+                problemsFound.forEach(problem => {
+                    checkHTML += `<li>${problem}</li>`;
+                });
+                checkHTML += '</ul>';
+            } else {
+                checkHTML += '<p>No se encontraron problemas potenciales con los permisos del usuario.</p>';
+            }
+            
+            permisosCheckVisualization.innerHTML = checkHTML;
+            permisosCheckResult.style.display = 'block';
+        }
+        
+        function getPermissionImpact(permissionName) {
+            const impactMap = {
+                'ver_dashboard': 'Permite ver el módulo de Dashboard en el menú',
+                'ver_empleados': 'Permite ver el módulo de Empleados en el menú',
+                'crear_empleado': 'Permite ver la opción de Crear Empleado en el submenú de Empleados',
+                'editar_empleado': 'Permite ver la opción de Editar Empleado en el submenú de Empleados',
+                'eliminar_empleado': 'Permite ver la opción de Eliminar Empleado en el submenú de Empleados',
+                'ver_vacaciones': 'Permite ver el módulo de Vacaciones en el menú',
+                'solicitar_vacaciones': 'Permite ver la opción de Solicitar Vacaciones en el submenú de Vacaciones',
+                'aprobar_vacaciones': 'Permite ver la opción de Aprobar Vacaciones en el submenú de Vacaciones',
+                'rechazar_vacaciones': 'Permite ver la opción de Rechazar Vacaciones en el submenú de Vacaciones',
+                'ver_reportes': 'Permite ver el módulo de Reportes en el menú',
+                'generar_reportes': 'Permite ver la opción de Generar Reportes en el submenú de Reportes',
+                'gestionar_usuarios': 'Permite ver la opción de Gestionar Usuarios en el submenú de Administración',
+                'gestionar_roles': 'Permite ver la opción de Gestionar Roles en el submenú de Administración',
+                'gestionar_permisos': 'Permite ver la opción de Gestionar Permisos en el submenú de Administración',
+                'gestionar_modulos': 'Permite ver la opción de Gestionar Módulos en el submenú de Administración'
+            };
+            
+            return impactMap[permissionName] || 'Impacto desconocido';
+        }
+        
+        async function getMenu() {
+            const menuStatus = document.getElementById('menu-status');
+            const menuResult = document.getElementById('menu-result');
+            const menuJson = document.getElementById('menu-json');
+            const menuVisualization = document.getElementById('menu-visualization');
+            
+            updateStatus(menuStatus, 'Obteniendo menú...', 'info');
+            
+            const accessToken = getCookie('access_token');
+            if (!accessToken) {
+                updateStatus(menuStatus, '❌ No hay token de acceso. Inicia sesión primero.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/menu/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const responseText = await response.text();
+                console.log('Menu response text:', responseText);
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    console.log('Menu data:', data);
+                    
+                    if (data.success) {
+                        const menuItems = data.data || [];
+                        
+                        updateStatus(menuStatus, `✅ Menú obtenido correctamente: ${menuItems.length} elementos`, 'success');
+                        menuJson.textContent = JSON.stringify(data, null, 2);
+                        
+                        // Visualizar el menú
+                        visualizeMenu(menuItems, menuVisualization);
+                        menuResult.style.display = 'block';
+                    } else {
+                        updateStatus(menuStatus, `❌ Error al obtener menú: ${data.message}`, 'error');
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing JSON:', parseError);
+                    updateStatus(menuStatus, `❌ Error al procesar respuesta: ${parseError.message}`, 'error');
+                    menuJson.textContent = responseText;
+                    menuResult.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus(menuStatus, `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkMenu() {
+            const menuCheckResult = document.getElementById('menu-check-result');
+            const menuCheckVisualization = document.getElementById('menu-check-visualization');
+            
+            if (!document.getElementById('menu-json').textContent) {
+                updateStatus(document.getElementById('menu-status'), '❌ No hay datos de menú. Obtén el menú primero.', 'error');
+                return;
+            }
+            
+            try {
+                const menuData = JSON.parse(document.getElementById('menu-json').textContent);
+                const menuItems = menuData.data || [];
+                
+                let checkHTML = '<h3>Verificación de Requisitos de Menú</h3>';
+                
+                // Verificar si hay elementos en el menú
+                if (menuItems.length === 0) {
+                    checkHTML += '<div class="status error"><p>❌ El menú está vacío. Esto puede indicar un problema con los permisos del usuario.</p></div>';
+                } else {
+                    checkHTML += '<div class="status success"><p>✅ El menú contiene elementos.</p></div>';
+                }
+                
+                // Análisis de elementos del menú
+                checkHTML += '<h3>Análisis de Elementos del Menú</h3>';
+                checkHTML += '<table>';
+                checkHTML += '<tr><th>Elemento</th><th>Presente</th><th>Permisos Requeridos</th><th>Usuario Tiene Permisos</th></tr>';
+                
+                // Elementos comunes del menú
+                const menuElements = [
+                    { name: 'Dashboard', permissionRequired: 'ver_dashboard' },
+                    { name: 'Empleados', permissionRequired: 'ver_empleados' },
+                    { name: 'Vacaciones', permissionRequired: 'ver_vacaciones' },
+                    { name: 'Reportes', permissionRequired: 'ver_reportes' },
+                    { name: 'Administración', permissionRequired: 'gestionar_modulos' }
+                ];
+                
+                menuElements.forEach(element => {
+                    const isPresent = menuItems.some(item => item.title === element.name);
+                    const hasPermission = userPermissions.some(p => p.nombre === element.permissionRequired);
+                    
+                    checkHTML += `<tr>
+                        <td>${element.name}</td>
+                        <td class="permission-${isPresent}">${isPresent ? '✅ Presente' : '❌ No presente'}</td>
+                        <td>${element.permissionRequired}</td>
+                        <td class="permission-${hasPermission}">${hasPermission ? '✅ Tiene permiso' : '❌ No tiene permiso'}</td>
+                    </tr>`;
+                });
+                
+                checkHTML += '</table>';
+                
+                // Análisis de problemas potenciales
+                checkHTML += '<h3>Análisis de Problemas Potenciales</h3>';
+                
+                const problemsFound = [];
+                
+                // Verificar inconsistencias entre permisos y menú
+                menuElements.forEach(element => {
+                    const isPresent = menuItems.some(item => item.title === element.name);
+                    const hasPermission = userPermissions.some(p => p.nombre === element.permissionRequired);
+                    
+                    if (hasPermission && !isPresent) {
+                        problemsFound.push(`El usuario tiene permiso para ver ${element.name} pero no aparece en el menú.`);
+                    }
+                    
+                    if (!hasPermission && isPresent) {
+                        problemsFound.push(`El usuario no tiene permiso para ver ${element.name} pero aparece en el menú.`);
+                    }
+                });
+                
+                if (problemsFound.length > 0) {
+                    checkHTML += '<ul>';
+                    problemsFound.forEach(problem => {
+                        checkHTML += `<li>${problem}</li>`;
+                    });
+                    checkHTML += '</ul>';
+                } else {
+                    checkHTML += '<p>No se encontraron inconsistencias entre los permisos del usuario y los elementos del menú.</p>';
+                }
+                
+                menuCheckVisualization.innerHTML = checkHTML;
+                menuCheckResult.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus(document.getElementById('menu-status'), `❌ Error al analizar menú: ${error.message}`, 'error');
+            }
+        }
+        
+        function visualizeMenu(menuItems, container) {
+            container.innerHTML = '';
+            
+            if (!menuItems || menuItems.length === 0) {
+                container.innerHTML = '<p>No hay elementos en el menú</p>';
+                return;
+            }
+            
+            let menuHTML = '<h3>Estructura del Menú</h3>';
+            menuHTML += '<ul>';
+            
+            menuItems.forEach(item => {
+                menuHTML += `<li>
+                    <strong>${item.title}</strong> (${item.path || 'Sin ruta'})
+                `;
+                
+                if (item.submenu && item.submenu.length > 0) {
+                    menuHTML += '<ul>';
+                    item.submenu.forEach(subItem => {
+                        menuHTML += `<li>
+                            <strong>${subItem.title}</strong> (${subItem.path || 'Sin ruta'})
+                        `;
+                        
+                        if (subItem.submenu && subItem.submenu.length > 0) {
+                            menuHTML += '<ul>';
+                            subItem.submenu.forEach(subSubItem => {
+                                menuHTML += `<li>
+                                    <strong>${subSubItem.title}</strong> (${subSubItem.path || 'Sin ruta'})
+                                </li>`;
+                            });
+                            menuHTML += '</ul>';
+                        }
+                        
+                        menuHTML += '</li>';
+                    });
+                    menuHTML += '</ul>';
+                }
+                
+                menuHTML += '</li>';
+            });
+            
+            menuHTML += '</ul>';
+            container.innerHTML = menuHTML;
+        }
+        
+        async function checkAuth() {
+            const authDebugResult = document.getElementById('auth-debug-result');
+            
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            const userCookie = getCookie('user');
+            
+            let debugHTML = '<h3>Estado de Autenticación</h3>';
+            
+            debugHTML += '<table>';
+            debugHTML += `<tr><td><strong>Access Token</strong></td><td>${accessToken ? '✅ Presente' : '❌ No presente'}</td></tr>`;
+            debugHTML += `<tr><td><strong>Refresh Token</strong></td><td>${refreshToken ? '✅ Presente' : '❌ No presente'}</td></tr>`;
+            debugHTML += `<tr><td><strong>Usuario en Cookie</strong></td><td>${userCookie ? '✅ Presente' : '❌ No presente'}</td></tr>`;
+            debugHTML += '</table>';
+            
+            if (accessToken) {
+                // Verificar validez del token
+                try {
+                    const response = await fetch('http://localhost:8000/api/v1/auth/verify/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ token: accessToken }),
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    debugHTML += '<h3>Verificación de Token</h3>';
+                    debugHTML += '<table>';
+                    debugHTML += `<tr><td><strong>Token Válido</strong></td><td>${data.success ? '✅ Válido' : '❌ Inválido'}</td></tr>`;
+                    
+                    if (!data.success) {
+                        debugHTML += `<tr><td><strong>Error</strong></td><td>${data.message || 'Error desconocido'}</td></tr>`;
+                    }
+                    
+                    debugHTML += '</table>';
+                } catch (error) {
+                    console.error('Error:', error);
+                    debugHTML += '<h3>Error al Verificar Token</h3>';
+                    debugHTML += `<p>❌ Error: ${error.message}</p>`;
+                }
+            }
+            
+            authDebugResult.innerHTML = debugHTML;
+            authDebugResult.style.display = 'block';
+        }
+        
+        async function debugMenuRequest() {
+            const menuDebugResult = document.getElementById('menu-debug-result');
+            
+            const accessToken = getCookie('access_token');
+            if (!accessToken) {
+                menuDebugResult.innerHTML = '<p>❌ No hay token de acceso. Inicia sesión primero.</p>';
+                menuDebugResult.style.display = 'block';
+                return;
+            }
+            
+            let debugHTML = '<h3>Solicitud HTTP Directa al Endpoint de Menú</h3>';
+            
+            try {
+                // Realizar solicitud con fetch
+                const fetchResponse = await fetch('http://localhost:8000/api/v1/auth/menu/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const fetchResponseText = await fetchResponse.text();
+                let fetchData;
+                
+                try {
+                    fetchData = JSON.parse(fetchResponseText);
+                } catch (e) {
+                    fetchData = { error: 'Error al parsear JSON', text: fetchResponseText };
+                }
+                
+                debugHTML += '<h4>Respuesta con fetch</h4>';
+                debugHTML += `<p><strong>Status:</strong> ${fetchResponse.status} ${fetchResponse.statusText}</p>`;
+                debugHTML += '<pre>' + JSON.stringify(fetchData, null, 2) + '</pre>';
+                
+                // Realizar solicitud con XMLHttpRequest
+                debugHTML += '<h4>Respuesta con XMLHttpRequest</h4>';
+                
+                const xhrPromise = new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', 'http://localhost:8000/api/v1/auth/menu/', true);
+                    xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.withCredentials = true;
+                    
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve({
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                response: xhr.responseText
+                            });
+                        } else {
+                            reject({
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                response: xhr.responseText
+                            });
+                        }
+                    };
+                    
+                    xhr.onerror = function() {
+                        reject({
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: 'Error de red'
+                        });
+                    };
+                    
+                    xhr.send();
+                });
+                
+                try {
+                    const xhrResult = await xhrPromise;
+                    let xhrData;
+                    
+                    try {
+                        xhrData = JSON.parse(xhrResult.response);
+                    } catch (e) {
+                        xhrData = { error: 'Error al parsear JSON', text: xhrResult.response };
+                    }
+                    
+                    debugHTML += `<p><strong>Status:</strong> ${xhrResult.status} ${xhrResult.statusText}</p>`;
+                    debugHTML += '<pre>' + JSON.stringify(xhrData, null, 2) + '</pre>';
+                } catch (xhrError) {
+                    debugHTML += `<p><strong>Error:</strong> ${xhrError.status} ${xhrError.statusText}</p>`;
+                    debugHTML += '<pre>' + xhrError.response + '</pre>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                debugHTML += `<p>❌ Error: ${error.message}</p>`;
+            }
+            
+            menuDebugResult.innerHTML = debugHTML;
+            menuDebugResult.style.display = 'block';
+        }
+        
+        function checkSpecificPermission() {
+            const permissionDebugResult = document.getElementById('permission-debug-result');
+            const permissionName = document.getElementById('permission-check').value.trim();
+            
+            if (!permissionName) {
+                permissionDebugResult.innerHTML = '<p>❌ Por favor ingresa un nombre de permiso.</p>';
+                permissionDebugResult.style.display = 'block';
+                return;
+            }
+            
+            if (!currentUser) {
+                permissionDebugResult.innerHTML = '<p>❌ No hay usuario autenticado. Inicia sesión primero.</p>';
+                permissionDebugResult.style.display = 'block';
+                return;
+            }
+            
+            const hasPermission = userPermissions.some(p => p.nombre === permissionName);
+            const permissionObj = userPermissions.find(p => p.nombre === permissionName);
+            
+            let debugHTML = `<h3>Verificación de Permiso: ${permissionName}</h3>`;
+            
+            if (hasPermission) {
+                debugHTML += `<div class="status success"><p>✅ El usuario ${currentUser.username} tiene el permiso ${permissionName}</p></div>`;
+                debugHTML += '<h4>Detalles del Permiso</h4>';
+                debugHTML += '<table>';
+                debugHTML += `<tr><td><strong>ID</strong></td><td>${permissionObj.id}</td></tr>`;
+                debugHTML += `<tr><td><strong>Nombre</strong></td><td>${permissionObj.nombre}</td></tr>`;
+                debugHTML += `<tr><td><strong>Descripción</strong></td><td>${permissionObj.descripcion || 'Sin descripción'}</td></tr>`;
+                debugHTML += '</table>';
+            } else {
+                debugHTML += `<div class="status error"><p>❌ El usuario ${currentUser.username} NO tiene el permiso ${permissionName}</p></div>`;
+                
+                // Verificar si algún rol tiene este permiso
+                const rolesWithPermission = [];
+                
+                if (currentUser.roles) {
+                    currentUser.roles.forEach(role => {
+                        if (role.permissions && role.permissions.some(p => p.nombre === permissionName)) {
+                            rolesWithPermission.push(role.nombre);
+                        }
+                    });
+                }
+                
+                if (rolesWithPermission.length > 0) {
+                    debugHTML += '<div class="status warning"><p>⚠️ Aunque el usuario no tiene este permiso directamente, los siguientes roles sí lo tienen:</p>';
+                    debugHTML += '<ul>';
+                    rolesWithPermission.forEach(roleName => {
+                        debugHTML += `<li>${roleName}</li>`;
+                    });
+                    debugHTML += '</ul></div>';
+                }
+            }
+            
+            // Impacto en el menú
+            debugHTML += '<h4>Impacto en el Menú</h4>';
+            debugHTML += `<p>${getPermissionImpact(permissionName)}</p>`;
+            
+            permissionDebugResult.innerHTML = debugHTML;
+            permissionDebugResult.style.display = 'block';
+        }
+        
+        function clearData() {
+            // Limpiar cookies
+            deleteCookie('access_token');
+            deleteCookie('refresh_token');
+            deleteCookie('user');
+            
+            // Limpiar UI
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-status').style.display = 'none';
+            document.getElementById('login-result').style.display = 'none';
+            document.getElementById('permisos-status').style.display = 'none';
+            document.getElementById('permisos-result').style.display = 'none';
+            document.getElementById('permisos-check-result').style.display = 'none';
+            document.getElementById('menu-status').style.display = 'none';
+            document.getElementById('menu-result').style.display = 'none';
+            document.getElementById('menu-check-result').style.display = 'none';
+            document.getElementById('auth-debug-result').style.display = 'none';
+            document.getElementById('menu-debug-result').style.display = 'none';
+            document.getElementById('permission-debug-result').style.display = 'none';
+            
+            // Resetear usuario actual
+            currentUser = null;
+            userPermissions = [];
+            userRoles = [];
+            
+            // Mostrar mensaje
+            updateStatus(document.getElementById('login-status'), 'Datos limpiados correctamente', 'info');
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // User cards
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.getElementById('username').value = card.dataset.username;
+                    document.getElementById('password').value = card.dataset.password;
+                });
+            });
+            
+            // Login button
+            document.getElementById('login-btn').addEventListener('click', () => {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (!username || !password) {
+                    updateStatus(document.getElementById('login-status'), '❌ Por favor ingresa usuario y contraseña', 'error');
+                    return;
+                }
+                
+                login(username, password);
+            });
+            
+            // Clear button
+            document.getElementById('clear-btn').addEventListener('click', clearData);
+            
+            // Get permisos button
+            document.getElementById('get-permisos-btn').addEventListener('click', getPermisos);
+            
+            // Check permisos button
+            document.getElementById('check-permisos-btn').addEventListener('click', checkPermisos);
+            
+            // Get menu button
+            document.getElementById('get-menu-btn').addEventListener('click', getMenu);
+            
+            // Check menu button
+            document.getElementById('check-menu-btn').addEventListener('click', checkMenu);
+            
+            // Debug buttons
+            document.getElementById('check-auth-btn').addEventListener('click', checkAuth);
+            document.getElementById('debug-menu-request-btn').addEventListener('click', debugMenuRequest);
+            document.getElementById('check-specific-permission-btn').addEventListener('click', checkSpecificPermission);
+            
+            // Verificar si hay usuario en cookies
+            const userCookie = getCookie('user');
+            if (userCookie) {
+                try {
+                    currentUser = JSON.parse(userCookie);
+                    userPermissions = currentUser.permissions || [];
+                    userRoles = currentUser.roles || [];
+                    
+                    updateStatus(document.getElementById('login-status'), `
+                        <h3>✅ Usuario ya autenticado</h3>
+                        <p><strong>Usuario:</strong> ${currentUser.username}</p>
+                        <p><strong>Empleado:</strong> ${currentUser.empleado ? currentUser.empleado.nombres + ' ' + currentUser.empleado.ape_paterno : 'N/A'}</p>
+                        <p><strong>Roles:</strong> ${currentUser.roles ? currentUser.roles.map(r => r.nombre).join(', ') : 'N/A'}</p>
+                    `, 'success');
+                    document.getElementById('login-status').style.display = 'block';
+                } catch (error) {
+                    console.error('Error parsing user cookie:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

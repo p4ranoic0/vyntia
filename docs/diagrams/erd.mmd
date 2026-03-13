@@ -1,0 +1,221 @@
+erDiagram
+    AREA {
+        int area_id PK
+        string siglas_area
+        string nombre_unidad_organica
+        string estado_area
+    }
+
+    EMPLEADO {
+        int empleado_id PK
+        string numero_documento
+        string nombres_empleado
+        string apellido_paterno
+        string apellido_materno
+        string estado_empleado
+    }
+
+    USUARIO {
+        int usuario_id PK
+        int empleado_id FK
+        string username
+        string email
+        string tipo_usuario
+        string estado_usuario
+    }
+
+    DATOS_LABORALES {
+        int dato_laboral_id PK
+        int empleado_id FK
+        int area_id FK
+        int jefe_directo_id FK
+        string cargo_empleado
+        string tipo_contrato
+        string estado_datos
+    }
+
+    DATOS_FAMILIARES {
+        int dato_familiar_id PK
+        int empleado_id FK
+        string nombres_familiar
+        string parentesco
+    }
+
+    DATOS_ACADEMICOS {
+        int dato_academico_id PK
+        int empleado_id FK
+        string institucion
+        string grado_academico
+    }
+
+    HISTORIAL_UBICACIONES {
+        int ubicacion_id PK
+        int empleado_id FK
+        int area_id FK
+        string estado_ubicacion
+    }
+
+    CONTRATOS_ADENDAS {
+        int contrato_id PK
+        int empleado_id FK
+        int area_id FK
+        int creado_por_id FK
+        int modificado_por_id FK
+        string numero_contrato
+        string tipo_documento
+        string estado
+    }
+
+    DOCUMENTOS_DIGITALES {
+        int documento_id PK
+        int empleado_id FK
+        int documento_padre_id FK
+        int validado_por_id FK
+        int digitalizado_por_id FK
+        int subido_por_id FK
+        string tipo_documento
+        string estado_documento
+        string formato_archivo
+    }
+
+    CONFIGURACION_VACACIONES {
+        int configuracion_id PK
+        int area_id FK
+        int empleado_id FK
+        int creado_por_id FK
+        string tipo_configuracion
+        int dias_por_ano
+        boolean activo
+    }
+
+    PERIODOS_VACACIONALES {
+        int periodo_id PK
+        int empleado_id FK
+        int contrato_id FK
+        int configuracion_id FK
+        int creado_por_id FK
+        int ano_periodo
+        decimal dias_totales
+        decimal dias_pendientes
+        string estado_periodo
+    }
+
+    SOLICITUDES_VACACIONES {
+        int solicitud_id PK
+        int empleado_id FK
+        int periodo_vacacional_id FK
+        int jefe_aprobador_id FK
+        int rrhh_aprobador_id FK
+        string tipo_solicitud
+        date fecha_inicio
+        date fecha_fin
+        decimal dias_solicitados
+        string estado_solicitud
+    }
+
+    GOCES_VACACIONES {
+        int goce_id PK
+        int solicitud_vacaciones_id FK
+        int empleado_id FK
+        int periodo_vacacional_id FK
+        decimal dias_gozados
+        date fecha_inicio_goce
+        date fecha_fin_goce
+    }
+
+    HISTORIAL_SOLICITUDES_VACACIONES {
+        int historial_id PK
+        int solicitud_vacaciones_id FK
+        int usuario_accion_id FK
+        string accion
+        string estado_anterior
+        string estado_nuevo
+    }
+
+    ONBOARDING_EMPLEADO {
+        int onboarding_id PK
+        int empleado_id FK
+        int usuario_responsable_id FK
+        string estado_onboarding
+    }
+
+    MODULOS {
+        int modulo_id PK
+        int modulo_padre_id FK
+        string nombre_modulo
+        string estado_modulo
+    }
+
+    ROL {
+        int rol_id PK
+        string nombre_rol
+        string estado_rol
+    }
+
+    PERMISO {
+        int permiso_id PK
+        int modulo_id FK
+        string nombre_permiso
+        string tipo_permiso
+        string estado_permiso
+    }
+
+    USUARIO_ROLES {
+        int usuario_rol_id PK
+        int usuario_id FK
+        int rol_id FK
+    }
+
+    ROL_PERMISOS {
+        int rol_permiso_id PK
+        int rol_id FK
+        int permiso_id FK
+        int asignado_por_usuario_id FK
+    }
+
+    EMPLEADO ||--o| USUARIO : tiene
+    EMPLEADO ||--o{ DATOS_LABORALES : registra
+    AREA ||--o{ DATOS_LABORALES : agrupa
+    EMPLEADO ||--o{ DATOS_FAMILIARES : tiene
+    EMPLEADO ||--o{ DATOS_ACADEMICOS : tiene
+    EMPLEADO ||--o{ HISTORIAL_UBICACIONES : historial
+    AREA ||--o{ HISTORIAL_UBICACIONES : destino
+
+    EMPLEADO ||--o{ CONTRATOS_ADENDAS : contrato
+    AREA ||--o{ CONTRATOS_ADENDAS : area
+    USUARIO ||--o{ CONTRATOS_ADENDAS : crea
+
+    EMPLEADO ||--o{ DOCUMENTOS_DIGITALES : adjunta
+    DOCUMENTOS_DIGITALES ||--o{ DOCUMENTOS_DIGITALES : versiona
+    USUARIO ||--o{ DOCUMENTOS_DIGITALES : valida
+
+    AREA ||--o{ CONFIGURACION_VACACIONES : define
+    EMPLEADO ||--o{ CONFIGURACION_VACACIONES : personalizada
+    EMPLEADO ||--o{ PERIODOS_VACACIONALES : periodos
+    CONTRATOS_ADENDAS ||--o{ PERIODOS_VACACIONALES : soporta
+    CONFIGURACION_VACACIONES ||--o{ PERIODOS_VACACIONALES : regla
+
+    EMPLEADO ||--o{ SOLICITUDES_VACACIONES : solicita
+    PERIODOS_VACACIONALES ||--o{ SOLICITUDES_VACACIONES : consume
+    EMPLEADO ||--o{ SOLICITUDES_VACACIONES : jefe_aprueba
+    USUARIO ||--o{ SOLICITUDES_VACACIONES : rrhh_aprueba
+
+    SOLICITUDES_VACACIONES ||--o{ GOCES_VACACIONES : ejecuta
+    EMPLEADO ||--o{ GOCES_VACACIONES : goza
+    PERIODOS_VACACIONALES ||--o{ GOCES_VACACIONES : descuenta
+
+    SOLICITUDES_VACACIONES ||--o{ HISTORIAL_SOLICITUDES_VACACIONES : cambios
+    USUARIO ||--o{ HISTORIAL_SOLICITUDES_VACACIONES : acciona
+
+    EMPLEADO ||--o| ONBOARDING_EMPLEADO : inicia
+    USUARIO ||--o{ ONBOARDING_EMPLEADO : responsable
+
+    MODULOS ||--o{ MODULOS : jerarquia
+    MODULOS ||--o{ PERMISO : contiene
+
+    USUARIO ||--o{ USUARIO_ROLES : asignado
+    ROL ||--o{ USUARIO_ROLES : pertenece
+
+    ROL ||--o{ ROL_PERMISOS : agrega
+    PERMISO ||--o{ ROL_PERMISOS : permite
+    USUARIO ||--o{ ROL_PERMISOS : asigna

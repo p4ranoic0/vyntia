@@ -1,0 +1,22 @@
+flowchart LR
+    subgraph Frontend[Frontend Container]
+        web[React + Vite\nfront/]
+    end
+
+    subgraph Backend[Backend Container]
+        api[Django REST API\nback/api + back/app_rrhh]
+        core[Core Layer\npermissions, middleware, exceptions]
+        services[Service Layer\napp_rrhh/services]
+    end
+
+    db[(MySQL)]
+    redis[(Redis Cache\nprod)]
+    docs[OpenAPI\n/api/docs]
+
+    web -->|HTTP /api/v1| api
+    api --> core
+    api --> services
+    services --> db
+    api --> db
+    api --> redis
+    api --> docs

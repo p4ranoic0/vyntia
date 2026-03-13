@@ -1,0 +1,679 @@
+[
+  {
+    "id": "TC001",
+    "title": "Successful login with valid credentials",
+    "description": "Verify that a user can log in successfully using valid username/email and password, receiving a valid JWT token and being directed to the dashboard.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter valid username/email and password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login is successful, JWT tokens are received and stored, and user is redirected to the dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Login failure with incorrect credentials",
+    "description": "Verify that login fails with invalid username/email or password and an appropriate error message is displayed.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid username/email or password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login fails and an error message indicating invalid credentials is shown"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Session expiration handling",
+    "description": "Verify that the application properly handles JWT session expiration by redirecting the user to login and showing a session timeout message.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in successfully to obtain a JWT token"
+      },
+      {
+        "type": "action",
+        "description": "Simulate JWT token expiration or wait for session timeout"
+      },
+      {
+        "type": "action",
+        "description": "Perform any authenticated action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is redirected to login page and a session expired message is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Logout functionality",
+    "description": "Verify that clicking logout successfully clears session data, JWT tokens and redirects user to the login page.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in successfully"
+      },
+      {
+        "type": "action",
+        "description": "Click the logout button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify session data and JWT token are cleared and user is redirected to login page"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Password reset flow",
+    "description": "Validate the password reset flow including requesting a password reset email, receiving the link, and successfully changing the password.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the password reset page"
+      },
+      {
+        "type": "action",
+        "description": "Enter registered email and submit password reset request"
+      },
+      {
+        "type": "action",
+        "description": "Validate backend sends password reset email with link"
+      },
+      {
+        "type": "action",
+        "description": "Click the password reset link and enter a new valid password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password is changed and user can log in with new password"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Password change with correct current password",
+    "description": "Verify that a logged-in user can change their password by providing the correct current password and new valid password.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in successfully"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the change password page"
+      },
+      {
+        "type": "action",
+        "description": "Enter current password and new password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the password change form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password is updated and success message is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Password change failure with incorrect current password",
+    "description": "Verify that changing the password with an incorrect current password fails with an appropriate error message.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in successfully"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the change password page"
+      },
+      {
+        "type": "action",
+        "description": "Enter incorrect current password and a new password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the password change form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password change is rejected with an error message indicating incorrect current password"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "User CRUD operations",
+    "description": "Validate that administrators can create, read, update, and delete users including assigning roles and managing passwords.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as administrator"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to user management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new user with valid details and assign roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify new user exists in the user list with assigned roles"
+      },
+      {
+        "type": "action",
+        "description": "Edit the created user details and update roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user details and roles are updated correctly"
+      },
+      {
+        "type": "action",
+        "description": "Delete the created user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is removed from the user list"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Role and permission management",
+    "description": "Verify administrators can create, update, and delete roles, and assign fine-grained permissions correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as security administrator"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to roles management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new role with specific permissions"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new role is listed with the correct permissions"
+      },
+      {
+        "type": "action",
+        "description": "Update permissions of the role"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updated permissions are saved correctly"
+      },
+      {
+        "type": "action",
+        "description": "Delete the created role"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the role no longer exists"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Employee data management across sections",
+    "description": "Verify that HR personnel can add, update, view, and delete employee personal, labor, academic, and family information correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as HR personnel"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to employee management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new employee and fill personal data section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify personal data is saved and displayed correctly"
+      },
+      {
+        "type": "action",
+        "description": "Fill and update labor data section for the same employee"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify labor data updates are saved and display correctly"
+      },
+      {
+        "type": "action",
+        "description": "Fill and update academic data section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify academic data is saved and shown accurately"
+      },
+      {
+        "type": "action",
+        "description": "Fill and update family data section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify family data updates are correctly saved and displayed"
+      },
+      {
+        "type": "action",
+        "description": "Delete the employee record"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify employee is removed from the system"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Organizational area CRUD operations",
+    "description": "Verify that administrators can create, read, update, and delete organizational areas properly.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as administrator"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to area management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new organizational area with valid data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new area appears in the list"
+      },
+      {
+        "type": "action",
+        "description": "Edit the created area details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify area updates are saved and visible"
+      },
+      {
+        "type": "action",
+        "description": "Delete the created area"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the area is removed from the list"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Vacation request flow with approval",
+    "description": "Verify employees can submit vacation requests, HR can approve/reject requests, and statuses update accordingly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as employee"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to new vacation request page"
+      },
+      {
+        "type": "action",
+        "description": "Complete and submit a valid vacation request form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the request appears in the user’s submissions with pending status"
+      },
+      {
+        "type": "action",
+        "description": "Log in as HR personnel"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to vacation requests approval page"
+      },
+      {
+        "type": "action",
+        "description": "Approve the employee vacation request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify request status updates to approved and employee can view updated status"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Vacation request rejection handling",
+    "description": "Verify that HR can reject vacation requests and rejected requests show appropriate status and reasoning.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as employee"
+      },
+      {
+        "type": "action",
+        "description": "Submit a new vacation request"
+      },
+      {
+        "type": "action",
+        "description": "Log in as HR personnel"
+      },
+      {
+        "type": "action",
+        "description": "Reject the vacation request with a reason"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the request shows rejected status and employee can view rejection reason"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Vacation period configuration and validation",
+    "description": "Verify administrators can configure vacation periods and the system validates requests against these periods.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as administrator"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to vacation periods configuration page"
+      },
+      {
+        "type": "action",
+        "description": "Create or edit vacation period data (start/end dates, rules)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify vacation periods are saved correctly and displayed properly"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit a vacation request outside the configured period as employee"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the system rejects the request with appropriate validation message"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Access control enforcement by roles",
+    "description": "Verify that users cannot access modules or perform actions which their role does not permit in frontend and backend.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a user with restricted role"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to navigate to restricted modules or perform unauthorized actions"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and appropriate error or redirect occurs"
+      },
+      {
+        "type": "action",
+        "description": "Attempt API calls directly for restricted endpoints"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify backend rejects unauthorized API calls with proper HTTP status and message"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Form validation for all user input forms",
+    "description": "Verify all forms implement client-side and server-side validation for required fields, data types, formats, and custom business rules.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open each main form (login, user management, employee data, vacation requests, password reset/change)"
+      },
+      {
+        "type": "action",
+        "description": "Submit empty or invalid data into the forms"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify client-side validation messages appear and prevent submission"
+      },
+      {
+        "type": "action",
+        "description": "Bypass client validation and submit invalid data to backend"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify backend rejects invalid data with consistent error responses"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "UI accessibility compliance",
+    "description": "Verify that UI components pass accessibility standards including keyboard navigation, screen reader support, and color contrast standards in both light and dark modes.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate through app using keyboard only"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all controls are reachable and operable via keyboard"
+      },
+      {
+        "type": "action",
+        "description": "Use screen reader to navigate key pages"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all UI labels and ARIA attributes are correct and descriptive"
+      },
+      {
+        "type": "action",
+        "description": "Toggle between light and dark theme"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify color contrast ratios meet accessibility guidelines"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "API response structure and status code compliance",
+    "description": "Verify API endpoints return responses with the expected unified structure and HTTP status codes in both success and error scenarios.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform valid API calls for all major modules (authentication, user management, employee, security, vacation)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify responses return expected format with success indication and correct HTTP 2xx status codes"
+      },
+      {
+        "type": "action",
+        "description": "Perform API calls with invalid input or unauthorized access"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error responses use a consistent unified format and proper HTTP 4xx or 5xx status codes"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Performance testing for load times and lazy loading",
+    "description": "Verify the application meets performance benchmarks for initial load times, query efficiency, and lazy loaded components rendering.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Measure and record initial page load time including authentication and dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify load times meet performance requirements"
+      },
+      {
+        "type": "action",
+        "description": "Navigate through large data lists and verify efficient data fetching and caching with TanStack Query"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify queries are cached properly and redundant network requests are minimized"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to pages with lazy loaded components"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify lazy loading defers component rendering until visible or needed without errors"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Error handling with user-friendly messages and logging",
+    "description": "Verify that frontend displays user-friendly error messages for all failures and backend logs errors for monitoring without exposing sensitive info.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger network failure scenarios (e.g. backend down, API timeout)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI shows friendly error messages informing user of temporary issues"
+      },
+      {
+        "type": "action",
+        "description": "Submit invalid form data causing server errors"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error messages are non-technical and helpful"
+      },
+      {
+        "type": "action",
+        "description": "Review backend logs for captured error details without sensitive user data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify errors are logged with sufficient context for debugging"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Theme switching and style consistency",
+    "description": "Verify that toggling between light and dark mode themes updates UI correctly and maintains consistent styling across all pages and components.",
+    "category": "ui",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the dashboard and other key pages"
+      },
+      {
+        "type": "action",
+        "description": "Toggle theme from light to dark mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI components and text colors update according to dark mode theme with no visual glitches"
+      },
+      {
+        "type": "action",
+        "description": "Toggle theme back to light mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI returns to light theme correctly"
+      }
+    ]
+  }
+]

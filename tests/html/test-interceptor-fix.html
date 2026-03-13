@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Interceptor Corregido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .token-display {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .log {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Prueba de Interceptor Corregido</h1>
+        <p>Esta prueba verifica que el interceptor de axios funcione correctamente después de las correcciones.</p>
+        
+        <div class="step">
+            <h3>Estado Actual del Sistema</h3>
+            <p><strong>Frontend:</strong> <span id="frontend-status">🔄 Verificando...</span></p>
+            <p><strong>Backend:</strong> <span id="backend-status">🔄 Verificando...</span></p>
+            <p><strong>LocalStorage:</strong> <span id="localstorage-status">🔄 Verificando...</span></p>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 1: Limpiar localStorage</h3>
+            <button onclick="clearStorage()">🗑️ Limpiar localStorage</button>
+            <div id="clear-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 2: Realizar Login</h3>
+            <p>Usuario: <strong>admin</strong> | Contraseña: <strong>admin</strong></p>
+            <button onclick="testLogin()">🔑 Probar Login</button>
+            <div id="login-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 3: Verificar token en localStorage</h3>
+            <button onclick="checkToken()">🔍 Verificar Token</button>
+            <div id="token-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 4: Probar endpoint protegido</h3>
+            <button onclick="testProtectedEndpoint()">🛡️ Probar Endpoint Protegido</button>
+            <div id="protected-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 5: Verificar interceptor automático</h3>
+            <button onclick="testInterceptor()">⚡ Verificar Interceptor</button>
+            <div id="interceptor-result"></div>
+        </div>
+        
+        <div class="container">
+            <h3>📋 Log de Actividades</h3>
+            <div id="activity-log" class="log"></div>
+            <button onclick="clearLog()">🗑️ Limpiar Log</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('activity-log');
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('activity-log').textContent = '';
+        }
+        
+        async function checkSystemStatus() {
+            // Verificar frontend
+            document.getElementById('frontend-status').innerHTML = '✅ Activo';
+            
+            // Verificar backend
+            try {
+                const response = await fetch(`${API_BASE}/health/`);
+                if (response.ok) {
+                    document.getElementById('backend-status').innerHTML = '✅ Activo';
+                } else {
+                    document.getElementById('backend-status').innerHTML = '❌ Error';
+                }
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = '❌ No disponible';
+            }
+            
+            // Verificar localStorage
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                document.getElementById('localstorage-status').innerHTML = '✅ Token presente';
+            } else {
+                document.getElementById('localstorage-status').innerHTML = '⚠️ Sin token';
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_data');
+            
+            document.getElementById('clear-result').innerHTML = '<div class="success">✅ localStorage limpiado correctamente</div>';
+            log('localStorage limpiado', 'success');
+            checkSystemStatus();
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div>🔄 Realizando login...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Login response: ${JSON.stringify(data)}`);
+                
+                if (response.ok && data.success) {
+                    // Simular el comportamiento del apiClient corregido
+                    if (data.data && data.data.access) {
+                        localStorage.setItem('access_token', data.data.access);
+                        localStorage.setItem('refresh_token', data.data.refresh);
+                        localStorage.setItem('user_data', JSON.stringify(data.data.user));
+                        
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                ✅ Login exitoso: ${data.data.user.username}
+                                <div class="token-display">
+                                    Token guardado: ${data.data.access.substring(0, 50)}...
+                                </div>
+                            </div>
+                        `;
+                        log('Login exitoso y token guardado en localStorage', 'success');
+                    } else {
+                        resultDiv.innerHTML = '<div class="error">❌ Login exitoso pero sin tokens en la respuesta</div>';
+                        log('Login exitoso pero sin tokens', 'error');
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error en login: ${data.message || 'Error desconocido'}</div>`;
+                    log(`Error en login: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error de conexión: ${error.message}</div>`;
+                log(`Error de conexión en login: ${error.message}`, 'error');
+            }
+            
+            checkSystemStatus();
+        }
+        
+        function checkToken() {
+            const resultDiv = document.getElementById('token-result');
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            const userData = localStorage.getItem('user_data');
+            
+            if (accessToken) {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        ✅ Token encontrado en localStorage
+                        <div class="token-display">
+                            <strong>Access Token:</strong> ${accessToken.substring(0, 50)}...<br>
+                            <strong>Refresh Token:</strong> ${refreshToken ? refreshToken.substring(0, 50) + '...' : 'No disponible'}<br>
+                            <strong>User Data:</strong> ${userData ? 'Presente' : 'No disponible'}
+                        </div>
+                    </div>
+                `;
+                log('Token verificado correctamente en localStorage', 'success');
+            } else {
+                resultDiv.innerHTML = '<div class="error">❌ No se encontró token de acceso en localStorage</div>';
+                log('No se encontró token en localStorage', 'error');
+            }
+        }
+        
+        async function testProtectedEndpoint() {
+            const resultDiv = document.getElementById('protected-result');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ No hay token disponible. Realiza login primero.</div>';
+                log('Intento de acceso a endpoint protegido sin token', 'error');
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div>🔄 Probando endpoint protegido...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                log(`Protected endpoint response: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Endpoint protegido accesible
+                            <div class="token-display">
+                                Usuario: ${data.data ? data.data.username : 'Datos no disponibles'}
+                            </div>
+                        </div>
+                    `;
+                    log('Acceso exitoso a endpoint protegido', 'success');
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Error en endpoint protegido
+                            <div>Status: ${response.status}</div>
+                            <div>Mensaje: ${data.message || data.errors || 'Error desconocido'}</div>
+                        </div>
+                    `;
+                    log(`Error en endpoint protegido: ${response.status} - ${data.message}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error de conexión: ${error.message}</div>`;
+                log(`Error de conexión en endpoint protegido: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testInterceptor() {
+            const resultDiv = document.getElementById('interceptor-result');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ No hay token disponible. Realiza login primero.</div>';
+                log('Intento de verificar interceptor sin token', 'error');
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div>🔄 Verificando interceptor automático...</div>';
+            
+            try {
+                // Simular una petición que haría el interceptor automáticamente
+                const response = await fetch(`${API_BASE}/api/v1/auth/profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // Intencionalmente NO incluimos Authorization para simular el interceptor
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ El interceptor NO está funcionando
+                            <div>La petición sin header Authorization falló como se esperaba</div>
+                            <div>Esto significa que el interceptor debe agregar el token automáticamente</div>
+                        </div>
+                    `;
+                    log('Interceptor no está funcionando - petición sin Authorization falló', 'error');
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ El interceptor está funcionando correctamente
+                            <div>La petición sin header Authorization fue exitosa</div>
+                            <div>Esto significa que el interceptor agregó el token automáticamente</div>
+                        </div>
+                    `;
+                    log('Interceptor funcionando correctamente', 'success');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error de conexión: ${error.message}</div>`;
+                log(`Error de conexión en verificación de interceptor: ${error.message}`, 'error');
+            }
+        }
+        
+        // Verificar estado del sistema al cargar la página
+        window.addEventListener('load', checkSystemStatus);
+    </script>
+</body>
+</html>

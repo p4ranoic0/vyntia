@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de Login - Sistema de Intranet</h1>
+    
+    <div class="test-section">
+        <h2>1. Verificar Estado Inicial</h2>
+        <button onclick="checkInitialState()">Verificar Estado</button>
+        <div id="initial-state-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test de Login</h2>
+        <button onclick="testLogin()">Probar Login (admin/admin123)</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Verificar Cookies</h2>
+        <button onclick="checkCookies()">Verificar Cookies</button>
+        <div id="cookies-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Verificar LocalStorage</h2>
+        <button onclick="checkLocalStorage()">Verificar LocalStorage</button>
+        <div id="localstorage-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Limpiar Todo</h2>
+        <button onclick="clearAll()">Limpiar Cookies y LocalStorage</button>
+        <div id="clear-result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function checkInitialState() {
+            clearResults('initial-state-result');
+            
+            // Verificar cookies
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            
+            // Verificar localStorage
+            const userData = localStorage.getItem('user_data');
+            
+            addResult('initial-state-result', `
+                <strong>Estado Inicial:</strong><br>
+                Access Token Cookie: ${accessToken ? 'Presente' : 'Ausente'}<br>
+                Refresh Token Cookie: ${refreshToken ? 'Presente' : 'Ausente'}<br>
+                User Data LocalStorage: ${userData ? 'Presente' : 'Ausente'}
+            `);
+        }
+
+        async function testLogin() {
+            clearResults('login-result');
+            addResult('login-result', 'Iniciando test de login...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                addResult('login-result', `
+                    <strong>Respuesta del servidor:</strong><br>
+                    Status: ${response.status}<br>
+                    Success: ${data.success}<br>
+                    Message: ${data.message || 'N/A'}<br>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `, response.ok ? 'success' : 'error');
+
+                if (response.ok && data.success && data.data) {
+                    // Simular el comportamiento del frontend
+                    const { access, refresh, user, roles } = data.data;
+                    
+                    // Establecer cookies
+                    setCookie('access_token', access, 1);
+                    setCookie('refresh_token', refresh, 7);
+                    
+                    // Guardar en localStorage
+                    const userData = {
+                        user: user,
+                        roles: roles || [],
+                        permissions: [],
+                        modules: []
+                    };
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    
+                    addResult('login-result', 'Cookies y localStorage configurados correctamente', 'success');
+                }
+                
+            } catch (error) {
+                addResult('login-result', `Error de red: ${error.message}`, 'error');
+            }
+        }
+
+        function checkCookies() {
+            clearResults('cookies-result');
+            
+            const accessToken = getCookie('access_token');
+            const refreshToken = getCookie('refresh_token');
+            
+            addResult('cookies-result', `
+                <strong>Estado de Cookies:</strong><br>
+                Access Token: ${accessToken ? 'Presente' : 'Ausente'}<br>
+                Refresh Token: ${refreshToken ? 'Presente' : 'Ausente'}<br>
+                Todas las cookies: <pre>${document.cookie}</pre>
+            `);
+        }
+
+        function checkLocalStorage() {
+            clearResults('localstorage-result');
+            
+            const userData = localStorage.getItem('user_data');
+            
+            addResult('localstorage-result', `
+                <strong>Estado de LocalStorage:</strong><br>
+                User Data: ${userData ? 'Presente' : 'Ausente'}<br>
+                ${userData ? `<pre>${JSON.stringify(JSON.parse(userData), null, 2)}</pre>` : ''}
+            `);
+        }
+
+        function clearAll() {
+            clearResults('clear-result');
+            
+            // Limpiar cookies
+            deleteCookie('access_token');
+            deleteCookie('refresh_token');
+            
+            // Limpiar localStorage
+            localStorage.removeItem('user_data');
+            
+            addResult('clear-result', 'Cookies y localStorage limpiados', 'success');
+        }
+
+        // Funciones utilitarias para cookies
+        function setCookie(name, value, days = 7) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+        }
+    </script>
+</body>
+</html>

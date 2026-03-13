@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Trabajo - {{ empleado.nombres }} {{ empleado.apellidos }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+        }
+        .content {
+            text-align: justify;
+            margin: 20px 0;
+        }
+        .clause {
+            margin: 20px 0;
+            text-indent: 20px;
+        }
+        .clause-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0 10px 0;
+            text-indent: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #000;
+        }
+        .data-table .label {
+            font-weight: bold;
+            background-color: #f0f0f0;
+            width: 30%;
+        }
+        .signatures {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 60px;
+            padding-top: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .signatures {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo }}" alt="Logo {{ empresa.nombre }}" class="company-logo">
+        {% endif %}
+        <h1 class="title">{{ empresa.nombre }}</h1>
+        <p><strong>NIT:</strong> {{ empresa.nit }}</p>
+        <p>{{ empresa.direccion }}</p>
+        <p>{{ empresa.ciudad }}, {{ empresa.departamento }}</p>
+        <p><strong>Teléfono:</strong> {{ empresa.telefono }} | <strong>Email:</strong> {{ empresa.email }}</p>
+    </div>
+
+    <div class="content">
+        <h2 class="title">CONTRATO DE TRABAJO {{ contrato.tipo_contrato|upper }}</h2>
+        
+        <div class="clause">
+            <p>Entre los suscritos a saber: <span class="highlight uppercase">{{ empresa.nombre }}</span>, 
+            sociedad legalmente constituida, con domicilio en {{ empresa.ciudad }}, identificada con 
+            NIT {{ empresa.nit }}, representada legalmente por <span class="highlight uppercase">{{ empresa.representante_legal }}</span>, 
+            identificado(a) con cédula de ciudadanía No. {{ empresa.cedula_representante }}, 
+            quien en adelante se denominará <span class="highlight">EL EMPLEADOR</span>, y 
+            <span class="highlight uppercase">{{ empleado.nombres }} {{ empleado.apellidos }}</span>, 
+            identificado(a) con {{ empleado.tipo_documento }} No. {{ empleado.numero_documento }}, 
+            quien en adelante se denominará <span class="highlight">EL TRABAJADOR</span>, 
+            hemos convenido celebrar el presente contrato de trabajo, que se regirá por las siguientes cláusulas:</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">PRIMERA. - OBJETO DEL CONTRATO:</div>
+            <p>EL EMPLEADOR contrata los servicios personales de EL TRABAJADOR para desempeñar 
+            el cargo de <span class="highlight">{{ contrato.cargo }}</span> en el área de 
+            <span class="highlight">{{ contrato.area }}</span>, con las funciones y responsabilidades 
+            propias del cargo y aquellas que le sean asignadas por su jefe inmediato, 
+            de acuerdo con las políticas y procedimientos de la empresa.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEGUNDA. - DURACIÓN DEL CONTRATO:</div>
+            <p>El presente contrato es de carácter <span class="highlight">{{ contrato.tipo_contrato }}</span>
+            {% if contrato.tipo_contrato == 'FIJO' %}
+            y tendrá una duración desde el {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }} 
+            hasta el {{ contrato.fecha_fin|date:"d \d\e F \d\e Y" }}.
+            {% elif contrato.tipo_contrato == 'INDEFINIDO' %}
+            y tendrá una duración indefinida a partir del {{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}.
+            {% elif contrato.tipo_contrato == 'OBRA_LABOR' %}
+            para la ejecución de la obra o labor específica: {{ contrato.descripcion_obra_labor }}.
+            {% endif %}
+            </p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">TERCERA. - PERÍODO DE PRUEBA:</div>
+            <p>Se establece un período de prueba de <span class="highlight">{{ contrato.periodo_prueba_dias }} días</span> 
+            calendario, contados a partir de la fecha de inicio del contrato, durante el cual 
+            cualquiera de las partes podrá dar por terminado el contrato sin previo aviso 
+            y sin indemnización alguna.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CUARTA. - SALARIO:</div>
+            <p>EL EMPLEADOR pagará a EL TRABAJADOR como salario la suma de 
+            <span class="highlight">{{ contrato.moneda }} ${{ contrato.salario_base|floatformat:0 }}</span> 
+            ({{ contrato.salario_base_letras }}) {{ contrato.periodicidad_pago|lower }}, 
+            que incluye el factor prestacional correspondiente. Este salario se pagará 
+            {{ contrato.forma_pago|lower }} los días {{ contrato.dias_pago }} de cada mes.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">QUINTA. - JORNADA LABORAL:</div>
+            <p>La jornada de trabajo será de <span class="highlight">{{ contrato.jornada_laboral }}</span>, 
+            de {{ contrato.horario_inicio }} a {{ contrato.horario_fin }}, 
+            de lunes a {{ contrato.dias_laborales }}, 
+            {% if contrato.modalidad_trabajo == 'PRESENCIAL' %}
+            en las instalaciones de la empresa ubicadas en {{ empresa.direccion }}.
+            {% elif contrato.modalidad_trabajo == 'REMOTO' %}
+            bajo la modalidad de trabajo remoto desde el domicilio del trabajador.
+            {% elif contrato.modalidad_trabajo == 'HIBRIDO' %}
+            bajo la modalidad híbrida, combinando trabajo presencial y remoto según 
+            las necesidades del servicio y los acuerdos establecidos.
+            {% endif %}
+            </p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SEXTA. - OBLIGACIONES DEL TRABAJADOR:</div>
+            <p>EL TRABAJADOR se obliga a:</p>
+            <ul>
+                <li>Cumplir con las funciones propias de su cargo con diligencia y eficiencia.</li>
+                <li>Acatar las órdenes e instrucciones impartidas por sus superiores.</li>
+                <li>Guardar absoluta reserva sobre la información confidencial de la empresa.</li>
+                <li>Cumplir con el horario de trabajo establecido y las normas de puntualidad.</li>
+                <li>Observar las medidas de seguridad y salud en el trabajo.</li>
+                <li>Cuidar los bienes de la empresa que se pongan a su disposición.</li>
+                <li>Cumplir con el reglamento interno de trabajo y las políticas de la empresa.</li>
+            </ul>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">SÉPTIMA. - OBLIGACIONES DEL EMPLEADOR:</div>
+            <p>EL EMPLEADOR se obliga a:</p>
+            <ul>
+                <li>Pagar el salario en la forma y fechas convenidas.</li>
+                <li>Proporcionar los elementos de trabajo necesarios para el desempeño del cargo.</li>
+                <li>Afiliar al trabajador al sistema de seguridad social integral.</li>
+                <li>Cumplir con las normas de seguridad y salud en el trabajo.</li>
+                <li>Respetar la dignidad del trabajador y garantizar un ambiente laboral adecuado.</li>
+                <li>Cumplir con las disposiciones legales laborales vigentes.</li>
+            </ul>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">OCTAVA. - TERMINACIÓN DEL CONTRATO:</div>
+            <p>El presente contrato podrá terminarse por las causales establecidas en el 
+            Código Sustantivo del Trabajo y demás normas laborales vigentes. En caso de 
+            terminación unilateral sin justa causa por parte del empleador, este pagará 
+            las indemnizaciones correspondientes según la ley.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">NOVENA. - CLÁUSULAS ESPECIALES:</div>
+            {% if contrato.clausulas_especiales %}
+            <p>{{ contrato.clausulas_especiales }}</p>
+            {% else %}
+            <p>No se establecen cláusulas especiales adicionales a las contempladas 
+            en la legislación laboral vigente.</p>
+            {% endif %}
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">DÉCIMA. - DISPOSICIONES GENERALES:</div>
+            <p>En todo lo no previsto en este contrato, se aplicarán las disposiciones 
+            del Código Sustantivo del Trabajo y demás normas laborales vigentes. 
+            Las modificaciones a este contrato deberán hacerse por escrito y con 
+            la aceptación de ambas partes.</p>
+        </div>
+
+        <div class="clause">
+            <p>Para constancia se firma en {{ empresa.ciudad }} a los {{ contrato.fecha_inicio|date:"d" }} 
+            días del mes de {{ contrato.fecha_inicio|date:"F" }} de {{ contrato.fecha_inicio|date:"Y" }}.</p>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL EMPLEADOR</strong><br>
+                {{ empresa.representante_legal }}<br>
+                {{ empresa.cargo_representante }}<br>
+                C.C. {{ empresa.cedula_representante }}
+            </div>
+        </div>
+        
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>EL TRABAJADOR</strong><br>
+                {{ empleado.nombres }} {{ empleado.apellidos }}<br>
+                {{ empleado.tipo_documento }} {{ empleado.numero_documento }}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        <p>{{ empresa.nombre }} - Todos los derechos reservados</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Contratos - {{ reporte.titulo }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 15px;
+        }
+        .company-logo {
+            max-width: 120px;
+            margin-bottom: 15px;
+        }
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 15px 0;
+            color: #2c3e50;
+        }
+        .report-info {
+            background-color: #ecf0f1;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #fff;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+        .contracts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10px;
+        }
+        .contracts-table th {
+            background-color: #34495e;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #2c3e50;
+        }
+        .contracts-table td {
+            padding: 6px;
+            border: 1px solid #bdc3c7;
+            vertical-align: top;
+        }
+        .contracts-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .contracts-table tr:hover {
+            background-color: #e8f4f8;
+        }
+        .status-active {
+            background-color: #27ae60;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        .status-expired {
+            background-color: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        .status-pending {
+            background-color: #f39c12;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        .status-terminated {
+            background-color: #95a5a6;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 25px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        .chart-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .chart-placeholder {
+            background-color: #ecf0f1;
+            border: 2px dashed #bdc3c7;
+            padding: 40px;
+            border-radius: 5px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .area-section {
+            margin: 30px 0;
+            page-break-inside: avoid;
+        }
+        .area-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+        }
+        .area-content {
+            border: 1px solid #3498db;
+            border-top: none;
+            padding: 15px;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+            padding-top: 15px;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .no-data {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .currency {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        .date {
+            white-space: nowrap;
+        }
+        .contract-type-FIJO {
+            border-left: 4px solid #27ae60;
+        }
+        .contract-type-INDEFINIDO {
+            border-left: 4px solid #3498db;
+        }
+        .contract-type-OBRA_LABOR {
+            border-left: 4px solid #f39c12;
+        }
+        .contract-type-PRESTACION_SERVICIOS {
+            border-left: 4px solid #9b59b6;
+        }
+        .contract-type-PRACTICAS {
+            border-left: 4px solid #1abc9c;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+            .contracts-table {
+                font-size: 9px;
+            }
+            .stat-card {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+            .area-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo }}" alt="Logo {{ empresa.nombre }}" class="company-logo">
+        {% endif %}
+        <h1 class="report-title">{{ empresa.nombre }}</h1>
+        <h2 class="report-title">{{ reporte.titulo }}</h2>
+    </div>
+
+    <div class="report-info">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Período del Reporte:</span>
+                <span>{{ reporte.fecha_inicio|date:"d/m/Y" }} - {{ reporte.fecha_fin|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Fecha de Generación:</span>
+                <span>{{ reporte.fecha_generacion|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Generado por:</span>
+                <span>{{ reporte.usuario_generador }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Filtros Aplicados:</span>
+                <span>{{ reporte.filtros_aplicados|default:"Ninguno" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">RESUMEN EJECUTIVO</div>
+    
+    <div class="summary-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.total_contratos }}</div>
+            <div class="stat-label">Total Contratos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.contratos_activos }}</div>
+            <div class="stat-label">Contratos Activos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.contratos_vencidos }}</div>
+            <div class="stat-label">Contratos Vencidos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.contratos_por_vencer }}</div>
+            <div class="stat-label">Por Vencer (30 días)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.total_adendas }}</div>
+            <div class="stat-label">Total Adendas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ estadisticas.valor_total_contratos|floatformat:0 }}</div>
+            <div class="stat-label">Valor Total Contratos</div>
+        </div>
+    </div>
+
+    {% if reporte.incluir_graficos %}
+    <div class="section-title">DISTRIBUCIÓN POR TIPO DE CONTRATO</div>
+    <div class="chart-container">
+        <div class="chart-placeholder">
+            [Gráfico de distribución por tipo de contrato]
+            <br>Datos: {{ estadisticas.distribucion_tipos|join:", " }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if reporte.agrupar_por_area %}
+    <div class="section-title">CONTRATOS POR ÁREA</div>
+    
+    {% for area in areas %}
+    <div class="area-section">
+        <div class="area-header">
+            {{ area.nombre }} ({{ area.contratos|length }} contratos)
+        </div>
+        <div class="area-content">
+            {% if area.contratos %}
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Documento</th>
+                        <th>Cargo</th>
+                        <th>Tipo Contrato</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Salario</th>
+                        <th>Estado</th>
+                        <th>Adendas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contrato in area.contratos %}
+                    <tr class="contract-type-{{ contrato.tipo_contrato }}">
+                        <td>{{ contrato.empleado.nombres }} {{ contrato.empleado.apellidos }}</td>
+                        <td>{{ contrato.empleado.numero_documento }}</td>
+                        <td>{{ contrato.cargo }}</td>
+                        <td>{{ contrato.get_tipo_contrato_display }}</td>
+                        <td class="date">{{ contrato.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td class="date">
+                            {% if contrato.fecha_fin %}
+                                {{ contrato.fecha_fin|date:"d/m/Y" }}
+                            {% else %}
+                                Indefinido
+                            {% endif %}
+                        </td>
+                        <td class="currency">${{ contrato.salario_base|floatformat:0 }}</td>
+                        <td>
+                            {% if contrato.estado == 'ACTIVO' %}
+                                <span class="status-active">{{ contrato.get_estado_display }}</span>
+                            {% elif contrato.estado == 'VENCIDO' %}
+                                <span class="status-expired">{{ contrato.get_estado_display }}</span>
+                            {% elif contrato.estado == 'PENDIENTE' %}
+                                <span class="status-pending">{{ contrato.get_estado_display }}</span>
+                            {% else %}
+                                <span class="status-terminated">{{ contrato.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ contrato.adendas.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="info-grid" style="margin-top: 15px;">
+                <div class="info-item">
+                    <span class="info-label">Total Empleados:</span>
+                    <span>{{ area.contratos|length }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor Total Área:</span>
+                    <span>${{ area.valor_total|floatformat:0 }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Contratos Activos:</span>
+                    <span>{{ area.contratos_activos }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Promedio Salarial:</span>
+                    <span>${{ area.promedio_salarial|floatformat:0 }}</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-data">
+                No hay contratos registrados para esta área en el período seleccionado.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% else %}
+    
+    <div class="section-title">LISTADO GENERAL DE CONTRATOS</div>
+    
+    {% if contratos %}
+    <table class="contracts-table">
+        <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Documento</th>
+                <th>Área</th>
+                <th>Cargo</th>
+                <th>Tipo Contrato</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Salario</th>
+                <th>Estado</th>
+                <th>Adendas</th>
+                <th>Última Modificación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos %}
+            <tr class="contract-type-{{ contrato.tipo_contrato }}">
+                <td>{{ contrato.empleado.nombres }} {{ contrato.empleado.apellidos }}</td>
+                <td>{{ contrato.empleado.numero_documento }}</td>
+                <td>{{ contrato.area }}</td>
+                <td>{{ contrato.cargo }}</td>
+                <td>{{ contrato.get_tipo_contrato_display }}</td>
+                <td class="date">{{ contrato.fecha_inicio|date:"d/m/Y" }}</td>
+                <td class="date">
+                    {% if contrato.fecha_fin %}
+                        {{ contrato.fecha_fin|date:"d/m/Y" }}
+                        {% if contrato.dias_para_vencer <= 30 and contrato.dias_para_vencer > 0 %}
+                            <span class="highlight">({{ contrato.dias_para_vencer }} días)</span>
+                        {% endif %}
+                    {% else %}
+                        Indefinido
+                    {% endif %}
+                </td>
+                <td class="currency">${{ contrato.salario_base|floatformat:0 }}</td>
+                <td>
+                    {% if contrato.estado == 'ACTIVO' %}
+                        <span class="status-active">{{ contrato.get_estado_display }}</span>
+                    {% elif contrato.estado == 'VENCIDO' %}
+                        <span class="status-expired">{{ contrato.get_estado_display }}</span>
+                    {% elif contrato.estado == 'PENDIENTE' %}
+                        <span class="status-pending">{{ contrato.get_estado_display }}</span>
+                    {% else %}
+                        <span class="status-terminated">{{ contrato.get_estado_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ contrato.adendas.count }}</td>
+                <td class="date">{{ contrato.fecha_modificacion|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+        No se encontraron contratos que coincidan con los criterios de búsqueda especificados.
+    </div>
+    {% endif %}
+    
+    {% endif %}
+
+    {% if reporte.incluir_vencimientos %}
+    <div class="section-title page-break">CONTRATOS PRÓXIMOS A VENCER</div>
+    
+    {% if contratos_por_vencer %}
+    <table class="contracts-table">
+        <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Área</th>
+                <th>Cargo</th>
+                <th>Tipo Contrato</th>
+                <th>Fecha Vencimiento</th>
+                <th>Días Restantes</th>
+                <th>Salario</th>
+                <th>Acción Recomendada</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos_por_vencer %}
+            <tr>
+                <td>{{ contrato.empleado.nombres }} {{ contrato.empleado.apellidos }}</td>
+                <td>{{ contrato.area }}</td>
+                <td>{{ contrato.cargo }}</td>
+                <td>{{ contrato.get_tipo_contrato_display }}</td>
+                <td class="date">{{ contrato.fecha_fin|date:"d/m/Y" }}</td>
+                <td class="highlight">{{ contrato.dias_para_vencer }}</td>
+                <td class="currency">${{ contrato.salario_base|floatformat:0 }}</td>
+                <td>
+                    {% if contrato.dias_para_vencer <= 7 %}
+                        Renovar Urgente
+                    {% elif contrato.dias_para_vencer <= 15 %}
+                        Iniciar Renovación
+                    {% else %}
+                        Planificar Renovación
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+        No hay contratos próximos a vencer en los próximos 30 días.
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if reporte.incluir_observaciones %}
+    <div class="section-title">OBSERVACIONES Y RECOMENDACIONES</div>
+    
+    <div class="report-info">
+        {% if reporte.observaciones %}
+        <p><strong>Observaciones:</strong></p>
+        <p>{{ reporte.observaciones }}</p>
+        {% endif %}
+        
+        <p><strong>Recomendaciones:</strong></p>
+        <ul>
+            {% if estadisticas.contratos_por_vencer > 0 %}
+            <li>Se recomienda iniciar el proceso de renovación para los {{ estadisticas.contratos_por_vencer }} contratos próximos a vencer.</li>
+            {% endif %}
+            {% if estadisticas.contratos_vencidos > 0 %}
+            <li>Revisar y regularizar {{ estadisticas.contratos_vencidos }} contratos vencidos.</li>
+            {% endif %}
+            {% if estadisticas.contratos_sin_adendas > 0 %}
+            <li>{{ estadisticas.contratos_sin_adendas }} contratos no han tenido modificaciones. Considerar revisión salarial.</li>
+            {% endif %}
+            <li>Mantener actualizada la información de contacto y datos laborales de todos los empleados.</li>
+            <li>Programar revisiones periódicas de contratos cada 6 meses.</li>
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <p><strong>{{ empresa.nombre }}</strong></p>
+        <p>Reporte generado el {{ reporte.fecha_generacion|date:"d \d\e F \d\e Y" }} a las {{ reporte.fecha_generacion|date:"H:i" }}</p>
+        <p>Este documento es confidencial y de uso interno exclusivo</p>
+        <p>Página 1 de 1 | Total de registros: {{ estadisticas.total_contratos }}</p>
+    </div>
+</body>
+</html>

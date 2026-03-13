@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5173",
+  "loginUser": "admin",
+  "loginPassword": "admin123",
+  "executionArgs": {
+    "projectName": "hr-intranet-system",
+    "projectPath": "d:\\PROYECTOS\\INTRANET\\front",
+    "testIds": [],
+    "additionalInstruction": "Enfocarse en probar los componentes de autenticación, navegación y el sistema de carga.",
+    "envs": {
+      "API_KEY": "sk-user-3vebYx_-l71SS6SwLK6kO50HS8q-WS9E6Iu9KndyrNW-r80R8C8bnEO-8TvKQjTtsRlYjCk6FqTmdsE6Wx7DAOq9PoScnO7LM-EU83cnMNPsFsVWrOqdCds3SfXY06RvBXU"
+    }
+  },
+  "proxy": "http://ff793350-b62e-4db7-b51a-36d226d9d497:I22H2K2lqTB6THQ6PeSbR4QvRVQRAWM8@tun.testsprite.com:8080"
+}

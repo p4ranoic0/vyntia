@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "project": "Employee Management and Vacation System",
+    "date": "2025-08-31",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "A comprehensive web-based application built with modern TypeScript and React technologies to manage users, employees, organizational areas, security roles, and vacation processes seamlessly. It features robust authentication, API integration, responsive UI components, and modular layouts to support efficient HR and administrative workflows.",
+  "core_goals": [
+    "Provide secure authentication and session management using JWT tokens",
+    "Enable administrators to manage users, roles, permissions, and employees efficiently",
+    "Facilitate vacation request handling, approval workflows, and reporting",
+    "Ensure modular and maintainable code leveraging modern React tools and TypeScript",
+    "Deliver a responsive, accessible, and consistent user interface with reusable UI components",
+    "Optimize performance via state management, query caching, and lazy loading",
+    "Ensure robust validation and error handling on both frontend and backend sides"
+  ],
+  "key_features": [
+    "JWT-based Authentication system with login, logout, password reset, and change password features",
+    "API client for seamless backend communication using Axios and TanStack Query",
+    "Modular layout components including Sidebar, Header, Footer for consistent navigation",
+    "User Management module for CRUD operations on users, role assignment, and password management",
+    "Security Management module for managing roles and permissions with fine-grained access control",
+    "Employee Management module to handle employee personal, labor, academic, and family data",
+    "Area Management module for organizational units administration",
+    "Vacation Management module covering requests, periods, reports, and configuration",
+    "Reusable UI components built with Tailwind CSS, Shadcn UI, and Radix UI to ensure consistency and accessibility",
+    "Loading state management components and hooks for smooth user experience",
+    "Theme and style management supporting dark mode and consistent theming"
+  ],
+  "user_flow_summary": [
+    "User logs in using secure JWT authentication form, with validation and session handling",
+    "Authenticated users access the dashboard with navigation through sidebar and header",
+    "Administrators navigate to user management to add, edit, or remove users, assign roles, and change passwords",
+    "Security administrators manage roles and permissions to configure access controls",
+    "HR personnel manage employee data across multiple detailed sections such as personal info, labor data, academic records, and family info",
+    "Employees or HR submit and manage vacation requests with approval workflows and reporting",
+    "Users can reset or change their passwords securely via dedicated pages",
+    "Theme switching allows users to toggle between light and dark modes enhancing usability"
+  ],
+  "validation_criteria": [
+    "All forms include client-side and server-side validation using React Hook Form and Zod schemas",
+    "Authentication flows must securely handle JWT tokens and session expiration",
+    "API endpoints respond with consistent unified response structures and proper HTTP status codes",
+    "UI components pass accessibility standards including keyboard navigation and color contrast",
+    "Role-based access control restricts permissions appropriately in the frontend and backend",
+    "Performance benchmarks met including load times, query efficiency, and lazy loading effectiveness",
+    "Error handling implemented with user-friendly messages and logging for monitoring and debugging",
+    "Code style and architecture follow best practices outlined in the project rules and coding guidelines"
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "React",
+      "Vite",
+      "TanStack Query",
+      "React Router",
+      "Axios",
+      "Tailwind CSS",
+      "Shadcn UI",
+      "Radix UI",
+      "React Hook Form",
+      "Zod",
+      "js-cookie"
+    ],
+    "features": [
+      {
+        "name": "Autenticación",
+        "description": "Sistema de autenticación con JWT, login, logout y gestión de sesiones",
+        "files": [
+          "src/context/AuthContext.tsx",
+          "src/context/AuthContextInstance.ts",
+          "src/context/AuthContextType.ts",
+          "src/hooks/useAuth.ts",
+          "src/components/auth/LoginForm.tsx",
+          "src/pages/ChangePasswordPage.tsx",
+          "src/pages/ResetPasswordPage.tsx"
+        ]
+      },
+      {
+        "name": "API Client",
+        "description": "Cliente de API para comunicación con el backend",
+        "files": [
+          "src/lib/api.ts",
+          "src/hooks/useApi.ts",
+          "src/lib/errorUtils.ts"
+        ]
+      },
+      {
+        "name": "Layout y Navegación",
+        "description": "Componentes de layout y navegación de la aplicación",
+        "files": [
+          "src/components/layout/Layout.tsx",
+          "src/components/layout/Sidebar.tsx",
+          "src/components/layout/Header.tsx",
+          "src/components/layout/Footer.tsx",
+          "src/hooks/useMenu.ts",
+          "src/services/menuService.ts"
+        ]
+      },
+      {
+        "name": "Gestión de Usuarios",
+        "description": "Módulo para administrar usuarios del sistema",
+        "files": [
+          "src/pages/users/UsersList.tsx",
+          "src/pages/users/UsersForm.tsx",
+          "src/pages/users/UsersManagement.tsx",
+          "src/pages/users/ChangePassword.tsx",
+          "src/pages/users/RoleManagement.tsx",
+          "src/services/usersService.ts"
+        ]
+      },
+      {
+        "name": "Gestión de Seguridad",
+        "description": "Módulo para administrar roles y permisos",
+        "files": [
+          "src/pages/security/PermissionsPage.tsx",
+          "src/pages/security/RolesPage.tsx",
+          "src/pages/security/RolePermissionsPage.tsx",
+          "src/services/securityService.ts"
+        ]
+      },
+      {
+        "name": "Gestión de Empleados",
+        "description": "Módulo para administrar información de empleados",
+        "files": [
+          "src/pages/Empleados.tsx",
+          "src/pages/empleados/DatosPersonalesPage.tsx",
+          "src/pages/empleados/DatosLaboralesPage.tsx",
+          "src/pages/empleados/DatosAcademicosPage.tsx",
+          "src/pages/empleados/DatosFamiliaresPage.tsx",
+          "src/services/employeeService.ts"
+        ]
+      },
+      {
+        "name": "Gestión de Áreas",
+        "description": "Módulo para administrar áreas de la organización",
+        "files": [
+          "src/pages/areas/AreasListPage.tsx",
+          "src/pages/areas/AreaFormPage.tsx",
+          "src/pages/areas/AreasManagementPage.tsx",
+          "src/services/areasService.ts"
+        ]
+      },
+      {
+        "name": "Gestión de Vacaciones",
+        "description": "Módulo para administrar solicitudes y periodos de vacaciones",
+        "files": [
+          "src/pages/vacaciones/VacacionesManagementPage.tsx",
+          "src/pages/vacaciones/NuevaSolicitudPage.tsx",
+          "src/pages/vacaciones/SolicitudesPage.tsx",
+          "src/pages/vacaciones/PeriodosPage.tsx",
+          "src/pages/vacaciones/ReportesPage.tsx",
+          "src/pages/vacaciones/ConfiguracionPage.tsx",
+          "src/services/vacacionesService.ts"
+        ]
+      },
+      {
+        "name": "Componentes de UI",
+        "description": "Componentes de interfaz de usuario reutilizables",
+        "files": [
+          "src/components/ui/toaster.tsx",
+          "src/components/ui/button.tsx",
+          "src/components/ui/input.tsx",
+          "src/components/ui/form.tsx",
+          "src/components/ui/table.tsx",
+          "src/components/ui/dialog.tsx",
+          "src/hooks/use-toast.ts"
+        ]
+      },
+      {
+        "name": "Sistema de Carga",
+        "description": "Componentes y hooks para manejar estados de carga",
+        "files": [
+          "src/components/common/LoadingSpinner.tsx",
+          "src/components/common/LoadingSkeleton.tsx",
+          "src/components/common/LoadingPage.tsx",
+          "src/components/common/LoadingDemo.tsx",
+          "src/pages/LoadingDemo.tsx",
+          "src/hooks/useLoading.ts",
+          "src/hooks/useLoadingWithDelay.ts"
+        ]
+      },
+      {
+        "name": "Tema y Estilos",
+        "description": "Gestión de temas y estilos de la aplicación",
+        "files": [
+          "src/context/ThemeContext.tsx",
+          "src/index.css",
+          "tailwind.config.js"
+        ]
+      }
+    ]
+  }
+}

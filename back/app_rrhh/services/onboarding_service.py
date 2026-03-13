@@ -1,0 +1,440 @@
+"""Servicio para gestionar el proceso de onboarding de nuevos empleados."""
+
+import logging
+import unicodedata
+
+from app_rrhh.models import (
+    DocumentosDigitales,
+    Empleado,
+    OnboardingEmpleado,
+    Rol,
+    Usuario,
+    UsuarioRoles,
+)
+from app_rrhh.tasks import send_email_html_task
+from django.conf import settings
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+
+logger = logging.getLogger(__name__)
+
+# Documentos requeridos para el onboarding, organizados por checklist flag
+DOCUMENTOS_REQUERIDOS = {
+    "dni_subido": [
+        {"tipo_documento": "dni", "categoria": "personal", "label": "Copia de DNI"},
+    ],
+    "declaraciones_juradas_subidas": [
+        {
+            "tipo_documento": "declaracion_jurada",
+            "categoria": "legal",
+            "label": "Declaracion Jurada",
+        },
+    ],
+    "certificados_academicos_subidos": [
+        {
+            "tipo_documento": "certificado_estudios",
+            "categoria": "academico",
+            "label": "Certificado de Estudios",
+        },
+        {
+            "tipo_documento": "titulo_profesional",
+            "categoria": "academico",
+            "label": "Titulo Profesional",
+        },
+    ],
+    "certificados_trabajo_subidos": [
+        {
+            "tipo_documento": "certificado_trabajo",
+            "categoria": "laboral",
+            "label": "Certificado de Trabajo",
+        },
+    ],
+    "documentos_familiares_subidos": [
+        {
+            "tipo_documento": "dni_familiar",
+            "categoria": "familiar",
+            "label": "DNI de Familiares",
+        },
+        {
+            "tipo_documento": "acta_matrimonio",
+            "categoria": "familiar",
+            "label": "Acta de Matrimonio (si aplica)",
+        },
+    ],
+}
+
+
+class OnboardingService:
+    """Servicio principal para el flujo de onboarding."""
+
+    @staticmethod
+    def _normalizar_texto(texto):
+        """Remueve acentos y caracteres especiales para generar usernames."""
+        nfkd = unicodedata.normalize("NFKD", texto)
+        return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+    @staticmethod
+    def generar_username(nombres, apellido_paterno):
+        """
+        Genera un username a partir del nombre y apellido.
+        Formato: primera letra del nombre + apellido paterno (todo en minusculas).
+        Maneja colisiones agregando un numero secuencial.
+        """
+        nombres_clean = OnboardingService._normalizar_texto(nombres.strip().lower())
+        apellido_clean = OnboardingService._normalizar_texto(
+            apellido_paterno.strip().lower()
+        )
+
+        # Primera letra del primer nombre + apellido
+        primera_letra = nombres_clean[0] if nombres_clean else ""
+        base_username = f"{primera_letra}{apellido_clean}".replace(" ", "")
+
+        # Verificar colisiones
+        username = base_username
+        counter = 1
+        while Usuario.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        return username
+
+    @staticmethod
+    def generar_password_temporal():
+        """Genera una contrasena temporal segura."""
+        return get_random_string(
+            length=12,
+            allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$",
+        )
+
+    @staticmethod
+    def enviar_email_bienvenida(usuario, password_temporal):
+        """
+        Envia el email de bienvenida con las credenciales temporales.
+        En desarrollo se muestra en consola, en produccion se envia por SMTP.
+        """
+        empleado = usuario.empleado
+        nombre_empleado = (
+            empleado.nombre_completo if empleado else usuario.nombres_usuario
+        )
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+
+        context = {
+            "nombre_empleado": nombre_empleado,
+            "username": usuario.username,
+            "password_temporal": password_temporal,
+            "frontend_url": frontend_url,
+        }
+
+        # Renderizar templates
+        html_content = render_to_string("emails/bienvenida.html", context)
+        text_content = render_to_string("emails/bienvenida.txt", context)
+
+        subject = "Bienvenido - Intranet RRHH"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.gob.pe")
+        recipient = empleado.correo_personal if empleado else usuario.email
+
+        try:
+            send_email_html_task.delay(
+                subject=subject,
+                from_email=from_email,
+                recipients=[recipient],
+                text_content=text_content,
+                html_content=html_content,
+            )
+            logger.info(
+                "Email de bienvenida encolado para %s (usuario %s)",
+                recipient,
+                usuario.username,
+            )
+            return True
+        except Exception as e:
+            logger.warning("Celery no disponible, enviando email sincronamente: %s", e)
+            try:
+                from django.core.mail import EmailMultiAlternatives
+                msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+                logger.info("Email de bienvenida enviado sincronamente a %s", recipient)
+                return True
+            except Exception as sync_error:
+                logger.error("Error al enviar email sincronamente a %s: %s", recipient, sync_error)
+                return False
+
+    @staticmethod
+    @transaction.atomic
+    def crear_onboarding_completo(empleado_data, creado_por):
+        """
+        Crea el flujo completo de onboarding:
+        1. Crea el registro de Empleado
+        2. Genera username y password temporal
+        3. Crea el Usuario vinculado al Empleado
+        4. Crea el registro de OnboardingEmpleado
+        5. Envia email de bienvenida
+
+        Args:
+            empleado_data: dict con datos del empleado (nombres, apellidos, DNI, email, etc.)
+            creado_por: Usuario que inicia el onboarding (RRHH)
+
+        Returns:
+            dict con onboarding, empleado, usuario y password_temporal
+        """
+        # 1. Crear Empleado
+        empleado = Empleado.objects.create(
+            nombres_empleado=empleado_data["nombres_empleado"],
+            apellido_paterno=empleado_data["apellido_paterno"],
+            apellido_materno=empleado_data.get("apellido_materno", ""),
+            numero_documento=empleado_data["numero_documento"],
+            correo_personal=empleado_data["correo_personal"],
+            genero_empleado=empleado_data.get("genero_empleado", "masculino"),
+            fecha_nacimiento=empleado_data.get("fecha_nacimiento"),
+            estado_empleado="activo",
+        )
+
+        # 2. Generar credenciales
+        username = OnboardingService.generar_username(
+            empleado.nombres_empleado,
+            empleado.apellido_paterno,
+        )
+        password_temporal = OnboardingService.generar_password_temporal()
+
+        # 3. Crear Usuario
+        usuario = Usuario.objects.create_user(
+            username=username,
+            email=empleado.correo_personal,
+            password=password_temporal,
+            nombres_usuario=empleado.nombres_empleado,
+            apellidos_usuario=f"{empleado.apellido_paterno} {empleado.apellido_materno}".strip(),
+            tipo_usuario="empleado",
+            nivel_acceso="personal",
+            empleado=empleado,
+            estado_usuario="pendiente",
+            requiere_cambio_password=True,
+        )
+
+        # Asignar rol de empleado
+        try:
+            rol_empleado = Rol.objects.filter(
+                nombre_rol__in=["Empleado", "empleado"], estado_rol="activo"
+            ).first()
+            if rol_empleado:
+                UsuarioRoles.objects.create(
+                    usuario=usuario,
+                    rol=rol_empleado,
+                    estado_asignacion="activo",
+                )
+        except Exception as e:
+            logger.warning(f"No se pudo asignar rol de empleado: {e}")
+
+        # 4. Crear OnboardingEmpleado
+        onboarding = OnboardingEmpleado.objects.create(
+            empleado=empleado,
+            usuario=usuario,
+            estado_onboarding="pendiente_datos",
+        )
+
+        # 5. Enviar email de bienvenida
+        email_enviado = OnboardingService.enviar_email_bienvenida(
+            usuario, password_temporal
+        )
+        if email_enviado:
+            onboarding.email_bienvenida_enviado = True
+            onboarding.fecha_email_bienvenida = timezone.now()
+            onboarding.save()
+
+        logger.info(
+            f"Onboarding creado para {empleado.nombre_completo} "
+            f"(usuario: {username}) por {creado_por.username}"
+        )
+
+        return {
+            "onboarding": onboarding,
+            "empleado": empleado,
+            "usuario": usuario,
+            "password_temporal": password_temporal,
+            "email_enviado": email_enviado,
+        }
+
+    @staticmethod
+    def actualizar_estado_onboarding(empleado_id):
+        """
+        Recalcula el estado del onboarding basado en los documentos subidos.
+        Verifica cada categoria de documentos requeridos.
+        """
+        try:
+            onboarding = OnboardingEmpleado.objects.get(empleado_id=empleado_id)
+        except OnboardingEmpleado.DoesNotExist:
+            return None
+
+        if onboarding.estado_onboarding == "completado":
+            return onboarding
+
+        # Obtener documentos del empleado
+        documentos = DocumentosDigitales.objects.filter(
+            empleado_id=empleado_id,
+            es_version_actual=True,
+        )
+
+        # Verificar DNI
+        onboarding.dni_subido = documentos.filter(
+            tipo_documento="dni",
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        ).exists()
+
+        # Verificar declaraciones juradas
+        onboarding.declaraciones_juradas_subidas = documentos.filter(
+            tipo_documento="declaracion_jurada",
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        ).exists()
+
+        # Verificar certificados academicos
+        onboarding.certificados_academicos_subidos = documentos.filter(
+            tipo_documento__in=[
+                "certificado_estudios",
+                "titulo_profesional",
+                "diploma",
+            ],
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        ).exists()
+
+        # Verificar certificados de trabajo
+        onboarding.certificados_trabajo_subidos = documentos.filter(
+            tipo_documento="certificado_trabajo",
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        ).exists()
+
+        # Verificar documentos familiares (al menos un DNI familiar)
+        onboarding.documentos_familiares_subidos = documentos.filter(
+            tipo_documento__in=["dni_familiar", "acta_matrimonio", "certificado_union_hecho"],
+            categoria="familiar",
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        ).exists()
+
+        # Verificar datos personales (empleado tiene campos basicos completos)
+        empleado = onboarding.empleado
+        onboarding.datos_personales_completos = all(
+            [
+                empleado.nombres_empleado,
+                empleado.apellido_paterno,
+                empleado.numero_documento,
+                empleado.fecha_nacimiento,
+                empleado.telefono_celular,
+                empleado.correo_personal,
+                empleado.direccion_domicilio,
+            ]
+        )
+
+        # Verificar datos laborales
+        onboarding.datos_laborales_completos = empleado.datos_laborales.filter(
+            estado_datos="activo"
+        ).exists()
+
+        # Actualizar estado
+        onboarding.actualizar_estado()
+        return onboarding
+
+    @staticmethod
+    def obtener_documentos_pendientes(empleado_id):
+        """
+        Retorna lista de tipos de documento que faltan por subir.
+        """
+        try:
+            onboarding = OnboardingEmpleado.objects.get(empleado_id=empleado_id)
+        except OnboardingEmpleado.DoesNotExist:
+            return []
+
+        pendientes = []
+
+        documentos = DocumentosDigitales.objects.filter(
+            empleado_id=empleado_id,
+            es_version_actual=True,
+            estado_documento__in=["activo", "pendiente_revision", "aprobado"],
+        )
+
+        for flag, requeridos in DOCUMENTOS_REQUERIDOS.items():
+            flag_value = getattr(onboarding, flag, False)
+            if not flag_value:
+                for req in requeridos:
+                    exists = documentos.filter(
+                        tipo_documento=req["tipo_documento"],
+                    ).exists()
+                    if not exists:
+                        pendientes.append(
+                            {
+                                "tipo_documento": req["tipo_documento"],
+                                "categoria": req["categoria"],
+                                "label": req["label"],
+                            }
+                        )
+
+        return pendientes
+
+    @staticmethod
+    def reenviar_email_bienvenida(onboarding_id, nuevo_password=True):
+        """
+        Reenvia el email de bienvenida, opcionalmente con nueva contrasena.
+        """
+        try:
+            onboarding = OnboardingEmpleado.objects.select_related(
+                "usuario", "empleado"
+            ).get(onboarding_id=onboarding_id)
+        except OnboardingEmpleado.DoesNotExist:
+            return None
+
+        password_temporal = None
+        if nuevo_password:
+            password_temporal = OnboardingService.generar_password_temporal()
+            onboarding.usuario.set_password(password_temporal)
+            onboarding.usuario.requiere_cambio_password = True
+            onboarding.usuario.save()
+        else:
+            password_temporal = "(use su contrasena actual)"
+
+        email_enviado = OnboardingService.enviar_email_bienvenida(
+            onboarding.usuario, password_temporal
+        )
+
+        if email_enviado:
+            onboarding.email_bienvenida_enviado = True
+            onboarding.fecha_email_bienvenida = timezone.now()
+            onboarding.save()
+
+        return {
+            "email_enviado": email_enviado,
+            "nuevo_password": nuevo_password,
+        }
+
+    @staticmethod
+    def validar_onboarding(onboarding_id, validado_por, observaciones=""):
+        """
+        RRHH valida todos los documentos y marca el onboarding como completado.
+        """
+        try:
+            onboarding = OnboardingEmpleado.objects.select_related(
+                "empleado", "usuario"
+            ).get(onboarding_id=onboarding_id)
+        except OnboardingEmpleado.DoesNotExist:
+            return None
+
+        # Validar todos los documentos pendientes de revision
+        documentos = DocumentosDigitales.objects.filter(
+            empleado=onboarding.empleado,
+            estado_documento="pendiente_revision",
+            es_version_actual=True,
+        )
+        for doc in documentos:
+            doc.validar_documento(validado_por, observaciones)
+
+        # Activar el usuario si estaba pendiente
+        if onboarding.usuario.estado_usuario == "pendiente":
+            onboarding.usuario.estado_usuario = "activo"
+            onboarding.usuario.save()
+
+        # Marcar onboarding como completado
+        onboarding.marcar_completado(validado_por)
+        onboarding.observaciones = observaciones
+        onboarding.save()
+
+        logger.info(f"Onboarding completado para {onboarding.empleado.nombre_completo}")
+        return onboarding

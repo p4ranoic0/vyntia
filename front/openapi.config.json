@@ -1,0 +1,19 @@
+{
+  "input": "http://localhost:8000/api/schema/",
+  "output": "src/generated/api",
+  "httpClientType": "axios",
+  "useOptions": true,
+  "exportSchemas": true,
+  "exportServices": true,
+  "exportModels": true,
+  "exportCore": true,
+  "exportClient": true,
+  "types.enums": "javascript",
+  "indent": "  ",
+  "write": true,
+  "useDateType": true,
+  "enums": "javascript",
+  "operationIdCamelCase": true,
+  "serviceResponse": "body",
+  "name": "IntranetRRHHAPI"
+}

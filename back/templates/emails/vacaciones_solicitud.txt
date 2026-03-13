@@ -1,0 +1,13 @@
+Hola {{ jefe_nombre }},
+
+Tiene una nueva solicitud de vacaciones pendiente de aprobación.
+
+Empleado: {{ empleado_nombre }}
+Fechas: {{ fecha_inicio }} al {{ fecha_fin }}
+Días solicitados: {{ dias_solicitados }}{% if medio_dia %} (incluye medio día){% endif %}
+Motivo: {{ motivo|default:"-" }}
+
+Revise la solicitud en:
+{{ url_solicitudes }}
+
+Este es un correo automático, por favor no responda.

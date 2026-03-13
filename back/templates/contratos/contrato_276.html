@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 40px;
+    color: #000;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+  }
+  .header img {
+    max-height: 80px;
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    margin: 4px 0;
+    font-size: 13pt;
+    text-transform: uppercase;
+  }
+  .header p {
+    margin: 2px 0;
+    font-size: 10pt;
+  }
+  h1.titulo {
+    text-align: center;
+    font-size: 14pt;
+    text-transform: uppercase;
+    margin: 25px 0 5px 0;
+    letter-spacing: 1px;
+  }
+  .subtitulo {
+    text-align: center;
+    font-size: 11pt;
+    margin: 0 0 5px 0;
+  }
+  .numero-contrato {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .base-legal {
+    text-align: center;
+    font-size: 10pt;
+    font-style: italic;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  p.parrafo {
+    text-align: justify;
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+  .vistos {
+    margin: 15px 0;
+    font-size: 11pt;
+  }
+  .considerando {
+    margin: 15px 0;
+  }
+  .considerando-item {
+    text-align: justify;
+    margin: 8px 0 8px 30px;
+    line-height: 1.5;
+  }
+  .parte-resolutiva {
+    margin-top: 20px;
+  }
+  .se-resuelve {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13pt;
+    margin: 15px 0;
+    text-transform: uppercase;
+  }
+  .articulo {
+    margin: 12px 0;
+  }
+  .articulo-titulo {
+    font-weight: bold;
+  }
+  .articulo-cuerpo {
+    text-align: justify;
+    margin: 5px 0 5px 20px;
+    line-height: 1.5;
+  }
+  .clausula {
+    margin: 15px 0 8px 0;
+  }
+  .clausula-titulo {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11pt;
+  }
+  .clausula-cuerpo {
+    text-align: justify;
+    margin: 5px 0 5px 20px;
+    line-height: 1.5;
+  }
+  .firmas {
+    margin-top: 60px;
+    display: table;
+    width: 100%;
+  }
+  .firma-bloque {
+    display: table-cell;
+    width: 45%;
+    text-align: center;
+    padding: 0 20px;
+    vertical-align: top;
+  }
+  .firma-linea {
+    border-top: 1px solid #000;
+    margin: 50px auto 8px auto;
+    width: 80%;
+  }
+  .firma-nombre {
+    font-weight: bold;
+    font-size: 10pt;
+  }
+  .firma-cargo {
+    font-size: 10pt;
+  }
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #999;
+    padding-top: 8px;
+    font-size: 9pt;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  {% if empresa.logo_url %}<img src="{{ empresa.logo_url }}" alt="Logo"><br>{% endif %}
+  <h2>{{ empresa.nombre }}</h2>
+  <p>RUC: {{ empresa.ruc }}</p>
+  {% if empresa.direccion %}<p>{{ empresa.direccion }}{% if empresa.ciudad %} - {{ empresa.ciudad }}{% endif %}</p>{% endif %}
+  {% if empresa.telefono %}<p>Tel: {{ empresa.telefono }}</p>{% endif %}
+</div>
+
+<h1 class="titulo">Contrato de Trabajo — Régimen Ley 276</h1>
+<div class="subtitulo">D.Leg. 276 — Ley de Bases de la Carrera Administrativa y de Remuneraciones del Sector Público</div>
+<div class="numero-contrato">N° {{ contrato.numero }}</div>
+
+<div class="base-legal">
+  Al amparo del Decreto Legislativo N° 276 — Ley de Bases de la Carrera Administrativa,
+  la Ley N° 28175 — Marco del Empleo Público, y demás normas complementarias.
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PARTES</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      <strong>LA ENTIDAD:</strong> {{ empresa.nombre }}, con RUC N° {{ empresa.ruc }},
+      con domicilio en {{ empresa.direccion }},
+      representada por {{ empresa.representante_legal }},
+      {% if empresa.cargo_representante %}{{ empresa.cargo_representante }},{% endif %}
+      con DNI N° {{ empresa.dni_representante }}.
+    </p>
+    <p class="parrafo">
+      <strong>EL SERVIDOR:</strong> {{ empleado.nombre_completo }},
+      identificado(a) con DNI N° {{ empleado.numero_documento }},
+      {% if empleado.direccion %}domiciliado en {{ empleado.direccion }}.{% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">PRIMERA: Objeto</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      El presente instrumento formaliza la vinculación laboral bajo el régimen del
+      Decreto Legislativo N° 276, para el desempeño del cargo de
+      <strong>{{ contrato.cargo }}</strong>{% if contrato.area %}, en la {{ contrato.area }}{% endif %},
+      a <strong>Plazo Indeterminado</strong>, conforme a las condiciones señaladas.
+    </p>
+    {% if contrato.funciones %}
+    <p class="parrafo">Las funciones asignadas comprenden: {{ contrato.funciones }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEGUNDA: Vigencia</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      El presente contrato tiene vigencia a partir del
+      <strong>{{ contrato.fecha_inicio|date:"d \d\e F \d\e Y" }}</strong>,
+      con carácter <strong>indeterminado</strong>.
+      La extinción de la relación laboral solo procederá por las causales
+      establecidas en el D.Leg. 276 y sus normas reglamentarias.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">TERCERA: Remuneración</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      LA ENTIDAD reconocerá a EL SERVIDOR la remuneración mensual de
+      <strong>S/ {{ contrato.salario_base }}</strong> ({{ contrato.salario_base }} Soles),
+      conforme al nivel remunerativo establecido y las disposiciones presupuestales vigentes.
+    </p>
+    <p class="parrafo">
+      Las remuneraciones comprenden los conceptos establecidos en el D.Leg. 276 y el
+      Sistema Único de Remuneraciones, conforme a la escala y nivel del servidor.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">CUARTA: Jornada Laboral</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL SERVIDOR cumplirá una jornada de {{ contrato.jornada }},
+      en el horario {% if contrato.horario_trabajo %}{{ contrato.horario_trabajo }}{% else %}establecido por la institución{% endif %},
+      conforme a las normas de la Carrera Administrativa del Sector Público.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">QUINTA: Lugar de Trabajo</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL SERVIDOR prestará sus servicios en
+      {% if contrato.lugar_trabajo %}{{ contrato.lugar_trabajo }}{% else %}las instalaciones de LA ENTIDAD en {{ empresa.direccion }}{% endif %}.
+      Podrá ser destacado o reasignado conforme a las necesidades del servicio y la normativa vigente.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SEXTA: Derechos y Obligaciones</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      EL SERVIDOR tendrá los derechos reconocidos por el D.Leg. 276: vacaciones de treinta
+      (30) días por año, licencias, permisos, seguridad social, sistema pensionario, capacitación
+      y los demás beneficios que correspondan por ley.
+    </p>
+    <p class="parrafo">
+      EL SERVIDOR se obliga a cumplir sus funciones con eficiencia y probidad, respetar
+      el reglamento interno, guardar reserva de los asuntos oficiales y observar las normas
+      de conducta establecidas para los servidores públicos.
+    </p>
+  </div>
+</div>
+
+<div class="clausula">
+  <span class="clausula-titulo">SÉPTIMA: Disposiciones Finales</span>
+  <div class="clausula-cuerpo">
+    <p class="parrafo">
+      Lo no previsto se regirá por el D.Leg. 276 — Ley de Bases de la Carrera Administrativa,
+      su Reglamento aprobado por D.S. 005-90-PCM y demás normas aplicables al servicio público.
+    </p>
+    <p class="parrafo">
+      En señal de conformidad, las partes suscriben el presente en la ciudad de
+      {{ empresa.ciudad|default:"Lima" }}, a los
+      {{ generacion.fecha|date:"d \d\i\a\s \d\e\l \m\e\s \d\e F \d\e\l \a\ñ\o Y" }}.
+    </p>
+  </div>
+</div>
+
+<div class="firmas">
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empresa.representante_legal }}</div>
+    <div class="firma-cargo">{{ empresa.cargo_representante }}</div>
+    <div class="firma-cargo">{{ empresa.nombre }}</div>
+    <div class="firma-cargo">DNI: {{ empresa.dni_representante }}</div>
+  </div>
+  <div class="firma-bloque">
+    <div class="firma-linea"></div>
+    <div class="firma-nombre">{{ empleado.nombre_completo }}</div>
+    <div class="firma-cargo">EL SERVIDOR PÚBLICO</div>
+    <div class="firma-cargo">DNI: {{ empleado.numero_documento }}</div>
+  </div>
+</div>
+
+<div class="footer">
+  Documento generado el {{ fecha_generacion|date:"d/m/Y H:i" }} — Sistema de Gestión RRHH
+</div>
+
+</body>
+</html>

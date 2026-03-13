@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug del Menú - Sistema RRHH</h1>
+        
+        <div class="section">
+            <h3>1. Estado de las Cookies</h3>
+            <button class="button" onclick="checkCookies()">Verificar Cookies</button>
+            <div id="cookieStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. Test de Login</h3>
+            <button class="button" onclick="testLogin()">Hacer Login (admin/admin123)</button>
+            <div id="loginStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>3. Test del Menú</h3>
+            <button class="button" onclick="testMenu()">Obtener Menú</button>
+            <div id="menuStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>4. Test Completo</h3>
+            <button class="button" onclick="runFullTest()">Ejecutar Test Completo</button>
+            <div id="fullTestStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        function checkCookies() {
+            clearLog('cookieStatus');
+            log('cookieStatus', 'Verificando cookies...');
+            
+            const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                const [name, value] = cookie.trim().split('=');
+                if (name) acc[name] = value;
+                return acc;
+            }, {});
+
+            log('cookieStatus', `Total de cookies: ${Object.keys(cookies).length}`);
+            
+            if (cookies.access_token) {
+                log('cookieStatus', '✅ Cookie access_token encontrada', 'success');
+                log('cookieStatus', `Valor: ${cookies.access_token.substring(0, 20)}...`);
+            } else {
+                log('cookieStatus', '❌ Cookie access_token NO encontrada', 'error');
+            }
+
+            if (cookies.refresh_token) {
+                log('cookieStatus', '✅ Cookie refresh_token encontrada', 'success');
+            } else {
+                log('cookieStatus', '❌ Cookie refresh_token NO encontrada', 'error');
+            }
+
+            if (cookies.user) {
+                log('cookieStatus', '✅ Cookie user encontrada', 'success');
+                try {
+                    const userData = JSON.parse(decodeURIComponent(cookies.user));
+                    log('cookieStatus', `Usuario: ${userData.username} (${userData.email})`);
+                } catch (e) {
+                    log('cookieStatus', 'Error al parsear cookie user', 'error');
+                }
+            } else {
+                log('cookieStatus', '❌ Cookie user NO encontrada', 'error');
+            }
+        }
+
+        async function testLogin() {
+            clearLog('loginStatus');
+            log('loginStatus', 'Iniciando test de login...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log('loginStatus', '✅ Login exitoso', 'success');
+                    log('loginStatus', `Usuario: ${data.user.username}`);
+                    log('loginStatus', `Roles: ${data.user.roles.map(r => r.nombre).join(', ')}`);
+                    
+                    // Verificar cookies después del login
+                    setTimeout(() => {
+                        log('loginStatus', 'Verificando cookies después del login...');
+                        checkCookies();
+                    }, 1000);
+                } else {
+                    log('loginStatus', `❌ Error en login: ${data.message || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                log('loginStatus', `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMenu() {
+            clearLog('menuStatus');
+            log('menuStatus', 'Iniciando test del menú...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/menu/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log('menuStatus', '✅ Menú obtenido exitosamente', 'success');
+                    log('menuStatus', `Total de módulos: ${data.menu.length}`);
+                    
+                    data.menu.forEach((module, index) => {
+                        log('menuStatus', `${index + 1}. ${module.title} (${module.submenu ? module.submenu.length : 0} submenús)`);
+                    });
+                    
+                    log('menuStatus', '<pre>' + JSON.stringify(data.menu, null, 2) + '</pre>');
+                } else {
+                    log('menuStatus', `❌ Error al obtener menú: ${data.message || 'Error desconocido'}`, 'error');
+                    if (response.status === 401) {
+                        log('menuStatus', '🔑 Error 401: No autenticado. Intenta hacer login primero.', 'error');
+                    }
+                }
+            } catch (error) {
+                log('menuStatus', `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function runFullTest() {
+            clearLog('fullTestStatus');
+            log('fullTestStatus', '🚀 Iniciando test completo...');
+            
+            // 1. Verificar cookies iniciales
+            log('fullTestStatus', '1. Verificando cookies iniciales...');
+            checkCookies();
+            
+            // 2. Hacer login
+            log('fullTestStatus', '2. Realizando login...');
+            await testLogin();
+            
+            // 3. Esperar un momento
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // 4. Probar menú
+            log('fullTestStatus', '3. Probando obtención del menú...');
+            await testMenu();
+            
+            log('fullTestStatus', '✅ Test completo finalizado', 'success');
+        }
+
+        // Verificar cookies al cargar la página
+        window.onload = function() {
+            checkCookies();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+# ------------------------------
+# Global ignores for INTRANET monorepo
+# ------------------------------
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# Local agent/tooling folders
+.claude/
+.playwright-mcp/
+
+# Python
+.venv/
+**/__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Django/local runtime
+back/db.sqlite3
+back/media/
+
+# Node
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/coverage/
+front/playwright-report/
+front/test-results/
+
+# Env/secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+!**/.env.template
+
+# Logs/temp
+*.log
+logs/
+back/logs/
+backend_foreground.log
+server_err.log
+server_err2.log
+test_output.log
+nul
+
+# Local binary/doc artifacts
+NOVIEMBRE IND_organized.pdf

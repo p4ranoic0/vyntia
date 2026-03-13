@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido - Intranet RRHH</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #1e40af; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+        .content { padding: 30px; }
+        .credentials { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .credentials p { margin: 5px 0; }
+        .credentials strong { color: #1e40af; }
+        .btn { display: inline-block; background: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 15px 0; font-weight: bold; }
+        .docs-list { background: #fefce8; border: 1px solid #fde68a; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .docs-list h3 { margin-top: 0; color: #92400e; }
+        .docs-list ul { margin: 10px 0 0; padding-left: 20px; }
+        .docs-list li { margin: 5px 0; font-size: 14px; }
+        .footer { background: #f8fafc; padding: 20px 30px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
+        .warning { color: #dc2626; font-weight: bold; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bienvenido a la Intranet</h1>
+            <p>Sistema de Recursos Humanos</p>
+        </div>
+        <div class="content">
+            <p>Estimado/a <strong>{{ nombre_empleado }}</strong>,</p>
+
+            <p>Le damos la bienvenida a nuestra institucion. Se ha creado su cuenta de acceso al sistema de Intranet para que pueda completar su proceso de incorporacion.</p>
+
+            <div class="credentials">
+                <p><strong>Usuario:</strong> {{ username }}</p>
+                <p><strong>Contrasena temporal:</strong> {{ password_temporal }}</p>
+                <p class="warning">Debera cambiar su contrasena en el primer inicio de sesion.</p>
+            </div>
+
+            <p>Para acceder al sistema, haga clic en el siguiente enlace:</p>
+            <p style="text-align: center;">
+                <a href="{{ frontend_url }}/login" class="btn">Acceder al Sistema</a>
+            </p>
+
+            <div class="docs-list">
+                <h3>Documentos requeridos para su incorporacion</h3>
+                <p>Una vez que ingrese al sistema, debera completar sus datos personales y adjuntar los siguientes documentos escaneados:</p>
+                <ul>
+                    <li><strong>Copia de DNI</strong></li>
+                    <li><strong>Declaraciones juradas</strong> firmadas (formatos proporcionados por la entidad)</li>
+                    <li><strong>Certificados de formacion academica</strong> (titulos, diplomas, constancias)</li>
+                    <li><strong>Certificados de trabajo</strong> (experiencia profesional)</li>
+                    <li><strong>Documentos familiares:</strong>
+                        <ul>
+                            <li>Copia de DNI de familiares directos</li>
+                            <li>Acta de matrimonio o union de hecho (si aplica)</li>
+                            <li>Copia de DNI de padres</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <p>Si tiene alguna consulta, no dude en comunicarse con el area de Recursos Humanos.</p>
+
+            <p>Cordialmente,<br><strong>Area de Recursos Humanos</strong></p>
+        </div>
+        <div class="footer">
+            <p>Este es un correo automatico generado por el sistema de Intranet RRHH.</p>
+            <p>Por favor, no responda a este correo.</p>
+        </div>
+    </div>
+</body>
+</html>
