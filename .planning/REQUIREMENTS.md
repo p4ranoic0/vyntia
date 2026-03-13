@@ -129,54 +129,54 @@
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| INFRA-01 | Phase 0 | Pending |
-| INFRA-02 | Phase 0 | Pending |
-| INFRA-03 | Phase 0 | Pending |
-| INFRA-04 | Phase 0 | Pending |
-| ONBD-01 | Phase 1 | Pending |
-| ONBD-02 | Phase 1 | Pending |
-| ONBD-03 | Phase 1 | Pending |
-| ONBD-04 | Phase 1 | Pending |
-| ONBD-05 | Phase 1 | Pending |
-| ONBD-06 | Phase 1 | Pending |
-| ONBD-07 | Phase 1 | Pending |
-| ONBD-08 | Phase 1 | Pending |
-| LEGJ-01 | Phase 2 | Pending |
-| LEGJ-02 | Phase 2 | Pending |
-| LEGJ-03 | Phase 2 | Pending |
-| LEGJ-04 | Phase 2 | Pending |
-| INFO-01 | Phase 2 | Pending |
-| INFO-02 | Phase 2 | Pending |
-| INFO-03 | Phase 2 | Pending |
-| INFO-04 | Phase 2 | Pending |
-| INFO-05 | Phase 2 | Pending |
-| INFO-06 | Phase 2 | Pending |
-| INFO-07 | Phase 2 | Pending |
-| REMU-01 | Phase 3 | Pending |
-| REMU-02 | Phase 3 | Pending |
-| REMU-03 | Phase 3 | Pending |
-| REMU-04 | Phase 3 | Pending |
-| REMU-05 | Phase 3 | Pending |
-| REMU-06 | Phase 3 | Pending |
-| REMU-07 | Phase 3 | Pending |
-| REMU-08 | Phase 3 | Pending |
-| REMU-09 | Phase 3 | Pending |
-| REMU-10 | Phase 3 | Pending |
-| REMU-11 | Phase 3 | Pending |
-| REMU-12 | Phase 3 | Pending |
-| REMU-13 | Phase 3 | Pending |
-| VACA-01 | Phase 4 | Pending |
-| VACA-02 | Phase 4 | Pending |
-| VACA-03 | Phase 4 | Pending |
-| VACA-04 | Phase 4 | Pending |
-| VACA-05 | Phase 4 | Pending |
-| VACA-06 | Phase 4 | Pending |
-| VACA-07 | Phase 4 | Pending |
-| VACA-08 | Phase 4 | Pending |
-| VACA-09 | Phase 4 | Pending |
-| VACA-10 | Phase 4 | Pending |
+| Requirement | Phase | Phase Name | Status |
+|-------------|-------|------------|--------|
+| INFRA-01 | Phase 0 | Infrastructure Fixes | Pending |
+| INFRA-02 | Phase 0 | Infrastructure Fixes | Pending |
+| INFRA-03 | Phase 0 | Infrastructure Fixes | Pending |
+| INFRA-04 | Phase 0 | Infrastructure Fixes | Pending |
+| ONBD-01 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-02 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-03 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-04 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-05 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-06 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-07 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-08 | Phase 1 | Onboarding Self-Service | Pending |
+| LEGJ-01 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| LEGJ-02 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| LEGJ-03 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| LEGJ-04 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-01 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-02 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-03 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-04 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-05 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-06 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| INFO-07 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
+| REMU-01 | Phase 3 | Remuneraciones | Pending |
+| REMU-02 | Phase 3 | Remuneraciones | Pending |
+| REMU-03 | Phase 3 | Remuneraciones | Pending |
+| REMU-04 | Phase 3 | Remuneraciones | Pending |
+| REMU-05 | Phase 3 | Remuneraciones | Pending |
+| REMU-06 | Phase 3 | Remuneraciones | Pending |
+| REMU-07 | Phase 3 | Remuneraciones | Pending |
+| REMU-08 | Phase 3 | Remuneraciones | Pending |
+| REMU-09 | Phase 3 | Remuneraciones | Pending |
+| REMU-10 | Phase 3 | Remuneraciones | Pending |
+| REMU-11 | Phase 3 | Remuneraciones | Pending |
+| REMU-12 | Phase 3 | Remuneraciones | Pending |
+| REMU-13 | Phase 3 | Remuneraciones | Pending |
+| VACA-01 | Phase 4 | Vacaciones | Pending |
+| VACA-02 | Phase 4 | Vacaciones | Pending |
+| VACA-03 | Phase 4 | Vacaciones | Pending |
+| VACA-04 | Phase 4 | Vacaciones | Pending |
+| VACA-05 | Phase 4 | Vacaciones | Pending |
+| VACA-06 | Phase 4 | Vacaciones | Pending |
+| VACA-07 | Phase 4 | Vacaciones | Pending |
+| VACA-08 | Phase 4 | Vacaciones | Pending |
+| VACA-09 | Phase 4 | Vacaciones | Pending |
+| VACA-10 | Phase 4 | Vacaciones | Pending |
 
 **Coverage:**
 - v1 requirements: 41 total
@@ -185,4 +185,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after initial definition*
+*Last updated: 2026-03-13 after roadmap creation*
