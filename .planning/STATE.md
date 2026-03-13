@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 00-infrastructure-fixes-02-PLAN.md
-last_updated: "2026-03-13T22:31:56.216Z"
+stopped_at: Completed 00-infrastructure-fixes-03-PLAN.md
+last_updated: "2026-03-13T22:42:10.769Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -51,6 +51,7 @@ Progress: [███████░░░] 67%
 
 *Updated after each plan completion*
 | Phase 00-infrastructure-fixes P02 | 12 | 1 tasks | 2 files |
+| Phase 00-infrastructure-fixes P03 | 7 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - [Research]: CAS vacation accrual rule for consecutive contracts must be confirmed with HR team before Phase 4 accrual logic is built
 - [Research]: ConfiguracionAfp must be populated with current AFP rates before any payroll calculation runs
 - [Phase 00-infrastructure-fixes]: Use DocumentosDigitales.__new__() to test properties without DB: model has mandatory FKs, new+attribute-assign tests property logic in pure Python
+- [Phase 00-03]: Use b'xhtml2pdf' in raw PDF bytes as stub discriminator — xhtml2pdf embeds its name in producer metadata, ReportLab stub does not
+- [Phase 00-03]: Minimum-size threshold for xhtml2pdf set to 100 bytes (not 5000) — xhtml2pdf uses FlateDecode compression, 29 paragraphs yield ~2500 bytes
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T22:31:56.212Z
-Stopped at: Completed 00-infrastructure-fixes-02-PLAN.md
+Last session: 2026-03-13T22:42:10.766Z
+Stopped at: Completed 00-infrastructure-fixes-03-PLAN.md
 Resume file: None

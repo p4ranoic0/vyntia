@@ -12,7 +12,7 @@ The intranet is built in five sequential phases. Phase 0 unblocks all developmen
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins
+- [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
 - [ ] **Phase 1: Onboarding Self-Service** - Employees receive credentials, upload documents, and track onboarding progress
 - [ ] **Phase 2: Legajo Digital y Gestion de Informacion** - RRHH unified legajo view, document generation, and employee data-change approval workflow
 - [ ] **Phase 3: Remuneraciones** - Monthly payroll calculation, boleta delivery, and statutory Excel exports
@@ -94,7 +94,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Infrastructure Fixes | 2/3 | In Progress|  |
+| 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
 | 1. Onboarding Self-Service | 0/TBD | Not started | - |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
