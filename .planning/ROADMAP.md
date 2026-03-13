@@ -29,7 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Running migrations against the development settings uses MySQL, not PostgreSQL
   3. A generated PDF (certificate, contract, or boleta) contains actual document content — not the placeholder text "DOCUMENTO GENERADO"
   4. Reading `tamano_archivo_legible` on a DocumentosDigitales instance does not alter the value stored in the database
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 00-01-PLAN.md — Fix production.py SyntaxError and align development.py + requirements.txt to MySQL (INFRA-01, INFRA-02)
+- [ ] 00-02-PLAN.md — Fix tamano_archivo_legible mutation bug with unit tests (INFRA-04)
+- [ ] 00-03-PLAN.md — Fix PDF generation to produce real content via xhtml2pdf (INFRA-03)
 
 ### Phase 1: Onboarding Self-Service
 **Goal**: Employees in onboarding can receive their credentials, log in to a restricted view, upload their documents section by section, and see their own progress — while RRHH can monitor completion across all employees
@@ -89,7 +94,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Infrastructure Fixes | 0/TBD | Not started | - |
+| 0. Infrastructure Fixes | 0/3 | Not started | - |
 | 1. Onboarding Self-Service | 0/TBD | Not started | - |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
