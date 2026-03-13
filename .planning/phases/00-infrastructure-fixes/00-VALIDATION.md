@@ -49,7 +49,7 @@ created: 2026-03-13
 
 ## Wave 0 Requirements
 
-- [ ] `back/tests/test_settings.py` — verify MySQL ENGINE in development.py and testing.py, psycopg2 absent from requirements.txt
+- [ ] `back/tests/test_settings.py` — verify PostgreSQL ENGINE in development.py, psycopg2-binary present in requirements.txt, mysqlclient absent
 - [ ] `back/tests/test_pdf_generator.py` — verify generated PDF bytes contain real content (not "DOCUMENTO GENERADO"), verify fallback chain skips WeasyPrint on Windows
 - [ ] `back/tests/test_documentos_digitales.py` — verify `tamano_archivo_legible` does not mutate `self.tamano_archivo`
 

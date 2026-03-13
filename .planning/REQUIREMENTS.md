@@ -8,7 +8,7 @@
 ### Infrastructure (Fixes bloqueantes)
 
 - [ ] **INFRA-01**: El sistema arranca en producción sin errores de sintaxis en settings
-- [ ] **INFRA-02**: `requirements.txt` declara el driver de base de datos correcto (mysqlclient, no psycopg2)
+- [ ] **INFRA-02**: `requirements.txt` declara `psycopg2-binary` (PostgreSQL) y el driver está instalado en el .venv; todos los settings usan `django.db.backends.postgresql`
 - [ ] **INFRA-03**: Los PDFs generados contienen contenido real (no stub "DOCUMENTO GENERADO") usando xhtml2pdf como motor principal en Windows
 - [ ] **INFRA-04**: La propiedad `tamano_archivo_legible` no muta el campo en la base de datos
 

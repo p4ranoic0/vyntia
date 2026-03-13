@@ -78,7 +78,7 @@ El servidor completa su información una sola vez — al ingresar — y esa info
 
 ## Context
 
-- **Stack existente**: Django 4.2 + DRF backend, React 18 + TypeScript + Vite frontend, MySQL `bd_rrhh_intranet`
+- **Stack existente**: Django 4.2 + DRF backend, React 18 + TypeScript + Vite frontend, PostgreSQL
 - **Modelos clave ya existentes**: `Empleado`, `Area`, `DatosLaborales`, `ContratosAdendas`, `DocumentosDigitales`, `PlanillaMensual`, `OnboardingEmpleado`, `Rol`, `Permiso`
 - **API base**: `/api/v1/` con patrón ViewSet + `APIResponse` wrapper. Frontend con React Query v5
 - **PDF**: Cadena xhtml2pdf → WeasyPrint → ReportLab (solo ReportLab confiable en Windows)
@@ -91,7 +91,7 @@ El servidor completa su información una sola vez — al ingresar — y esa info
 - **Tech**: Stack fijo (Django + React) — no introducir nuevas tecnologías sin justificación
 - **PDF en Windows**: Solo ReportLab es confiable — WeasyPrint falla por dependencia GTK
 - **Legislación**: Cálculos de remuneraciones deben seguir normativa peruana (SUNAT, SUNAFIL, AFP Net, PDT-PLAME)
-- **Datos**: MySQL — ORM patterns específicos (PKs personalizados: `empleado_id`, `contrato_id`)
+- **Datos**: PostgreSQL — ORM patterns específicos (PKs personalizados: `empleado_id`, `contrato_id`)
 - **Seguridad**: Empleados en onboarding solo ven sus propias secciones — no acceso admin
 
 ## Key Decisions
