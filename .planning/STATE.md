@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 00-01-PLAN.md — infrastructure settings fixes (production.py SyntaxError + psycopg2 verified)
-last_updated: "2026-03-13T22:31:37.346Z"
+stopped_at: Completed 00-infrastructure-fixes-02-PLAN.md
+last_updated: "2026-03-13T22:31:56.216Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
@@ -50,6 +50,7 @@ Progress: [███████░░░] 67%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 00-infrastructure-fixes P02 | 12 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,7 @@ Recent decisions affecting current work:
 - [Research]: AFP Net and PDT-PLAME exact column schemas need validation against current spec before Phase 3 export implementation
 - [Research]: CAS vacation accrual rule for consecutive contracts must be confirmed with HR team before Phase 4 accrual logic is built
 - [Research]: ConfiguracionAfp must be populated with current AFP rates before any payroll calculation runs
+- [Phase 00-infrastructure-fixes]: Use DocumentosDigitales.__new__() to test properties without DB: model has mandatory FKs, new+attribute-assign tests property logic in pure Python
 
 ### Pending Todos
 
@@ -79,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13
-Stopped at: Completed 00-01-PLAN.md — infrastructure settings fixes (production.py SyntaxError + psycopg2 verified)
+Last session: 2026-03-13T22:31:56.212Z
+Stopped at: Completed 00-infrastructure-fixes-02-PLAN.md
 Resume file: None
