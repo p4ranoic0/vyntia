@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: Completed 00-01-PLAN.md — infrastructure settings fixes (production.py SyntaxError + psycopg2 verified)
+last_updated: "2026-03-13T22:31:37.346Z"
+last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
+progress:
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 2
+  percent: 67
+---
+
 # Project State
 
 ## Project Reference
@@ -10,27 +26,27 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 ## Current Position
 
 Phase: 0 of 4 (Infrastructure Fixes)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-13 — Roadmap created from requirements and research
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 3 min
+- Total execution time: 0.05 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 00-infrastructure-fixes | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: none yet
+- Last 5 plans: 00-01 (3 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -42,6 +58,9 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [00-01]: PostgreSQL is the canonical database engine — django.db.backends.postgresql in all settings files (confirmed correct, no changes needed to development.py)
+- [00-01]: psycopg2-binary>=2.9.0 is the declared driver; psycopg2-binary 2.9.11 is installed in .venv
+- [00-01]: production.py OPTIONS block (sslmode, connect_timeout) left intact — valid PostgreSQL OPTIONS
 - [Roadmap]: Phase 3 (Remuneraciones) depends only on Phase 0 — can theoretically run in parallel with Phases 1-2, but sequential ordering chosen for safety
 - [Research]: AFP Net and PDT-PLAME exact column schemas need validation against current spec before Phase 3 export implementation
 - [Research]: CAS vacation accrual rule for consecutive contracts must be confirmed with HR team before Phase 4 accrual logic is built
@@ -61,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-13
-Stopped at: Roadmap and STATE.md written. Ready to begin Phase 0 planning.
+Stopped at: Completed 00-01-PLAN.md — infrastructure settings fixes (production.py SyntaxError + psycopg2 verified)
 Resume file: None
