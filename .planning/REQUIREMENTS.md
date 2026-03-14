@@ -137,11 +137,11 @@
 | INFRA-04 | Phase 0 | Infrastructure Fixes | Pending |
 | ONBD-01 | Phase 1 | Onboarding Self-Service | Pending |
 | ONBD-02 | Phase 1 | Onboarding Self-Service | Pending |
-| ONBD-03 | Phase 1 | Onboarding Self-Service | Pending |
-| ONBD-04 | Phase 1 | Onboarding Self-Service | Pending |
-| ONBD-05 | Phase 1 | Onboarding Self-Service | Pending |
-| ONBD-06 | Phase 1 | Onboarding Self-Service | Pending |
-| ONBD-07 | Phase 1 | Onboarding Self-Service | Pending |
+| ONBD-03 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-04 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-05 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-06 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-07 | Phase 1 | Onboarding Self-Service | Complete |
 | ONBD-08 | Phase 1 | Onboarding Self-Service | Pending |
 | LEGJ-01 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
 | LEGJ-02 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |

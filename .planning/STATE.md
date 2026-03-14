@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-14T05:04:53.604Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-03-14T05:17:20.249Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 5
+  completed_plans: 6
   percent: 67
 ---
 
@@ -54,6 +54,7 @@ Progress: [███████░░░] 67%
 | Phase 00-infrastructure-fixes P03 | 7 | 2 tasks | 2 files |
 | Phase 01-onboarding-self-service P01 | 15 | 1 tasks | 4 files |
 | Phase 01-onboarding-self-service P02 | 6 | 3 tasks | 3 files |
+| Phase 01-onboarding-self-service P03 | 35 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase 01-01]: Wave 1 must change actualizar_estado_onboarding return type to dict with historial_cambio, notificacion_enviada, progreso_porcentaje keys
 - [Phase 01-01]: CURRENT_TIMESTAMP replaces NOW() in migration 0020 — ANSI SQL works on SQLite (test), PostgreSQL, and MySQL
 - [Phase 01-02]: conftest hr_usuario fixture must assign Administrador RRHH role via UsuarioRoles — tipo_usuario field alone is not checked by RRHHPermission or @require_hr()
+- [Phase 01-03]: crear_nueva_version is instance method — find existing doc first, then call instance.crear_nueva_version(); create fresh if no existing doc
+- [Phase 01-03]: actualizar_estado_onboarding now returns dict with historial_cambio, notificacion_enviada, estado_protegido, progreso_porcentaje — all callers updated to unwrap result['onboarding']
+- [Phase 01-03]: OnboardingViewSet.get_permissions() override: employee-facing upload actions use IsAuthenticated() instead of class-level RRHHPermission
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T05:04:53.601Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-03-14T05:17:20.245Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
