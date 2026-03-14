@@ -2250,6 +2250,34 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 message="Error al reenviar el email", status_code=500
             )
 
+    @action(detail=True, methods=["post"], url_path="corregir-correo")
+    @require_hr()
+    def corregir_correo(self, request, pk=None):
+        """Actualiza el correo del empleado y reenvía el email de bienvenida."""
+        from app_rrhh.services.onboarding_service import OnboardingService
+
+        nuevo_correo = request.data.get("correo_personal", "").strip()
+        if not nuevo_correo:
+            return APIResponse.error(message="correo_personal es requerido")
+        try:
+            onboarding = self.get_object()
+            onboarding.empleado.correo_personal = nuevo_correo
+            onboarding.empleado.save(update_fields=["correo_personal"])
+            onboarding.usuario.email = nuevo_correo
+            onboarding.usuario.save(update_fields=["email"])
+            result = OnboardingService.reenviar_email_bienvenida(onboarding.onboarding_id)
+            if result and result.get("email_enviado"):
+                return APIResponse.success(
+                    message="Correo actualizado y email de bienvenida reenviado",
+                    data={"email_enviado": True, "correo_personal": nuevo_correo},
+                )
+            return APIResponse.error(
+                message="Correo actualizado pero el email no pudo enviarse. Revise la configuración SMTP.",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as e:
+            return APIResponse.error(message=str(e))
+
     @action(detail=True, methods=["post"], url_path="actualizar-estado")
     @require_hr()
     def actualizar_estado(self, request, pk=None):
