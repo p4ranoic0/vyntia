@@ -261,18 +261,40 @@ class OnboardingService:
         """
         Recalcula el estado del onboarding basado en los documentos subidos.
         Verifica cada categoria de documentos requeridos.
+
+        Acepta empleado_id (FK a Empleado) o onboarding_id (PK de OnboardingEmpleado).
+        Retorna un dict con claves:
+          - onboarding: instancia actualizada de OnboardingEmpleado
+          - historial_cambio: dict con estado_anterior y estado_nuevo
+          - notificacion_enviada: bool
+          - estado_protegido: bool (True si el estado no retrocedió)
+          - progreso_porcentaje: int (0-100)
+        Retorna None si no se encuentra el onboarding.
         """
+        # Intentar lookup por empleado_id primero, luego por onboarding_id (PK)
+        onboarding = None
         try:
             onboarding = OnboardingEmpleado.objects.get(empleado_id=empleado_id)
         except OnboardingEmpleado.DoesNotExist:
-            return None
+            try:
+                onboarding = OnboardingEmpleado.objects.get(onboarding_id=empleado_id)
+            except OnboardingEmpleado.DoesNotExist:
+                return None
+
+        estado_anterior = onboarding.estado_onboarding
 
         if onboarding.estado_onboarding == "completado":
-            return onboarding
+            return {
+                "onboarding": onboarding,
+                "historial_cambio": {"estado_anterior": estado_anterior, "estado_nuevo": estado_anterior},
+                "notificacion_enviada": False,
+                "estado_protegido": True,
+                "progreso_porcentaje": onboarding.progreso_porcentaje,
+            }
 
         # Obtener documentos del empleado
         documentos = DocumentosDigitales.objects.filter(
-            empleado_id=empleado_id,
+            empleado_id=onboarding.empleado_id,
             es_version_actual=True,
         )
 
@@ -330,9 +352,28 @@ class OnboardingService:
             estado_datos="activo"
         ).exists()
 
+        # Proteger estado: no retroceder si ya está en pendiente_validacion o superior
+        ESTADOS_AVANZADOS = {"pendiente_validacion", "en_revision", "observado"}
+        estado_protegido = estado_anterior in ESTADOS_AVANZADOS
+
         # Actualizar estado
         onboarding.actualizar_estado()
-        return onboarding
+
+        # Si el estado estaba protegido y retrocedió, restaurar
+        if estado_protegido and onboarding.estado_onboarding == "pendiente_documentos":
+            onboarding.estado_onboarding = estado_anterior
+            onboarding.save(update_fields=["estado_onboarding"])
+
+        estado_nuevo = onboarding.estado_onboarding
+        notificacion_enviada = False
+
+        return {
+            "onboarding": onboarding,
+            "historial_cambio": {"estado_anterior": estado_anterior, "estado_nuevo": estado_nuevo},
+            "notificacion_enviada": notificacion_enviada,
+            "estado_protegido": estado_protegido,
+            "progreso_porcentaje": onboarding.progreso_porcentaje,
+        }
 
     @staticmethod
     def obtener_documentos_pendientes(empleado_id):
@@ -369,6 +410,28 @@ class OnboardingService:
                         )
 
         return pendientes
+
+    @staticmethod
+    def corregir_correo_personal(onboarding_id, nuevo_correo):
+        """
+        Actualiza el correo personal del empleado y el email del usuario asociado.
+
+        Acepta onboarding_id (PK de OnboardingEmpleado).
+        Retorna el onboarding actualizado, o None si no se encuentra.
+        """
+        try:
+            onboarding = OnboardingEmpleado.objects.select_related(
+                "empleado", "usuario"
+            ).get(onboarding_id=onboarding_id)
+        except OnboardingEmpleado.DoesNotExist:
+            return None
+
+        onboarding.empleado.correo_personal = nuevo_correo
+        onboarding.empleado.save(update_fields=["correo_personal"])
+        onboarding.usuario.email = nuevo_correo
+        onboarding.usuario.save(update_fields=["email"])
+
+        return onboarding
 
     @staticmethod
     def reenviar_email_bienvenida(onboarding_id, nuevo_password=True):

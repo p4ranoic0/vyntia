@@ -43,6 +43,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from .filters import AreaFilter, DatosLaboralesFilter, EmpleadoFilter, UsuarioFilter
@@ -2108,6 +2109,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     ordering_fields = ["fecha_inicio", "estado_onboarding", "fecha_completado"]
     ordering = ["-fecha_inicio"]
 
+    def get_permissions(self):
+        """Allow authenticated employees to use upload actions."""
+        if self.action in ("subir_foto", "subir_documento", "mi_onboarding", "retrieve"):
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
     def get_serializer_class(self):
         if self.action == "create":
             return OnboardingIniciarSerializer
@@ -2163,9 +2170,8 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 )
         # Recalcular estado si no está completado
         if onboarding.estado_onboarding != "completado":
-            onboarding = OnboardingService.actualizar_estado_onboarding(
-                onboarding.empleado_id
-            ) or onboarding
+            resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+            onboarding = (resultado["onboarding"] if isinstance(resultado, dict) else resultado) or onboarding
         serializer = self.get_serializer(onboarding)
         return APIResponse.success(data=serializer.data)
 
@@ -2181,9 +2187,8 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             ).get(usuario=request.user)
             # Recalcular estado en cada consulta para reflejar datos actualizados
             if onboarding.estado_onboarding != "completado":
-                onboarding = OnboardingService.actualizar_estado_onboarding(
-                    onboarding.empleado_id
-                ) or onboarding
+                resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+                onboarding = (resultado["onboarding"] if isinstance(resultado, dict) else resultado) or onboarding
             serializer = self.get_serializer(onboarding)
             return APIResponse.success(data=serializer.data)
         except OnboardingEmpleado.DoesNotExist:
@@ -2285,13 +2290,136 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         from app_rrhh.services.onboarding_service import OnboardingService
 
         onboarding = self.get_object()
-        updated = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
-        if not updated:
+        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        if not resultado:
             return APIResponse.error(message="No se encontró el onboarding", status_code=404)
+        updated = resultado["onboarding"] if isinstance(resultado, dict) else resultado
         serializer = OnboardingEmpleadoSerializer(updated)
         return APIResponse.success(
             data=serializer.data,
             message="Estado de onboarding actualizado",
+        )
+
+    @action(detail=False, methods=["post"], url_path="subir-foto", parser_classes=[MultiPartParser])
+    @require_authenticated()
+    def subir_foto(self, request):
+        """El empleado en onboarding sube su foto de perfil (JPG o PNG)."""
+        from app_rrhh.services.onboarding_service import OnboardingService
+
+        archivo = request.FILES.get("archivo")
+        if not archivo:
+            return APIResponse.error(message="Se requiere el archivo de foto")
+        if archivo.content_type not in ("image/jpeg", "image/png"):
+            return APIResponse.error(message="Solo se permiten imágenes JPG o PNG")
+        try:
+            onboarding = OnboardingEmpleado.objects.get(usuario=request.user)
+        except OnboardingEmpleado.DoesNotExist:
+            return APIResponse.error(message="No tiene un proceso de onboarding activo")
+        empleado = onboarding.empleado
+        # Usar crear_nueva_version si ya existe una foto, o crear nueva
+        doc_existente = DocumentosDigitales.objects.filter(
+            empleado=empleado,
+            tipo_documento="foto",
+            es_version_actual=True,
+        ).first()
+        if doc_existente:
+            doc = doc_existente.crear_nueva_version(archivo=archivo, usuario=request.user)
+        else:
+            doc = DocumentosDigitales.objects.create(
+                empleado=empleado,
+                tipo_documento="foto",
+                categoria="personal",
+                nombre_documento="Foto de perfil",
+                archivo=archivo,
+                nombre_archivo_original=archivo.name,
+                formato_archivo=archivo.name.rsplit(".", 1)[-1].lower() if "." in archivo.name else "",
+                tamano_archivo=archivo.size,
+                estado_documento="pendiente_revision",
+                nivel_acceso="restringido",
+                subido_por=request.user,
+            )
+        empleado.ruta_fotografia = doc.archivo.name
+        empleado.save(update_fields=["ruta_fotografia"])
+        OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        return APIResponse.success(
+            message="Foto subida exitosamente",
+            data={
+                "documento_id": doc.pk,
+                "archivo_url": request.build_absolute_uri(doc.archivo.url) if doc.archivo else None,
+                "estado_documento": doc.estado_documento,
+                "fecha_subida": doc.fecha_subida.isoformat() if doc.fecha_subida else None,
+            },
+        )
+
+    @action(detail=False, methods=["post"], url_path="subir-documento", parser_classes=[MultiPartParser])
+    @require_authenticated()
+    def subir_documento(self, request):
+        """El empleado en onboarding sube un documento PDF a su legajo."""
+        from app_rrhh.services.onboarding_service import OnboardingService
+
+        _TIPO_CATEGORIA_MAP = {
+            "dni": "personal",
+            "carnet_extranjeria": "personal",
+            "dni_familiar": "familiar",
+            "certificado_nacimiento": "familiar",
+            "certificado_estudios": "academico",
+            "titulo_profesional": "academico",
+            "diploma": "academico",
+            "declaracion_jurada": "laboral",
+            "cv": "laboral",
+            "certificado_trabajo": "laboral",
+            "carta_recomendacion": "laboral",
+        }
+
+        archivo = request.FILES.get("archivo")
+        tipo_documento = request.data.get("tipo_documento", "").strip()
+        if not archivo:
+            return APIResponse.error(message="Se requiere el archivo")
+        if archivo.content_type != "application/pdf":
+            return APIResponse.error(message="Solo se permiten archivos PDF")
+        if tipo_documento not in _TIPO_CATEGORIA_MAP:
+            return APIResponse.error(
+                message=f"Tipo de documento no válido. Opciones: {', '.join(_TIPO_CATEGORIA_MAP.keys())}"
+            )
+        try:
+            onboarding = OnboardingEmpleado.objects.get(usuario=request.user)
+        except OnboardingEmpleado.DoesNotExist:
+            return APIResponse.error(message="No tiene un proceso de onboarding activo")
+        empleado = onboarding.empleado
+        categoria = _TIPO_CATEGORIA_MAP[tipo_documento]
+        nombre_documento = request.data.get("nombre_documento", tipo_documento.replace("_", " ").title())
+        # Usar crear_nueva_version si ya existe el mismo tipo_documento
+        doc_existente = DocumentosDigitales.objects.filter(
+            empleado=empleado,
+            tipo_documento=tipo_documento,
+            es_version_actual=True,
+        ).first()
+        if doc_existente:
+            doc = doc_existente.crear_nueva_version(archivo=archivo, usuario=request.user)
+        else:
+            doc = DocumentosDigitales.objects.create(
+                empleado=empleado,
+                tipo_documento=tipo_documento,
+                categoria=categoria,
+                nombre_documento=nombre_documento,
+                archivo=archivo,
+                nombre_archivo_original=archivo.name,
+                formato_archivo=archivo.name.rsplit(".", 1)[-1].lower() if "." in archivo.name else "",
+                tamano_archivo=archivo.size,
+                estado_documento="pendiente_revision",
+                nivel_acceso="restringido",
+                subido_por=request.user,
+            )
+        OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        return APIResponse.success(
+            message="Documento subido exitosamente",
+            data={
+                "documento_id": doc.pk,
+                "tipo_documento": doc.tipo_documento,
+                "estado_documento": doc.estado_documento,
+                "fecha_subida": doc.fecha_subida.isoformat() if doc.fecha_subida else None,
+                "nombre_documento": doc.nombre_documento,
+            },
         )
 
 
