@@ -1023,6 +1023,7 @@ class EmpleadoUpdateSerializer(serializers.ModelSerializer):
             "entidad_bancaria",
             "numero_cuenta_bancaria",
             "estado_empleado",
+            "fecha_nacimiento",
         ]
 
     def validate_correo_personal(self, value):
