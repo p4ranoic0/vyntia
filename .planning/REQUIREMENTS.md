@@ -15,7 +15,7 @@
 ### Onboarding
 
 - [x] **ONBD-01**: El sistema envía correo de bienvenida al empleado cuando se crea su usuario de onboarding
-- [ ] **ONBD-02**: El empleado en onboarding accede a una vista restringida — solo ve sus propias secciones de carga, sin acceso al panel de administración
+- [x] **ONBD-02**: El empleado en onboarding accede a una vista restringida — solo ve sus propias secciones de carga, sin acceso al panel de administración
 - [x] **ONBD-03**: El empleado puede subir su foto de perfil desde la sección de datos personales
 - [x] **ONBD-04**: El empleado puede subir documentos PDF en datos personales (DNI, carné de extranjería)
 - [x] **ONBD-05**: El empleado puede subir documentos PDF en datos familiares (DNI de familiar, partida de nacimiento de dependiente)

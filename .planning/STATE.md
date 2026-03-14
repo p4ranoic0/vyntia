@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-03-14T05:17:20.249Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-03-14T08:30:21.819Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 67
 ---
 
@@ -55,6 +55,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P01 | 15 | 1 tasks | 4 files |
 | Phase 01-onboarding-self-service P02 | 6 | 3 tasks | 3 files |
 | Phase 01-onboarding-self-service P03 | 35 | 2 tasks | 3 files |
+| Phase 01-onboarding-self-service P04 | 15 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 01-03]: crear_nueva_version is instance method — find existing doc first, then call instance.crear_nueva_version(); create fresh if no existing doc
 - [Phase 01-03]: actualizar_estado_onboarding now returns dict with historial_cambio, notificacion_enviada, estado_protegido, progreso_porcentaje — all callers updated to unwrap result['onboarding']
 - [Phase 01-03]: OnboardingViewSet.get_permissions() override: employee-facing upload actions use IsAuthenticated() instead of class-level RRHHPermission
+- [Phase 01-onboarding-self-service]: OnboardingRoute uses enabled: user?.tipo_usuario === 'empleado' — skips React Query for admin/RRHH users entirely
+- [Phase 01-onboarding-self-service]: api.ts FormData Content-Type guard was already present — no modification needed
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T05:17:20.245Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-14T08:30:21.816Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
