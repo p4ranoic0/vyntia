@@ -6,6 +6,8 @@ import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { useAuth } from '@/hooks/useAuth'
+import { onboardingService } from '@/services/onboardingService'
+import { useQuery } from '@tanstack/react-query'
 import AccessDeniedPage from '@/pages/AccessDeniedPage'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import HROverviewDashboard from '@/pages/HROverviewDashboard'
@@ -77,6 +79,25 @@ function AdminRoute({ children }: Readonly<{ children: React.ReactNode }>) {
   return <>{children}</>
 }
 
+/** Ruta que redirige empleados con onboarding activo hacia /onboarding */
+function OnboardingRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const { data: onboarding, isLoading } = useQuery({
+    queryKey: ['mi-onboarding'],
+    queryFn: () => onboardingService.getMiOnboarding(),
+    enabled: user?.tipo_usuario === 'empleado',
+    retry: false,
+    staleTime: 30_000,
+  })
+
+  if (user?.tipo_usuario !== 'empleado') return <>{children}</>
+  if (isLoading) return <div className="flex items-center justify-center h-screen"><span className="text-muted-foreground">Cargando...</span></div>
+  if (onboarding && onboarding.estado_onboarding !== 'completado') {
+    return <Navigate to="/onboarding" replace />
+  }
+  return <>{children}</>
+}
+
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth()
 
@@ -109,8 +130,8 @@ function AppRoutes() {
     <Layout>
       <Routes>
         {/* --- Rutas comunes (todos los usuarios autenticados) --- */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<OnboardingRoute><Dashboard /></OnboardingRoute>} />
+        <Route path="/dashboard" element={<OnboardingRoute><Dashboard /></OnboardingRoute>} />
         <Route path="/cambiar-password" element={<ChangePasswordPage />} />
         <Route path="/acceso-denegado" element={<AccessDeniedPage />} />
 
