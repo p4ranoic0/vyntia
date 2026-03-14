@@ -49,35 +49,26 @@ class TestPhotoUpload:
     """ONBD-03: Subida de foto de perfil crea DocumentosDigitales con tipo_documento='foto'."""
 
     def test_photo_upload_creates_documento(self, onboarding_client):
-        """POST al endpoint de documentos con tipo='foto' debe crear DocumentosDigitales.
-
-        DEBE FALLAR en RED — el endpoint actualmente no crea tipo_documento='foto'
-        ni establece ruta_fotografia en el Empleado.
+        """POST /api/v1/rrhh/onboarding/subir-foto/ crea DocumentosDigitales con tipo='foto'
+        y actualiza ruta_fotografia en el Empleado.
         """
         onboarding = onboarding_client._onboarding
         empleado_id = onboarding.empleado.empleado_id
 
-        # Simular archivo de imagen pequeño
+        # Simular archivo de imagen pequeño (PNG header)
         imagen = io.BytesIO(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
         imagen.name = "foto_perfil.png"
 
-        url = "/api/v1/rrhh/legajo/"
+        url = "/api/v1/rrhh/onboarding/subir-foto/"
         response = onboarding_client.post(
             url,
-            {
-                "empleado": empleado_id,
-                "tipo_documento": "foto",
-                "categoria": "personal",
-                "nombre_documento": "Foto de perfil",
-                "archivo": imagen,
-            },
+            {"archivo": imagen},
             format="multipart",
         )
 
-        # El test falla RED si el endpoint no acepta 'foto' como tipo válido
         assert response.status_code in (200, 201), (
             f"Se esperaba 200/201 pero se obtuvo {response.status_code}. "
-            "El endpoint de legajo no soporta tipo_documento='foto' todavía."
+            f"Respuesta: {response.data}"
         )
 
         # Verificar que se creó el documento con tipo foto
@@ -88,6 +79,12 @@ class TestPhotoUpload:
         assert existe_foto, (
             "No se encontró DocumentosDigitales con tipo_documento='foto' "
             "para el empleado tras el upload."
+        )
+
+        # Verificar que se actualizó ruta_fotografia
+        onboarding.empleado.refresh_from_db()
+        assert onboarding.empleado.ruta_fotografia, (
+            "ruta_fotografia del empleado no fue actualizada tras subir la foto."
         )
 
 
