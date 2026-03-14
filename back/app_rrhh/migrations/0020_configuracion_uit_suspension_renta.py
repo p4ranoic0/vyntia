@@ -162,10 +162,10 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
                 INSERT INTO configuracion_uit (anio, valor_uit, tope_renta_cuarta_uit, porcentaje_renta_cuarta, estado, fecha_creacion, fecha_actualizacion)
-                VALUES 
-                    (2024, 5150.00, 45.00, 8.00, 'inactivo', NOW(), NOW()),
-                    (2025, 5350.00, 45.00, 8.00, 'inactivo', NOW(), NOW()),
-                    (2026, 5150.00, 45.00, 8.00, 'activo', NOW(), NOW());
+                VALUES
+                    (2024, 5150.00, 45.00, 8.00, 'inactivo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                    (2025, 5350.00, 45.00, 8.00, 'inactivo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                    (2026, 5150.00, 45.00, 8.00, 'activo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
             """,
             reverse_sql="DELETE FROM configuracion_uit WHERE anio IN (2024, 2025, 2026);",
         ),
