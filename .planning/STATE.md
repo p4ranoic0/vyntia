@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md (Wave 0 RED scaffold)
-last_updated: "2026-03-14T04:57:16.505Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-14T05:04:53.604Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 4
+  completed_plans: 5
   percent: 67
 ---
 
@@ -53,6 +53,7 @@ Progress: [███████░░░] 67%
 | Phase 00-infrastructure-fixes P02 | 12 | 1 tasks | 2 files |
 | Phase 00-infrastructure-fixes P03 | 7 | 2 tasks | 2 files |
 | Phase 01-onboarding-self-service P01 | 15 | 1 tasks | 4 files |
+| Phase 01-onboarding-self-service P02 | 6 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ Recent decisions affecting current work:
 - [Phase 00-03]: Minimum-size threshold for xhtml2pdf set to 100 bytes (not 5000) — xhtml2pdf uses FlateDecode compression, 29 paragraphs yield ~2500 bytes
 - [Phase 01-01]: Wave 1 must change actualizar_estado_onboarding return type to dict with historial_cambio, notificacion_enviada, progreso_porcentaje keys
 - [Phase 01-01]: CURRENT_TIMESTAMP replaces NOW() in migration 0020 — ANSI SQL works on SQLite (test), PostgreSQL, and MySQL
+- [Phase 01-02]: conftest hr_usuario fixture must assign Administrador RRHH role via UsuarioRoles — tipo_usuario field alone is not checked by RRHHPermission or @require_hr()
 
 ### Pending Todos
 
@@ -87,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T04:57:16.502Z
-Stopped at: Completed 01-01-PLAN.md (Wave 0 RED scaffold)
+Last session: 2026-03-14T05:04:53.601Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
