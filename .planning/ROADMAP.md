@@ -12,7 +12,7 @@ The intranet is built in five sequential phases. Phase 0 unblocks all developmen
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
+- [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
 - [ ] **Phase 1: Onboarding Self-Service** - Employees receive credentials, upload documents, and track onboarding progress
 - [ ] **Phase 2: Legajo Digital y Gestion de Informacion** - RRHH unified legajo view, document generation, and employee data-change approval workflow
 - [ ] **Phase 3: Remuneraciones** - Monthly payroll calculation, boleta delivery, and statutory Excel exports
@@ -46,7 +46,16 @@ Plans:
   3. The employee can upload their profile photo and PDF documents in each section: personal (DNI, carnet), familiar (DNI familiar, partida de nacimiento), academic (certificados, diplomas), and laboral (DDJJ, CV, certificado de trabajo, carta de recomendacion) — without being able to edit the laboral fields managed by RRHH
   4. The employee's onboarding screen shows a completion percentage that updates as they upload documents
   5. RRHH can see a panel listing every employee's onboarding completion percentage and identify who has outstanding items
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Wave 0: Test scaffold — conftest.py + test_onboarding_service.py + test_onboarding_api.py (ONBD-01, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07, ONBD-08)
+- [ ] 01-02-PLAN.md — Wave 1: Backend serializer (last_login) + corregir-correo endpoint (ONBD-01, ONBD-08)
+- [ ] 01-03-PLAN.md — Wave 1: Backend subir-foto + subir-documento actions (ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
+- [ ] 01-04-PLAN.md — Wave 2: Frontend routing guard + DocumentUploadZone + upload service + types (ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
+- [ ] 01-05-PLAN.md — Wave 3: Employee self-service tabbed page (OnboardingEmployeePage + 4 tabs) (ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
+- [ ] 01-06-PLAN.md — Wave 3: RRHH admin panel enhancements (progress bars, alerts, email correction flow) (ONBD-01, ONBD-08)
+- [ ] 01-07-PLAN.md — Wave 4: Human verification checkpoint (ONBD-01 through ONBD-08)
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand
@@ -95,7 +104,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
-| 1. Onboarding Self-Service | 0/TBD | Not started | - |
+| 1. Onboarding Self-Service | 0/7 | Not started | - |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
 | 4. Vacaciones | 0/TBD | Not started | - |

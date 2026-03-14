@@ -14,14 +14,14 @@
 
 ### Onboarding
 
-- [ ] **ONBD-01**: El sistema envía correo de bienvenida al empleado cuando se crea su usuario de onboarding
+- [x] **ONBD-01**: El sistema envía correo de bienvenida al empleado cuando se crea su usuario de onboarding
 - [ ] **ONBD-02**: El empleado en onboarding accede a una vista restringida — solo ve sus propias secciones de carga, sin acceso al panel de administración
-- [ ] **ONBD-03**: El empleado puede subir su foto de perfil desde la sección de datos personales
-- [ ] **ONBD-04**: El empleado puede subir documentos PDF en datos personales (DNI, carné de extranjería)
-- [ ] **ONBD-05**: El empleado puede subir documentos PDF en datos familiares (DNI de familiar, partida de nacimiento de dependiente)
-- [ ] **ONBD-06**: El empleado puede subir documentos PDF en datos académicos (certificados de estudios, diplomas)
-- [ ] **ONBD-07**: El empleado puede subir documentos PDF en datos laborales (DDJJ, CV, certificado de trabajo anterior, carta de recomendación) — sin editar los campos laborales que gestiona RRHH
-- [ ] **ONBD-08**: RRHH puede ver el porcentaje de completitud del onboarding de cada empleado
+- [x] **ONBD-03**: El empleado puede subir su foto de perfil desde la sección de datos personales
+- [x] **ONBD-04**: El empleado puede subir documentos PDF en datos personales (DNI, carné de extranjería)
+- [x] **ONBD-05**: El empleado puede subir documentos PDF en datos familiares (DNI de familiar, partida de nacimiento de dependiente)
+- [x] **ONBD-06**: El empleado puede subir documentos PDF en datos académicos (certificados de estudios, diplomas)
+- [x] **ONBD-07**: El empleado puede subir documentos PDF en datos laborales (DDJJ, CV, certificado de trabajo anterior, carta de recomendación) — sin editar los campos laborales que gestiona RRHH
+- [x] **ONBD-08**: RRHH puede ver el porcentaje de completitud del onboarding de cada empleado
 
 ### Legajo Digital
 
