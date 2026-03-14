@@ -13,6 +13,8 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from app_rrhh.models import Empleado, OnboardingEmpleado, Usuario
+from app_rrhh.models.roles import Rol
+from app_rrhh.models.sistema import UsuarioRoles
 
 
 def _make_empleado(**kwargs):
@@ -117,14 +119,29 @@ def onboarding_factory(db):
     yield factory
 
 
+def _assign_rrhh_role(usuario):
+    """Asigna el rol 'Administrador RRHH' al usuario dado (crea el rol si no existe)."""
+    rol, _ = Rol.objects.get_or_create(
+        nombre_rol="Administrador RRHH",
+        defaults={"estado_rol": "activo", "nivel_jerarquico": 2, "es_rol_sistema": True},
+    )
+    UsuarioRoles.objects.get_or_create(
+        usuario=usuario,
+        rol=rol,
+        defaults={"estado_asignacion": "activo"},
+    )
+    return usuario
+
+
 @pytest.fixture
 def hr_usuario(db):
     """Usuario de tipo RRHH para tests de API."""
-    return _make_usuario(
+    usuario = _make_usuario(
         tipo="rrhh",
         suffix="rrhh",
         nivel_acceso="total",
     )
+    return _assign_rrhh_role(usuario)
 
 
 @pytest.fixture

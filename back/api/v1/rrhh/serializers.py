@@ -1146,6 +1146,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
     progreso_porcentaje = serializers.ReadOnlyField()
     items_pendientes = serializers.ReadOnlyField()
     documentos_pendientes = serializers.SerializerMethodField()
+    last_login = serializers.DateTimeField(source='usuario.last_login', read_only=True, allow_null=True)
 
     class Meta:
         model = OnboardingEmpleado
@@ -1174,6 +1175,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
             "fecha_email_bienvenida",
             "fecha_inicio",
             "fecha_completado",
+            "last_login",
         ]
         read_only_fields = ["onboarding_id", "fecha_inicio", "fecha_completado"]
 
