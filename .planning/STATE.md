@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-03-14T08:30:21.819Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-03-14T08:36:47.920Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 9
   percent: 67
 ---
 
@@ -56,6 +56,8 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P02 | 6 | 3 tasks | 3 files |
 | Phase 01-onboarding-self-service P03 | 35 | 2 tasks | 3 files |
 | Phase 01-onboarding-self-service P04 | 15 | 2 tasks | 8 files |
+| Phase 01-onboarding-self-service P05 | 15 | 3 tasks | 9 files |
+| Phase 01-onboarding-self-service P06 | 6 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -82,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 01-03]: OnboardingViewSet.get_permissions() override: employee-facing upload actions use IsAuthenticated() instead of class-level RRHHPermission
 - [Phase 01-onboarding-self-service]: OnboardingRoute uses enabled: user?.tipo_usuario === 'empleado' — skips React Query for admin/RRHH users entirely
 - [Phase 01-onboarding-self-service]: api.ts FormData Content-Type guard was already present — no modification needed
+- [Phase 01-onboarding-self-service]: AlertTriangle used instead of TriangleAlert — TriangleAlert is not exported by the installed lucide-react version
+- [Phase 01-05]: Used named import { apiClient } from api.ts — no default export; apiClient.get() takes params as second arg directly
 
 ### Pending Todos
 
@@ -96,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T08:30:21.816Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-03-14T08:36:47.917Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None

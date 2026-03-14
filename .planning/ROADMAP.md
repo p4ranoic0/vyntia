@@ -104,7 +104,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
-| 1. Onboarding Self-Service | 0/7 | Not started | - |
+| 1. Onboarding Self-Service | 6/7 | In Progress|  |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
 | 4. Vacaciones | 0/TBD | Not started | - |
