@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
+stopped_at: Completed 01-08-PLAN.md — CursosCertificaciones model, migration 0025, progreso_aprobado property
+last_updated: "2026-03-15T06:36:24.729Z"
+last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
+progress:
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 16
+  completed_plans: 11
+  percent: 69
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
 stopped_at: Phase 1 reopened 2026-03-15 — expanded scope (N dependents+docs, preview modal, per-doc approval, email notifs, courses model) — next: plan 01-08
 last_updated: "2026-03-14T16:20:55.025Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
-  total_phases: 5
+  [███████░░░] 69%
   completed_phases: 2
   total_plans: 10
   completed_plans: 10
@@ -59,6 +75,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P05 | 15 | 3 tasks | 9 files |
 | Phase 01-onboarding-self-service P06 | 6 | 2 tasks | 1 files |
 | Phase 01-onboarding-self-service P07 | 2 | 2 tasks | 0 files |
+| Phase 01-onboarding-self-service P08 | 12 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -88,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase 01-onboarding-self-service]: AlertTriangle used instead of TriangleAlert — TriangleAlert is not exported by the installed lucide-react version
 - [Phase 01-05]: Used named import { apiClient } from api.ts — no default export; apiClient.get() takes params as second arg directly
 - [Phase 01-07]: Phase 1 verified complete by RRHH — all 15 verification steps passed (aprobado)
+- [Phase 01-08]: CursosCertificaciones unique_together on [empleado, nombre_curso, institucion, fecha_inicio] prevents duplicate course entries per employee
+- [Phase 01-08]: progreso_aprobado uses lazy import of DocumentosDigitales inside property to avoid circular import
+- [Phase 01-08]: Test stubs use onboarding_factory fixture (not onboarding) — onboarding fixture does not exist in conftest.py
 
 ### Pending Todos
 
@@ -102,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T16:20:55.021Z
-Stopped at: Completed 01-07-PLAN.md — Phase 1 Onboarding Self-Service complete
+Last session: 2026-03-15T06:36:24.725Z
+Stopped at: Completed 01-08-PLAN.md — CursosCertificaciones model, migration 0025, progreso_aprobado property
 Resume file: None
