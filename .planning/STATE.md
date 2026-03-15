@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-03-PLAN.md — isViewOnly prop in DocumentPreviewModal, Ver documento button in DocumentUploadZone
-last_updated: "2026-03-15T18:32:31.066Z"
+stopped_at: Completed 01.1-02-PLAN.md — OnboardingTabPersonal 15+ fields, OnboardingSectionStatus, empleado-data query
+last_updated: "2026-03-15T18:32:56.964Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 ---
@@ -94,6 +94,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P12 | 18 | 2 tasks | 5 files |
 | Phase 01.1-onboarding-datos-completos P01 | 7 | 2 tasks | 4 files |
 | Phase 01.1-onboarding-datos-completos P03 | 3 min | 2 tasks | 2 files |
+| Phase 01.1-onboarding-datos-completos P02 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Recent decisions affecting current work:
 - [Phase 01.1-onboarding-datos-completos]: EmpleadoPermission.write_roles extended to include 'administrador rrhh' canonical role name (was missing, caused 403 on PATCH)
 - [Phase 01.1-onboarding-datos-completos]: isViewOnly prop is optional with default false — non-breaking for all existing call sites
 - [Phase 01.1-onboarding-datos-completos]: View-only modal placed inside info-card return fragment so state stays co-located with trigger
+- [Phase 01.1-onboarding-datos-completos]: OnboardingTabPersonal uses Controller for Select fields — Radix Select does not forward ref to native input so register() alone fails
+- [Phase 01.1-onboarding-datos-completos]: AFP conditional derived from watch('sistema_pensiones') — reactive display of CUSPP/tipo_comision without extra state
 
 ### Pending Todos
 
@@ -147,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:32:31.062Z
-Stopped at: Completed 01.1-03-PLAN.md — isViewOnly prop in DocumentPreviewModal, Ver documento button in DocumentUploadZone
+Last session: 2026-03-15T18:32:56.959Z
+Stopped at: Completed 01.1-02-PLAN.md — OnboardingTabPersonal 15+ fields, OnboardingSectionStatus, empleado-data query
 Resume file: None
