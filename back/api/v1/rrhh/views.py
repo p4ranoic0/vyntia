@@ -1953,6 +1953,13 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         elif origen == "personal":
             queryset = queryset.exclude(tipo_documento__in=TIPOS_INSTITUCIONALES)
 
+        # Filter by version status
+        es_version_actual = self.request.query_params.get("es_version_actual")
+        if es_version_actual == "true":
+            queryset = queryset.filter(es_version_actual=True)
+        elif es_version_actual == "false":
+            queryset = queryset.filter(es_version_actual=False)
+
         return queryset
 
     @action(detail=False, methods=["get"])
@@ -2569,6 +2576,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 "estado_documento": doc.estado_documento,
                 "fecha_subida": doc.fecha_subida.isoformat() if doc.fecha_subida else None,
                 "nombre_documento": doc.nombre_documento,
+                "archivo_url": request.build_absolute_uri(doc.archivo.url) if doc.archivo else None,
             },
         )
 
