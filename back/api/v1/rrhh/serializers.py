@@ -1074,6 +1074,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
 
     empleado_detalle = EmpleadoListSerializer(source="empleado", read_only=True)
     tamano_mb = serializers.SerializerMethodField()
+    archivo_url = serializers.SerializerMethodField()
     tipo_documento_texto = serializers.ReadOnlyField()
     categoria_texto = serializers.ReadOnlyField()
     estado_texto = serializers.ReadOnlyField()
@@ -1092,6 +1093,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
             "nombre_documento",
             "descripcion",
             "archivo",
+            "archivo_url",
             "nombre_archivo_original",
             "formato_archivo",
             "tamano_archivo",
@@ -1120,6 +1122,15 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
         if obj.tamano_archivo:
             return round(obj.tamano_archivo / 1024 / 1024, 2)
         return 0
+
+    def get_archivo_url(self, obj):
+        """Return absolute URL for the document file."""
+        if obj.archivo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.archivo.url)
+            return obj.archivo.url
+        return None
 
     def validate_fecha_vencimiento(self, value):
         """Validate expiration date."""
