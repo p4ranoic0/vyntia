@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Upload, X } from 'lucide-react'
+import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,11 +22,14 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DocumentUploadZone } from './DocumentUploadZone'
+import { DocumentPreviewModal } from './DocumentPreviewModal'
 import {
   getFamiliares,
   createFamiliar,
   deleteFamiliar,
 } from '../services/onboardingDataService'
+import { subirDocumento } from '../services/onboardingUploadService'
+import { cn } from '@/lib/utils'
 
 interface OnboardingTabFamiliarProps {
   empleadoId: number
@@ -68,11 +72,73 @@ function getRequiredDocs(parentesco: string): Array<{ tipoDocumento: string; lab
   return [{ tipoDocumento: 'dni_familiar', label: 'DNI del familiar' }]
 }
 
+function getDocTypes(parentesco: string): Array<{ tipo: string; label: string }> {
+  if (['hijo', 'hija'].includes(parentesco)) {
+    return [
+      { tipo: 'dni_familiar', label: 'DNI del familiar' },
+      { tipo: 'certificado_nacimiento', label: 'Partida de nacimiento' },
+    ]
+  }
+  if (['conyuge', 'conviviente'].includes(parentesco)) {
+    return [
+      { tipo: 'dni_familiar', label: 'DNI del familiar' },
+      { tipo: 'acta_matrimonio', label: 'Acta de matrimonio / Cert. union de hecho' },
+    ]
+  }
+  return [
+    { tipo: 'dni_familiar', label: 'DNI del familiar' },
+    { tipo: 'certificado_nacimiento', label: 'Partida de nacimiento' },
+  ]
+}
+
+interface CompactDropZoneProps {
+  onFileSelected: (file: File) => void
+  disabled?: boolean
+}
+
+function CompactDropZone({ onFileSelected, disabled }: CompactDropZoneProps) {
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'application/pdf': ['.pdf'], 'image/*': ['.jpg', '.jpeg', '.png'] },
+    maxSize: 10 * 1024 * 1024,
+    multiple: false,
+    disabled,
+    onDropAccepted: ([file]) => onFileSelected(file),
+    onDropRejected: ([rejection]) => {
+      const code = rejection.errors[0]?.code
+      if (code === 'file-too-large') toast.error('El archivo supera los 10 MB permitidos')
+      else toast.error('Solo se permiten PDF o imagenes')
+    },
+  })
+
+  return (
+    <div
+      {...getRootProps()}
+      className={cn(
+        'rounded border border-dashed p-3 text-center cursor-pointer transition-colors',
+        isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/50',
+        disabled && 'opacity-50 cursor-not-allowed'
+      )}
+    >
+      <input {...getInputProps()} />
+      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <Upload className="h-3 w-3" />
+        <span>{isDragActive ? 'Suelte el archivo aqui' : 'Arrastra el archivo aqui o haz clic'}</span>
+      </div>
+    </div>
+  )
+}
+
 export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps) {
   const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [form, setForm] = useState<FamiliarFormState>(EMPTY_FORM)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+
+  // Two-phase upload state
+  const [pendingDoc, setPendingDoc] = useState<{ file: File; tipo: string; label: string } | null>(null)
+  const [stagedFile, setStagedFile] = useState<File | null>(null)
+  const [stagedFileMeta, setStagedFileMeta] = useState<{ tipo: string; label: string } | null>(null)
+  const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false)
 
   const { data: familiares = [], isLoading } = useQuery({
     queryKey: ['familiares', empleadoId],
@@ -81,10 +147,20 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => createFamiliar(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['familiares', empleadoId] })
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
-      toast.success('Familiar agregado exitosamente')
+      if (pendingDoc) {
+        try {
+          await subirDocumento(empleadoId, pendingDoc.tipo, 'familiar', pendingDoc.label, pendingDoc.file)
+          toast.success('Registro y documento guardados')
+        } catch {
+          toast.warning('Registro guardado. Error al subir documento — puede subirlo luego.')
+        }
+        setPendingDoc(null)
+      } else {
+        toast.success('Familiar agregado exitosamente')
+      }
       setForm(EMPTY_FORM)
       setIsAddDialogOpen(false)
     },
@@ -122,10 +198,42 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
     })
   }
 
+  const handleFileSelected = (file: File, tipo: string, label: string) => {
+    setStagedFile(file)
+    setStagedFileMeta({ tipo, label })
+    setIsDocPreviewOpen(true)
+  }
+
+  const handlePreviewConfirm = () => {
+    if (stagedFile && stagedFileMeta) {
+      setPendingDoc({ file: stagedFile, tipo: stagedFileMeta.tipo, label: stagedFileMeta.label })
+    }
+    setStagedFile(null)
+    setStagedFileMeta(null)
+    setIsDocPreviewOpen(false)
+  }
+
+  const handlePreviewCancel = () => {
+    setStagedFile(null)
+    setStagedFileMeta(null)
+    setIsDocPreviewOpen(false)
+  }
+
+  const handleDialogClose = () => {
+    setPendingDoc(null)
+    setStagedFile(null)
+    setStagedFileMeta(null)
+    setIsDocPreviewOpen(false)
+    setForm(EMPTY_FORM)
+    setIsAddDialogOpen(false)
+  }
+
   const handleUploadSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['familiares', empleadoId] })
     queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
   }
+
+  const applicableDocTypes = getDocTypes(form.parentesco ?? '')
 
   return (
     <div className="space-y-6">
@@ -195,7 +303,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
       </div>
 
       {/* Add Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => { if (!open) handleDialogClose() }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Agregar dependiente</DialogTitle>
@@ -268,9 +376,41 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
                 />
               </div>
             </div>
+
+            {/* Documentos (opcional) */}
+            {form.parentesco && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Documentos (opcional)</Label>
+                <p className="text-xs text-muted-foreground">Puede subir un documento ahora o hacerlo luego desde la tarjeta del familiar.</p>
+                {applicableDocTypes.map((docType) => (
+                  <div key={docType.tipo} className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{docType.label}</p>
+                    {pendingDoc?.tipo === docType.tipo ? (
+                      <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2">
+                        <span className="flex-1 text-xs truncate">{pendingDoc.file.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0"
+                          onClick={() => setPendingDoc(null)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <CompactDropZone
+                        onFileSelected={(file) => handleFileSelected(file, docType.tipo, docType.label)}
+                        disabled={createMutation.isPending}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsAddDialogOpen(false); setForm(EMPTY_FORM) }}>
+            <Button variant="outline" onClick={handleDialogClose}>
               Cancelar
             </Button>
             <Button onClick={handleSubmit} disabled={createMutation.isPending}>
@@ -279,6 +419,16 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Modal (outside add dialog) */}
+      <DocumentPreviewModal
+        file={stagedFile}
+        archivoUrl={null}
+        label={stagedFileMeta?.label ?? 'Vista previa'}
+        isOpen={isDocPreviewOpen}
+        onConfirm={handlePreviewConfirm}
+        onCancel={handlePreviewCancel}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}>
