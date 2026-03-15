@@ -3,6 +3,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import AdminLayout from '@/components/layout/AdminLayout'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from 'sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -318,7 +319,7 @@ function App() {
           <Router>
             <AppRoutes />
             <Toaster />
-
+            <SonnerToaster richColors position="top-right" />
           </Router>
         </AuthProvider>
       </ThemeProvider>

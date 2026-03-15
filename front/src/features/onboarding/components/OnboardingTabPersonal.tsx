@@ -39,6 +39,26 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
+const BANCOS_PERU = [
+  'BCP - Banco de Crédito del Perú',
+  'Interbank',
+  'BBVA Perú',
+  'Scotiabank Perú',
+  'Banco de la Nación',
+  'BanBif',
+  'Mibanco',
+  'Banco GNB',
+  'Banco Pichincha',
+  'Citibank Perú',
+  'Banco Falabella',
+  'Banco Ripley',
+  'Caja Cusco',
+  'Caja Arequipa',
+  'Caja Piura',
+  'Caja Sullana',
+  'Otro',
+]
+
 const AFP_OPTIONS = ['AFP PRIMA', 'AFP INTEGRA', 'AFP PROFUTURO', 'AFP HABITAT']
 
 const SISTEMA_PENSIONES_OPTIONS = [
@@ -369,11 +389,21 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
 
           <div className="space-y-2">
             <Label htmlFor="entidad_bancaria">Entidad bancaria</Label>
-            <Input
-              id="entidad_bancaria"
-              type="text"
-              placeholder="Ej: BCP, Interbank"
-              {...register('entidad_bancaria')}
+            <Controller
+              name="entidad_bancaria"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                  <SelectTrigger id="entidad_bancaria">
+                    <SelectValue placeholder="Seleccionar banco..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BANCOS_PERU.map(banco => (
+                      <SelectItem key={banco} value={banco}>{banco}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             />
           </div>
 

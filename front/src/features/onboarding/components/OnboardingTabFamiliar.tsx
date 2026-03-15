@@ -36,7 +36,7 @@ interface OnboardingTabFamiliarProps {
   docs?: import('../types/onboarding').DocumentInfo[]
 }
 
-type Parentesco = 'hijo' | 'hija' | 'conyuge' | 'conviviente' | 'padre' | 'madre'
+type Parentesco = 'hijo' | 'conyuge' | 'conviviente' | 'padre' | 'madre'
 
 interface FamiliarFormState {
   nombres_familiar: string
@@ -57,7 +57,7 @@ const EMPTY_FORM: FamiliarFormState = {
 }
 
 function getRequiredDocs(parentesco: string): Array<{ tipoDocumento: string; label: string }> {
-  if (parentesco === 'hijo' || parentesco === 'hija' || parentesco === 'padre' || parentesco === 'madre') {
+  if (parentesco === 'hijo' || parentesco === 'padre' || parentesco === 'madre') {
     return [
       { tipoDocumento: 'dni_familiar', label: 'DNI del familiar' },
       { tipoDocumento: 'certificado_nacimiento', label: 'Partida de nacimiento' },
@@ -73,7 +73,7 @@ function getRequiredDocs(parentesco: string): Array<{ tipoDocumento: string; lab
 }
 
 function getDocTypes(parentesco: string): Array<{ tipo: string; label: string }> {
-  if (['hijo', 'hija'].includes(parentesco)) {
+  if (['hijo'].includes(parentesco)) {
     return [
       { tipo: 'dni_familiar', label: 'DNI del familiar' },
       { tipo: 'certificado_nacimiento', label: 'Partida de nacimiento' },
@@ -350,8 +350,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
                     <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hijo">Hijo</SelectItem>
-                    <SelectItem value="hija">Hija</SelectItem>
+                    <SelectItem value="hijo">Hijo/Hija</SelectItem>
                     <SelectItem value="conyuge">Conyuge</SelectItem>
                     <SelectItem value="conviviente">Conviviente</SelectItem>
                     <SelectItem value="padre">Padre</SelectItem>

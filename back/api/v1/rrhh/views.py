@@ -668,6 +668,12 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     ]
     ordering = ["apellido_paterno", "apellido_materno", "nombres_empleado"]
 
+    def get_permissions(self):
+        """Allow authenticated employees to PATCH their own personal data."""
+        if self.action == "partial_update":
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
     @cache_response(timeout=300, key_prefix="empleados")
     @require_authenticated()
     def list(self, request, *args, **kwargs):
@@ -693,10 +699,44 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @invalidate_cache(["view_cache:empleados:*", "view_cache:empleado_detail:*"])
-    @require_hr()
     def partial_update(self, request, *args, **kwargs):
-        """Actualizar empleado parcialmente - requiere rol RRHH."""
-        return super().partial_update(request, *args, **kwargs)
+        """Actualizar empleado parcialmente.
+
+        RRHH puede actualizar cualquier campo.
+        Empleados solo pueden actualizar sus propios datos personales/bancarios/previsionales.
+        """
+        instance = self.get_object()
+        user = request.user
+
+        _ONBOARDING_FIELDS = {
+            'telefono_celular', 'direccion_domicilio', 'fecha_nacimiento',
+            'genero_empleado', 'estado_civil', 'numero_ruc',
+            'distrito_domicilio', 'provincia_domicilio', 'departamento_domicilio',
+            'entidad_bancaria', 'numero_cuenta_bancaria', 'numero_cci',
+            'sistema_pensiones', 'tipo_comision', 'codigo_cuspp',
+        }
+
+        is_own = hasattr(user, 'empleado') and user.empleado == instance
+        requested_fields = set(request.data.keys())
+        is_safe_self_update = is_own and requested_fields.issubset(_ONBOARDING_FIELDS)
+
+        if not is_safe_self_update:
+            roles = [r.nombre_rol.lower() for r in user.roles_activos()]
+            hr_roles = {"admin", "rrhh", "supervisor", "administrador rrhh", "analista rrhh", "jefe de area"}
+            if not roles or not hr_roles.intersection(set(roles)):
+                return APIResponse.error(
+                    message="No tiene permisos para actualizar este empleado",
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
+
+        # Bypass self.update() which has @require_hr() — execute serializer directly
+        from rest_framework.response import Response as DRFResponse
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        return DRFResponse(serializer.data)
 
     @invalidate_cache(["view_cache:empleados:*", "view_cache:empleado_detail:*"])
     @require_admin()
@@ -1007,9 +1047,16 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
         """Actualizar datos familiares parcialmente - requiere rol RRHH."""
         return super().partial_update(request, *args, **kwargs)
 
-    @require_admin()
     def destroy(self, request, *args, **kwargs):
-        """Eliminar datos familiares - requiere rol administrador."""
+        """Eliminar datos familiares — empleado puede eliminar los suyos; RRHH/admin elimina cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, 'empleado') and instance.empleado == user.empleado
+        if not is_own and not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            return APIResponse.error(
+                message="Solo puede eliminar familiares de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().destroy(request, *args, **kwargs)
 
 
