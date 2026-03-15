@@ -180,7 +180,7 @@ class EmpleadoPermission(RRHHPermission):
 
         # Write permissions - only RRHH staff
         roles = self.get_user_roles_lower(request.user)
-        write_roles = ["admin", "rrhh", "supervisor"]
+        write_roles = ["admin", "rrhh", "supervisor", "administrador rrhh", "analista rrhh", "jefe de area"]
 
         return any(r in write_roles for r in roles)
 
