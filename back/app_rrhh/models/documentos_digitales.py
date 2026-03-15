@@ -149,6 +149,12 @@ class DocumentosDigitales(models.Model):
         blank=True,
         related_name='versiones'
     )
+    familiar = models.ForeignKey(
+        'DatosFamiliares',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='documentos',
+    )
     es_version_actual = models.BooleanField(default=True)
     
     # Estado y validación

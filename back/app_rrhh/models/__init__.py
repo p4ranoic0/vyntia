@@ -13,6 +13,7 @@ from .area import Area
 from .configuracion_empresa import ConfiguracionEmpresa
 from .configuracion_uit import ConfiguracionUit
 from .contratos_adendas import ContratosAdendas
+from .cursos_certificaciones import CursosCertificaciones
 from .datos_academicos import DatosAcademicos
 from .datos_familiares import DatosFamiliares
 from .datos_laborales import DatosLaborales
@@ -51,6 +52,7 @@ __all__ = [
     "HistorialUbicaciones",
     "Usuario",
     "DatosFamiliares",
+    "CursosCertificaciones",
     "DatosAcademicos",
     "DocumentosDigitales",
     # Modelos de vacaciones

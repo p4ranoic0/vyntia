@@ -114,7 +114,13 @@ class DatosAcademicos(models.Model):
     ruta_certificado = models.CharField(max_length=255, null=True, blank=True)
     ruta_titulo = models.CharField(max_length=255, null=True, blank=True)
     ruta_diploma = models.CharField(max_length=255, null=True, blank=True)
-    
+    documento = models.ForeignKey(
+        'DocumentosDigitales',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='dato_academico',
+    )
+
     # Verificación
     verificado_sunedu = models.BooleanField(default=False)
     fecha_verificacion_sunedu = models.DateField(null=True, blank=True)
