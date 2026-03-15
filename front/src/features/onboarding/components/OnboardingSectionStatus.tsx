@@ -8,7 +8,7 @@ const SECTION_DOC_TYPES: Record<string, string[]> = {
   laboral: ['declaracion_jurada', 'cv', 'constancia_trabajo', 'carta_recomendacion', 'certificado_trabajo'],
 }
 
-function computeStatus(docs: DocumentInfo[], tipos: string[]): SectionStatus {
+export function computeStatus(docs: DocumentInfo[], tipos: string[]): SectionStatus {
   const sectionDocs = docs.filter(d => tipos.includes(d.tipo_documento))
   if (sectionDocs.length === 0) return 'pendiente'
   if (sectionDocs.some(d => d.estado_documento === 'rechazado')) return 'observado'
