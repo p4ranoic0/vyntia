@@ -27,6 +27,7 @@ export function DocumentUploadZone({
   const [localOverrideEmpty, setLocalOverrideEmpty] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isViewOpen, setIsViewOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const handleUpload = async (file: File) => {
@@ -112,40 +113,63 @@ export function DocumentUploadZone({
   // When doc exists and neither override nor replace: show info card
   if (existingDoc && !showReplace && !localOverrideEmpty) {
     return (
-      <div className="rounded-lg border border-border p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{existingDoc.nombre_documento}</span>
-            {existingDoc.fecha_subida && (
-              <span className="text-muted-foreground">
-                {new Date(existingDoc.fecha_subida).toLocaleDateString('es-PE')}
-              </span>
+      <>
+        <DocumentPreviewModal
+          file={null}
+          archivoUrl={existingDoc?.archivo_url}
+          label={existingDoc?.nombre_documento ?? label}
+          isOpen={isViewOpen}
+          isViewOnly={true}
+          onConfirm={() => setIsViewOpen(false)}
+          onCancel={() => setIsViewOpen(false)}
+        />
+        <div className="rounded-lg border border-border p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{existingDoc.nombre_documento}</span>
+              {existingDoc.fecha_subida && (
+                <span className="text-muted-foreground">
+                  {new Date(existingDoc.fecha_subida).toLocaleDateString('es-PE')}
+                </span>
+              )}
+            </div>
+            {estadoBadge(existingDoc.estado_documento)}
+          </div>
+          {existingDoc.estado_documento === 'rechazado' && existingDoc.observaciones && (
+            <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 rounded p-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{existingDoc.observaciones}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2 mt-2">
+            {existingDoc.archivo_url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setIsViewOpen(true)}
+              >
+                Ver documento
+              </Button>
+            )}
+            {existingDoc.estado_documento === 'rechazado' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => setLocalOverrideEmpty(true)}
+              >
+                Corregir y reenviar
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setShowReplace(true)}>
+                Reemplazar
+              </Button>
             )}
           </div>
-          {estadoBadge(existingDoc.estado_documento)}
         </div>
-        {existingDoc.estado_documento === 'rechazado' && existingDoc.observaciones && (
-          <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 rounded p-2">
-            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <span>{existingDoc.observaciones}</span>
-          </div>
-        )}
-        {existingDoc.estado_documento === 'rechazado' ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-red-300 text-red-600 hover:bg-red-50 mt-2"
-            onClick={() => setLocalOverrideEmpty(true)}
-          >
-            Corregir y reenviar
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" onClick={() => setShowReplace(true)}>
-            Reemplazar
-          </Button>
-        )}
-      </div>
+      </>
     )
   }
 
