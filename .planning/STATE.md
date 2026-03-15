@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-08-PLAN.md — CursosCertificaciones model, migration 0025, progreso_aprobado property
-last_updated: "2026-03-15T06:36:24.729Z"
+stopped_at: Completed 01-09-PLAN.md — CursosCertificacionesViewSet, aprobar/rechazar documento actions, OnboardingNotificationService, email templates
+last_updated: "2026-03-15T07:15:00.000Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 5
