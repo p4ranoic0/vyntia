@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table'
 import { DocumentViewer } from '@/components/common/DocumentViewer'
 import { legajoService, type Documento } from '@/services/legajoService'
+import { apiClient } from '@/lib/api'
 import { getErrorMessage } from '@/lib/errorUtils'
 import {
   onboardingService, getEstadoLabel,
@@ -816,14 +817,17 @@ function OnboardingDetailDialog({
     }
   }
 
+  // aprobar_documento — calls onboarding-specific endpoint which triggers email notification (ONBD-14)
   const handleValidarDocumento = async (docId: number) => {
     try {
-      await legajoService.validar(docId)
-      toast.success('Documento validado')
+      await apiClient.post(
+        `/api/v1/rrhh/onboarding/${onboarding.onboarding_id}/documentos/${docId}/aprobar/`
+      )
+      toast.success('Documento aprobado')
       const docs = await legajoService.getByEmpleado(onboarding.empleado)
       setDocumentos(docs)
     } catch {
-      toast.error('Error al validar documento')
+      toast.error('Error al aprobar el documento')
     }
   }
 
@@ -831,14 +835,17 @@ function OnboardingDetailDialog({
     if (!motivoRechazoDoc.trim() || rechazarDocId === null) return
     setRechazandoDoc(true)
     try {
-      await legajoService.rechazar(rechazarDocId, motivoRechazoDoc)
-      toast.success('Documento rechazado')
+      await apiClient.post(
+        `/api/v1/rrhh/onboarding/${onboarding.onboarding_id}/documentos/${rechazarDocId}/rechazar/`,
+        { motivo: motivoRechazoDoc }
+      )
+      toast.success('Documento rechazado y notificacion enviada al empleado')
       setRechazarDocId(null)
       setMotivoRechazoDoc('')
       const docs = await legajoService.getByEmpleado(onboarding.empleado)
       setDocumentos(docs)
     } catch {
-      toast.error('Error al rechazar documento')
+      toast.error('Error al rechazar el documento')
     } finally {
       setRechazandoDoc(false)
     }
@@ -929,25 +936,27 @@ function OnboardingDetailDialog({
                             <Eye className="h-4 w-4" />
                           </Button>
                         )}
-                        {doc.estado_documento === 'pendiente_revision' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-green-600 cursor-pointer"
-                              onClick={() => handleValidarDocumento(doc.documento_id)}
-                            >
-                              <ShieldCheck className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 cursor-pointer"
-                              onClick={() => { setRechazarDocId(doc.documento_id); setMotivoRechazoDoc('') }}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </>
+                        {doc.estado_documento !== 'aprobado' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 cursor-pointer"
+                            title="Aprobar documento"
+                            onClick={() => handleValidarDocumento(doc.documento_id)}
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {doc.estado_documento !== 'rechazado' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 cursor-pointer"
+                            title="Rechazar documento"
+                            onClick={() => { setRechazarDocId(doc.documento_id); setMotivoRechazoDoc('') }}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
                         )}
                       </div>
                     </div>
