@@ -8,6 +8,7 @@ import { TipoDocumento, DocumentInfo, UploadDocumentResponse } from '../types/on
 import { uploadDocument, uploadFoto } from '../services/onboardingUploadService'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { DocumentPreviewModal } from './DocumentPreviewModal'
 
 interface DocumentUploadZoneProps {
   tipoDocumento: TipoDocumento
@@ -23,6 +24,8 @@ export function DocumentUploadZone({
 }: DocumentUploadZoneProps) {
   const [uploading, setUploading] = useState(false)
   const [showReplace, setShowReplace] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const handleUpload = async (file: File) => {
@@ -46,6 +49,19 @@ export function DocumentUploadZone({
     }
   }
 
+  const handlePreviewConfirm = () => {
+    if (pendingFile) {
+      handleUpload(pendingFile)  // existing upload function — no changes needed inside
+      setIsPreviewOpen(false)
+      setPendingFile(null)
+    }
+  }
+
+  const handlePreviewCancel = () => {
+    setIsPreviewOpen(false)
+    setPendingFile(null)
+  }
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: acceptImages
       ? { 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'] }
@@ -53,7 +69,10 @@ export function DocumentUploadZone({
     maxSize: 10 * 1024 * 1024,
     multiple: false,
     disabled: uploading,
-    onDropAccepted: ([file]) => handleUpload(file),
+    onDropAccepted: (files) => {
+      setPendingFile(files[0])
+      setIsPreviewOpen(true)
+    },
     onDropRejected: ([rejection]) => {
       const code = rejection.errors[0]?.code
       if (code === 'file-too-large') toast.error('El archivo supera los 10 MB permitidos')
@@ -98,30 +117,40 @@ export function DocumentUploadZone({
 
   // Dropzone state
   return (
-    <div
-      {...getRootProps()}
-      className={cn(
-        "rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors",
-        isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50",
-        uploading && "opacity-50 cursor-not-allowed"
-      )}
-    >
-      <input {...getInputProps()} />
-      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-xs text-muted-foreground mt-1">
-        {isDragActive
-          ? "Suelte el archivo aquí"
-          : uploading
-          ? "Subiendo..."
-          : `Arrastre o haga clic — ${acceptImages ? 'JPG/PNG' : 'PDF'}, máx. 10 MB`
-        }
-      </p>
-      {showReplace && (
-        <Button variant="ghost" size="sm" className="mt-2" onClick={(e) => { e.stopPropagation(); setShowReplace(false) }}>
-          Cancelar
-        </Button>
-      )}
-    </div>
+    <>
+      <DocumentPreviewModal
+        file={pendingFile}
+        label={label}
+        isOpen={isPreviewOpen}
+        isUploading={uploading}
+        onConfirm={handlePreviewConfirm}
+        onCancel={handlePreviewCancel}
+      />
+      <div
+        {...getRootProps()}
+        className={cn(
+          "rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors",
+          isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50",
+          uploading && "opacity-50 cursor-not-allowed"
+        )}
+      >
+        <input {...getInputProps()} />
+        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {isDragActive
+            ? "Suelte el archivo aquí"
+            : uploading
+            ? "Subiendo..."
+            : `Arrastre o haga clic — ${acceptImages ? 'JPG/PNG' : 'PDF'}, máx. 10 MB`
+          }
+        </p>
+        {showReplace && (
+          <Button variant="ghost" size="sm" className="mt-2" onClick={(e) => { e.stopPropagation(); setShowReplace(false) }}>
+            Cancelar
+          </Button>
+        )}
+      </div>
+    </>
   )
 }
