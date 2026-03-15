@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-01-PLAN.md — EmpleadoUpdateSerializer extension, SIN PENSION model choice, ONBD-16 tests
-last_updated: "2026-03-15T18:28:27.262Z"
+stopped_at: Completed 01.1-03-PLAN.md — isViewOnly prop in DocumentPreviewModal, Ver documento button in DocumentUploadZone
+last_updated: "2026-03-15T18:32:31.066Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 ---
@@ -93,6 +93,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P08 | 12 | 2 tasks | 7 files |
 | Phase 01-onboarding-self-service P12 | 18 | 2 tasks | 5 files |
 | Phase 01.1-onboarding-datos-completos P01 | 7 | 2 tasks | 4 files |
+| Phase 01.1-onboarding-datos-completos P03 | 3 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase 01.1-onboarding-datos-completos]: EmpleadoUpdateSerializer.Meta.fields extended to 20 fields (8 new: genero_empleado, numero_ruc, provincia_domicilio, departamento_domicilio, sistema_pensiones, tipo_comision, codigo_cuspp, numero_cci)
 - [Phase 01.1-onboarding-datos-completos]: SISTEMA_PENSIONES_CHOICES extended with SIN PENSION — no migration needed, Django choices are Python-only validation
 - [Phase 01.1-onboarding-datos-completos]: EmpleadoPermission.write_roles extended to include 'administrador rrhh' canonical role name (was missing, caused 403 on PATCH)
+- [Phase 01.1-onboarding-datos-completos]: isViewOnly prop is optional with default false — non-breaking for all existing call sites
+- [Phase 01.1-onboarding-datos-completos]: View-only modal placed inside info-card return fragment so state stays co-located with trigger
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:28:27.258Z
-Stopped at: Completed 01.1-01-PLAN.md — EmpleadoUpdateSerializer extension, SIN PENSION model choice, ONBD-16 tests
+Last session: 2026-03-15T18:32:31.062Z
+Stopped at: Completed 01.1-03-PLAN.md — isViewOnly prop in DocumentPreviewModal, Ver documento button in DocumentUploadZone
 Resume file: None
