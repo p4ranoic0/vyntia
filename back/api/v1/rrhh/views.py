@@ -2260,7 +2260,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def validar(self, request, pk=None):
         """Validar el onboarding y aprobar todos los documentos."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from app_rrhh.services.onboarding_service import OnboardingNotificationService, OnboardingService
 
         serializer = OnboardingValidacionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -2278,6 +2278,10 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 return APIResponse.error(
                     message="Onboarding no encontrado", status_code=404
                 )
+            try:
+                OnboardingNotificationService.notificar_onboarding_aprobado(result)
+            except Exception:
+                pass
             response_serializer = OnboardingEmpleadoSerializer(result)
             return APIResponse.success(
                 data=response_serializer.data,
@@ -2285,11 +2289,64 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             )
         else:
             onboarding.marcar_observado(observaciones)
+            try:
+                OnboardingNotificationService.notificar_onboarding_observado(onboarding, observaciones)
+            except Exception:
+                pass
             response_serializer = OnboardingEmpleadoSerializer(onboarding)
             return APIResponse.success(
                 data=response_serializer.data,
                 message="Onboarding observado - se requieren correcciones",
             )
+
+    @action(detail=True, methods=["post"], url_path=r"documentos/(?P<doc_id>[^/.]+)/aprobar")
+    @require_hr()
+    def aprobar_documento(self, request, pk=None, doc_id=None):
+        """RRHH approves a specific document from the onboarding legajo."""
+        from app_rrhh.services.onboarding_service import OnboardingService
+        onboarding = self.get_object()
+        try:
+            doc = DocumentosDigitales.objects.get(
+                documento_id=doc_id,
+                empleado=onboarding.empleado,
+                es_version_actual=True,
+            )
+        except DocumentosDigitales.DoesNotExist:
+            return APIResponse.error(message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND)
+        doc.validar_documento(request.user)
+        OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        return APIResponse.success(
+            message=f"Documento '{doc.nombre_documento}' aprobado",
+            data={"documento_id": doc.documento_id, "estado_documento": doc.estado_documento},
+        )
+
+    @action(detail=True, methods=["post"], url_path=r"documentos/(?P<doc_id>[^/.]+)/rechazar")
+    @require_hr()
+    def rechazar_documento(self, request, pk=None, doc_id=None):
+        """RRHH rejects a specific document with a mandatory motivo."""
+        from app_rrhh.services.onboarding_service import OnboardingNotificationService, OnboardingService
+        motivo = request.data.get("motivo", "").strip()
+        if not motivo:
+            return APIResponse.error(message="El campo motivo es requerido para rechazar un documento")
+        onboarding = self.get_object()
+        try:
+            doc = DocumentosDigitales.objects.get(
+                documento_id=doc_id,
+                empleado=onboarding.empleado,
+                es_version_actual=True,
+            )
+        except DocumentosDigitales.DoesNotExist:
+            return APIResponse.error(message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND)
+        doc.rechazar_documento(request.user, motivo)
+        OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        try:
+            OnboardingNotificationService.notificar_documento_rechazado(onboarding, doc, motivo)
+        except Exception:
+            pass
+        return APIResponse.success(
+            message=f"Documento '{doc.nombre_documento}' rechazado",
+            data={"documento_id": doc.documento_id, "estado_documento": doc.estado_documento},
+        )
 
     @action(detail=True, methods=["post"])
     @require_hr()

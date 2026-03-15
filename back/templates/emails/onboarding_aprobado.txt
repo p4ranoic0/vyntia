@@ -1,0 +1,12 @@
+Onboarding aprobado
+
+Estimado/a {{ nombre_empleado }},
+
+Tu proceso de onboarding ha sido revisado y aprobado por el equipo de Recursos Humanos.
+
+Ya puedes acceder al sistema completo en: {{ frontend_url }}
+
+Bienvenido/a al equipo.
+
+Cordialmente,
+Area de Recursos Humanos

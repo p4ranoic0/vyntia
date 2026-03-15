@@ -70,6 +70,17 @@ class OnboardingService:
     """Servicio principal para el flujo de onboarding."""
 
     @staticmethod
+    def _enviar_email_sincrono(
+        subject, from_email, recipient, text_content, html_content
+    ):
+        """Envio sincrono de email (SMTP/console segun EMAIL_BACKEND)."""
+        from django.core.mail import EmailMultiAlternatives
+
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+    @staticmethod
     def _normalizar_texto(texto):
         """Remueve acentos y caracteres especiales para generar usernames."""
         nfkd = unicodedata.normalize("NFKD", texto)
@@ -135,13 +146,47 @@ class OnboardingService:
         from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.gob.pe")
         recipient = empleado.correo_personal if empleado else usuario.email
 
+        # En backends de desarrollo no tiene sentido encolar en Celery.
+        # El correo se imprime en consola/memoria/archivo de forma sincrona.
+        email_backend = getattr(settings, "EMAIL_BACKEND", "")
+        backends_sincronos = {
+            "django.core.mail.backends.console.EmailBackend",
+            "django.core.mail.backends.locmem.EmailBackend",
+            "django.core.mail.backends.filebased.EmailBackend",
+        }
+
+        if email_backend in backends_sincronos:
+            try:
+                OnboardingService._enviar_email_sincrono(
+                    subject,
+                    from_email,
+                    recipient,
+                    text_content,
+                    html_content,
+                )
+                logger.info(
+                    "Email de bienvenida enviado sincronicamente a %s (backend=%s)",
+                    recipient,
+                    email_backend,
+                )
+                return True
+            except Exception as sync_error:
+                logger.error(
+                    "Error al enviar email sincrono a %s (backend=%s): %s",
+                    recipient,
+                    email_backend,
+                    sync_error,
+                )
+                return False
+
         try:
-            send_email_html_task.delay(
+            send_email_html_task.apply_async(
                 subject=subject,
                 from_email=from_email,
                 recipients=[recipient],
                 text_content=text_content,
                 html_content=html_content,
+                ignore_result=True,
             )
             logger.info(
                 "Email de bienvenida encolado para %s (usuario %s)",
@@ -152,10 +197,13 @@ class OnboardingService:
         except Exception as e:
             logger.warning("Celery no disponible, enviando email sincronamente: %s", e)
             try:
-                from django.core.mail import EmailMultiAlternatives
-                msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient])
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+                OnboardingService._enviar_email_sincrono(
+                    subject,
+                    from_email,
+                    recipient,
+                    text_content,
+                    html_content,
+                )
                 logger.info("Email de bienvenida enviado sincronamente a %s", recipient)
                 return True
             except Exception as sync_error:
@@ -469,6 +517,16 @@ class OnboardingService:
         }
 
     @staticmethod
+    def _enviar_notificacion(subject, from_email, recipient, text_content, html_content):
+        """Intenta enviar via Celery, cae a sincrono si falla."""
+        try:
+            send_email_html_task.apply_async(
+                args=[subject, from_email, recipient, text_content, html_content]
+            )
+        except Exception:
+            OnboardingService._enviar_email_sincrono(subject, from_email, recipient, text_content, html_content)
+
+    @staticmethod
     def validar_onboarding(onboarding_id, validado_por, observaciones=""):
         """
         RRHH valida todos los documentos y marca el onboarding como completado.
@@ -501,3 +559,64 @@ class OnboardingService:
 
         logger.info(f"Onboarding completado para {onboarding.empleado.nombre_completo}")
         return onboarding
+
+
+class OnboardingNotificationService:
+    """Email notifications for onboarding document and status events."""
+
+    @staticmethod
+    def notificar_documento_rechazado(onboarding, documento, motivo):
+        """Send email to employee when a document is rejected by RRHH."""
+        empleado = onboarding.empleado
+        recipient = empleado.correo_personal
+        if not recipient:
+            return
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        context = {
+            "nombre_empleado": empleado.nombre_completo,
+            "nombre_documento": documento.nombre_documento,
+            "motivo": motivo,
+            "frontend_url": frontend_url,
+        }
+        html_content = render_to_string("emails/documento_rechazado.html", context)
+        text_content = render_to_string("emails/documento_rechazado.txt", context)
+        subject = f"Documento rechazado: {documento.nombre_documento}"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)
+
+    @staticmethod
+    def notificar_onboarding_aprobado(onboarding):
+        """Send congratulations email when full onboarding is approved."""
+        empleado = onboarding.empleado
+        recipient = empleado.correo_personal
+        if not recipient:
+            return
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        context = {
+            "nombre_empleado": empleado.nombre_completo,
+            "frontend_url": frontend_url,
+        }
+        html_content = render_to_string("emails/onboarding_aprobado.html", context)
+        text_content = render_to_string("emails/onboarding_aprobado.txt", context)
+        subject = "¡Tu onboarding ha sido aprobado!"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)
+
+    @staticmethod
+    def notificar_onboarding_observado(onboarding, observaciones):
+        """Send email when onboarding is marked as observed/rejected by RRHH."""
+        empleado = onboarding.empleado
+        recipient = empleado.correo_personal
+        if not recipient:
+            return
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        context = {
+            "nombre_empleado": empleado.nombre_completo,
+            "observaciones": observaciones,
+            "frontend_url": frontend_url,
+        }
+        html_content = render_to_string("emails/onboarding_observado.html", context)
+        text_content = render_to_string("emails/onboarding_observado.txt", context)
+        subject = "Tu onboarding requiere correcciones"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)

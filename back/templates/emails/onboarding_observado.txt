@@ -1,0 +1,15 @@
+Tu onboarding requiere correcciones
+
+Estimado/a {{ nombre_empleado }},
+
+El equipo de Recursos Humanos ha revisado tu onboarding y requiere correcciones.
+
+Observaciones:
+{{ observaciones }}
+
+Ingresa a {{ frontend_url }} para realizar las correcciones.
+
+Si tienes dudas, contacta al area de Recursos Humanos.
+
+Cordialmente,
+Area de Recursos Humanos

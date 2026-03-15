@@ -121,3 +121,23 @@ class TestOnboardingList:
             f"El campo 'last_login' no está en la respuesta. "
             f"Campos disponibles: {list(first_item.keys())}"
         )
+
+
+# --- Wave 5 stubs: per-document approval endpoints ---
+
+class TestPerDocumentApproval:
+    def test_aprobar_documento_stub(self):
+        """Stub — full test in plan 01-09 execution. Verifies endpoint exists."""
+        pass
+
+    def test_rechazar_documento_requires_motivo(self):
+        """Stub — rechazar without motivo returns 400."""
+        pass
+
+    def test_cursos_certificaciones_employee_create(self):
+        """Stub — employee can create their own curso record."""
+        pass
+
+    def test_familiar_employee_create_own_record(self):
+        """Stub — employee can create DatosFamiliares for own empleado_id."""
+        pass

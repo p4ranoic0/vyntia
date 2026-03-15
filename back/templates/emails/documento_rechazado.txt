@@ -1,0 +1,15 @@
+Documento rechazado: {{ nombre_documento }}
+
+Estimado/a {{ nombre_empleado }},
+
+El equipo de Recursos Humanos ha rechazado el siguiente documento:
+
+Documento: {{ nombre_documento }}
+Motivo: {{ motivo }}
+
+Por favor ingresa a {{ frontend_url }} y sube una version corregida.
+
+Si tienes dudas, contacta al area de Recursos Humanos.
+
+Cordialmente,
+Area de Recursos Humanos
