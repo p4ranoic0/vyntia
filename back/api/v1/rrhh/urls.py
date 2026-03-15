@@ -18,6 +18,7 @@ from .usuario_roles_views import UsuarioRolesViewSet
 from .views import (
     AreaViewSet,
     ConfiguracionEmpresaViewSet,
+    CursosCertificacionesViewSet,
     DatosAcademicosViewSet,
     DatosFamiliaresViewSet,
     DatosLaboralesViewSet,
@@ -59,6 +60,7 @@ router.register(r"modulos", ModulosViewSet, basename="modulo")
 router.register(r"rol-permisos", RolPermisosViewSet, basename="rol-permiso")
 router.register(r"usuario-roles", UsuarioRolesViewSet, basename="usuario-rol")
 router.register(r"onboarding", OnboardingViewSet, basename="onboarding")
+router.register(r'cursos-certificaciones', CursosCertificacionesViewSet, basename='curso-certificacion')
 router.register(r'configuracion-empresa', ConfiguracionEmpresaViewSet, basename='configuracion-empresa')
 
 # Remuneraciones

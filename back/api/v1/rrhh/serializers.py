@@ -212,6 +212,20 @@ class DatosAcademicosSerializer(serializers.ModelSerializer):
         return data
 
 
+class CursosCertificacionesSerializer(serializers.ModelSerializer):
+    """Serializer for CursosCertificaciones model."""
+
+    class Meta:
+        from app_rrhh.models import CursosCertificaciones
+        model = CursosCertificaciones
+        fields = [
+            'curso_id', 'empleado', 'nombre_curso', 'institucion',
+            'fecha_inicio', 'fecha_fin', 'horas', 'descripcion',
+            'documento', 'estado_registro', 'fecha_registro', 'fecha_actualizacion',
+        ]
+        read_only_fields = ['curso_id', 'fecha_registro', 'fecha_actualizacion']
+
+
 class DatosLaboralesSerializer(serializers.ModelSerializer):
     """Serializer for DatosLaborales model."""
 

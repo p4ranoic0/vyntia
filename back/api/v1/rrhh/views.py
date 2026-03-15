@@ -947,7 +947,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
 
 
 class DatosFamiliaresViewSet(viewsets.ModelViewSet):
-    """ViewSet for DatosFamiliares management."""
+    """ViewSet for DatosFamiliares management. Employees can manage their own records."""
 
     queryset = DatosFamiliares.objects.select_related("empleado")
     serializer_class = DatosFamiliaresSerializer
@@ -966,19 +966,35 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
     ordering_fields = ["nombres_familiar", "fecha_nacimiento_familiar", "parentesco"]
     ordering = ["parentesco", "nombres_familiar"]
 
-    @require_authenticated()
-    def list(self, request, *args, **kwargs):
-        """Listar datos familiares - requiere autenticación."""
-        return super().list(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
 
-    @require_authenticated()
-    def retrieve(self, request, *args, **kwargs):
-        """Obtener datos familiares específicos - requiere autenticación."""
-        return super().retrieve(request, *args, **kwargs)
+    def get_queryset(self):
+        """Filter by employee — employees see only their own records."""
+        queryset = super().get_queryset()
+        user = self.request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if user.empleado:
+                queryset = queryset.filter(empleado=user.empleado)
+            else:
+                queryset = queryset.none()
+        empleado_id = self.request.query_params.get("empleado")
+        if empleado_id:
+            queryset = queryset.filter(empleado_id=empleado_id)
+        return queryset
 
-    @require_hr()
     def create(self, request, *args, **kwargs):
-        """Crear datos familiares - requiere rol RRHH."""
+        """Crear datos familiares — empleado solo puede crear para su propio legajo."""
+        empleado_id = request.data.get('empleado')
+        user = request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+                return APIResponse.error(
+                    message="Solo puede registrar familiares para su propio legajo",
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
         return super().create(request, *args, **kwargs)
 
     @require_hr()
@@ -996,17 +1012,9 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
         """Eliminar datos familiares - requiere rol administrador."""
         return super().destroy(request, *args, **kwargs)
 
-    def get_queryset(self):
-        """Filter by employee if specified."""
-        queryset = super().get_queryset()
-        empleado_id = self.request.query_params.get("empleado")
-        if empleado_id:
-            queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
-
 
 class DatosAcademicosViewSet(viewsets.ModelViewSet):
-    """ViewSet for DatosAcademicos management."""
+    """ViewSet for DatosAcademicos management. Employees can manage their own records."""
 
     queryset = DatosAcademicos.objects.select_related("empleado")
     serializer_class = DatosAcademicosSerializer
@@ -1025,19 +1033,35 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
     ]
     ordering = ["-fecha_inicio_estudios"]
 
-    @require_authenticated()
-    def list(self, request, *args, **kwargs):
-        """Listar datos académicos - requiere autenticación."""
-        return super().list(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
 
-    @require_authenticated()
-    def retrieve(self, request, *args, **kwargs):
-        """Obtener datos académicos específicos - requiere autenticación."""
-        return super().retrieve(request, *args, **kwargs)
+    def get_queryset(self):
+        """Filter by employee — employees see only their own records."""
+        queryset = super().get_queryset()
+        user = self.request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if user.empleado:
+                queryset = queryset.filter(empleado=user.empleado)
+            else:
+                queryset = queryset.none()
+        empleado_id = self.request.query_params.get("empleado")
+        if empleado_id:
+            queryset = queryset.filter(empleado_id=empleado_id)
+        return queryset
 
-    @require_hr()
     def create(self, request, *args, **kwargs):
-        """Crear datos académicos - requiere rol RRHH."""
+        """Crear datos académicos — empleado solo puede crear para su propio legajo."""
+        empleado_id = request.data.get('empleado')
+        user = request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+                return APIResponse.error(
+                    message="Solo puede registrar datos academicos para su propio legajo",
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
         return super().create(request, *args, **kwargs)
 
     @require_hr()
@@ -1055,13 +1079,48 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
         """Eliminar datos académicos - requiere rol administrador."""
         return super().destroy(request, *args, **kwargs)
 
+
+class CursosCertificacionesViewSet(viewsets.ModelViewSet):
+    """CRUD for employee courses and certifications. Employees manage own records."""
+
+    from app_rrhh.models import CursosCertificaciones as _CursosCertificaciones
+    queryset = _CursosCertificaciones.objects.select_related('empleado', 'documento').all()
+    permission_classes = [RRHHPermission]
+
+    def get_serializer_class(self):
+        from .serializers import CursosCertificacionesSerializer
+        return CursosCertificacionesSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
     def get_queryset(self):
-        """Filter by employee if specified."""
-        queryset = super().get_queryset()
-        empleado_id = self.request.query_params.get("empleado")
+        from app_rrhh.models import CursosCertificaciones
+        queryset = CursosCertificaciones.objects.select_related('empleado', 'documento').all()
+        user = self.request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if user.empleado:
+                queryset = queryset.filter(empleado=user.empleado)
+            else:
+                queryset = queryset.none()
+        empleado_id = self.request.query_params.get('empleado')
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        """Employee can only create curso records for their own legajo."""
+        empleado_id = request.data.get('empleado')
+        user = request.user
+        if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+                return APIResponse.error(
+                    message="Solo puede registrar cursos para su propio legajo",
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
+        return super().create(request, *args, **kwargs)
 
 
 class DatosLaboralesViewSet(viewsets.ModelViewSet):
@@ -2362,12 +2421,17 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             "carnet_extranjeria": "personal",
             "dni_familiar": "familiar",
             "certificado_nacimiento": "familiar",
+            "acta_matrimonio": "familiar",
+            "certificado_union_hecho": "familiar",
+            "partida_nacimiento": "familiar",
             "certificado_estudios": "academico",
             "titulo_profesional": "academico",
             "diploma": "academico",
+            "certificado_capacitacion": "academico",
             "declaracion_jurada": "laboral",
             "cv": "laboral",
             "certificado_trabajo": "laboral",
+            "constancia_trabajo": "laboral",
             "carta_recomendacion": "laboral",
         }
 
@@ -2410,6 +2474,35 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 nivel_acceso="restringido",
                 subido_por=request.user,
             )
+        # Optional FK linking: attach document to academico/curso record
+        # Note: DatosFamiliares does not have a documento FK — familiar_id param is accepted
+        # but only used to tag the doc's category context (no DB link on familiar itself)
+        familiar_id = request.data.get('familiar_id')  # accepted, reserved for future use
+
+        academico_id = request.data.get('academico_id')
+        if academico_id:
+            try:
+                from app_rrhh.models import DatosAcademicos
+                academico = DatosAcademicos.objects.get(
+                    academico_id=int(academico_id), empleado=onboarding.empleado
+                )
+                academico.documento = doc
+                academico.save(update_fields=['documento'])
+            except (DatosAcademicos.DoesNotExist, ValueError, AttributeError):
+                pass
+
+        curso_id = request.data.get('curso_id')
+        if curso_id:
+            try:
+                from app_rrhh.models import CursosCertificaciones
+                curso = CursosCertificaciones.objects.get(
+                    curso_id=int(curso_id), empleado=onboarding.empleado
+                )
+                curso.documento = doc
+                curso.save(update_fields=['documento'])
+            except (CursosCertificaciones.DoesNotExist, ValueError):
+                pass
+
         OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
         return APIResponse.success(
             message="Documento subido exitosamente",
