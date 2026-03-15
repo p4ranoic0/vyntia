@@ -9,6 +9,7 @@ interface DocumentPreviewModalProps {
   label: string
   isOpen: boolean
   isUploading?: boolean
+  isViewOnly?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -19,6 +20,7 @@ export function DocumentPreviewModal({
   label,
   isOpen,
   isUploading = false,
+  isViewOnly = false,
   onConfirm,
   onCancel,
 }: DocumentPreviewModalProps) {
@@ -81,11 +83,13 @@ export function DocumentPreviewModal({
         <DialogFooter className="flex gap-2 justify-end">
           <Button variant="outline" onClick={onCancel} disabled={isUploading}>
             <X className="h-4 w-4 mr-1" />
-            Cancelar
+            {isViewOnly ? 'Cerrar' : 'Cancelar'}
           </Button>
-          <Button onClick={onConfirm} disabled={isUploading}>
-            {isUploading ? 'Enviando...' : 'Enviar documento'}
-          </Button>
+          {!isViewOnly && (
+            <Button onClick={onConfirm} disabled={isUploading}>
+              {isUploading ? 'Enviando...' : 'Enviar documento'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
