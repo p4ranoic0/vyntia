@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-05-PLAN.md — archivo_url SerializerMethodField and es_version_actual filter
-last_updated: "2026-03-15T19:18:58.487Z"
+stopped_at: Completed 01.1-06-PLAN.md — document URL fix, OnboardingGuard routing guard, legajo-docs invalidation
+last_updated: "2026-03-15T19:23:22.606Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 23
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 ---
@@ -97,6 +97,7 @@ Progress: [███████░░░] 67%
 | Phase 01.1-onboarding-datos-completos P02 | 8 | 2 tasks | 4 files |
 | Phase 01.1-onboarding-datos-completos P04 | 16 | 2 tasks | 3 files |
 | Phase 01.1-onboarding-datos-completos P05 | 8 | 2 tasks | 2 files |
+| Phase 01.1-onboarding-datos-completos P06 | 2 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -142,6 +143,8 @@ Recent decisions affecting current work:
 - [Phase 01.1-onboarding-datos-completos]: Laboral constancia two-phase collapses to drop->preview->confirm->upload on Guardar (no separate entity creation step)
 - [Phase 01.1-05]: archivo_url uses request.build_absolute_uri(obj.archivo.url) with fallback to obj.archivo.url when no request context
 - [Phase 01.1-05]: es_version_actual filter accepts 'true'/'false' string params — explicit string comparison prevents accidental truthy/falsy matches
+- [Phase 01.1-06]: legajo-docs invalidation uses broad key in DocumentUploadZone (no empleadoId in scope) and narrower key with empleadoId in tab components
+- [Phase 01.1-06]: OnboardingGuard redirects completed employees AWAY from /onboarding; complementary to OnboardingRoute which redirects active employees TO /onboarding
 
 ### Pending Todos
 
@@ -156,6 +159,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:18:58.482Z
-Stopped at: Completed 01.1-05-PLAN.md — archivo_url SerializerMethodField and es_version_actual filter
+Last session: 2026-03-15T19:23:22.602Z
+Stopped at: Completed 01.1-06-PLAN.md — document URL fix, OnboardingGuard routing guard, legajo-docs invalidation
 Resume file: None
