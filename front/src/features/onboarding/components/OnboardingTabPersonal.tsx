@@ -19,8 +19,14 @@ import { apiClient } from '@/lib/api'
 import { DocumentInfo } from '../types/onboarding'
 import { DocumentUploadZone } from './DocumentUploadZone'
 
+const TIPO_SANGRE_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+
 const schema = z.object({
   telefono_celular: z.string().min(9, 'Mínimo 9 dígitos').max(15).optional().or(z.literal('')),
+  telefono_fijo: z.string().max(15).optional().or(z.literal('')),
+  tipo_sangre: z.string().max(5).optional().or(z.literal('')),
+  talla_empleado: z.string().max(10).optional().or(z.literal('')),
+  peso_empleado: z.string().max(10).optional().or(z.literal('')),
   direccion_domicilio: z.string().max(200).optional().or(z.literal('')),
   fecha_nacimiento: z.string().optional().or(z.literal('')),
   genero_empleado: z.enum(['masculino', 'femenino', 'otro', 'no_especifica']).optional().or(z.literal('')),
@@ -87,6 +93,10 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
     resolver: zodResolver(schema),
     defaultValues: {
       telefono_celular: '',
+      telefono_fijo: '',
+      tipo_sangre: '',
+      talla_empleado: '',
+      peso_empleado: '',
       direccion_domicilio: '',
       fecha_nacimiento: '',
       genero_empleado: '',
@@ -108,6 +118,10 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
     if (initialValues) {
       reset({
         telefono_celular: (initialValues.telefono_celular as string) ?? '',
+        telefono_fijo: (initialValues.telefono_fijo as string) ?? '',
+        tipo_sangre: (initialValues.tipo_sangre as string) ?? '',
+        talla_empleado: (initialValues.talla_empleado as string) ?? '',
+        peso_empleado: (initialValues.peso_empleado as string) ?? '',
         fecha_nacimiento: (initialValues.fecha_nacimiento as string) ?? '',
         direccion_domicilio: (initialValues.direccion_domicilio as string) ?? '',
         genero_empleado: (initialValues.genero_empleado as string) ?? '',
@@ -133,6 +147,10 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
     try {
       await apiClient.patch(`/api/v1/rrhh/empleados/${empleadoId}/`, {
         telefono_celular: data.telefono_celular || undefined,
+        telefono_fijo: data.telefono_fijo || undefined,
+        tipo_sangre: data.tipo_sangre || undefined,
+        talla_empleado: data.talla_empleado || undefined,
+        peso_empleado: data.peso_empleado || undefined,
         direccion_domicilio: data.direccion_domicilio || undefined,
         fecha_nacimiento: data.fecha_nacimiento || undefined,
         genero_empleado: data.genero_empleado || undefined,
@@ -253,17 +271,41 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
               )}
             </div>
 
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="telefono_celular">Teléfono celular</Label>
-              <Input
-                id="telefono_celular"
-                type="tel"
-                placeholder="Ej: 987654321"
-                {...register('telefono_celular')}
+              <Input id="telefono_celular" type="tel" placeholder="Ej: 987654321" {...register('telefono_celular')} />
+              {errors.telefono_celular && <p className="text-sm text-destructive">{errors.telefono_celular.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="telefono_fijo">Teléfono fijo</Label>
+              <Input id="telefono_fijo" type="tel" placeholder="Ej: 011234567" {...register('telefono_fijo')} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tipo_sangre">Tipo de sangre</Label>
+              <Controller
+                name="tipo_sangre"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <SelectTrigger id="tipo_sangre"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                    <SelectContent>
+                      {TIPO_SANGRE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
               />
-              {errors.telefono_celular && (
-                <p className="text-sm text-destructive">{errors.telefono_celular.message}</p>
-              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="talla_empleado">Talla (cm)</Label>
+              <Input id="talla_empleado" type="number" placeholder="Ej: 170" {...register('talla_empleado')} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="peso_empleado">Peso (kg)</Label>
+              <Input id="peso_empleado" type="number" placeholder="Ej: 70" {...register('peso_empleado')} />
             </div>
           </div>
         </div>

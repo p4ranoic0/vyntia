@@ -60,7 +60,7 @@ export function getEstadoLabel(estado: string): string {
 
 export const onboardingService = {
   async getMiOnboarding(): Promise<OnboardingStatus> {
-    const response = await apiClient.get('/api/v1/rrhh/onboarding/mi_onboarding/')
+    const response = await apiClient.get('/api/v1/rrhh/onboarding/mi-onboarding/')
     return response.data?.data || response.data
   },
 

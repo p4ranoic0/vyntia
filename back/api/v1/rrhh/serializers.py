@@ -133,6 +133,11 @@ class DatosFamiliaresSerializer(serializers.ModelSerializer):
             "estado_familiar",
         ]
         read_only_fields = ["familiar_id"]
+        extra_kwargs = {
+            "fecha_nacimiento": {"required": False, "allow_null": True},
+            "genero_familiar": {"required": False, "allow_blank": True, "default": ""},
+            "tipo_documento": {"required": False, "allow_blank": True, "default": "DNI"},
+        }
 
     def get_edad(self, obj) -> int | None:
         """Get age of familiar."""

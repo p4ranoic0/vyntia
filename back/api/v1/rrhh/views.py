@@ -709,11 +709,12 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         user = request.user
 
         _ONBOARDING_FIELDS = {
-            'telefono_celular', 'direccion_domicilio', 'fecha_nacimiento',
+            'telefono_celular', 'telefono_fijo', 'direccion_domicilio', 'fecha_nacimiento',
             'genero_empleado', 'estado_civil', 'numero_ruc',
             'distrito_domicilio', 'provincia_domicilio', 'departamento_domicilio',
             'entidad_bancaria', 'numero_cuenta_bancaria', 'numero_cci',
             'sistema_pensiones', 'tipo_comision', 'codigo_cuspp',
+            'tipo_sangre', 'talla_empleado', 'peso_empleado',
         }
 
         is_own = hasattr(user, 'empleado') and user.empleado == instance
@@ -721,9 +722,13 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         is_safe_self_update = is_own and requested_fields.issubset(_ONBOARDING_FIELDS)
 
         if not is_safe_self_update:
-            roles = [r.nombre_rol.lower() for r in user.roles_activos()]
-            hr_roles = {"admin", "rrhh", "supervisor", "administrador rrhh", "analista rrhh", "jefe de area"}
-            if not roles or not hr_roles.intersection(set(roles)):
+            can_write = (
+                getattr(user, 'is_superuser', False)
+                or getattr(user, 'es_administrador', False)
+                or getattr(user, 'es_rrhh', False)
+                or getattr(user, 'es_admin_rrhh', False)
+            )
+            if not can_write:
                 return APIResponse.error(
                     message="No tiene permisos para actualizar este empleado",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -1000,10 +1005,10 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
     ]
     search_fields = [
         "nombres_familiar",
-        "apellido_paterno_familiar",
-        "apellido_materno_familiar",
+        "apellido_paterno",
+        "apellido_materno",
     ]
-    ordering_fields = ["nombres_familiar", "fecha_nacimiento_familiar", "parentesco"]
+    ordering_fields = ["nombres_familiar", "fecha_nacimiento", "parentesco"]
     ordering = ["parentesco", "nombres_familiar"]
 
     def get_permissions(self):
@@ -1072,7 +1077,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    search_fields = ["tipo_formacion", "nombre_institucion", "carrera_especialidad"]
+    search_fields = ["nivel_educativo", "nombre_institucion", "nombre_carrera"]
     ordering_fields = [
         "fecha_inicio_estudios",
         "fecha_termino_estudios",
