@@ -1,53 +1,65 @@
 ---
 phase: 01-onboarding-self-service
-verified: 2026-03-15T12:00:00Z
-status: gaps_found
-score: 15/16 success criteria verified
+verified: 2026-03-15T13:00:00Z
+status: passed
+score: 16/16 success criteria verified
 re_verification:
-  previous_status: human_needed
-  previous_score: 7/8
+  previous_status: gaps_found
+  previous_score: 15/16
   gaps_closed:
-    - "Previous human_needed item (ONBD-02 route restriction scope) confirmed by Plan 07 human verification — admin panel IS blocked"
-    - "Expanded scope (ONBD-09 through ONBD-15): all 7 new requirements implemented and human-verified in Plan 13"
-  gaps_remaining:
-    - "ONBD-09 through ONBD-15 not registered in REQUIREMENTS.md — orphaned requirements gap"
-    - "ROADMAP.md plan status stale — shows plans 01-08, 01-09, 01-10, 01-11, 01-13 as not complete despite all summaries showing PASSED"
+    - "ONBD-09 through ONBD-15 added to REQUIREMENTS.md (lines 25-31, all marked [x]); traceability table updated lines 159-165"
+    - "ROADMAP.md plan markers for 01-08, 01-09, 01-10, 01-11, 01-13 all show [x] (confirmed lines 73-77)"
+  gaps_remaining: []
   regressions: []
-gaps:
-  - truth: "ONBD-09 through ONBD-15 are defined in ROADMAP.md success criteria and implemented in code but do not appear in REQUIREMENTS.md"
-    status: partial
-    reason: "REQUIREMENTS.md was not updated when scope expanded from 8 to 15 requirements. The 7 new requirements are fully implemented and human-verified but are not formally registered in the project requirements ledger."
-    artifacts:
-      - path: ".planning/REQUIREMENTS.md"
-        issue: "Only defines ONBD-01 through ONBD-08. ONBD-09 through ONBD-15 are missing."
-      - path: ".planning/ROADMAP.md"
-        issue: "Plans 01-08, 01-09, 01-10, 01-11, 01-13 show [ ] (incomplete) but all have PASSED summaries. Plan status stale."
-    missing:
-      - "Add ONBD-09 through ONBD-15 to REQUIREMENTS.md under the Onboarding section"
-      - "Mark plans 01-08, 01-09, 01-10, 01-11, 01-13 as [x] complete in ROADMAP.md"
 ---
 
 # Phase 01: Onboarding Self-Service — Full Verification Report
 
-**Phase Goal:** Employees complete their own onboarding (upload documents, fill personal/family/academic/work data) without RRHH data entry, with RRHH able to review, approve, or reject individual documents and receive email notifications.
-**Verified:** 2026-03-15T12:00:00Z
-**Status:** gaps_found (documentation gap only — all code verified)
-**Re-verification:** Yes — supersedes 2026-03-14T18:02:27Z verification; expanded scope from ONBD-01–08 to ONBD-01–15
+**Phase Goal:** Employees in onboarding receive credentials, log in to a restricted view, register all their data (personal, N dependents with required docs per relationship type, N academic records, N courses/diplomados, N work certs, N professional titles, laboral files only), preview documents before submitting with an explicit send button, track per-document approval status, and receive email notifications on approval/rejection — RRHH approves/rejects each document individually and validates or rejects the full onboarding.
+**Verified:** 2026-03-15T13:00:00Z
+**Status:** passed
+**Re-verification:** Yes — third verification; supersedes 2026-03-15T12:00:00Z (gaps_found). Both previously identified documentation gaps confirmed resolved.
+
+---
+
+## Gap Re-verification
+
+### Gap 1: ONBD-09 through ONBD-15 in REQUIREMENTS.md
+
+**Previous status:** ONBD-09 through ONBD-15 absent from REQUIREMENTS.md — orphaned requirements.
+
+**Verified fix:**
+- `.planning/REQUIREMENTS.md` lines 25-31: all seven requirements present and marked `[x]`
+- Traceability table lines 159-165: all seven mapped to "Phase 1 / Onboarding Self-Service / Complete"
+- The requirements body (lines 25-31) defines each requirement in full detail
+
+**Status: CLOSED**
+
+### Gap 2: ROADMAP.md stale plan markers
+
+**Previous status:** Plans 01-08, 01-09, 01-10, 01-11, 01-13 showed `[ ]` (incomplete) despite PASSED summaries.
+
+**Verified fix:**
+- `.planning/ROADMAP.md` line 73: `[x] 01-08-PLAN.md`
+- `.planning/ROADMAP.md` line 74: `[x] 01-09-PLAN.md`
+- `.planning/ROADMAP.md` line 75: `[x] 01-10-PLAN.md`
+- `.planning/ROADMAP.md` line 76: `[x] 01-11-PLAN.md`
+- `.planning/ROADMAP.md` line 78: `[x] 01-13-PLAN.md`
+
+**Status: CLOSED**
 
 ---
 
 ## Goal Achievement
-
-This is a full re-verification covering all 16 ROADMAP success criteria (plans 01-01 through 01-13, requirements ONBD-01 through ONBD-15). The previous verification (2026-03-14) covered only ONBD-01 through ONBD-08.
 
 ### Observable Truths (from ROADMAP.md Success Criteria)
 
 | #  | Truth | Status | Evidence |
 |----|-------|--------|----------|
 | 1  | Welcome email sent when onboarding user created; RRHH can correct wrong email and resend | VERIFIED | `corregir_correo` action in OnboardingViewSet (views.py line 2258); `reenviar_email_bienvenida` wired; amber banner in OnboardingAdminPage.tsx |
-| 2  | Employee sees only own data sections; cannot access admin panel | VERIFIED (partial scope, human-confirmed) | `OnboardingRoute` in App.tsx wraps `/` and `/dashboard`; `AdminRoute` blocks all `/admin*` routes; Plan 07 human verification Step 8 confirmed |
+| 2  | Employee sees only own data sections; cannot access admin panel | VERIFIED | `OnboardingRoute` in App.tsx wraps `/` and `/dashboard`; `AdminRoute` blocks all `/admin*` routes; Plan 07 human verification Step 8 confirmed |
 | 3  | Employee fills personal data fields (telefono, direccion, fecha_nacimiento, foto) | VERIFIED | `OnboardingTabPersonal.tsx` has react-hook-form with `telefono_celular`, `direccion_domicilio`, `fecha_nacimiento`; PATCH to `/api/v1/rrhh/empleados/{id}/`; `DocumentUploadZone` with `acceptImages=true` for photo |
-| 4  | Employee registers N family dependents with required docs per parentesco | VERIFIED | `OnboardingTabFamiliar.tsx` rewritten with "Agregar dependiente" dialog; `createFamiliar()` from `onboardingDataService.ts`; per-parentesco upload zones (hijo→DNI+partida; conyuge→DNI+acta matrimonio; padre→DNI+partida) |
+| 4  | Employee registers N family dependents with required docs per parentesco | VERIFIED | `OnboardingTabFamiliar.tsx` rewritten with "Agregar dependiente" dialog; `createFamiliar()` from `onboardingDataService.ts`; per-parentesco upload zones (hijo: DNI+partida; conyuge: DNI+acta matrimonio; padre: DNI+partida) |
 | 5  | Employee uploads own DNI/carnet de extranjeria | VERIFIED | `subir_documento` action on OnboardingViewSet; `DocumentUploadZone` for `dni` and `carnet_extranjeria` in Personal tab |
 | 6  | Employee registers N certificados de estudio each with file upload | VERIFIED | `OnboardingTabAcademico.tsx` "Certificados de Estudio" accordion section; `createAcademico()` from `onboardingDataService.ts`; upload zone per item |
 | 7  | Employee registers N cursos/diplomados each with file upload | VERIFIED | `OnboardingTabAcademico.tsx` "Cursos y Diplomados" accordion section; `createCurso()` from `onboardingDataService.ts`; upload zone per curso |
@@ -57,11 +69,11 @@ This is a full re-verification covering all 16 ROADMAP success criteria (plans 0
 | 11 | Before submitting any file: employee sees preview and confirms with explicit Enviar button | VERIFIED | `DocumentPreviewModal.tsx` — `URL.createObjectURL`, iframe for PDF, img for images; `DocumentUploadZone.tsx` `onDropAccepted` sets `pendingFile+isPreviewOpen` instead of calling upload directly; "Enviar documento" and "Cancelar" buttons; `revokeObjectURL` in useEffect cleanup |
 | 12 | Each uploaded doc shows individual status; rejected docs show reason + Corregir y reenviar | VERIFIED | `DocumentUploadZone.tsx` `localOverrideEmpty` state; "Corregir y reenviar" button shown when `estado_documento === 'rechazado'`; rejection reason rendered below badge |
 | 13 | Progress bar updates as documents are approved (not just uploaded) | VERIFIED | `OnboardingProgressBar.tsx` renders two Progress bars: uploaded% (gray) and `progreso_aprobado`% (green); `OnboardingEmpleado.progreso_aprobado` property in `onboarding.py` line 97 counts `estado_documento='aprobado'` documents |
-| 14 | Employee receives email on onboarding approval; receives email with observations when observed | VERIFIED | `OnboardingNotificationService.notificar_onboarding_aprobado()` and `notificar_onboarding_observado()` in `onboarding_service.py` lines 588, 606; wired into `validar` action at views.py lines 2282, 2293; templates `onboarding_aprobado.html/txt` and `onboarding_observado.html/txt` exist; Plan 13 human verification Steps 14–15 confirmed |
+| 14 | Employee receives email on onboarding approval; receives email with observations when observed | VERIFIED | `OnboardingNotificationService.notificar_onboarding_aprobado()` and `notificar_onboarding_observado()` in `onboarding_service.py` lines 588, 606; wired into `validar` action at views.py lines 2282, 2293; templates `onboarding_aprobado.html/txt` and `onboarding_observado.html/txt` exist; Plan 13 human verification Steps 14-15 confirmed |
 | 15 | RRHH approves or rejects each document individually; can approve/reject full onboarding | VERIFIED | `aprobar_documento` action (views.py line 2304) and `rechazar_documento` action (line 2325) on OnboardingViewSet; `OnboardingAdminPage.tsx` calls `apiClient.post(.../documentos/{docId}/aprobar/)` and `apiClient.post(.../documentos/{rechazarDocId}/rechazar/)`; rejection Dialog with motivo textarea |
-| 16 | Toast/notification feedback on every action: success, error, too-large, invalid format, network error | VERIFIED | `DocumentUploadZone.tsx` comprehensive error handling: `ERR_NETWORK` → red toast; HTTP 400 → `toast.warning`; other → `toast.error`; `toast.success('Documento enviado correctamente')` on success; `onDropRejected` with specific messages per error code |
+| 16 | Toast/notification feedback on every action: success, error, too-large, invalid format, network error | VERIFIED | `DocumentUploadZone.tsx` comprehensive error handling: `ERR_NETWORK` red toast; HTTP 400 `toast.warning`; other `toast.error`; `toast.success('Documento enviado correctamente')` on success; `onDropRejected` with specific messages per error code |
 
-**Score:** 15/16 success criteria fully verified in code. Success Criterion on requirements coverage (ONBD-09 through ONBD-15 absent from REQUIREMENTS.md) constitutes the one gap.
+**Score:** 16/16 success criteria verified
 
 ---
 
@@ -135,30 +147,23 @@ All artifacts from the previous verification remain present and wired. No regres
 | ONBD-06 | 01-03, 01-04, 01-05, 01-07 | Employee uploads academic PDFs | SATISFIED | `OnboardingTabAcademico` with certificados, cursos, titulos accordion |
 | ONBD-07 | 01-03, 01-04, 01-05, 01-07 | Employee uploads laboral PDFs without editing RRHH fields | SATISFIED | `OnboardingTabLaboral` read-only RRHH section + static upload zones + Experiencia Laboral |
 | ONBD-08 | 01-01, 01-02, 01-06, 01-07 | RRHH sees completion percentage per employee | SATISFIED | `progreso_porcentaje` + dual-value `OnboardingProgressBar`; `computeAlert` for 5-day alert |
-| ONBD-09 | 01-09, 01-10 | Employee can register N familiares with per-parentesco docs | SATISFIED — ORPHANED from REQUIREMENTS.md | `DatosFamiliaresViewSet` employee write + `OnboardingTabFamiliar` N-item form; Plan 13 human verification passed |
-| ONBD-10 | 01-08, 01-09, 01-10 | CursosCertificaciones CRUD + academic N-item forms | SATISFIED — ORPHANED from REQUIREMENTS.md | `CursosCertificaciones` model + `CursosCertificacionesViewSet` + `OnboardingTabAcademico`; Plan 13 Steps 4, 7 passed |
-| ONBD-11 | 01-09, 01-10 | Constancias de trabajo (N-item work history) | SATISFIED — ORPHANED from REQUIREMENTS.md | `OnboardingTabLaboral` Experiencia Laboral; `getConstanciasTrabajo` + `constancia_trabajo` tipo_documento; Plan 13 Step 5 passed |
-| ONBD-12 | 01-11, 01-12 | Document preview modal before upload; Corregir y reenviar | SATISFIED — ORPHANED from REQUIREMENTS.md | `DocumentPreviewModal.tsx` + `DocumentUploadZone.tsx` `pendingFile` intercept + `localOverrideEmpty`; Plan 13 Steps 3, 12 passed |
-| ONBD-13 | 01-08, 01-09, 01-12 | Per-document RRHH approval; progreso_aprobado | SATISFIED — ORPHANED from REQUIREMENTS.md | `aprobar_documento` + `rechazar_documento` actions; dual-value progress bar; Plan 13 Steps 9–11 passed |
-| ONBD-14 | 01-09, 01-12 | Email notifications for rejection, approval, observed | SATISFIED — ORPHANED from REQUIREMENTS.md | `OnboardingNotificationService` with 3 methods + 6 templates; wired into `validar` and `rechazar_documento`; Plan 13 Steps 13–15 passed |
-| ONBD-15 | 01-12 | Toast/notification coverage for all action types | SATISFIED — ORPHANED from REQUIREMENTS.md | Comprehensive `toast.success/error/warning` in `DocumentUploadZone.tsx` handleUpload and onDropRejected; Plan 13 Step 7 passed |
+| ONBD-09 | 01-09, 01-10 | Employee can register N familiares with per-parentesco docs | SATISFIED | `DatosFamiliaresViewSet` employee write + `OnboardingTabFamiliar` N-item form; Plan 13 human verification passed |
+| ONBD-10 | 01-08, 01-09, 01-10 | CursosCertificaciones CRUD + academic N-item forms | SATISFIED | `CursosCertificaciones` model + `CursosCertificacionesViewSet` + `OnboardingTabAcademico`; Plan 13 Steps 4, 7 passed |
+| ONBD-11 | 01-09, 01-10 | Constancias de trabajo (N-item work history) | SATISFIED | `OnboardingTabLaboral` Experiencia Laboral; `getConstanciasTrabajo` + `constancia_trabajo` tipo_documento; Plan 13 Step 5 passed |
+| ONBD-12 | 01-11, 01-12 | Document preview modal before upload; Corregir y reenviar | SATISFIED | `DocumentPreviewModal.tsx` + `DocumentUploadZone.tsx` `pendingFile` intercept + `localOverrideEmpty`; Plan 13 Steps 3, 12 passed |
+| ONBD-13 | 01-08, 01-09, 01-12 | Per-document RRHH approval; progreso_aprobado | SATISFIED | `aprobar_documento` + `rechazar_documento` actions; dual-value progress bar; Plan 13 Steps 9-11 passed |
+| ONBD-14 | 01-09, 01-12 | Email notifications for rejection, approval, observed | SATISFIED | `OnboardingNotificationService` with 3 methods + 6 templates; wired into `validar` and `rechazar_documento`; Plan 13 Steps 13-15 passed |
+| ONBD-15 | 01-12 | Toast/notification coverage for all action types | SATISFIED | Comprehensive `toast.success/error/warning` in `DocumentUploadZone.tsx` handleUpload and onDropRejected; Plan 13 Step 7 passed |
 
-#### Orphaned Requirements
-
-ONBD-09 through ONBD-15 are referenced in ROADMAP.md (requirements field: "ONBD-01 through ONBD-15") and in plans 01-08 through 01-13, but they **do not appear in `.planning/REQUIREMENTS.md`**. The REQUIREMENTS.md only defines ONBD-01 through ONBD-08. All 7 requirements have complete implementations and human verification, but the requirements ledger is out of date.
-
-Additionally, ROADMAP.md plan status is stale: plans 01-08, 01-09, 01-10, 01-11, 01-13 show `[ ]` (not checked) despite all having `Self-Check: PASSED` summaries with commit hashes.
+All 15 requirements (ONBD-01 through ONBD-15) are SATISFIED. No orphaned requirements remain — ONBD-09 through ONBD-15 are now formally registered in REQUIREMENTS.md.
 
 ---
 
 ### Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `.planning/REQUIREMENTS.md` | 17-24 | ONBD-09 through ONBD-15 absent | Warning | Requirements ledger incomplete — 7 implemented requirements not formally defined |
-| `.planning/ROADMAP.md` | 72-77 | Plans 01-08, 01-09, 01-10, 01-11, 01-13 marked `[ ]` | Warning | Stale status — summaries and commits confirm all plans complete |
-
 No stubs, empty implementations, placeholder returns, or TODO/FIXME comments found in any of the key onboarding implementation files across all 13 plans.
+
+No documentation anti-patterns remain — both REQUIREMENTS.md and ROADMAP.md are now up to date.
 
 ---
 
@@ -170,21 +175,24 @@ All baseline employee and RRHH flows verified including upload, progress bar, em
 **Plan 13 (Wave 8) — RRHH confirmed "aprobado" (16/16 steps):**
 All expanded features verified including N-item familiar/academic/laboral forms, document preview modal, Corregir y reenviar flow, dual progress bar, RRHH per-document approval, and email notifications for all three notification types (rejection, approval, observed).
 
-No additional human verification is required for code functionality.
+No additional human verification is required.
 
 ---
 
-### Gaps Summary
+### Verification Summary
 
-The codebase for Phase 1 is fully implemented and human-verified. All 16 ROADMAP success criteria have evidence in the actual code. Both human verification checkpoints (Plan 07 and Plan 13) passed.
+Phase 01: Onboarding Self-Service is fully complete.
 
-The one gap is a **documentation gap only**: REQUIREMENTS.md was not updated when the phase scope expanded from ONBD-01–08 to ONBD-01–15. This does not affect running behavior — the features work — but the project requirements ledger does not reflect the full scope.
+- All 16 ROADMAP success criteria verified in code
+- All 15 requirements (ONBD-01 through ONBD-15) satisfied and formally registered in REQUIREMENTS.md
+- All plan markers in ROADMAP.md show `[x]` complete
+- Two human verification checkpoints (Plan 07 and Plan 13) both passed
+- No stubs, placeholders, or broken wiring found
+- No remaining documentation gaps
 
-Secondary documentation gap: ROADMAP.md plan status markers for plans 01-08, 01-09, 01-10, 01-11, 01-13 are stale (showing incomplete). These plans have committed code and PASSED self-checks.
-
-**Recommended action:** Update `.planning/REQUIREMENTS.md` to add ONBD-09 through ONBD-15, and update `.planning/ROADMAP.md` to mark all Phase 1 plans as `[x]` complete.
+The two previously identified documentation gaps (REQUIREMENTS.md missing ONBD-09 through ONBD-15, and ROADMAP.md stale plan markers) have both been confirmed resolved in this re-verification.
 
 ---
 
-_Verified: 2026-03-15T12:00:00Z_
+_Verified: 2026-03-15T13:00:00Z_
 _Verifier: Claude (gsd-verifier)_
