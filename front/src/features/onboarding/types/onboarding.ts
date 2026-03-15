@@ -63,6 +63,8 @@ export interface UploadDocumentResponse {
   archivo_url?: string | null
 }
 
+export type SectionStatus = 'completo' | 'en_revision' | 'observado' | 'pendiente'
+
 /** Returns true when the employee has not logged in and 5+ days have passed since welcome email. */
 export function computeAlert(o: Pick<OnboardingStatus, 'fecha_email_bienvenida' | 'last_login'>): boolean {
   if (!o.fecha_email_bienvenida) return false
