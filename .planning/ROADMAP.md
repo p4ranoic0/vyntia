@@ -89,7 +89,13 @@ Plans (new — Waves 5-8):
   5. The "Agregar dependiente" dialog includes optional document upload fields for the applicable doc type (DNI, partida nacimiento, or acta matrimonio per parentesco)
   6. The "Agregar" dialogs for académico entries include an optional document upload within the same dialog
   7. The "Agregar experiencia laboral" dialog includes an optional constancia de trabajo upload within the same dialog
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01.1-01-PLAN.md — Wave 1: Backend — extend EmpleadoUpdateSerializer + EmpleadoSerializer + add SIN PENSION choice + pytest (ONBD-16)
+- [ ] 01.1-02-PLAN.md — Wave 2: Frontend — OnboardingTabPersonal rewrite (15+ fields, AFP conditional) + OnboardingSectionStatus component + employee data fetch (ONBD-16, ONBD-17)
+- [ ] 01.1-03-PLAN.md — Wave 2: Frontend — DocumentUploadZone "Ver documento" button + DocumentPreviewModal isViewOnly prop (ONBD-18)
+- [ ] 01.1-04-PLAN.md — Wave 2: Frontend — Two-phase upload in Familiar/Academico/Laboral dialogs (ONBD-19, ONBD-20, ONBD-21)
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand
@@ -139,6 +145,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
 | 1. Onboarding Self-Service | 8/13 | In Progress|  |
+| 1.1. Onboarding Datos Completos | 0/4 | Not started | - |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
 | 4. Vacaciones | 0/TBD | Not started | - |
