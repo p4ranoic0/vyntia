@@ -9,6 +9,7 @@ import { OnboardingTabPersonal } from '../components/OnboardingTabPersonal'
 import { OnboardingTabFamiliar } from '../components/OnboardingTabFamiliar'
 import { OnboardingTabAcademico } from '../components/OnboardingTabAcademico'
 import { OnboardingTabLaboral } from '../components/OnboardingTabLaboral'
+import { OnboardingSectionStatus } from '../components/OnboardingSectionStatus'
 import { DocumentInfo } from '../types/onboarding'
 
 export function OnboardingEmployeePage() {
@@ -28,6 +29,15 @@ export function OnboardingEmployeePage() {
       })
       // Unwrap paginated APIResponse: { success, data: [...], meta: { pagination } }
       return (res.data?.data ?? res.data?.results ?? []) as DocumentInfo[]
+    },
+    enabled: !!empleadoId,
+  })
+
+  const { data: empleadoData } = useQuery({
+    queryKey: ['empleado-data', empleadoId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/api/v1/rrhh/empleados/${empleadoId}/`)
+      return res.data?.data ?? res.data
     },
     enabled: !!empleadoId,
   })
@@ -59,9 +69,12 @@ export function OnboardingEmployeePage() {
       {onboarding && (
         <OnboardingProgressBar
           progreso_porcentaje={onboarding.progreso_porcentaje}
-          progreso_aprobado={(onboarding as any).progreso_aprobado}
+          progreso_aprobado={(onboarding as Record<string, unknown>).progreso_aprobado as number | undefined}
         />
       )}
+      <div className="mb-4">
+        <OnboardingSectionStatus docs={docs} />
+      </div>
       <Tabs defaultValue="personal">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="personal">Personal</TabsTrigger>
@@ -71,7 +84,11 @@ export function OnboardingEmployeePage() {
         </TabsList>
         <TabsContent value="personal" className="mt-6">
           {empleadoId && (
-            <OnboardingTabPersonal empleadoId={empleadoId} docs={docs} />
+            <OnboardingTabPersonal
+              empleadoId={empleadoId}
+              docs={docs}
+              initialValues={empleadoData as Record<string, unknown> | undefined}
+            />
           )}
         </TabsContent>
         <TabsContent value="familiar" className="mt-6">
