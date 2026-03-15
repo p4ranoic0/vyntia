@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-06-PLAN.md — document URL fix, OnboardingGuard routing guard, legajo-docs invalidation
-last_updated: "2026-03-15T19:23:22.606Z"
+stopped_at: Completed 01.1-07-PLAN.md — backend tests for documentos-digitales, Vitest tests for computeStatus and subirDocumento
+last_updated: "2026-03-15T19:30:26.675Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 ---
@@ -98,6 +98,7 @@ Progress: [███████░░░] 67%
 | Phase 01.1-onboarding-datos-completos P04 | 16 | 2 tasks | 3 files |
 | Phase 01.1-onboarding-datos-completos P05 | 8 | 2 tasks | 2 files |
 | Phase 01.1-onboarding-datos-completos P06 | 2 | 2 tasks | 7 files |
+| Phase 01.1-onboarding-datos-completos P07 | 5 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -145,6 +146,8 @@ Recent decisions affecting current work:
 - [Phase 01.1-05]: es_version_actual filter accepts 'true'/'false' string params — explicit string comparison prevents accidental truthy/falsy matches
 - [Phase 01.1-06]: legajo-docs invalidation uses broad key in DocumentUploadZone (no empleadoId in scope) and narrower key with empleadoId in tab components
 - [Phase 01.1-06]: OnboardingGuard redirects completed employees AWAY from /onboarding; complementary to OnboardingRoute which redirects active employees TO /onboarding
+- [Phase 01.1-07]: Use ContentFile with in-memory bytes to satisfy DocumentosDigitales.archivo mandatory field in pytest tests
+- [Phase 01.1-07]: jsdom installed as devDependency — was missing from package.json despite being required by vitest.config.js jsdom environment
 
 ### Pending Todos
 
@@ -159,6 +162,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:23:22.602Z
-Stopped at: Completed 01.1-06-PLAN.md — document URL fix, OnboardingGuard routing guard, legajo-docs invalidation
+Last session: 2026-03-15T19:30:26.671Z
+Stopped at: Completed 01.1-07-PLAN.md — backend tests for documentos-digitales, Vitest tests for computeStatus and subirDocumento
 Resume file: None
