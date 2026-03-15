@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-12-PLAN.md — DocumentUploadZone Corregir flow, dual-value progress bar, per-doc approval endpoints
-last_updated: "2026-03-15T18:05:21.736Z"
+stopped_at: Completed 01.1-01-PLAN.md — EmpleadoUpdateSerializer extension, SIN PENSION model choice, ONBD-16 tests
+last_updated: "2026-03-15T18:28:27.262Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 20
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 ---
@@ -92,6 +92,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P07 | 2 | 2 tasks | 0 files |
 | Phase 01-onboarding-self-service P08 | 12 | 2 tasks | 7 files |
 | Phase 01-onboarding-self-service P12 | 18 | 2 tasks | 5 files |
+| Phase 01.1-onboarding-datos-completos P01 | 7 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - [Phase 01-08]: Test stubs use onboarding_factory fixture (not onboarding) — onboarding fixture does not exist in conftest.py
 - [Phase 01-12]: OnboardingAdminPage per-doc approval reuses existing state-based pattern (not useMutation) — consistent with component style, avoids duplicate state management
 - [Phase 01-12]: OnboardingProgressBar progreso_porcentaje made optional (with porcentaje alias) for backward compatibility with existing call sites
+- [Phase 01.1-onboarding-datos-completos]: EmpleadoUpdateSerializer.Meta.fields extended to 20 fields (8 new: genero_empleado, numero_ruc, provincia_domicilio, departamento_domicilio, sistema_pensiones, tipo_comision, codigo_cuspp, numero_cci)
+- [Phase 01.1-onboarding-datos-completos]: SISTEMA_PENSIONES_CHOICES extended with SIN PENSION — no migration needed, Django choices are Python-only validation
+- [Phase 01.1-onboarding-datos-completos]: EmpleadoPermission.write_roles extended to include 'administrador rrhh' canonical role name (was missing, caused 403 on PATCH)
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T07:30:00.000Z
-Stopped at: Completed 01-12-PLAN.md — DocumentUploadZone Corregir flow, dual-value progress bar, per-doc approval endpoints
+Last session: 2026-03-15T18:28:27.258Z
+Stopped at: Completed 01.1-01-PLAN.md — EmpleadoUpdateSerializer extension, SIN PENSION model choice, ONBD-16 tests
 Resume file: None
