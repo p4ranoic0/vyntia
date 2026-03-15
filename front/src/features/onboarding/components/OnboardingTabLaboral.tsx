@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { LockKeyhole, Plus, Briefcase } from 'lucide-react'
+import { LockKeyhole, Plus, Briefcase, Upload, X } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,8 +21,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { DocumentUploadZone } from './DocumentUploadZone'
+import { DocumentPreviewModal } from './DocumentPreviewModal'
 import { getConstanciasTrabajo } from '../services/onboardingDataService'
-import { apiClient } from '@/lib/api'
+import { subirDocumento } from '../services/onboardingUploadService'
 import { cn } from '@/lib/utils'
 
 interface DatosLaboralesInfo {
@@ -49,37 +50,73 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
   const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [form, setForm] = useState<ExpLaboralForm>(EMPTY_FORM)
-  const [uploading, setUploading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Two-phase upload state
+  const [pendingDoc, setPendingDoc] = useState<{ file: File; tipo: string; label: string } | null>(null)
+  const [stagedFile, setStagedFile] = useState<File | null>(null)
+  const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false)
 
   const { data: constancias = [] } = useQuery({
     queryKey: ['constancias-trabajo', empleadoId],
     queryFn: () => getConstanciasTrabajo(empleadoId),
   })
 
-  const handleUploadConstancia = async (file: File) => {
+  const handleFileSelected = (file: File) => {
+    setStagedFile(file)
+    setIsDocPreviewOpen(true)
+  }
+
+  const handlePreviewConfirm = () => {
+    if (stagedFile) setPendingDoc({ file: stagedFile, tipo: 'constancia_trabajo', label: 'Constancia de trabajo' })
+    setStagedFile(null)
+    setIsDocPreviewOpen(false)
+  }
+
+  const handlePreviewCancel = () => {
+    setStagedFile(null)
+    setIsDocPreviewOpen(false)
+  }
+
+  const handleDialogClose = () => {
+    setPendingDoc(null)
+    setStagedFile(null)
+    setIsDocPreviewOpen(false)
+    setForm(EMPTY_FORM)
+    setIsAddDialogOpen(false)
+  }
+
+  const handleSubmit = async () => {
     if (!form.empresa) {
       toast.error('Ingrese el nombre de la empresa')
       return
     }
-    setUploading(true)
+    if (!pendingDoc) {
+      toast.error('Seleccione una constancia de trabajo')
+      return
+    }
+    setIsSubmitting(true)
     try {
-      const formData = new FormData()
-      formData.append('archivo', file)
-      formData.append('tipo_documento', 'constancia_trabajo')
-      formData.append('nombre_documento', `Constancia - ${form.empresa}`)
-      if (form.fecha_inicio) formData.append('fecha_inicio', form.fecha_inicio)
-      if (form.fecha_fin) formData.append('fecha_fin', form.fecha_fin)
-      await apiClient.post('/api/v1/rrhh/onboarding/subir-documento/', formData)
-      toast.success('Constancia de trabajo subida exitosamente')
+      await subirDocumento(
+        empleadoId,
+        'constancia_trabajo',
+        'laboral',
+        `Constancia - ${form.empresa}`,
+        pendingDoc.file,
+        {
+          ...(form.fecha_inicio ? { fecha_inicio: form.fecha_inicio } : {}),
+          ...(form.fecha_fin ? { fecha_fin: form.fecha_fin } : {}),
+        }
+      )
       queryClient.invalidateQueries({ queryKey: ['constancias-trabajo', empleadoId] })
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
-      setForm(EMPTY_FORM)
-      setIsAddDialogOpen(false)
+      toast.success('Constancia de trabajo guardada exitosamente')
+      handleDialogClose()
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-      toast.error(msg ?? 'Error al subir constancia de trabajo')
+      toast.error(msg ?? 'Error al guardar constancia de trabajo')
     } finally {
-      setUploading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -87,8 +124,8 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
     accept: { 'application/pdf': ['.pdf'] },
     maxSize: 10 * 1024 * 1024,
     multiple: false,
-    disabled: uploading,
-    onDropAccepted: ([file]) => handleUploadConstancia(file),
+    disabled: isSubmitting || !!pendingDoc,
+    onDropAccepted: ([file]) => handleFileSelected(file),
     onDropRejected: ([rejection]) => {
       const code = rejection.errors[0]?.code
       if (code === 'file-too-large') toast.error('El archivo supera los 10 MB permitidos')
@@ -217,7 +254,7 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
       </Accordion>
 
       {/* Add Constancia Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={(open) => { if (!open) { setIsAddDialogOpen(false); setForm(EMPTY_FORM) } }}>
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => { if (!open) handleDialogClose() }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Agregar constancia de trabajo</DialogTitle>
@@ -252,33 +289,65 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
                 />
               </div>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label>Constancia de trabajo (PDF) *</Label>
-              <div
-                {...getRootProps()}
-                className={cn(
-                  "rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors mt-1",
-                  isDragActive
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50 hover:bg-muted/50",
-                  uploading && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <input {...getInputProps()} />
-                <p className="text-sm font-medium">
-                  {uploading ? 'Subiendo...' : isDragActive ? 'Suelte el archivo aqui' : 'Arrastre o haga clic para subir PDF'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">PDF, max. 10 MB</p>
-              </div>
+              {pendingDoc ? (
+                <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2">
+                  <span className="flex-1 text-xs truncate">{pendingDoc.file.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={() => setPendingDoc(null)}
+                    disabled={isSubmitting}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  {...getRootProps()}
+                  className={cn(
+                    'rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors mt-1',
+                    isDragActive
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50 hover:bg-muted/50',
+                    isSubmitting && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
+                    <Upload className="h-5 w-5" />
+                    <span className="font-medium">
+                      {isDragActive ? 'Suelte el archivo aqui' : 'Arrastre o haga clic para subir PDF'}
+                    </span>
+                    <span className="text-xs">PDF, max. 10 MB</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsAddDialogOpen(false); setForm(EMPTY_FORM) }}>
+            <Button variant="outline" onClick={handleDialogClose} disabled={isSubmitting}>
               Cancelar
+            </Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting || !pendingDoc}>
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Modal */}
+      <DocumentPreviewModal
+        file={stagedFile}
+        archivoUrl={null}
+        label="Constancia de trabajo"
+        isOpen={isDocPreviewOpen}
+        onConfirm={handlePreviewConfirm}
+        onCancel={handlePreviewCancel}
+      />
     </div>
   )
 }
