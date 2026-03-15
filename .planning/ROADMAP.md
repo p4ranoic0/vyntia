@@ -13,7 +13,7 @@ The intranet is built in five sequential phases. Phase 0 unblocks all developmen
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
-- [x] **Phase 1: Onboarding Self-Service** - Employees receive credentials, register their data (personal/familiar/academic/laboral), preview and upload documents with per-document approval feedback, and receive email notifications (reopened 2026-03-15: expanded scope) (completed 2026-03-15)
+- [x] **Phase 1: Onboarding Self-Service** - Employees receive credentials, register their data (personal/familiar/academic/laboral), preview and upload documents with per-document approval feedback, and receive email notifications (reopened 2026-03-15: expanded scope) (completed 2026-03-15)
 - [ ] **Phase 1.1: Onboarding Datos Completos** - Complete personal data (banking, domicile, pension system), document viewer for uploaded files, section-level approval status, and document upload integrated within familiar/academic/laboral forms
 - [ ] **Phase 2: Legajo Digital y Gestion de Informacion** - RRHH unified legajo view, document generation, and employee data-change approval workflow
 - [ ] **Phase 3: Remuneraciones** - Monthly payroll calculation, boleta delivery, and statutory Excel exports
@@ -89,13 +89,16 @@ Plans (new — Waves 5-8):
   5. The "Agregar dependiente" dialog includes optional document upload fields for the applicable doc type (DNI, partida nacimiento, or acta matrimonio per parentesco)
   6. The "Agregar" dialogs for académico entries include an optional document upload within the same dialog
   7. The "Agregar experiencia laboral" dialog includes an optional constancia de trabajo upload within the same dialog
-**Plans**: 4 plans
+**Plans**: 7 plans
 
 Plans:
 - [ ] 01.1-01-PLAN.md — Wave 1: Backend — extend EmpleadoUpdateSerializer + EmpleadoSerializer + add SIN PENSION choice + pytest (ONBD-16)
 - [ ] 01.1-02-PLAN.md — Wave 2: Frontend — OnboardingTabPersonal rewrite (15+ fields, AFP conditional) + OnboardingSectionStatus component + employee data fetch (ONBD-16, ONBD-17)
 - [ ] 01.1-03-PLAN.md — Wave 2: Frontend — DocumentUploadZone "Ver documento" button + DocumentPreviewModal isViewOnly prop (ONBD-18)
 - [ ] 01.1-04-PLAN.md — Wave 2: Frontend — Two-phase upload in Familiar/Academico/Laboral dialogs (ONBD-19, ONBD-20, ONBD-21)
+- [ ] 01.1-05-PLAN.md — Wave 1 (gap): Backend — archivo_url in DocumentosDigitalesSerializer + es_version_actual filter + subir_documento response fix (ONBD-18)
+- [ ] 01.1-06-PLAN.md — Wave 2 (gap): Frontend — fix /legajo/ URL to documentos-digitales, add OnboardingGuard for completed employees, fix legajo-docs invalidation (ONBD-17, ONBD-18)
+- [ ] 01.1-07-PLAN.md — Wave 3 (gap): Tests — backend documentos-digitales onboarding tests + Vitest tests for computeStatus and subirDocumento (ONBD-16, ONBD-17, ONBD-18, ONBD-19, ONBD-20, ONBD-21)
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand
@@ -145,7 +148,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
 | 1. Onboarding Self-Service | 13/13 | Complete   | 2026-03-15 |
-| 1.1. Onboarding Datos Completos | 0/4 | Not started | - |
+| 1.1. Onboarding Datos Completos | 0/7 | Not started | - |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
 | 4. Vacaciones | 0/TBD | Not started | - |
