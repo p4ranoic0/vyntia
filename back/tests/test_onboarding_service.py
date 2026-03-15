@@ -134,3 +134,23 @@ class TestCorregirCorreoService:
             f"'{onboarding.empleado.correo_personal}'"
         )
         assert resultado is not None
+
+
+# --- Wave 5 stubs: CursosCertificaciones model ---
+
+@pytest.mark.django_db
+class TestCursosCertificacionesModel:
+    """Stubs for CursosCertificaciones model — implemented in Wave 5."""
+
+    def test_cursos_certificaciones_model_stub(self):
+        """Placeholder — full tests added when ViewSet is wired (plan 01-09)."""
+        from app_rrhh.models import CursosCertificaciones
+        assert hasattr(CursosCertificaciones, 'nombre_curso')
+        assert hasattr(CursosCertificaciones, 'empleado_id')
+        assert hasattr(CursosCertificaciones, 'documento_id')
+
+    def test_progreso_aprobado_property_exists(self, onboarding_factory):
+        """progreso_aprobado property is accessible without error."""
+        onboarding = onboarding_factory()
+        assert hasattr(onboarding, 'progreso_aprobado')
+        assert isinstance(onboarding.progreso_aprobado, int)

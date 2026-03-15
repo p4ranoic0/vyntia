@@ -94,6 +94,26 @@ class OnboardingEmpleado(models.Model):
         return round((completados / len(checks)) * 100)
 
     @property
+    def progreso_aprobado(self):
+        """
+        Porcentaje de documentos aprobados individualmente por RRHH.
+        Separate from progreso_porcentaje (which tracks upload completion).
+        Returns int 0-100.
+        """
+        from app_rrhh.models.documentos_digitales import DocumentosDigitales
+        total = DocumentosDigitales.objects.filter(
+            empleado=self.empleado, es_version_actual=True
+        ).count()
+        if total == 0:
+            return 0
+        aprobados = DocumentosDigitales.objects.filter(
+            empleado=self.empleado,
+            es_version_actual=True,
+            estado_documento='aprobado',
+        ).count()
+        return round((aprobados / total) * 100)
+
+    @property
     def items_pendientes(self):
         """Retorna lista de items pendientes."""
         pendientes = []
