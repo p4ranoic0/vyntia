@@ -13,7 +13,7 @@ The intranet is built in five sequential phases. Phase 0 unblocks all developmen
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
-- [x] **Phase 1: Onboarding Self-Service** - Employees receive credentials, upload documents, and track onboarding progress (completed 2026-03-14)
+- [ ] **Phase 1: Onboarding Self-Service** - Employees receive credentials, register their data (personal/familiar/academic/laboral), preview and upload documents with per-document approval feedback, and receive email notifications (reopened 2026-03-15: expanded scope)
 - [ ] **Phase 2: Legajo Digital y Gestion de Informacion** - RRHH unified legajo view, document generation, and employee data-change approval workflow
 - [ ] **Phase 3: Remuneraciones** - Monthly payroll calculation, boleta delivery, and statutory Excel exports
 - [ ] **Phase 4: Vacaciones** - Employee saldo self-service, fraccionamiento, and RRHH vacation reporting suite
@@ -37,25 +37,44 @@ Plans:
 - [ ] 00-03-PLAN.md — Fix PDF generation to produce real content via xhtml2pdf (INFRA-03)
 
 ### Phase 1: Onboarding Self-Service
-**Goal**: Employees in onboarding can receive their credentials, log in to a restricted view, upload their documents section by section, and see their own progress — while RRHH can monitor completion across all employees
+**Goal**: Employees in onboarding receive credentials, log in to a restricted view, register all their data (personal, N dependents with required docs per relationship type, N academic records, N courses/diplomados, N work certs, N professional titles, laboral files only), preview documents before submitting with an explicit send button, track per-document approval status, and receive email notifications on approval/rejection — RRHH approves/rejects each document individually and validates or rejects the full onboarding
 **Depends on**: Phase 0
-**Requirements**: ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07, ONBD-08
+**Requirements**: ONBD-01 through ONBD-15
 **Success Criteria** (what must be TRUE):
-  1. When RRHH creates an onboarding user, the employee receives a welcome email with their credentials (the ggarcia bug is fixed — no silent failure)
-  2. An employee logged in during onboarding sees only their own data sections and cannot access the admin panel or other employees' records
-  3. The employee can upload their profile photo and PDF documents in each section: personal (DNI, carnet), familiar (DNI familiar, partida de nacimiento), academic (certificados, diplomas), and laboral (DDJJ, CV, certificado de trabajo, carta de recomendacion) — without being able to edit the laboral fields managed by RRHH
-  4. The employee's onboarding screen shows a completion percentage that updates as they upload documents
-  5. RRHH can see a panel listing every employee's onboarding completion percentage and identify who has outstanding items
-**Plans**: 7 plans
+  1. When RRHH creates an onboarding user, the employee receives a welcome email with their credentials
+  2. An employee logged in during onboarding sees only their own data sections and cannot access the admin panel
+  3. Employee fills all personal data fields (nombres, apellidos, DNI, fecha_nacimiento, telefono, direccion, foto)
+  4. Employee registers N family dependents; required docs per relationship: hijo(a) → DNI + partida nacimiento; conyuge/conviviente → DNI + acta matrimonio or cert union de hecho; padres → DNI + partida nacimiento
+  5. Employee uploads 1 copy of own DNI/carnet de extranjeria (required mandatory field)
+  6. Employee registers N certificados de estudio (institucion, fecha inicio, fecha fin) each with file upload
+  7. Employee registers N cursos/diplomados (institucion, nombre, fecha inicio, fecha fin, horas) each with file upload
+  8. Employee registers N constancias/certificados de trabajo (fecha inicio, fecha fin) each with file upload
+  9. Employee registers N titulos profesionales/bachiller/maestria/doctorado (institucion, carrera, tipo, fecha inicio, fecha fin) each with file upload
+  10. Laboral tab: employee only uploads files (DDJJ, CV, carta recomendacion) — no editing of RRHH fields
+  11. Before submitting any file: employee sees preview (PDF viewer or image) and confirms with explicit "Enviar" button
+  12. Each uploaded document shows individual status: pendiente_revision / aprobado / rechazado — rejection reason visible, "Corregir y reenviar" option available
+  13. Onboarding progress bar updates as documents are approved (not just uploaded)
+  14. Employee receives email when full onboarding is approved; receives email with observations when rejected/observed
+  15. RRHH approves or rejects each document individually from admin panel; can approve/reject full onboarding
+  16. Toast/notification feedback on every action: upload success, upload error, file too large, invalid format, server error
+**Plans**: 7 completed + 6 new plans
 
-Plans:
-- [x] 01-01-PLAN.md — Wave 0: Test scaffold — conftest.py + test_onboarding_service.py + test_onboarding_api.py (ONBD-01, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07, ONBD-08)
-- [x] 01-02-PLAN.md — Wave 1: Backend serializer (last_login) + corregir-correo endpoint (ONBD-01, ONBD-08)
-- [x] 01-03-PLAN.md — Wave 1: Backend subir-foto + subir-documento actions (ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
-- [x] 01-04-PLAN.md — Wave 2: Frontend routing guard + DocumentUploadZone + upload service + types (ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
-- [x] 01-05-PLAN.md — Wave 3: Employee self-service tabbed page (OnboardingEmployeePage + 4 tabs) (ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07)
-- [x] 01-06-PLAN.md — Wave 3: RRHH admin panel enhancements (progress bars, alerts, email correction flow) (ONBD-01, ONBD-08)
-- [x] 01-07-PLAN.md — Wave 4: Human verification checkpoint (ONBD-01 through ONBD-08)
+Plans (completed — Waves 0-4):
+- [x] 01-01-PLAN.md — Wave 0: Test scaffold — conftest.py + test_onboarding_service.py + test_onboarding_api.py
+- [x] 01-02-PLAN.md — Wave 1: Backend serializer (last_login) + corregir-correo endpoint
+- [x] 01-03-PLAN.md — Wave 1: Backend subir-foto + subir-documento actions
+- [x] 01-04-PLAN.md — Wave 2: Frontend routing guard + DocumentUploadZone + upload service + types
+- [x] 01-05-PLAN.md — Wave 3: Employee self-service tabbed page (OnboardingEmployeePage + 4 tabs)
+- [x] 01-06-PLAN.md — Wave 3: RRHH admin panel enhancements (progress bars, alerts, email correction flow)
+- [x] 01-07-PLAN.md — Wave 4: Human verification checkpoint
+
+Plans (new — Waves 5-8):
+- [ ] 01-08-PLAN.md — Wave 5: Backend models — CursosCertificaciones + DocumentoFamiliar linking + DatosAcademicos FK to DocumentosDigitales
+- [ ] 01-09-PLAN.md — Wave 5: Backend endpoints — employee CRUD for familiares/academicos/cursos/titulos + per-document approve/reject + notification emails
+- [ ] 01-10-PLAN.md — Wave 6: Frontend — N-item dynamic forms (familiar+docs, certificados, cursos, titulos, laboral uploads)
+- [ ] 01-11-PLAN.md — Wave 6: Frontend — document preview modal (PDF.js + image) + explicit Enviar button flow
+- [ ] 01-12-PLAN.md — Wave 7: Frontend — per-document status feedback + Corregir y reenviar flow + improved toast/error handling
+- [ ] 01-13-PLAN.md — Wave 8: Human verification checkpoint (ONBD-01 through ONBD-16)
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand
@@ -104,7 +123,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Infrastructure Fixes | 3/3 | Complete   | 2026-03-13 |
-| 1. Onboarding Self-Service | 7/7 | Complete   | 2026-03-14 |
+| 1. Onboarding Self-Service | 7/13 | In Progress | reopened 2026-03-15 |
 | 2. Legajo Digital y Gestion de Informacion | 0/TBD | Not started | - |
 | 3. Remuneraciones | 0/TBD | Not started | - |
 | 4. Vacaciones | 0/TBD | Not started | - |

@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-07-PLAN.md — Phase 1 Onboarding Self-Service complete
+stopped_at: Phase 1 reopened 2026-03-15 — expanded scope (N dependents+docs, preview modal, per-doc approval, email notifs, courses model) — next: plan 01-08
 last_updated: "2026-03-14T16:20:55.025Z"
 last_activity: 2026-03-13 — Completed plan 00-01 (Infrastructure Settings Fixes)
 progress:
