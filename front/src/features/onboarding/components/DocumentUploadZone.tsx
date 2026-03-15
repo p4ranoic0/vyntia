@@ -24,6 +24,7 @@ export function DocumentUploadZone({
 }: DocumentUploadZoneProps) {
   const [uploading, setUploading] = useState(false)
   const [showReplace, setShowReplace] = useState(false)
+  const [localOverrideEmpty, setLocalOverrideEmpty] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const queryClient = useQueryClient()
@@ -37,13 +38,24 @@ export function DocumentUploadZone({
       } else {
         result = await uploadDocument(tipoDocumento, file, label)
       }
-      toast.success(`${label} subido exitosamente`)
+      toast.success('Documento enviado correctamente')
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
       onUploadSuccess?.(result)
       setShowReplace(false)
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-      toast.error(msg ?? `Error al subir ${label}`)
+      setLocalOverrideEmpty(false)
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error && (error as { code?: string }).code === 'ERR_NETWORK') {
+        toast.error('Sin conexion. Verifica tu internet.')
+      } else if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
+        if (axiosError.response?.status === 400) {
+          toast.warning(axiosError.response?.data?.message ?? 'Error al subir el documento. Intenta nuevamente.')
+        } else {
+          toast.error('Error al subir el documento. Intenta nuevamente.')
+        }
+      } else {
+        toast.error('Error al subir el documento. Intenta nuevamente.')
+      }
     } finally {
       setUploading(false)
     }
@@ -51,7 +63,7 @@ export function DocumentUploadZone({
 
   const handlePreviewConfirm = () => {
     if (pendingFile) {
-      handleUpload(pendingFile)  // existing upload function — no changes needed inside
+      handleUpload(pendingFile)
       setIsPreviewOpen(false)
       setPendingFile(null)
     }
@@ -73,21 +85,32 @@ export function DocumentUploadZone({
       setPendingFile(files[0])
       setIsPreviewOpen(true)
     },
-    onDropRejected: ([rejection]) => {
-      const code = rejection.errors[0]?.code
-      if (code === 'file-too-large') toast.error('El archivo supera los 10 MB permitidos')
-      else toast.error(acceptImages ? 'Solo se permiten imágenes JPG o PNG' : 'Solo se permiten archivos PDF')
+    onDropRejected: (rejections) => {
+      const code = rejections[0]?.errors[0]?.code
+      if (code === 'file-too-large') {
+        toast.error('El archivo supera el limite de 10MB')
+      } else if (code === 'file-invalid-type') {
+        if (acceptImages) {
+          toast.error('Formato no valido — solo JPG o PNG')
+        } else {
+          toast.error('Formato no valido — solo PDF')
+        }
+      } else {
+        toast.error('Archivo no permitido')
+      }
     },
   })
 
   const estadoBadge = (estado: string) => {
     if (estado === 'aprobado') return <Badge className="bg-green-100 text-green-800">Aprobado</Badge>
     if (estado === 'rechazado') return <Badge className="bg-red-100 text-red-800">Rechazado</Badge>
-    return <Badge className="bg-yellow-100 text-yellow-800">Pendiente revisión</Badge>
+    return <Badge className="bg-yellow-100 text-yellow-800">Pendiente revision</Badge>
   }
 
-  // When doc exists and not in replace mode: show info card
-  if (existingDoc && !showReplace) {
+  // When doc exists in rejected state and user clicked "Corregir y reenviar": show dropzone
+  // When doc exists in replace mode: show dropzone
+  // When doc exists and neither override nor replace: show info card
+  if (existingDoc && !showReplace && !localOverrideEmpty) {
     return (
       <div className="rounded-lg border border-border p-4 space-y-2">
         <div className="flex items-center justify-between">
@@ -108,9 +131,20 @@ export function DocumentUploadZone({
             <span>{existingDoc.observaciones}</span>
           </div>
         )}
-        <Button variant="outline" size="sm" onClick={() => setShowReplace(true)}>
-          Reemplazar
-        </Button>
+        {existingDoc.estado_documento === 'rechazado' ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-red-300 text-red-600 hover:bg-red-50 mt-2"
+            onClick={() => setLocalOverrideEmpty(true)}
+          >
+            Corregir y reenviar
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => setShowReplace(true)}>
+            Reemplazar
+          </Button>
+        )}
       </div>
     )
   }
@@ -139,14 +173,23 @@ export function DocumentUploadZone({
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground mt-1">
           {isDragActive
-            ? "Suelte el archivo aquí"
+            ? "Suelte el archivo aqui"
             : uploading
             ? "Subiendo..."
-            : `Arrastre o haga clic — ${acceptImages ? 'JPG/PNG' : 'PDF'}, máx. 10 MB`
+            : `Arrastre o haga clic — ${acceptImages ? 'JPG/PNG' : 'PDF'}, max. 10 MB`
           }
         </p>
-        {showReplace && (
-          <Button variant="ghost" size="sm" className="mt-2" onClick={(e) => { e.stopPropagation(); setShowReplace(false) }}>
+        {(showReplace || localOverrideEmpty) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowReplace(false)
+              setLocalOverrideEmpty(false)
+            }}
+          >
             Cancelar
           </Button>
         )}

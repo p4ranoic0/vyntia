@@ -57,7 +57,10 @@ export function OnboardingEmployeePage() {
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {onboarding && (
-        <OnboardingProgressBar porcentaje={onboarding.progreso_porcentaje} />
+        <OnboardingProgressBar
+          progreso_porcentaje={onboarding.progreso_porcentaje}
+          progreso_aprobado={(onboarding as any).progreso_aprobado}
+        />
       )}
       <Tabs defaultValue="personal">
         <TabsList className="grid w-full grid-cols-4">

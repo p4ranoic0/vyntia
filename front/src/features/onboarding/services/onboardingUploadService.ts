@@ -21,6 +21,31 @@ export async function uploadDocument(
   return response.data?.data
 }
 
+export async function subirDocumento(
+  empleadoId: number,
+  tipoDocumento: string,
+  categoria: string,
+  label: string,
+  file: File,
+  extraFields?: Record<string, string | number>
+): Promise<UploadDocumentResponse> {
+  const formData = new FormData()
+  formData.append('empleado', String(empleadoId))
+  formData.append('tipo_documento', tipoDocumento)
+  formData.append('categoria', categoria)
+  formData.append('nombre_documento', label)
+  formData.append('archivo', file)
+  formData.append('estado_documento', 'pendiente_revision')
+  formData.append('nivel_acceso', 'restringido')
+  if (extraFields) {
+    Object.entries(extraFields).forEach(([key, val]) => {
+      formData.append(key, String(val))
+    })
+  }
+  const res = await apiClient.post('/api/v1/rrhh/onboarding/subir-documento/', formData)
+  return res.data?.data ?? res.data
+}
+
 export async function corregirCorreo(onboardingId: number, correoPersonal: string): Promise<void> {
   await apiClient.post(`/api/v1/rrhh/onboarding/${onboardingId}/corregir-correo/`, {
     correo_personal: correoPersonal,
