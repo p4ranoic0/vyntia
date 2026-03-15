@@ -40,6 +40,7 @@ class Empleado(models.Model):
         ("PENSIONISTA-SPP", "PENSIONISTA-SPP"),
         ("PENSIONISTA-CMP", "PENSIONISTA-CMP"),
         ("PENSIONISTA-OTRO", "PENSIONISTA-OTRO"),
+        ("SIN PENSION", "Sin Pensión"),
     ]
 
     TIPO_COMISION_CHOICES = [

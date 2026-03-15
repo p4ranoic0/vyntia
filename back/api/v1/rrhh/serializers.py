@@ -493,6 +493,13 @@ class EmpleadoSerializer(serializers.ModelSerializer):
             "es_padre_familia",
             "entidad_bancaria",
             "numero_cuenta_bancaria",
+            "numero_cci",
+            "numero_ruc",
+            "provincia_domicilio",
+            "departamento_domicilio",
+            "sistema_pensiones",
+            "tipo_comision",
+            "codigo_cuspp",
             "estado_empleado",
             "nombre_completo",
             "edad",
@@ -1038,6 +1045,14 @@ class EmpleadoUpdateSerializer(serializers.ModelSerializer):
             "numero_cuenta_bancaria",
             "estado_empleado",
             "fecha_nacimiento",
+            "genero_empleado",
+            "numero_ruc",
+            "provincia_domicilio",
+            "departamento_domicilio",
+            "sistema_pensiones",
+            "tipo_comision",
+            "codigo_cuspp",
+            "numero_cci",
         ]
 
     def validate_correo_personal(self, value):

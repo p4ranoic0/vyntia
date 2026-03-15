@@ -12,6 +12,15 @@ Response shape note:
 """
 
 import pytest
+from django.core.cache import cache
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    """Clear Django cache before each test to avoid cache bleed between tests."""
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.mark.django_db
