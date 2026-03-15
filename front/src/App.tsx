@@ -98,6 +98,31 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+/** Ruta que evita que empleados con onboarding completado accedan a /onboarding */
+function OnboardingGuard({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const { data: onboarding, isLoading } = useQuery({
+    queryKey: ['mi-onboarding'],
+    queryFn: () => onboardingService.getMiOnboarding(),
+    enabled: user?.tipo_usuario === 'empleado',
+    retry: false,
+    staleTime: 30_000,
+  })
+
+  if (user?.tipo_usuario !== 'empleado') return <Navigate to="/" replace />
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="text-muted-foreground">Cargando...</span>
+      </div>
+    )
+  }
+  if (onboarding?.estado_onboarding === 'completado') {
+    return <Navigate to="/" replace />
+  }
+  return <>{children}</>
+}
+
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth()
 
@@ -151,7 +176,11 @@ function AppRoutes() {
         <Route path="/empleados/datos-familiares" element={<DatosFamiliaresPage />} />
 
         {/* Onboarding - empleado nuevo */}
-        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/onboarding" element={
+          <OnboardingGuard>
+            <OnboardingPage />
+          </OnboardingGuard>
+        } />
 
         {/* --- Rutas de Administracion (solo admin/rrhh) --- */}
         <Route path="/admin" element={
