@@ -32,9 +32,9 @@
 - [x] **ONBD-16**: El tab Personal del onboarding muestra y guarda todos los datos personales requeridos por RRHH: género, estado civil, RUC, distrito/provincia/departamento del domicilio, entidad bancaria, número de cuenta, CCI, sistema de pensiones (AFP PRIMA/INTEGRA/PROFUTURO/HABITAT, ONP, PENSIONISTAS, SIN PENSION); si se selecciona AFP se muestran campos adicionales: CUSPP (código SPP) y tipo de comisión (flujo/mixta)
 - [x] **ONBD-17**: Un panel de estado por sección muestra el progreso del empleado en PERSONAL / FAMILIAR / ACADÉMICO / LABORAL con indicador visual (Completo / En revisión / Observado / Pendiente)
 - [x] **ONBD-18**: El empleado puede hacer clic en cualquier documento ya subido para visualizarlo mediante el modal de previsualización
-- [ ] **ONBD-19**: El formulario "Agregar dependiente" incluye campos de subida de documento opcionales para el tipo correspondiente (DNI familiar, partida de nacimiento o acta de matrimonio) dentro del mismo diálogo
-- [ ] **ONBD-20**: Los formularios de agregar para entradas académicas (certificado, curso, título) incluyen subida de documento opcional dentro del mismo diálogo
-- [ ] **ONBD-21**: El formulario "Agregar experiencia laboral" incluye subida de constancia de trabajo opcional dentro del mismo diálogo
+- [x] **ONBD-19**: El formulario "Agregar dependiente" incluye campos de subida de documento opcionales para el tipo correspondiente (DNI familiar, partida de nacimiento o acta de matrimonio) dentro del mismo diálogo
+- [x] **ONBD-20**: Los formularios de agregar para entradas académicas (certificado, curso, título) incluyen subida de documento opcional dentro del mismo diálogo
+- [x] **ONBD-21**: El formulario "Agregar experiencia laboral" incluye subida de constancia de trabajo opcional dentro del mismo diálogo
 
 ### Legajo Digital
 
