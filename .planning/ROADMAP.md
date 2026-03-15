@@ -69,12 +69,12 @@ Plans (completed — Waves 0-4):
 - [x] 01-07-PLAN.md — Wave 4: Human verification checkpoint
 
 Plans (new — Waves 5-8):
-- [ ] 01-08-PLAN.md — Wave 5: Backend models — CursosCertificaciones + DocumentoFamiliar linking + DatosAcademicos FK to DocumentosDigitales
-- [ ] 01-09-PLAN.md — Wave 5: Backend endpoints — employee CRUD for familiares/academicos/cursos/titulos + per-document approve/reject + notification emails
-- [ ] 01-10-PLAN.md — Wave 6: Frontend — N-item dynamic forms (familiar+docs, certificados, cursos, titulos, laboral uploads)
-- [ ] 01-11-PLAN.md — Wave 6: Frontend — document preview modal (PDF.js + image) + explicit Enviar button flow
+- [x] 01-08-PLAN.md — Wave 5: Backend models — CursosCertificaciones + DocumentoFamiliar linking + DatosAcademicos FK to DocumentosDigitales
+- [x] 01-09-PLAN.md — Wave 5: Backend endpoints — employee CRUD for familiares/academicos/cursos/titulos + per-document approve/reject + notification emails
+- [x] 01-10-PLAN.md — Wave 6: Frontend — N-item dynamic forms (familiar+docs, certificados, cursos, titulos, laboral uploads)
+- [x] 01-11-PLAN.md — Wave 6: Frontend — document preview modal (PDF.js + image) + explicit Enviar button flow
 - [x] 01-12-PLAN.md — Wave 7: Frontend — per-document status feedback + Corregir y reenviar flow + improved toast/error handling
-- [ ] 01-13-PLAN.md — Wave 8: Human verification checkpoint (ONBD-01 through ONBD-16)
+- [x] 01-13-PLAN.md — Wave 8: Human verification checkpoint (ONBD-01 through ONBD-15)
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand

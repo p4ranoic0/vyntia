@@ -22,6 +22,13 @@
 - [x] **ONBD-06**: El empleado puede subir documentos PDF en datos académicos (certificados de estudios, diplomas)
 - [x] **ONBD-07**: El empleado puede subir documentos PDF en datos laborales (DDJJ, CV, certificado de trabajo anterior, carta de recomendación) — sin editar los campos laborales que gestiona RRHH
 - [x] **ONBD-08**: RRHH puede ver el porcentaje de completitud del onboarding de cada empleado
+- [x] **ONBD-09**: El empleado puede registrar N dependientes familiares con los documentos requeridos según parentesco (hijo: DNI + partida de nacimiento; cónyuge: DNI + acta de matrimonio)
+- [x] **ONBD-10**: El empleado puede registrar N registros académicos en tres categorías: certificados de estudio, cursos y diplomados, títulos profesionales — cada uno con zona de carga de documento
+- [x] **ONBD-11**: El empleado puede registrar N entradas de experiencia laboral con constancia de trabajo adjunta
+- [x] **ONBD-12**: El sistema muestra un modal de previsualización del documento antes de enviarlo — el empleado debe confirmar con "Enviar documento" para que se realice la carga
+- [x] **ONBD-13**: Los documentos rechazados muestran el motivo y un botón "Corregir y reenviar" que resetea la zona de carga para permitir una nueva versión
+- [x] **ONBD-14**: El empleado recibe notificación por correo cuando un documento individual es rechazado, y cuando su onboarding es aprobado u observado por RRHH
+- [x] **ONBD-15**: RRHH puede aprobar o rechazar documentos individualmente desde el panel de administración; la barra de progreso muestra por separado el porcentaje subido y el porcentaje aprobado
 
 ### Legajo Digital
 
@@ -143,6 +150,13 @@
 | ONBD-06 | Phase 1 | Onboarding Self-Service | Complete |
 | ONBD-07 | Phase 1 | Onboarding Self-Service | Complete |
 | ONBD-08 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-09 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-10 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-11 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-12 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-13 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-14 | Phase 1 | Onboarding Self-Service | Complete |
+| ONBD-15 | Phase 1 | Onboarding Self-Service | Complete |
 | LEGJ-01 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
 | LEGJ-02 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
 | LEGJ-03 | Phase 2 | Legajo Digital y Gestion de Informacion | Pending |
