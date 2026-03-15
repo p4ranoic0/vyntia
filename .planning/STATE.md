@@ -76,6 +76,7 @@ Progress: [███████░░░] 67%
 | Phase 01-onboarding-self-service P06 | 6 | 2 tasks | 1 files |
 | Phase 01-onboarding-self-service P07 | 2 | 2 tasks | 0 files |
 | Phase 01-onboarding-self-service P08 | 12 | 2 tasks | 7 files |
+| Phase 01-onboarding-self-service P12 | 18 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Recent decisions affecting current work:
 - [Phase 01-08]: CursosCertificaciones unique_together on [empleado, nombre_curso, institucion, fecha_inicio] prevents duplicate course entries per employee
 - [Phase 01-08]: progreso_aprobado uses lazy import of DocumentosDigitales inside property to avoid circular import
 - [Phase 01-08]: Test stubs use onboarding_factory fixture (not onboarding) — onboarding fixture does not exist in conftest.py
+- [Phase 01-12]: OnboardingAdminPage per-doc approval reuses existing state-based pattern (not useMutation) — consistent with component style, avoids duplicate state management
+- [Phase 01-12]: OnboardingProgressBar progreso_porcentaje made optional (with porcentaje alias) for backward compatibility with existing call sites
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T06:36:24.725Z
-Stopped at: Completed 01-08-PLAN.md — CursosCertificaciones model, migration 0025, progreso_aprobado property
+Last session: 2026-03-15T07:30:00.000Z
+Stopped at: Completed 01-12-PLAN.md — DocumentUploadZone Corregir flow, dual-value progress bar, per-doc approval endpoints
 Resume file: None
