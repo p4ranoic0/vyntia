@@ -24,11 +24,12 @@ export function OnboardingEmployeePage() {
   const { data: docsRaw, isLoading: loadingDocs } = useQuery({
     queryKey: ['legajo-docs', empleadoId],
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/rrhh/legajo/', {
-        empleado: empleadoId, es_version_actual: true, page_size: 50,
+      const res = await apiClient.get('/api/v1/rrhh/documentos-digitales/', {
+        params: { empleado: empleadoId, es_version_actual: 'true', page_size: 50 },
       })
-      // Unwrap paginated APIResponse: { success, data: [...], meta: { pagination } }
-      return (res.data?.data ?? res.data?.results ?? []) as DocumentInfo[]
+      // Unwrap paginated APIResponse: { success, data: { results: [...] }, meta: { pagination } }
+      const raw = res.data
+      return (raw?.data?.results ?? raw?.data ?? raw?.results ?? []) as DocumentInfo[]
     },
     enabled: !!empleadoId,
   })

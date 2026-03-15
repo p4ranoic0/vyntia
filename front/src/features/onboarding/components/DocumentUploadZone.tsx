@@ -41,6 +41,7 @@ export function DocumentUploadZone({
       }
       toast.success('Documento enviado correctamente')
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+      queryClient.invalidateQueries({ queryKey: ['legajo-docs'] })
       onUploadSuccess?.(result)
       setShowReplace(false)
       setLocalOverrideEmpty(false)

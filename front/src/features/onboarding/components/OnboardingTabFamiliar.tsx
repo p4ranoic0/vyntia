@@ -150,6 +150,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['familiares', empleadoId] })
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+      queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
       if (pendingDoc) {
         try {
           await subirDocumento(empleadoId, pendingDoc.tipo, 'familiar', pendingDoc.label, pendingDoc.file)
@@ -174,6 +175,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['familiares', empleadoId] })
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+      queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
       toast.success('Familiar eliminado')
       setDeleteConfirmId(null)
     },
@@ -231,6 +233,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
   const handleUploadSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['familiares', empleadoId] })
     queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+    queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
   }
 
   const applicableDocTypes = getDocTypes(form.parentesco ?? '')

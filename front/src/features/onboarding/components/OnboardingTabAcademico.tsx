@@ -164,6 +164,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
     queryClient.invalidateQueries({ queryKey: ['academicos', empleadoId] })
     queryClient.invalidateQueries({ queryKey: ['cursos', empleadoId] })
     queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+    queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
   }
 
   const certMutation = useMutation({
@@ -240,6 +241,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
 
   const handleUploadSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+    queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
   }
 
   // Cert dialog handlers

@@ -61,8 +61,8 @@ export async function deleteCurso(id: number) {
 
 // --- Constancias de trabajo (DocumentosDigitales query) ---
 export async function getConstanciasTrabajo(empleadoId: number) {
-  const res = await apiClient.get('/api/v1/rrhh/legajo/', {
-    params: { empleado: empleadoId, tipo_documento: 'constancia_trabajo' },
+  const res = await apiClient.get('/api/v1/rrhh/documentos-digitales/', {
+    params: { empleado: empleadoId, tipo_documento: 'constancia_trabajo', es_version_actual: 'true' },
   })
   const raw = res.data
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? []

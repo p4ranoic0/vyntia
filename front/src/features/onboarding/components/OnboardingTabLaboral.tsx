@@ -110,6 +110,7 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
       )
       queryClient.invalidateQueries({ queryKey: ['constancias-trabajo', empleadoId] })
       queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+      queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
       toast.success('Constancia de trabajo guardada exitosamente')
       handleDialogClose()
     } catch (err: unknown) {
@@ -234,6 +235,7 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
                       onUploadSuccess={() => {
                         queryClient.invalidateQueries({ queryKey: ['constancias-trabajo', empleadoId] })
                         queryClient.invalidateQueries({ queryKey: ['mi-onboarding'] })
+                        queryClient.invalidateQueries({ queryKey: ['legajo-docs', empleadoId] })
                       }}
                     />
                   </CardContent>
