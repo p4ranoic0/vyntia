@@ -14,6 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 0: Infrastructure Fixes** - Eliminate four blocking defects before any feature work begins (completed 2026-03-13)
 - [ ] **Phase 1: Onboarding Self-Service** - Employees receive credentials, register their data (personal/familiar/academic/laboral), preview and upload documents with per-document approval feedback, and receive email notifications (reopened 2026-03-15: expanded scope)
+- [ ] **Phase 1.1: Onboarding Datos Completos** - Complete personal data (banking, domicile, pension system), document viewer for uploaded files, section-level approval status, and document upload integrated within familiar/academic/laboral forms
 - [ ] **Phase 2: Legajo Digital y Gestion de Informacion** - RRHH unified legajo view, document generation, and employee data-change approval workflow
 - [ ] **Phase 3: Remuneraciones** - Monthly payroll calculation, boleta delivery, and statutory Excel exports
 - [ ] **Phase 4: Vacaciones** - Employee saldo self-service, fraccionamiento, and RRHH vacation reporting suite
@@ -75,6 +76,20 @@ Plans (new — Waves 5-8):
 - [x] 01-11-PLAN.md — Wave 6: Frontend — document preview modal (PDF.js + image) + explicit Enviar button flow
 - [x] 01-12-PLAN.md — Wave 7: Frontend — per-document status feedback + Corregir y reenviar flow + improved toast/error handling
 - [x] 01-13-PLAN.md — Wave 8: Human verification checkpoint (ONBD-01 through ONBD-15)
+
+### Phase 1.1: Onboarding Datos Completos
+**Goal**: The employee onboarding form captures all personal data required by HR (banking details, full domicile, pension system with AFP conditional fields), employees can view any previously uploaded document, a section-level status panel shows progress per section (PERSONAL/FAMILIAR/ACADÉMICO/LABORAL), and documents can be uploaded directly within the add-item dialogs for familiares, académicos, and laboral entries
+**Depends on**: Phase 1
+**Requirements**: ONBD-16, ONBD-17, ONBD-18, ONBD-19, ONBD-20, ONBD-21
+**Success Criteria** (what must be TRUE):
+  1. Personal tab shows and saves: género, estado civil, RUC, distrito/provincia/departamento domicilio, entidad bancaria, nro. cuenta, CCI, sistema de pensiones (AFP PRIMA/INTEGRA/PROFUTURO/HABITAT, ONP, PENSIONISTAS, SIN PENSION)
+  2. When AFP is selected, the form shows: CUSPP code field, tipo comisión selector (flujo / mixta)
+  3. Employee can click any uploaded document badge/icon to open a preview of that document (using the existing DocumentPreviewModal or a viewer equivalent)
+  4. A section status panel shows PERSONAL / FAMILIAR / ACADÉMICO / LABORAL each with an indicator: ✓ Completo / ⏳ En revisión / ⚠ Observado / ○ Pendiente
+  5. The "Agregar dependiente" dialog includes optional document upload fields for the applicable doc type (DNI, partida nacimiento, or acta matrimonio per parentesco)
+  6. The "Agregar" dialogs for académico entries include an optional document upload within the same dialog
+  7. The "Agregar experiencia laboral" dialog includes an optional constancia de trabajo upload within the same dialog
+**Plans**: TBD
 
 ### Phase 2: Legajo Digital y Gestion de Informacion
 **Goal**: RRHH has a single unified view of every employee's complete record with document download and audit trail; employees can propose data changes that RRHH approves before they take effect; the system generates certificates, contracts, and AIRHSP export files on demand
