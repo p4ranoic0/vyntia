@@ -1,6 +1,7 @@
 """Views for RRHH API v1."""
 
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
@@ -708,25 +709,45 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         user = request.user
 
-        _ONBOARDING_FIELDS = {
-            'telefono_celular', 'telefono_fijo', 'direccion_domicilio', 'fecha_nacimiento',
-            'genero_empleado', 'estado_civil', 'numero_ruc',
-            'distrito_domicilio', 'provincia_domicilio', 'departamento_domicilio',
-            'entidad_bancaria', 'numero_cuenta_bancaria', 'numero_cci',
-            'sistema_pensiones', 'tipo_comision', 'codigo_cuspp',
-            'tipo_sangre', 'talla_empleado', 'peso_empleado',
+        _SELF_EDITABLE_FIELDS = {
+            "nombres_empleado",
+            "apellido_paterno",
+            "apellido_materno",
+            "numero_documento",
+            "correo_personal",
+            "telefono_celular",
+            "telefono_fijo",
+            "direccion_domicilio",
+            "fecha_nacimiento",
+            "genero_empleado",
+            "estado_civil",
+            "numero_ruc",
+            "distrito_domicilio",
+            "provincia_domicilio",
+            "departamento_domicilio",
+            "entidad_bancaria",
+            "numero_cuenta_bancaria",
+            "numero_cci",
+            "sistema_pensiones",
+            "tipo_comision",
+            "codigo_cuspp",
+            "tipo_sangre",
+            "talla_empleado",
+            "peso_empleado",
         }
 
-        is_own = hasattr(user, 'empleado') and user.empleado == instance
+        is_own = hasattr(user, "empleado") and user.empleado == instance
         requested_fields = set(request.data.keys())
-        is_safe_self_update = is_own and requested_fields.issubset(_ONBOARDING_FIELDS)
+        is_safe_self_update = is_own and requested_fields.issubset(
+            _SELF_EDITABLE_FIELDS
+        )
 
         if not is_safe_self_update:
             can_write = (
-                getattr(user, 'is_superuser', False)
-                or getattr(user, 'es_administrador', False)
-                or getattr(user, 'es_rrhh', False)
-                or getattr(user, 'es_admin_rrhh', False)
+                getattr(user, "is_superuser", False)
+                or getattr(user, "es_administrador", False)
+                or getattr(user, "es_rrhh", False)
+                or getattr(user, "es_admin_rrhh", False)
             )
             if not can_write:
                 return APIResponse.error(
@@ -736,10 +757,11 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
 
         # Bypass self.update() which has @require_hr() — execute serializer directly
         from rest_framework.response import Response as DRFResponse
+
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        if getattr(instance, '_prefetched_objects_cache', None):
+        if getattr(instance, "_prefetched_objects_cache", None):
             instance._prefetched_objects_cache = {}
         return DRFResponse(serializer.data)
 
@@ -791,10 +813,10 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             today = timezone.now().date()
             if edad_max:
                 fecha_min = today - timedelta(days=int(edad_max) * 365)
-                queryset = queryset.filter(fecha_nac__gte=fecha_min)
+                queryset = queryset.filter(fecha_nacimiento__gte=fecha_min)
             if edad_min:
                 fecha_max = today - timedelta(days=int(edad_min) * 365)
-                queryset = queryset.filter(fecha_nac__lte=fecha_max)
+                queryset = queryset.filter(fecha_nacimiento__lte=fecha_max)
 
         return queryset
 
@@ -1012,7 +1034,14 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
     ordering = ["parentesco", "nombres_familiar"]
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+        if self.action in (
+            "list",
+            "retrieve",
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+        ):
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -1032,7 +1061,7 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear datos familiares — empleado solo puede crear para su propio legajo."""
-        empleado_id = request.data.get('empleado')
+        empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
@@ -1042,22 +1071,42 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
                 )
         return super().create(request, *args, **kwargs)
 
-    @require_hr()
     def update(self, request, *args, **kwargs):
-        """Actualizar datos familiares - requiere rol RRHH."""
+        """Actualizar datos familiares — empleado puede editar los suyos; RRHH/admin edita cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
+            return APIResponse.error(
+                message="Solo puede actualizar familiares de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
-    @require_hr()
     def partial_update(self, request, *args, **kwargs):
-        """Actualizar datos familiares parcialmente - requiere rol RRHH."""
+        """Actualizar datos familiares parcialmente — empleado puede editar los suyos; RRHH/admin edita cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
+            return APIResponse.error(
+                message="Solo puede actualizar familiares de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         """Eliminar datos familiares — empleado puede eliminar los suyos; RRHH/admin elimina cualquiera."""
         instance = self.get_object()
         user = request.user
-        is_own = hasattr(user, 'empleado') and instance.empleado == user.empleado
-        if not is_own and not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
             return APIResponse.error(
                 message="Solo puede eliminar familiares de su propio legajo",
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -1086,7 +1135,14 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
     ordering = ["-fecha_inicio_estudios"]
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+        if self.action in (
+            "list",
+            "retrieve",
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+        ):
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -1106,7 +1162,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear datos académicos — empleado solo puede crear para su propio legajo."""
-        empleado_id = request.data.get('empleado')
+        empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
@@ -1116,19 +1172,46 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
                 )
         return super().create(request, *args, **kwargs)
 
-    @require_hr()
     def update(self, request, *args, **kwargs):
-        """Actualizar datos académicos - requiere rol RRHH."""
+        """Actualizar datos académicos — empleado puede editar los suyos; RRHH/admin edita cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
+            return APIResponse.error(
+                message="Solo puede actualizar datos academicos de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
-    @require_hr()
     def partial_update(self, request, *args, **kwargs):
-        """Actualizar datos académicos parcialmente - requiere rol RRHH."""
+        """Actualizar datos académicos parcialmente — empleado puede editar los suyos; RRHH/admin edita cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
+            return APIResponse.error(
+                message="Solo puede actualizar datos academicos de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().partial_update(request, *args, **kwargs)
 
-    @require_admin()
     def destroy(self, request, *args, **kwargs):
-        """Eliminar datos académicos - requiere rol administrador."""
+        """Eliminar datos académicos — empleado puede eliminar los suyos; RRHH/admin elimina cualquiera."""
+        instance = self.get_object()
+        user = request.user
+        is_own = hasattr(user, "empleado") and instance.empleado == user.empleado
+        if not is_own and not (
+            user.es_administrador or user.es_rrhh or user.es_admin_rrhh
+        ):
+            return APIResponse.error(
+                message="Solo puede eliminar datos academicos de su propio legajo",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         return super().destroy(request, *args, **kwargs)
 
 
@@ -1136,35 +1219,49 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
     """CRUD for employee courses and certifications. Employees manage own records."""
 
     from app_rrhh.models import CursosCertificaciones as _CursosCertificaciones
-    queryset = _CursosCertificaciones.objects.select_related('empleado', 'documento').all()
+
+    queryset = _CursosCertificaciones.objects.select_related(
+        "empleado", "documento"
+    ).all()
     permission_classes = [RRHHPermission]
 
     def get_serializer_class(self):
         from .serializers import CursosCertificacionesSerializer
+
         return CursosCertificacionesSerializer
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve', 'create', 'update', 'partial_update', 'destroy'):
+        if self.action in (
+            "list",
+            "retrieve",
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+        ):
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
     def get_queryset(self):
         from app_rrhh.models import CursosCertificaciones
-        queryset = CursosCertificaciones.objects.select_related('empleado', 'documento').all()
+
+        queryset = CursosCertificaciones.objects.select_related(
+            "empleado", "documento"
+        ).all()
         user = self.request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             if user.empleado:
                 queryset = queryset.filter(empleado=user.empleado)
             else:
                 queryset = queryset.none()
-        empleado_id = self.request.query_params.get('empleado')
+        empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
         return queryset
 
     def create(self, request, *args, **kwargs):
         """Employee can only create curso records for their own legajo."""
-        empleado_id = request.data.get('empleado')
+        empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
@@ -1917,12 +2014,20 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        """Set subido_por and default estado for employee uploads."""
+        """Set subido_por, file metadata, and default estado for employee uploads."""
         user = self.request.user
         extra = {"subido_por": user}
         # If non-HR user uploads, set as pending review
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             extra["estado_documento"] = "pendiente_revision"
+        # Extract file metadata from uploaded file
+        archivo = serializer.validated_data.get("archivo")
+        if archivo:
+            extra["nombre_archivo_original"] = archivo.name
+            extra["formato_archivo"] = (
+                os.path.splitext(archivo.name)[1].lower().replace(".", "")
+            )
+            extra["tamano_archivo"] = archivo.size
         serializer.save(**extra)
 
     @require_hr()
@@ -2134,6 +2239,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
             "memorandum": "administrativo",
             "carta_amonestacion": "administrativo",
             "carta_cese": "administrativo",
+            "evaluacion_desempeno": "evaluacion",
         }
         categoria = TIPO_CATEGORIA_MAP.get(tipo_documento, "administrativo")
 
@@ -2167,6 +2273,11 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                     descripcion or f"{nombre} - {periodo}" if periodo else descripcion
                 ),
                 archivo=archivo,
+                nombre_archivo_original=archivo.name,
+                formato_archivo=os.path.splitext(archivo.name)[1]
+                .lower()
+                .replace(".", ""),
+                tamano_archivo=archivo.size,
                 fecha_emision=fecha_emision,
                 estado_documento="activo",
                 nivel_acceso="restringido",
@@ -2229,7 +2340,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Allow authenticated employees to use upload actions."""
-        if self.action in ("subir_foto", "subir_documento", "mi_onboarding", "retrieve"):
+        if self.action in (
+            "subir_foto",
+            "subir_documento",
+            "mi_onboarding",
+            "retrieve",
+        ):
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -2288,8 +2404,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 )
         # Recalcular estado si no está completado
         if onboarding.estado_onboarding != "completado":
-            resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
-            onboarding = (resultado["onboarding"] if isinstance(resultado, dict) else resultado) or onboarding
+            resultado = OnboardingService.actualizar_estado_onboarding(
+                onboarding.empleado_id
+            )
+            onboarding = (
+                resultado["onboarding"] if isinstance(resultado, dict) else resultado
+            ) or onboarding
         serializer = self.get_serializer(onboarding)
         return APIResponse.success(data=serializer.data)
 
@@ -2305,8 +2425,14 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             ).get(usuario=request.user)
             # Recalcular estado en cada consulta para reflejar datos actualizados
             if onboarding.estado_onboarding != "completado":
-                resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
-                onboarding = (resultado["onboarding"] if isinstance(resultado, dict) else resultado) or onboarding
+                resultado = OnboardingService.actualizar_estado_onboarding(
+                    onboarding.empleado_id
+                )
+                onboarding = (
+                    resultado["onboarding"]
+                    if isinstance(resultado, dict)
+                    else resultado
+                ) or onboarding
             serializer = self.get_serializer(onboarding)
             return APIResponse.success(data=serializer.data)
         except OnboardingEmpleado.DoesNotExist:
@@ -2319,7 +2445,10 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def validar(self, request, pk=None):
         """Validar el onboarding y aprobar todos los documentos."""
-        from app_rrhh.services.onboarding_service import OnboardingNotificationService, OnboardingService
+        from app_rrhh.services.onboarding_service import (
+            OnboardingNotificationService,
+            OnboardingService,
+        )
 
         serializer = OnboardingValidacionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -2349,7 +2478,9 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         else:
             onboarding.marcar_observado(observaciones)
             try:
-                OnboardingNotificationService.notificar_onboarding_observado(onboarding, observaciones)
+                OnboardingNotificationService.notificar_onboarding_observado(
+                    onboarding, observaciones
+                )
             except Exception:
                 pass
             response_serializer = OnboardingEmpleadoSerializer(onboarding)
@@ -2358,11 +2489,14 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 message="Onboarding observado - se requieren correcciones",
             )
 
-    @action(detail=True, methods=["post"], url_path=r"documentos/(?P<doc_id>[^/.]+)/aprobar")
+    @action(
+        detail=True, methods=["post"], url_path=r"documentos/(?P<doc_id>[^/.]+)/aprobar"
+    )
     @require_hr()
     def aprobar_documento(self, request, pk=None, doc_id=None):
         """RRHH approves a specific document from the onboarding legajo."""
         from app_rrhh.services.onboarding_service import OnboardingService
+
         onboarding = self.get_object()
         try:
             doc = DocumentosDigitales.objects.get(
@@ -2371,22 +2505,37 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 es_version_actual=True,
             )
         except DocumentosDigitales.DoesNotExist:
-            return APIResponse.error(message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND)
+            return APIResponse.error(
+                message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND
+            )
         doc.validar_documento(request.user)
         OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
         return APIResponse.success(
             message=f"Documento '{doc.nombre_documento}' aprobado",
-            data={"documento_id": doc.documento_id, "estado_documento": doc.estado_documento},
+            data={
+                "documento_id": doc.documento_id,
+                "estado_documento": doc.estado_documento,
+            },
         )
 
-    @action(detail=True, methods=["post"], url_path=r"documentos/(?P<doc_id>[^/.]+)/rechazar")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path=r"documentos/(?P<doc_id>[^/.]+)/rechazar",
+    )
     @require_hr()
     def rechazar_documento(self, request, pk=None, doc_id=None):
         """RRHH rejects a specific document with a mandatory motivo."""
-        from app_rrhh.services.onboarding_service import OnboardingNotificationService, OnboardingService
+        from app_rrhh.services.onboarding_service import (
+            OnboardingNotificationService,
+            OnboardingService,
+        )
+
         motivo = request.data.get("motivo", "").strip()
         if not motivo:
-            return APIResponse.error(message="El campo motivo es requerido para rechazar un documento")
+            return APIResponse.error(
+                message="El campo motivo es requerido para rechazar un documento"
+            )
         onboarding = self.get_object()
         try:
             doc = DocumentosDigitales.objects.get(
@@ -2395,16 +2544,23 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 es_version_actual=True,
             )
         except DocumentosDigitales.DoesNotExist:
-            return APIResponse.error(message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND)
+            return APIResponse.error(
+                message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND
+            )
         doc.rechazar_documento(request.user, motivo)
         OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
         try:
-            OnboardingNotificationService.notificar_documento_rechazado(onboarding, doc, motivo)
+            OnboardingNotificationService.notificar_documento_rechazado(
+                onboarding, doc, motivo
+            )
         except Exception:
             pass
         return APIResponse.success(
             message=f"Documento '{doc.nombre_documento}' rechazado",
-            data={"documento_id": doc.documento_id, "estado_documento": doc.estado_documento},
+            data={
+                "documento_id": doc.documento_id,
+                "estado_documento": doc.estado_documento,
+            },
         )
 
     @action(detail=True, methods=["post"])
@@ -2445,7 +2601,9 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             onboarding.empleado.save(update_fields=["correo_personal"])
             onboarding.usuario.email = nuevo_correo
             onboarding.usuario.save(update_fields=["email"])
-            result = OnboardingService.reenviar_email_bienvenida(onboarding.onboarding_id)
+            result = OnboardingService.reenviar_email_bienvenida(
+                onboarding.onboarding_id
+            )
             if result and result.get("email_enviado"):
                 return APIResponse.success(
                     message="Correo actualizado y email de bienvenida reenviado",
@@ -2465,9 +2623,13 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         from app_rrhh.services.onboarding_service import OnboardingService
 
         onboarding = self.get_object()
-        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
+        resultado = OnboardingService.actualizar_estado_onboarding(
+            onboarding.empleado_id
+        )
         if not resultado:
-            return APIResponse.error(message="No se encontró el onboarding", status_code=404)
+            return APIResponse.error(
+                message="No se encontró el onboarding", status_code=404
+            )
         updated = resultado["onboarding"] if isinstance(resultado, dict) else resultado
         serializer = OnboardingEmpleadoSerializer(updated)
         return APIResponse.success(
@@ -2475,7 +2637,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             message="Estado de onboarding actualizado",
         )
 
-    @action(detail=False, methods=["post"], url_path="subir-foto", parser_classes=[MultiPartParser])
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="subir-foto",
+        parser_classes=[MultiPartParser],
+    )
     @require_authenticated()
     def subir_foto(self, request):
         """El empleado en onboarding sube su foto de perfil (JPG o PNG)."""
@@ -2498,7 +2665,9 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             es_version_actual=True,
         ).first()
         if doc_existente:
-            doc = doc_existente.crear_nueva_version(archivo=archivo, usuario=request.user)
+            doc = doc_existente.crear_nueva_version(
+                archivo=archivo, usuario=request.user
+            )
         else:
             doc = DocumentosDigitales.objects.create(
                 empleado=empleado,
@@ -2507,7 +2676,11 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 nombre_documento="Foto de perfil",
                 archivo=archivo,
                 nombre_archivo_original=archivo.name,
-                formato_archivo=archivo.name.rsplit(".", 1)[-1].lower() if "." in archivo.name else "",
+                formato_archivo=(
+                    archivo.name.rsplit(".", 1)[-1].lower()
+                    if "." in archivo.name
+                    else ""
+                ),
                 tamano_archivo=archivo.size,
                 estado_documento="pendiente_revision",
                 nivel_acceso="restringido",
@@ -2520,13 +2693,22 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             message="Foto subida exitosamente",
             data={
                 "documento_id": doc.pk,
-                "archivo_url": request.build_absolute_uri(doc.archivo.url) if doc.archivo else None,
+                "archivo_url": (
+                    request.build_absolute_uri(doc.archivo.url) if doc.archivo else None
+                ),
                 "estado_documento": doc.estado_documento,
-                "fecha_subida": doc.fecha_subida.isoformat() if doc.fecha_subida else None,
+                "fecha_subida": (
+                    doc.fecha_subida.isoformat() if doc.fecha_subida else None
+                ),
             },
         )
 
-    @action(detail=False, methods=["post"], url_path="subir-documento", parser_classes=[MultiPartParser])
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="subir-documento",
+        parser_classes=[MultiPartParser],
+    )
     @require_authenticated()
     def subir_documento(self, request):
         """El empleado en onboarding sube un documento PDF a su legajo."""
@@ -2567,7 +2749,9 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             return APIResponse.error(message="No tiene un proceso de onboarding activo")
         empleado = onboarding.empleado
         categoria = _TIPO_CATEGORIA_MAP[tipo_documento]
-        nombre_documento = request.data.get("nombre_documento", tipo_documento.replace("_", " ").title())
+        nombre_documento = request.data.get(
+            "nombre_documento", tipo_documento.replace("_", " ").title()
+        )
         # Usar crear_nueva_version si ya existe el mismo tipo_documento
         doc_existente = DocumentosDigitales.objects.filter(
             empleado=empleado,
@@ -2575,7 +2759,9 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             es_version_actual=True,
         ).first()
         if doc_existente:
-            doc = doc_existente.crear_nueva_version(archivo=archivo, usuario=request.user)
+            doc = doc_existente.crear_nueva_version(
+                archivo=archivo, usuario=request.user
+            )
         else:
             doc = DocumentosDigitales.objects.create(
                 empleado=empleado,
@@ -2584,7 +2770,11 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 nombre_documento=nombre_documento,
                 archivo=archivo,
                 nombre_archivo_original=archivo.name,
-                formato_archivo=archivo.name.rsplit(".", 1)[-1].lower() if "." in archivo.name else "",
+                formato_archivo=(
+                    archivo.name.rsplit(".", 1)[-1].lower()
+                    if "." in archivo.name
+                    else ""
+                ),
                 tamano_archivo=archivo.size,
                 estado_documento="pendiente_revision",
                 nivel_acceso="restringido",
@@ -2593,29 +2783,33 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         # Optional FK linking: attach document to academico/curso record
         # Note: DatosFamiliares does not have a documento FK — familiar_id param is accepted
         # but only used to tag the doc's category context (no DB link on familiar itself)
-        familiar_id = request.data.get('familiar_id')  # accepted, reserved for future use
+        familiar_id = request.data.get(
+            "familiar_id"
+        )  # accepted, reserved for future use
 
-        academico_id = request.data.get('academico_id')
+        academico_id = request.data.get("academico_id")
         if academico_id:
             try:
                 from app_rrhh.models import DatosAcademicos
+
                 academico = DatosAcademicos.objects.get(
                     academico_id=int(academico_id), empleado=onboarding.empleado
                 )
                 academico.documento = doc
-                academico.save(update_fields=['documento'])
+                academico.save(update_fields=["documento"])
             except (DatosAcademicos.DoesNotExist, ValueError, AttributeError):
                 pass
 
-        curso_id = request.data.get('curso_id')
+        curso_id = request.data.get("curso_id")
         if curso_id:
             try:
                 from app_rrhh.models import CursosCertificaciones
+
                 curso = CursosCertificaciones.objects.get(
                     curso_id=int(curso_id), empleado=onboarding.empleado
                 )
                 curso.documento = doc
-                curso.save(update_fields=['documento'])
+                curso.save(update_fields=["documento"])
             except (CursosCertificaciones.DoesNotExist, ValueError):
                 pass
 
@@ -2626,9 +2820,13 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 "documento_id": doc.pk,
                 "tipo_documento": doc.tipo_documento,
                 "estado_documento": doc.estado_documento,
-                "fecha_subida": doc.fecha_subida.isoformat() if doc.fecha_subida else None,
+                "fecha_subida": (
+                    doc.fecha_subida.isoformat() if doc.fecha_subida else None
+                ),
                 "nombre_documento": doc.nombre_documento,
-                "archivo_url": request.build_absolute_uri(doc.archivo.url) if doc.archivo else None,
+                "archivo_url": (
+                    request.build_absolute_uri(doc.archivo.url) if doc.archivo else None
+                ),
             },
         )
 
@@ -2639,20 +2837,26 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
     @require_authenticated()
     def list(self, request):
         """Obtener configuración actual de la empresa."""
-        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
+        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
+
         cfg = ConfiguracionEmpresa.get_config()
-        serializer = ConfiguracionEmpresaSerializer(cfg, context={'request': request})
+        serializer = ConfiguracionEmpresaSerializer(cfg, context={"request": request})
         return APIResponse.success(data=serializer.data)
 
     @require_admin()
     def create(self, request):
         """Actualizar configuración de la empresa (upsert)."""
-        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
+        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
+
         cfg = ConfiguracionEmpresa.get_config()
-        serializer = ConfiguracionEmpresaSerializer(cfg, data=request.data, partial=True, context={'request': request})
+        serializer = ConfiguracionEmpresaSerializer(
+            cfg, data=request.data, partial=True, context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save()
-            return APIResponse.success(data=serializer.data, message='Configuración actualizada')
-        return APIResponse.error(message='Datos inválidos', errors=serializer.errors)
+            return APIResponse.success(
+                data=serializer.data, message="Configuración actualizada"
+            )
+        return APIResponse.error(message="Datos inválidos", errors=serializer.errors)

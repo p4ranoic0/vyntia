@@ -12,9 +12,11 @@ import {
     useEstadisticasPlanilla,
     useGenerarPlanilla,
     usePlanilla,
+    usePlanillas,
     usePreviewPlanilla,
+    useRegenerarPlanilla,
 } from '@/hooks/useRemuneraciones'
-import { Calculator, Check, Eye, FileSpreadsheet, TrendingUp } from 'lucide-react'
+import { Calculator, Check, ChevronLeft, ChevronRight, Eye, FileSpreadsheet, RotateCcw, TrendingUp } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -46,9 +48,99 @@ function toNumber(value: unknown): number {
   return 0
 }
 
+function getEstadoBadgeVariant(estado?: string) {
+  switch (estado) {
+    case 'aprobada':
+    case 'pagada':
+      return 'default' as const
+    case 'generada':
+      return 'secondary' as const
+    case 'anulada':
+      return 'destructive' as const
+    default:
+      return 'outline' as const
+  }
+}
+
+function PlanillaSelector({ onSelect }: Readonly<{ onSelect: (id: number) => void }>) {
+  const { data: planillas = [], isLoading } = usePlanillas()
+
+  let rows: ReactNode
+  if (isLoading) {
+    rows = (
+      <TableRow>
+        <TableCell colSpan={6} className="text-center">Cargando planillas...</TableCell>
+      </TableRow>
+    )
+  } else if (planillas.length === 0) {
+    rows = (
+      <TableRow>
+        <TableCell colSpan={6} className="text-center text-muted-foreground">
+          No hay planillas registradas. Crea una desde Planillas Mensuales.
+        </TableCell>
+      </TableRow>
+    )
+  } else {
+    rows = planillas.map((p) => (
+      <TableRow
+        key={p.planilla_id}
+        className="cursor-pointer hover:bg-muted/50"
+        onClick={() => onSelect(p.planilla_id)}
+      >
+        <TableCell className="font-medium">{p.periodo}</TableCell>
+        <TableCell>{p.modalidad || '-'}</TableCell>
+        <TableCell>{p.meta_presupuestal || '-'}</TableCell>
+        <TableCell className="text-right">{p.total_trabajadores ?? 0}</TableCell>
+        <TableCell>
+          <Badge variant={getEstadoBadgeVariant(p.estado)}>
+            {p.estado_texto || p.estado || 'Desconocido'}
+          </Badge>
+        </TableCell>
+        <TableCell className="text-right">
+          <Button variant="ghost" size="sm">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      </TableRow>
+    ))
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Proceso de Planillas</h1>
+        <p className="text-muted-foreground mt-1">
+          Selecciona una planilla para procesar, calcular o aprobar.
+        </p>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Planillas Disponibles</CardTitle>
+          <CardDescription>Haz clic en una planilla para ver su proceso.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Período</TableHead>
+                <TableHead>Modalidad</TableHead>
+                <TableHead>Meta Presupuestal</TableHead>
+                <TableHead className="text-right">Trabajadores</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>{rows}</TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function ProcesoPlanillasPage() {
   const { toast } = useToast()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [previewData, setPreviewData] = useState<Record<string, unknown> | null>(null)
   const planillaIdParam = searchParams.get('planilla')
   const planillaId = planillaIdParam ? Number.parseInt(planillaIdParam, 10) : null
@@ -60,9 +152,32 @@ export default function ProcesoPlanillasPage() {
   const { data: estadisticas, refetch: refetchEstadisticas } = useEstadisticasPlanilla(planillaId)
 
   const generarMutation = useGenerarPlanilla()
+  const regenerarMutation = useRegenerarPlanilla()
   const calcularMutation = useCalcularPlanilla()
   const previewMutation = usePreviewPlanilla()
   const aprobarMutation = useAprobarPlanilla()
+
+  const handleRegenerar = async () => {
+    if (!planillaId) return
+    if (!confirm('¿Estás seguro? Esto eliminará todos los detalles y regresará la planilla a estado borrador.')) return
+    try {
+      await regenerarMutation.mutateAsync(planillaId)
+      toast({
+        title: 'Planilla regenerada',
+        description: 'La planilla ha vuelto a estado borrador. Puedes volver a generarla.',
+      })
+      refetchPlanilla()
+      refetchDetalles()
+      refetchEstadisticas()
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error)
+      toast({
+        title: 'Error al regenerar',
+        description: errorMsg || 'No se pudo regenerar la planilla.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const handleGenerar = async () => {
     if (!planillaId) return
@@ -151,16 +266,7 @@ export default function ProcesoPlanillasPage() {
   }
 
   if (!planillaId) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Proceso de Planillas</h1>
-          <p className="text-muted-foreground mt-1">
-            Selecciona una planilla desde el listado de Planillas Mensuales.
-          </p>
-        </div>
-      </div>
-    )
+    return <PlanillaSelector onSelect={(id) => setSearchParams({ planilla: String(id) })} />
   }
 
   if (loadingPlanilla) {
@@ -181,6 +287,7 @@ export default function ProcesoPlanillasPage() {
 
   const currentEstado = planilla.estado ?? ''
   const canGenerate = ['borrador', 'procesando'].includes(currentEstado)
+  const canRegenerate = ['generada', 'procesando'].includes(currentEstado)
   const canCalculate = ['borrador', 'generada', 'procesando'].includes(currentEstado)
   const canApprove = currentEstado === 'generada'
 
@@ -189,7 +296,7 @@ export default function ProcesoPlanillasPage() {
   if (loadingDetalles) {
     detalleRows = (
       <TableRow>
-        <TableCell colSpan={9} className="text-center">
+        <TableCell colSpan={12} className="text-center">
           Cargando detalles...
         </TableCell>
       </TableRow>
@@ -197,7 +304,7 @@ export default function ProcesoPlanillasPage() {
   } else if (detalles.length === 0) {
     detalleRows = (
       <TableRow>
-        <TableCell colSpan={9} className="text-center text-muted-foreground">
+        <TableCell colSpan={12} className="text-center text-muted-foreground">
           No hay detalles. Genera la planilla primero.
         </TableCell>
       </TableRow>
@@ -205,22 +312,35 @@ export default function ProcesoPlanillasPage() {
   } else {
     detalleRows = detalles.map((detalle) => (
       <TableRow key={detalle.detalle_id}>
-        <TableCell className="font-medium">
+        <TableCell className="font-medium whitespace-nowrap">
           {detalle.empleado.nombres_completos}
         </TableCell>
         <TableCell>{detalle.empleado.dni}</TableCell>
-        <TableCell>{detalle.empleado.area_nombre}</TableCell>
-        <TableCell className="text-right">{detalle.dias_laborados}</TableCell>
         <TableCell className="text-right">
           S/ {toNumber(detalle.remuneracion_basica).toFixed(2)}
         </TableCell>
-        <TableCell className="text-right">
+        <TableCell className="text-right font-medium">
           S/ {toNumber(detalle.total_ingresos).toFixed(2)}
+        </TableCell>
+        <TableCell className="whitespace-nowrap text-xs">
+          {detalle.sistema_pensiones || '-'}
+        </TableCell>
+        <TableCell className="text-right">
+          S/ {toNumber(detalle.total_afp ?? 0).toFixed(2)}
+        </TableCell>
+        <TableCell className="text-right">
+          S/ {toNumber(detalle.aporte_onp ?? 0).toFixed(2)}
+        </TableCell>
+        <TableCell className="text-right">
+          S/ {toNumber(detalle.essalud ?? 0).toFixed(2)}
+        </TableCell>
+        <TableCell className="text-right">
+          S/ {toNumber(detalle.renta_quinta_categoria ?? 0).toFixed(2)}
         </TableCell>
         <TableCell className="text-right">
           S/ {toNumber(detalle.total_descuentos).toFixed(2)}
         </TableCell>
-        <TableCell className="text-right font-semibold">
+        <TableCell className="text-right font-semibold text-green-600">
           S/ {toNumber(detalle.neto_pagar).toFixed(2)}
         </TableCell>
         <TableCell>
@@ -236,6 +356,11 @@ export default function ProcesoPlanillasPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Button variant="ghost" size="sm" onClick={() => setSearchParams({})}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Volver
+            </Button>
+          </div>
           <h1 className="text-3xl font-bold tracking-tight">Proceso de Planilla: {planilla.periodo}</h1>
           <p className="text-muted-foreground mt-1">
             {planilla.modalidad} - {planilla.meta_presupuestal}
@@ -309,6 +434,15 @@ export default function ProcesoPlanillasPage() {
           </Button>
 
           <Button
+            onClick={handleRegenerar}
+            disabled={!canRegenerate || regenerarMutation.isPending}
+            variant="destructive"
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            {regenerarMutation.isPending ? 'Regenerando...' : 'Regenerar'}
+          </Button>
+
+          <Button
             onClick={handleCalcular}
             disabled={!canCalculate || calcularMutation.isPending}
             variant="secondary"
@@ -373,10 +507,13 @@ export default function ProcesoPlanillasPage() {
                   <TableRow>
                     <TableHead>Empleado</TableHead>
                     <TableHead>DNI</TableHead>
-                    <TableHead>Área</TableHead>
-                    <TableHead className="text-right">Días Lab.</TableHead>
                     <TableHead className="text-right">Rem. Básica</TableHead>
                     <TableHead className="text-right">Total Ingresos</TableHead>
+                    <TableHead>Sist. Pensiones</TableHead>
+                    <TableHead className="text-right">AFP</TableHead>
+                    <TableHead className="text-right">ONP</TableHead>
+                    <TableHead className="text-right">ESSALUD</TableHead>
+                    <TableHead className="text-right">Rta. 4ta</TableHead>
                     <TableHead className="text-right">Total Desc.</TableHead>
                     <TableHead className="text-right">Neto</TableHead>
                     <TableHead>Estado</TableHead>

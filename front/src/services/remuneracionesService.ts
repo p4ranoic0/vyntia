@@ -160,16 +160,34 @@ export interface DetallePlanilla {
     nombres_completos: string;
     area_nombre: string;
   };
+  area_nombre: string;
+  cargo: string;
+  dni: string;
+  sistema_pensiones: string;
+  tipo_comision_afp: string;
   dias_laborados: number;
   dias_subsidiados: number;
   remuneracion_basica: number;
+  asignacion_familiar: number;
+  bonificacion_especial: number;
+  otras_bonificaciones: number;
   total_ingresos: number;
+  total_haberes: number;
+  aporte_afp_obligatorio: number;
+  comision_afp: number;
+  prima_seguro_afp: number;
+  total_afp: number;
+  aporte_onp: number;
+  essalud: number;
+  renta_quinta_categoria: number;
   total_descuentos: number;
   neto_pagar: number;
   aporte_essalud: number;
   aporte_afp_empleador: number;
   estado: EstadoDetalle;
   estado_texto?: string;
+  banco?: string;
+  numero_cuenta?: string;
   observaciones?: string;
   fecha_creacion: string;
   fecha_actualizacion: string;
@@ -222,11 +240,13 @@ export interface BoletaPago {
     detalle_id: number;
     planilla_periodo: string;
   };
-  empleado: {
+  empleado?: {
     empleado_id: number;
     dni: string;
     nombres_completos: string;
   };
+  empleado_nombre?: string;
+  empleado_dni?: string;
   periodo: string;
   total_ingresos: number;
   total_descuentos: number;
@@ -492,6 +512,15 @@ export const remuneracionesService = {
     return (response.data as any).data || response.data;
   },
 
+  async regenerarPlanilla(
+    id: number,
+  ): Promise<{ message: string }> {
+    const response = await apiClient.post(
+      `/api/v1/rrhh/planillas-mensuales/${id}/regenerar/`,
+    );
+    return (response.data as any).data || response.data;
+  },
+
   async calcularPlanilla(
     id: number,
   ): Promise<{ message: string }> {
@@ -645,6 +674,19 @@ export const remuneracionesService = {
 
   // ========== Boletas de Pago ==========
 
+  async generarBoletas(planillaId: number): Promise<{
+    planilla_id: number;
+    periodo: string;
+    boletas_creadas: number;
+    boletas_existentes: number;
+    total: number;
+  }> {
+    const response = await apiClient.post(
+      `/api/v1/rrhh/planillas-mensuales/${planillaId}/generar_boletas/`,
+    );
+    return (response.data as any).data || response.data;
+  },
+
   async listBoletas(params?: {
     empleado?: number;
     periodo?: string;
@@ -671,6 +713,14 @@ export const remuneracionesService = {
       },
     );
     return response.data as Blob;
+  },
+
+  async descargaMasivaBoletas(planillaId: number): Promise<Blob> {
+    const response = await apiClient.getBlob(
+      `/api/v1/rrhh/boletas-pago/descarga-masiva/`,
+      { planilla_id: planillaId },
+    );
+    return response.data;
   },
 
   // ========== Calendarios de Pago ==========

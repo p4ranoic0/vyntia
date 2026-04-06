@@ -264,6 +264,18 @@ export function useGenerarPlanilla() {
   });
 }
 
+export function useRegenerarPlanilla() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => remuneracionesService.regenerarPlanilla(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
+      queryClient.invalidateQueries({ queryKey: ["planillas-mensuales", id] });
+      queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
+    },
+  });
+}
+
 export function useCalcularPlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -461,6 +473,18 @@ export function useAnularDescuento() {
 
 // ========== Boletas de Pago ==========
 
+export function useGenerarBoletas() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (planillaId: number) =>
+      remuneracionesService.generarBoletas(planillaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["boletas-pago"] });
+      queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
+    },
+  });
+}
+
 export function useBoletas(params?: {
   empleado?: number;
   periodo?: string;
@@ -494,6 +518,23 @@ export function useDownloadBoletaPdf() {
       const link = document.createElement("a");
       link.href = url;
       link.download = `boleta-pago-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      globalThis.URL.revokeObjectURL(url);
+    },
+  });
+}
+
+export function useDescargaMasivaBoletas() {
+  return useMutation({
+    mutationFn: (planillaId: number) =>
+      remuneracionesService.descargaMasivaBoletas(planillaId),
+    onSuccess: (blob, planillaId) => {
+      const url = globalThis.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `boletas-planilla-${planillaId}.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();

@@ -553,35 +553,8 @@ class MenuStructureAPIView(APIView):
                     "children": [],  # Subelementos del menú
                 }
 
-                # Agregar submenús para todos los módulos
-                if modulo.nombre_modulo.lower() == "empleados":
-                    menu_item["children"] = [
-                        {
-                            "id": "empleados-lista",
-                            "name": "Lista de Empleados",
-                            "icon": "users",
-                            "path": "/empleados",
-                            "permissions": ["ver_empleados"],
-                            "roles": [],
-                        },
-                        {
-                            "id": "empleados-crear",
-                            "name": "Crear Empleado",
-                            "icon": "user-plus",
-                            "path": "/empleados/crear",
-                            "permissions": ["crear_empleado"],
-                            "roles": [],
-                        },
-                        {
-                            "id": "empleados-editar",
-                            "name": "Editar Empleado",
-                            "icon": "edit",
-                            "path": "/empleados/editar",
-                            "permissions": ["editar_empleado"],
-                            "roles": [],
-                        },
-                    ]
-                elif modulo.nombre_modulo.lower() == "vacaciones":
+                # Agregar submenús para módulos que los necesitan
+                if modulo.nombre_modulo.lower() == "vacaciones":
                     menu_item["children"] = [
                         {
                             "id": "vacaciones-solicitudes",

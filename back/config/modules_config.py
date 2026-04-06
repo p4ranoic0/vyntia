@@ -52,6 +52,15 @@ MODULES_CONFIG = [
                 "orden": 3,
                 "permisos_requeridos": ["ver_empleado_propio"],
             },
+            {
+                "id": "empleados_contratos",
+                "nombre": "Contratos",
+                "descripcion": "Gestión de contratos laborales y adendas",
+                "icono": "FileSignature",
+                "ruta": "/contratos",
+                "orden": 4,
+                "permisos_requeridos": ["ver_contratos"],
+            },
         ],
     },
     {
@@ -110,16 +119,7 @@ MODULES_CONFIG = [
             },
         ],
     },
-    {
-        "id": "contratos",
-        "nombre": "Contratos",
-        "descripcion": "Gestión de contratos laborales",
-        "icono": "FileSignature",
-        "ruta": "/contratos",
-        "orden": 4,
-        "permisos_requeridos": ["ver_contratos"],
-        "submodulos": [],
-    },
+
     {
         "id": "onboarding",
         "nombre": "Onboarding",

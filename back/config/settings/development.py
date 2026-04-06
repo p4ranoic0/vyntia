@@ -87,8 +87,26 @@ INSTALLED_APPS += [
     "django_extensions",  # Para shell_plus y otras utilidades
 ]
 
-# Email backend for development
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Email configuration for development
+# By default we keep console backend, but allow SMTP via .env.
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", os.environ.get("MAIL_HOST", ""))
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", os.environ.get("MAIL_PORT", "587")))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
+
+_email_user = os.environ.get("EMAIL_HOST_USER", os.environ.get("MAIL_USERNAME", ""))
+if _email_user and "@" not in _email_user and "gmail" in EMAIL_HOST:
+    _email_user = f"{_email_user}@gmail.com"
+
+EMAIL_HOST_USER = _email_user
+EMAIL_HOST_PASSWORD = os.environ.get(
+    "EMAIL_HOST_PASSWORD", os.environ.get("MAIL_PASSWORD", "")
+)
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "webmaster@localhost"
+)
 
 # Cache configuration - Local memory for development (no Redis required)
 CACHES = {

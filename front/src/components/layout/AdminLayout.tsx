@@ -104,38 +104,38 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Header de administración */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b border-border">
         <div className="px-6 py-4">
           {/* Breadcrumbs */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
             {getBreadcrumbs().map((crumb, index) => (
               <React.Fragment key={crumb.href}>
                 {index > 0 && <ChevronRight className="h-4 w-4" />}
-                <Link 
+                <Link
                   to={crumb.href}
-                  className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  className="hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded cursor-pointer"
                 >
                   {crumb.title}
                 </Link>
               </React.Fragment>
             ))}
           </nav>
-          
+
           {/* Título principal */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-foreground">
                 {getCurrentPageTitle()}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-muted-foreground mt-1">
                 Gestión centralizada del sistema de recursos humanos
               </p>
             </div>
-            <Badge variant="outline" className="text-sm">
-              <Settings className="w-3 h-3 mr-1" />
-              Admin
+            <Badge variant="secondary" className="text-xs font-medium gap-1">
+              <Settings className="w-3 h-3" aria-hidden="true" />
+              Panel de Admin
             </Badge>
           </div>
         </div>
@@ -143,21 +143,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Navegación rápida (solo en dashboard) */}
       {currentPath === '/admin' && (
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-card border-b border-border">
           <div className="px-6 py-4">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {adminNavItems.slice(1).map((item) => {
                 const IconComponent = item.icon
+                const isActive = currentPath.startsWith(item.href)
                 return (
                   <Button
                     key={item.href}
                     variant="ghost"
                     asChild
-                    className="h-auto p-3 flex flex-col items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className={`h-auto p-3 flex flex-col items-center gap-2 cursor-pointer transition-colors duration-200 ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'}`}
                   >
                     <Link to={item.href}>
-                      <IconComponent className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                      <IconComponent className={`h-5 w-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>
                         {item.title}
                       </span>
                     </Link>

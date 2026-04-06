@@ -17,6 +17,8 @@ class DatosLaborales(models.Model):
     """Modelo para gestionar la información laboral de los empleados."""
     
     TIPO_CONTRATO_CHOICES = [
+        ('CAS', 'CAS - Contrato Administrativo de Servicios'),
+        ('CAP', 'CAP - Cuadro de Asignación de Personal'),
         ('indefinido', 'Indefinido'),
         ('temporal', 'Temporal'),
         ('practicas', 'Prácticas'),

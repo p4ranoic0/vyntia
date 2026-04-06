@@ -25,10 +25,17 @@ export function useEmpleados(params?: PaginationParams) {
     ...(params.estado === 'true' && { estado: 'activo' }),
     ...(params.estado === 'false' && { estado: 'inactivo' })
   } : params
+
+  // Filtrar valores undefined/null para evitar enviar params vacíos al backend
+  const cleanParams = transformedParams
+    ? Object.fromEntries(
+        Object.entries(transformedParams).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      )
+    : transformedParams
   
   return useQuery({
-    queryKey: ['empleados', transformedParams],
-    queryFn: () => apiClient.getEmpleados(transformedParams),
+    queryKey: ['empleados', cleanParams],
+    queryFn: () => apiClient.getEmpleados(cleanParams),
     keepPreviousData: true, // Keep previous data while loading new page
   })
 }

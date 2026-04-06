@@ -1,23 +1,23 @@
-import React, { useId, useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import {
-  Users,
-  FileText,
-  AlertTriangle,
-  Banknote,
-  TrendingUp,
-  TrendingDown,
-  CheckCircle2,
-  Activity,
-  ArrowRight,
-  RefreshCw,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { apiClient } from '@/lib/api'
+import { cn } from '@/lib/utils'
 import { contratosService, TIPO_CONTRATO_LABELS } from '@/services/contratosService'
+import { useQuery } from '@tanstack/react-query'
+import {
+    Activity,
+    AlertTriangle,
+    ArrowRight,
+    Banknote,
+    CheckCircle2,
+    FileText,
+    RefreshCw,
+    TrendingDown,
+    TrendingUp,
+    Users,
+} from 'lucide-react'
+import React, { useEffect, useId, useState } from 'react'
 
 // ─── API Response Types ────────────────────────────────────────────────────────
 
@@ -356,10 +356,10 @@ function KpiCard({ icon, label, value, suffix = '', trend, trendLabel, sub, acce
 
   return (
     <Card
-      className="relative overflow-hidden animate-fade-in-up"
+      className="relative overflow-hidden animate-fade-in-up group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
-      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: accent }} />
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full" style={{ backgroundColor: accent }} />
       <CardContent className="pl-5 pt-5 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1 min-w-0 flex-1">
@@ -666,7 +666,7 @@ export default function HROverviewDashboard() {
   const hasError = empleadosQuery.isError || contratosQuery.isError
 
   return (
-    <div className="min-h-full p-6 space-y-6 bg-background">
+    <div className="min-h-full p-6 space-y-8">
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">

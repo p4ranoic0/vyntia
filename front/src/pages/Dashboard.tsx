@@ -120,7 +120,7 @@ function UserDashboard() {
               <Link
                 key={item.href}
                 to={item.href}
-                className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors text-sm"
+                className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors duration-200 text-sm cursor-pointer"
               >
                 <FileText className="w-4 h-4 mr-2 text-muted-foreground" />
                 {item.label}
@@ -137,14 +137,14 @@ function UserDashboard() {
           <CardContent className="space-y-2">
             <Link
               to="/vacaciones/nueva-solicitud"
-              className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors text-sm"
+              className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors duration-200 text-sm cursor-pointer"
             >
               <CalendarDays className="w-4 h-4 mr-2 text-muted-foreground" />
               Nueva Solicitud
             </Link>
             <Link
               to="/vacaciones/solicitudes"
-              className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors text-sm"
+              className="flex items-center p-2 rounded-lg hover:bg-accent transition-colors duration-200 text-sm cursor-pointer"
             >
               <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
               Mis Solicitudes
@@ -172,6 +172,7 @@ function AdminDashboardView() {
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100 dark:bg-blue-900/20',
+      accentBorder: 'border-t-blue-500',
     },
     {
       title: 'Areas Activas',
@@ -180,6 +181,7 @@ function AdminDashboardView() {
       icon: Building2,
       color: 'text-green-600',
       bgColor: 'bg-green-100 dark:bg-green-900/20',
+      accentBorder: 'border-t-green-500',
     },
     {
       title: 'Boletas Procesadas',
@@ -188,6 +190,7 @@ function AdminDashboardView() {
       icon: FileText,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+      accentBorder: 'border-t-orange-500',
     },
     {
       title: 'Usuarios Activos',
@@ -196,6 +199,7 @@ function AdminDashboardView() {
       icon: Shield,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100 dark:bg-purple-900/20',
+      accentBorder: 'border-t-purple-500',
     },
     {
       title: 'Conceptos Remuneración',
@@ -204,6 +208,7 @@ function AdminDashboardView() {
       icon: Landmark,
       color: 'text-cyan-700',
       bgColor: 'bg-cyan-100 dark:bg-cyan-900/20',
+      accentBorder: 'border-t-cyan-600',
     },
   ]
 
@@ -227,7 +232,7 @@ function AdminDashboardView() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {isLoadingStats ? (
           ['s1', 's2', 's3', 's4', 's5'].map((skeletonKey) => (
             <Card key={skeletonKey}>
@@ -245,7 +250,7 @@ function AdminDashboardView() {
           stats.map((stat) => {
             const Icon = stat.icon
             return (
-              <Card key={stat.title} className="animate-fade-in-up">
+              <Card key={stat.title} className={`animate-fade-in-up border-t-2 ${stat.accentBorder} hover:shadow-md transition-shadow duration-200`}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                   <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -327,7 +332,7 @@ function AdminDashboardView() {
                     <Link
                       key={item.href}
                       to={item.href}
-                      className="flex items-center p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors animate-fade-in-up"
+                      className="flex items-center p-3 rounded-lg border hover:bg-accent hover:border-primary/20 cursor-pointer transition-colors duration-200 animate-fade-in-up"
                       style={{ animationDelay: `${index * 150}ms` }}
                     >
                       <Icon className="w-5 h-5 mr-3 text-primary" />

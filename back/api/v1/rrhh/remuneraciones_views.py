@@ -324,6 +324,9 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def generar_planilla(self, request, pk=None):
         """Genera automáticamente la planilla con empleados activos."""
+        import logging
+
+        logger = logging.getLogger(__name__)
         planilla = self.get_object()
 
         if planilla.estado not in ["borrador", "procesando"]:
@@ -333,16 +336,45 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            # Obtener empleados activos según modalidad
-            empleados = Empleado.objects.filter(
-                estado_empleado="activo", datos_laborales__isnull=False
-            ).prefetch_related("datos_laborales__area")
+            # Mapeo de modalidad de planilla a tipo_contrato de DatosLaborales
+            # Los datos reales en BD usan: CAS, CAP, locacion, consultoria
+            MODALIDAD_A_TIPO_CONTRATO = {
+                "plazo_indeterminado": ["CAP"],
+                "plazo_determinado": ["CAS"],
+                "subsidio": ["CAS", "CAP"],
+                "locacion": ["locacion"],
+                "consultoria": ["consultoria"],
+            }
 
-            # TODO: Filtrar por modalidad de contrato según planilla.modalidad
+            # Obtener empleados activos con datos laborales
+            empleados_qs = Empleado.objects.filter(
+                estado_empleado="activo",
+                datos_laborales__estado_datos="activo",
+            ).prefetch_related("datos_laborales__area").distinct()
+
+            # Filtrar por modalidad de contrato según planilla.modalidad
+            tipos_contrato = MODALIDAD_A_TIPO_CONTRATO.get(planilla.modalidad)
+            if tipos_contrato:
+                empleados_qs = empleados_qs.filter(
+                    datos_laborales__tipo_contrato__in=tipos_contrato,
+                    datos_laborales__estado_datos="activo",
+                )
+
+            empleados = list(empleados_qs)
+            logger.info(
+                f"generar_planilla: modalidad={planilla.modalidad}, "
+                f"tipos_contrato={tipos_contrato}, "
+                f"empleados encontrados={len(empleados)}"
+            )
 
             contador = 0
             for empleado in empleados:
-                datos_laborales = empleado.datos_laborales.filter(estado_datos="activo").first()
+                # Filtrar datos laborales activos por tipo de contrato
+                dl_filter = empleado.datos_laborales.filter(estado_datos="activo")
+                if tipos_contrato:
+                    dl_filter = dl_filter.filter(tipo_contrato__in=tipos_contrato)
+                datos_laborales = dl_filter.first()
+
                 if not datos_laborales:
                     continue
 
@@ -359,15 +391,21 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                     datos_laborales=datos_laborales,
                     area_nombre=datos_laborales.area.nombre_unidad_organica if datos_laborales.area else "",
                     cargo=datos_laborales.cargo_empleado,
-                    dni=empleado.nro_documento,
+                    dni=empleado.numero_documento,
                     sistema_pensiones=empleado.sistema_pensiones,
-                    tipo_comision_afp=empleado.tipo_comision_afp,
+                    tipo_comision_afp=empleado.tipo_comision or "",
                     remuneracion_basica=datos_laborales.sueldo_basico,
                     asignacion_familiar=datos_laborales.asignacion_familiar,
                     bonificacion_especial=datos_laborales.bonificacion_especial,
                     otras_bonificaciones=datos_laborales.otras_bonificaciones,
                 )
                 contador += 1
+
+            if contador == 0:
+                return APIResponse.error(
+                    message="No se encontraron empleados activos para la modalidad seleccionada",
+                    status_code=400,
+                )
 
             # Actualizar estado de planilla
             planilla.estado = "generada"
@@ -386,6 +424,9 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             )
 
         except Exception as e:
+            import traceback
+
+            logger.error(f"Error generando planilla: {traceback.format_exc()}")
             return APIResponse.error(message=f"Error al generar planilla: {str(e)}")
 
     @require_hr()
@@ -516,6 +557,153 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             data=PlanillaMensualDetailSerializer(planilla).data,
         )
 
+    @require_hr()
+    @action(detail=True, methods=["post"])
+    def generar_boletas(self, request, pk=None):
+        """Genera boletas de pago para todos los detalles de una planilla aprobada."""
+        planilla = self.get_object()
+
+        if planilla.estado not in ["generada", "aprobada"]:
+            return APIResponse.error(
+                message="Solo se pueden generar boletas de planillas generadas o aprobadas",
+                status_code=400,
+            )
+
+        detalles = DetallePlanilla.objects.filter(planilla=planilla).select_related(
+            "empleado"
+        )
+
+        if not detalles.exists():
+            return APIResponse.error(
+                message="La planilla no tiene detalles generados", status_code=400
+            )
+
+        creadas = 0
+        existentes = 0
+        for detalle in detalles:
+            _, created = BoletaPago.objects.get_or_create(
+                detalle_planilla=detalle,
+                defaults={"estado": "generada"},
+            )
+            if created:
+                creadas += 1
+            else:
+                existentes += 1
+
+        return APIResponse.success(
+            message=f"Boletas generadas: {creadas} nuevas, {existentes} ya existían.",
+            data={
+                "planilla_id": planilla.planilla_id,
+                "periodo": planilla.periodo,
+                "boletas_creadas": creadas,
+                "boletas_existentes": existentes,
+                "total": creadas + existentes,
+            },
+        )
+
+    @require_hr()
+    @action(detail=True, methods=["post"])
+    def regenerar(self, request, pk=None):
+        """Resetea una planilla generada a borrador, elimina sus detalles y permite regenerar."""
+        planilla = self.get_object()
+
+        if planilla.estado in ["aprobada", "pagada"]:
+            return APIResponse.error(
+                message="No se puede regenerar una planilla aprobada o pagada",
+                status_code=400,
+            )
+
+        # Eliminar detalles existentes
+        eliminados = DetallePlanilla.objects.filter(planilla=planilla).delete()[0]
+
+        # Resetear estado
+        planilla.estado = "borrador"
+        planilla.total_trabajadores = 0
+        planilla.total_remuneracion_bruta = Decimal("0.00")
+        planilla.total_descuentos = Decimal("0.00")
+        planilla.total_neto_pagar = Decimal("0.00")
+        planilla.total_essalud = Decimal("0.00")
+        planilla.total_aporte_afp = Decimal("0.00")
+        planilla.total_onp = Decimal("0.00")
+        planilla.fecha_generacion = None
+        planilla.save()
+
+        return APIResponse.success(
+            message=f"Planilla reseteada. Se eliminaron {eliminados} detalles.",
+            data=PlanillaMensualDetailSerializer(planilla).data,
+        )
+
+    @require_hr()
+    @action(detail=False, methods=["get"])
+    def diagnostico(self, request):
+        """Endpoint temporal de diagnóstico para verificar datos de empleados."""
+        from app_rrhh.models.datos_laborales import DatosLaborales
+
+        total_empleados = Empleado.objects.count()
+        empleados_activos = Empleado.objects.filter(estado_empleado="activo").count()
+        dl_total = DatosLaborales.objects.count()
+        dl_activos = DatosLaborales.objects.filter(estado_datos="activo").count()
+
+        # Empleados activos con DL activos
+        activos_con_dl = Empleado.objects.filter(
+            estado_empleado="activo",
+            datos_laborales__estado_datos="activo",
+        ).distinct().count()
+
+        # Estados únicos
+        estados_emp = list(
+            Empleado.objects.values_list("estado_empleado", flat=True).distinct()
+        )
+        estados_dl = list(
+            DatosLaborales.objects.values_list("estado_datos", flat=True).distinct()
+        )
+
+        # Tipos de contrato con count
+        tipos_contrato = list(
+            DatosLaborales.objects.filter(estado_datos="activo")
+            .values("tipo_contrato")
+            .annotate(cantidad=Count("dato_laboral_id"))
+            .order_by("tipo_contrato")
+        )
+
+        # Muestra de empleados activos
+        muestra = list(
+            Empleado.objects.filter(estado_empleado="activo")[:5].values(
+                "empleado_id", "numero_documento", "nombres_empleado",
+                "apellido_paterno", "estado_empleado"
+            )
+        )
+
+        # Planillas existentes
+        planillas = list(
+            PlanillaMensual.objects.all().values(
+                "planilla_id", "periodo", "modalidad", "estado",
+                "total_trabajadores", "total_remuneracion_bruta",
+            ).order_by("-periodo")
+        )
+
+        # DatosLaborales detalle con sueldo
+        dl_detalle = list(
+            DatosLaborales.objects.filter(estado_datos="activo").values(
+                "dato_laboral_id", "empleado_id", "tipo_contrato",
+                "sueldo_basico", "cargo_empleado",
+            )
+        )
+
+        return APIResponse.success(data={
+            "total_empleados": total_empleados,
+            "empleados_activos": empleados_activos,
+            "datos_laborales_total": dl_total,
+            "datos_laborales_activos": dl_activos,
+            "activos_con_dl_activos": activos_con_dl,
+            "estados_empleado": estados_emp,
+            "estados_datos_laborales": estados_dl,
+            "tipos_contrato_activos": tipos_contrato,
+            "muestra_empleados_activos": muestra,
+            "planillas": planillas,
+            "datos_laborales_activos_detalle": dl_detalle,
+        })
+
     @require_authenticated()
     @action(detail=True, methods=["get"])
     def estadisticas(self, request, pk=None):
@@ -526,6 +714,12 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
         estadisticas = {
             "total_empleados": detalles.count(),
+            "total_trabajadores": detalles.count(),
+            "total_ingresos": float(planilla.total_remuneracion_bruta or 0),
+            "total_descuentos": float(planilla.total_descuentos or 0),
+            "total_neto": float(planilla.total_neto_pagar or 0),
+            "total_essalud": float(planilla.total_essalud or 0),
+            "total_afp": float(planilla.total_aporte_afp or 0),
             "promedio_remuneracion": detalles.aggregate(Avg("total_haberes"))[
                 "total_haberes__avg"
             ]
@@ -603,9 +797,9 @@ class DetallePlanillaViewSet(viewsets.ModelViewSet):
             "planilla", "empleado", "datos_laborales"
         ).order_by("area_nombre", "empleado__apellido_paterno")
 
-        # Filtros
-        planilla_id = self.request.query_params.get("planilla_id")
-        empleado_id = self.request.query_params.get("empleado_id")
+        # Filtros (acepta tanto planilla_id como planilla)
+        planilla_id = self.request.query_params.get("planilla_id") or self.request.query_params.get("planilla")
+        empleado_id = self.request.query_params.get("empleado_id") or self.request.query_params.get("empleado")
         dni = self.request.query_params.get("dni")
         sistema_pensiones = self.request.query_params.get("sistema_pensiones")
 
@@ -778,6 +972,149 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         """Obtener boleta específica."""
         return super().retrieve(request, *args, **kwargs)
+
+    @require_authenticated()
+    @action(detail=True, methods=["get"], url_path="pdf")
+    def pdf(self, request, pk=None):
+        """Descargar el PDF de una boleta de pago."""
+        from django.http import HttpResponse
+
+        boleta = self.get_object()
+
+        if not boleta.archivo_pdf:
+            # Generar un PDF básico con los datos de la boleta
+            detalle = boleta.detalle_planilla
+            empleado = detalle.empleado
+            planilla = detalle.planilla
+
+            content = (
+                f"BOLETA DE PAGO\n"
+                f"{'=' * 40}\n"
+                f"Empleado: {empleado.nombre_completo}\n"
+                f"DNI: {empleado.numero_documento}\n"
+                f"Periodo: {planilla.periodo}\n"
+                f"{'=' * 40}\n"
+                f"Remuneracion Basica: S/ {detalle.remuneracion_basica}\n"
+                f"Total Ingresos: S/ {detalle.total_haberes}\n"
+                f"Total Descuentos: S/ {detalle.total_descuentos}\n"
+                f"Neto a Pagar: S/ {detalle.neto_pagar}\n"
+            )
+            response = HttpResponse(content.encode("utf-8"), content_type="text/plain")
+            response["Content-Disposition"] = (
+                f'attachment; filename="boleta-{boleta.boleta_id}.txt"'
+            )
+
+            boleta.estado = "descargada"
+            boleta.fecha_descarga = timezone.now()
+            boleta.save(update_fields=["estado", "fecha_descarga"])
+
+            return response
+
+        response = HttpResponse(
+            boleta.archivo_pdf.read(), content_type="application/pdf"
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="boleta-{boleta.boleta_id}.pdf"'
+        )
+
+        boleta.estado = "descargada"
+        boleta.fecha_descarga = timezone.now()
+        boleta.save(update_fields=["estado", "fecha_descarga"])
+
+        return response
+
+    @require_hr()
+    @action(detail=False, methods=["get"], url_path="descarga-masiva")
+    def descarga_masiva(self, request):
+        """
+        Descarga masiva de boletas de pago como ZIP.
+        Parámetros: planilla_id (requerido), formato (opcional: pdf|txt, default txt).
+        """
+        import io
+        import zipfile
+
+        from django.http import HttpResponse
+
+        planilla_id = request.query_params.get("planilla_id")
+        if not planilla_id:
+            return APIResponse.error(
+                message="Se requiere el parámetro planilla_id", status_code=400
+            )
+
+        boletas = BoletaPago.objects.filter(
+            detalle_planilla__planilla_id=planilla_id
+        ).select_related(
+            "detalle_planilla__empleado", "detalle_planilla__planilla"
+        )
+
+        if not boletas.exists():
+            return APIResponse.error(
+                message="No se encontraron boletas para esta planilla",
+                status_code=404,
+            )
+
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for boleta in boletas:
+                detalle = boleta.detalle_planilla
+                empleado = detalle.empleado
+                planilla = detalle.planilla
+                nombre_archivo = (
+                    f"boleta_{empleado.numero_documento}_"
+                    f"{planilla.periodo.replace('-', '')}"
+                )
+
+                if boleta.archivo_pdf:
+                    zf.writestr(
+                        f"{nombre_archivo}.pdf", boleta.archivo_pdf.read()
+                    )
+                else:
+                    content = (
+                        f"BOLETA DE PAGO\n"
+                        f"{'=' * 50}\n"
+                        f"Empleado: {empleado.nombre_completo}\n"
+                        f"DNI: {empleado.numero_documento}\n"
+                        f"Periodo: {planilla.periodo}\n"
+                        f"Modalidad: {planilla.get_modalidad_display()}\n"
+                        f"{'=' * 50}\n\n"
+                        f"INGRESOS\n"
+                        f"{'-' * 50}\n"
+                        f"Remuneración Básica:     S/ {detalle.remuneracion_basica:>10,.2f}\n"
+                        f"Asignación Familiar:     S/ {detalle.asignacion_familiar:>10,.2f}\n"
+                        f"Bonificación Especial:   S/ {detalle.bonificacion_especial:>10,.2f}\n"
+                        f"Otras Bonificaciones:    S/ {detalle.otras_bonificaciones:>10,.2f}\n"
+                        f"TOTAL INGRESOS:          S/ {detalle.total_haberes:>10,.2f}\n\n"
+                        f"DESCUENTOS\n"
+                        f"{'-' * 50}\n"
+                        f"Sistema Pensiones: {detalle.sistema_pensiones}\n"
+                        f"AFP Obligatorio:         S/ {detalle.aporte_afp_obligatorio:>10,.2f}\n"
+                        f"Comisión AFP:            S/ {detalle.comision_afp:>10,.2f}\n"
+                        f"Prima Seguro AFP:        S/ {detalle.prima_seguro_afp:>10,.2f}\n"
+                        f"Total AFP:               S/ {detalle.total_afp:>10,.2f}\n"
+                        f"Aporte ONP:              S/ {detalle.aporte_onp:>10,.2f}\n"
+                        f"Renta 5ta Categoría:     S/ {detalle.renta_quinta_categoria:>10,.2f}\n"
+                        f"TOTAL DESCUENTOS:        S/ {detalle.total_descuentos:>10,.2f}\n\n"
+                        f"{'=' * 50}\n"
+                        f"ESSALUD (empleador):     S/ {detalle.essalud:>10,.2f}\n"
+                        f"NETO A PAGAR:            S/ {detalle.neto_pagar:>10,.2f}\n"
+                    )
+                    zf.writestr(f"{nombre_archivo}.txt", content.encode("utf-8"))
+
+                # Marcar como descargada
+                boleta.estado = "descargada"
+                boleta.fecha_descarga = timezone.now()
+
+            BoletaPago.objects.filter(
+                detalle_planilla__planilla_id=planilla_id
+            ).update(estado="descargada", fecha_descarga=timezone.now())
+
+        buffer.seek(0)
+        planilla_obj = boletas.first().detalle_planilla.planilla
+        filename = f"boletas_{planilla_obj.periodo}_{planilla_obj.modalidad}.zip"
+
+        response = HttpResponse(buffer.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     def get_serializer_class(self):
         """Retorna el serializer apropiado según la acción."""

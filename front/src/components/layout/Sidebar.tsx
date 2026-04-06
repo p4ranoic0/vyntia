@@ -24,6 +24,7 @@ import {
     Cog,
     Edit,
     FileCheck,
+    FileSignature,
     FileText,
     FolderOpen,
     GraduationCap,
@@ -91,6 +92,7 @@ const convertMenuItems = (menuServiceItems: MenuServiceItem[]): MenuItem[] => {
     'link': LinkIcon,
     'circle': Home, // fallback del backend cuando icono_modulo es null
     'file-check': FileCheck,
+    'file-signature': FileSignature,
     'user-plus': UserPlus,
 
     // ===== Iconos legacy / aliases =====
@@ -318,11 +320,11 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
     const iconContent = (
       <div
         className={cn(
-          'flex items-center justify-center w-10 h-10 rounded-lg cursor-pointer transition-colors duration-200',
-          'hover:bg-muted',
+          'flex items-center justify-center w-10 h-10 rounded-lg cursor-pointer transition-all duration-200',
+          'hover:bg-sidebar-hover',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
           (isItemActive || hasActiveChild)
-            ? 'bg-primary/10 text-primary'
+            ? 'bg-sidebar-active-bg text-primary'
             : 'text-muted-foreground'
         )}
       >
@@ -402,12 +404,12 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
               to={item.path}
               onClick={handleNavClick}
               className={cn(
-                'flex items-center w-full px-3 py-2 text-sm rounded-lg cursor-pointer',
-                'transition-colors duration-200',
-                'hover:bg-muted hover:text-foreground',
+                'flex items-center w-full px-3 py-2.5 text-sm rounded-lg cursor-pointer relative',
+                'transition-all duration-200',
+                'hover:bg-sidebar-hover hover:text-foreground',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 isItemActive
-                  ? 'bg-primary/10 text-primary font-medium'
+                  ? 'bg-sidebar-active-bg text-primary font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-primary'
                   : 'text-muted-foreground'
               )}
             >
@@ -418,12 +420,12 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
             <button
               onClick={() => toggleExpanded(item.id)}
               className={cn(
-                'flex items-center w-full px-3 py-2 text-sm rounded-lg cursor-pointer',
-                'transition-colors duration-200',
-                'hover:bg-muted hover:text-foreground',
+                'flex items-center w-full px-3 py-2.5 text-sm rounded-lg cursor-pointer relative',
+                'transition-all duration-200',
+                'hover:bg-sidebar-hover hover:text-foreground',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 hasActiveChild
-                  ? 'bg-primary/10 text-primary font-medium'
+                  ? 'bg-sidebar-active-bg text-primary font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-primary'
                   : 'text-muted-foreground'
               )}
             >
@@ -500,7 +502,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full bg-card border-r border-border',
+          'fixed top-0 left-0 z-50 h-full bg-sidebar-bg border-r border-sidebar-border',
           'transition-transform duration-300 ease-in-out',
           'lg:relative lg:translate-x-0',
           isCollapsed ? 'w-16' : 'w-64',
@@ -508,9 +510,11 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-sidebar-border">
           <div className="flex items-center space-x-2 min-w-0">
-            <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+            <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/10">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+            </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-lg sm:text-xl font-bold text-foreground truncate">HR Sistema</span>
@@ -574,7 +578,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
         {/* Navigation */}
         <nav
           ref={menuRef}
-          className="flex-1 p-2 sm:p-4 space-y-1 overflow-y-auto"
+          className="flex-1 p-2 sm:p-3 space-y-0.5 overflow-y-auto"
         >
           {navigationContent}
         </nav>

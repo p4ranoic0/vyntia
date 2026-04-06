@@ -34,7 +34,7 @@ export function Layout({ children }: LayoutProps) {
           onMenuToggle={toggleMobileMenu}
           isSidebarCollapsed={isSidebarCollapsed}
         />
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
+        <div className="flex-1 overflow-auto p-4 lg:p-6 bg-surface-1">
           {children}
         </div>
       </main>

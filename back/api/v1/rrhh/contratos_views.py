@@ -362,17 +362,20 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Datos para el nuevo contrato
+            # Datos para el nuevo contrato (heredar campos del original)
             nuevo_contrato_data = {
-                'empleado': contrato_original.empleado.id,
+                'empleado': contrato_original.empleado_id,
+                'area': contrato_original.area_id,
                 'tipo_documento': contrato_original.tipo_documento,
                 'fecha_inicio': request.data.get('fecha_inicio'),
                 'fecha_fin': request.data.get('fecha_fin'),
                 'salario_bruto': request.data.get('salario_bruto', contrato_original.salario_bruto),
                 'cargo': contrato_original.cargo,
                 'jornada_laboral': contrato_original.jornada_laboral,
-                'observaciones': request.data.get('observaciones', f'Renovación del contrato {contrato_original.id}'),
-                'estado': 'ACTIVO'
+                'funciones': contrato_original.funciones,
+                'lugar_trabajo': contrato_original.lugar_trabajo,
+                'horario_trabajo': contrato_original.horario_trabajo,
+                'observaciones': request.data.get('observaciones', f'Renovación del contrato {contrato_original.contrato_id}'),
             }
             
             # Crear el nuevo contrato
@@ -384,10 +387,15 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 nuevo_contrato = serializer.save(creado_por=request.user)
                 
+                # Activar el nuevo contrato
+                nuevo_contrato.estado = 'ACTIVO'
+                nuevo_contrato.save(update_fields=['estado'])
+                
                 # Marcar el contrato original como terminado
                 contrato_original.estado = 'TERMINADO'
-                contrato_original.observaciones += f' - Renovado con contrato {nuevo_contrato.id}'
-                contrato_original.save()
+                obs_anterior = contrato_original.observaciones or ''
+                contrato_original.observaciones = f'{obs_anterior} - Renovado con contrato {nuevo_contrato.contrato_id}'.strip(' -')
+                contrato_original.save(update_fields=['estado', 'observaciones'])
                 
                 return APIResponse.success(
                     data=ContratosAdendasSerializer(nuevo_contrato, context={'request': request}).data,

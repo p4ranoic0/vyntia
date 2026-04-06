@@ -61,7 +61,7 @@ export default function PlanillasMensualesPage() {
   const mapModalidadToBackend = (modalidad: ModalidadContrato): ModalidadContrato => {
     const mapping: Record<ModalidadContrato, ModalidadContrato> = {
       CAS: 'plazo_determinado',
-      CAP: 'plazo_determinado',
+      CAP: 'plazo_indeterminado',
       NOMBRADO: 'plazo_indeterminado',
       PRACTICANTE: 'locacion',
       TERCERO: 'consultoria',

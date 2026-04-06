@@ -111,7 +111,7 @@ class PlanillaCalculoService:
         # Aplicar proporcionalidad si hay días no laborados
         if detalle.dias_laborados < dias_mes:
             detalle.remuneracion_basica = (
-                datos_laborales.remuneracion_basica * factor_proporcional
+                datos_laborales.sueldo_basico * factor_proporcional
                 if datos_laborales
                 else detalle.remuneracion_basica * factor_proporcional
             )
@@ -249,13 +249,13 @@ class PlanillaCalculoService:
         - Otros: 9% de la remuneración total
         """
 
-        if modalidad in ["subsidio", "locacion", "consultoria"]:  # CAS
+        if modalidad in ["plazo_determinado", "subsidio", "locacion", "consultoria"]:  # CAS y similares
             if config_uit:
                 # 9% del 45% de UIT dividido entre 12 meses
                 detalle.essalud = config_uit.essalud_cas_mensual
             else:
-                # Usar UIT por defecto (5150 para 2026)
-                uit_default = Decimal("5150.00")
+                # Usar UIT por defecto (5350 para 2026)
+                uit_default = Decimal("5350.00")
                 detalle.essalud = (
                     uit_default * Decimal("0.45") * Decimal("0.09")
                 ) / Decimal("12")
@@ -282,7 +282,7 @@ class PlanillaCalculoService:
                 tope_anual = config_uit.tope_renta_cuarta_soles
             else:
                 # Tope por defecto: 45 UITs
-                tope_anual = Decimal("5150.00") * Decimal("45.00")
+                tope_anual = Decimal("5350.00") * Decimal("45.00")
 
             # Si no ha superado el tope, NO retener
             if detalle.tope_suspension_anual < tope_anual:

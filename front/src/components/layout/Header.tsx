@@ -1,3 +1,4 @@
+import NotificationsBell from '@/components/notifications/NotificationsBell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,11 +14,11 @@ import { Input } from '@/components/ui/input'
 import { useTheme } from '@/context/ThemeContext'
 import { useEntranceAnimation, useStaggerAnimation } from '@/hooks/useAnimations'
 import { useAuth } from '@/hooks/useAuth'
-import { getInitials } from '@/lib/utils'
+import { useScrolled } from '@/hooks/useScrolled'
+import { cn, getInitials } from '@/lib/utils'
 import { Menu, Moon, Search, Shield, Sun, User } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import NotificationsBell from '@/components/notifications/NotificationsBell'
 
 interface HeaderProps {
   onMenuToggle?: () => void
@@ -27,6 +28,7 @@ interface HeaderProps {
 export function Header({ onMenuToggle, isSidebarCollapsed }: HeaderProps) {
   const { user, logout, isAdminOrRRHH } = useAuth()
   const { theme, setTheme } = useTheme()
+  const isScrolled = useScrolled(10)
 
   // Hooks de animacion
   const headerRef = useEntranceAnimation({ direction: 'top', duration: 500 })
@@ -54,7 +56,10 @@ export function Header({ onMenuToggle, isSidebarCollapsed }: HeaderProps) {
   return (
     <header
       ref={headerRef as React.RefObject<HTMLElement>}
-      className="h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 animate-slide-in-top backdrop-blur-sm"
+      className={cn(
+        "h-14 sm:h-16 bg-header-bg border-b border-header-border flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 animate-slide-in-top transition-shadow duration-200",
+        isScrolled && "shadow-header"
+      )}
     >
       {/* Left section */}
       <div className="flex items-center space-x-2 sm:space-x-4">
@@ -67,8 +72,8 @@ export function Header({ onMenuToggle, isSidebarCollapsed }: HeaderProps) {
 
         {/* Search - hidden on mobile, shown on sm+ */}
         <div className="relative hidden sm:flex flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar..." className="pl-10 pr-4 w-full" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          <Input placeholder="Buscar..." aria-label="Buscar en el sistema" className="pl-10 pr-4 w-full bg-muted/40 border-0 focus-visible:bg-background focus-visible:border-primary/50" />
         </div>
       </div>
 
@@ -78,29 +83,37 @@ export function Header({ onMenuToggle, isSidebarCollapsed }: HeaderProps) {
         className="flex items-center space-x-1 sm:space-x-3"
       >
         {/* Search icon for mobile */}
-        <Button variant="ghost" size="icon" className="sm:hidden h-10 w-10 cursor-pointer">
-          <Search className="w-5 h-5" />
+        <Button variant="ghost" size="icon" aria-label="Buscar" className="sm:hidden h-10 w-10 cursor-pointer">
+          <Search className="w-5 h-5" aria-hidden="true" />
         </Button>
 
         {/* Theme toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-10 w-10 cursor-pointer">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+          className="h-10 w-10 cursor-pointer"
+        >
           {theme === 'light' ? (
-            <Moon className="w-5 h-5 transition-colors" />
+            <Moon className="w-5 h-5 transition-transform duration-300" />
           ) : (
-            <Sun className="w-5 h-5 transition-colors" />
+            <Sun className="w-5 h-5 transition-transform duration-300" />
           )}
         </Button>
 
         {/* Notifications */}
-        <NotificationsBell />
+        <div className="border-l border-border/50 pl-1 sm:pl-2">
+          <NotificationsBell />
+        </div>
 
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 rounded-full flex items-center gap-2 px-2">
-              <Avatar className="h-8 w-8">
+            <Button variant="ghost" className="relative h-10 rounded-full flex items-center gap-2 px-2 cursor-pointer">
+              <Avatar className="h-8 w-8 ring-2 ring-border">
                 <AvatarImage src="" alt={userName} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>

@@ -308,4 +308,26 @@ export const contratosService = {
       throw new Error(getErrorMessage(error));
     }
   },
+
+  async generarAdendaPdf(data: {
+    adenda_id: number;
+    formato?: string;
+    guardar_documento?: boolean;
+  }): Promise<{
+    documento_id?: number;
+    archivo_url?: string;
+    nombre_archivo?: string;
+  }> {
+    try {
+      const response = await apiClient.post(
+        "/api/v1/rrhh/documentos/generar-adenda/",
+        data,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw: any = response.data;
+      return raw?.data ?? raw;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
 };

@@ -280,7 +280,7 @@ class DescuentoMasivoService:
                     detalle.otros_descuentos += monto
                     detalle.total_descuentos += monto
                     detalle.neto_pagar = (
-                        detalle.total_ingresos - detalle.total_descuentos
+                        detalle.total_haberes - detalle.total_descuentos
                     )
                     detalle.save()
 
@@ -330,7 +330,7 @@ class DescuentoMasivoService:
                     detalle.otros_descuentos -= concepto.monto
                     detalle.total_descuentos -= concepto.monto
                     detalle.neto_pagar = (
-                        detalle.total_ingresos - detalle.total_descuentos
+                        detalle.total_haberes - detalle.total_descuentos
                     )
                     detalle.save()
 

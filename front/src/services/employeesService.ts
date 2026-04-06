@@ -188,7 +188,7 @@ export const employeesService = {
     async get(empleadoId: number) {
       try {
         const response = await apiClient.get(
-          `/api/v1/rrhh/empleados/${empleadoId}/datos-personales/`,
+          `/api/v1/rrhh/empleados/${empleadoId}/`,
         );
         return response.data;
       } catch (error) {
@@ -199,8 +199,8 @@ export const employeesService = {
 
     async update(empleadoId: number, data: Partial<DatosPersonales>) {
       try {
-        const response = await apiClient.put(
-          `/api/v1/rrhh/empleados/${empleadoId}/datos-personales/`,
+        const response = await apiClient.patch(
+          `/api/v1/rrhh/empleados/${empleadoId}/`,
           data,
         );
         return response.data;
@@ -216,7 +216,7 @@ export const employeesService = {
     async get(empleadoId: number) {
       try {
         const response = await apiClient.get(`/api/v1/rrhh/datos-laborales/`, {
-          empleado: empleadoId,
+          params: { empleado: empleadoId },
         });
         return response.data;
       } catch (error) {
@@ -244,7 +244,7 @@ export const employeesService = {
     async getAll(empleadoId: number) {
       try {
         const response = await apiClient.get(`/api/v1/rrhh/datos-familiares/`, {
-          empleado: empleadoId,
+          params: { empleado: empleadoId },
         });
         return response.data;
       } catch (error) {
@@ -304,7 +304,7 @@ export const employeesService = {
     async getAll(empleadoId: number) {
       try {
         const response = await apiClient.get(`/api/v1/rrhh/datos-academicos/`, {
-          empleado: empleadoId,
+          params: { empleado: empleadoId },
         });
         return response.data;
       } catch (error) {

@@ -1,44 +1,59 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { DocumentViewer } from '@/components/common/DocumentViewer'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import {
-  FileText, Upload, Trash2, Eye, Plus, FolderOpen, Calendar,
-  Building2, CheckCircle, XCircle, FileCheck, Shield,
-} from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+    Dialog, DialogContent, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { DocumentViewer } from '@/components/common/DocumentViewer'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'sonner'
 import {
-  legajoService,
-  type Documento,
-  type DocumentoFormData,
-  TIPO_DOCUMENTO_LABELS,
-  CATEGORIA_LABELS,
-  TIPOS_INSTITUCIONALES,
-  TIPO_CATEGORIA_MAP,
-} from '@/services/legajoService'
-import {
-  contratosService,
-  type ContratoListItem,
-  TIPO_CONTRATO_LABELS,
-  ESTADO_CONTRATO_BADGE,
+    ESTADO_CONTRATO_BADGE,
+    TIPO_CONTRATO_LABELS,
+    contratosService,
+    type ContratoListItem,
 } from '@/services/contratosService'
+import { employeesService } from '@/services/employeesService'
+import {
+    CATEGORIA_LABELS,
+    TIPOS_INSTITUCIONALES,
+    TIPO_CATEGORIA_MAP,
+    TIPO_DOCUMENTO_LABELS,
+    legajoService,
+    type Documento,
+    type DocumentoFormData,
+} from '@/services/legajoService'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+    AlertTriangle, ArrowLeft,
+    Building2,
+    Calendar,
+    CheckCircle,
+    Clock,
+    Eye,
+    FileCheck,
+    FileText,
+    FolderOpen,
+    Plus,
+    Search,
+    Shield,
+    Trash2,
+    Upload,
+    Users,
+    XCircle,
+} from 'lucide-react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const CATEGORIAS = Object.entries(CATEGORIA_LABELS)
 
@@ -376,8 +391,8 @@ function UploadDocumentoDialog({ open, empleadoId, isAdmin, onClose, onSuccess }
               <div>
                 <Label>Descripcion</Label>
                 <Textarea
-                  value={formData.descripcion_documento ?? ''}
-                  onChange={(e) => setFormData((p) => ({ ...p, descripcion_documento: e.target.value }))}
+                  value={formData.descripcion ?? ''}
+                  onChange={(e) => setFormData((p) => ({ ...p, descripcion: e.target.value }))}
                   rows={2}
                 />
               </div>
@@ -414,8 +429,8 @@ function UploadDocumentoDialog({ open, empleadoId, isAdmin, onClose, onSuccess }
                   <div>
                     <Label className="text-xs">Descripcion</Label>
                     <Textarea
-                      value={formData.descripcion_documento ?? ''}
-                      onChange={(e) => setFormData((p) => ({ ...p, descripcion_documento: e.target.value }))}
+                      value={formData.descripcion ?? ''}
+                      onChange={(e) => setFormData((p) => ({ ...p, descripcion: e.target.value }))}
                       rows={2}
                     />
                   </div>
@@ -481,6 +496,173 @@ function RechazoDialog({ open, onClose, onConfirm }: RechazoDialogProps) {
 }
 
 /* --------------------------------------------------------
+   LegajoAdminPanel — vista administrativa para RRHH/Admin
+   Muestra lista de empleados con búsqueda y acceso a legajos
+   -------------------------------------------------------- */
+
+interface EmpleadoRow {
+  empleado_id: number
+  nombres_empleado: string
+  apellido_paterno: string
+  apellido_materno: string
+  numero_documento: string
+  estado_empleado: string
+  nombre_completo: string
+}
+
+function LegajoAdminPanel() {
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
+
+  // Fetch empleados
+  const { data: empleados = [], isLoading: loadingEmpleados } = useQuery({
+    queryKey: ['empleados-legajo'],
+    queryFn: () => employeesService.getAll({ page_size: 500, ordering: 'apellido_paterno' }),
+  })
+
+  // Fetch todos los documentos para stats globales
+  const { data: allDocs = [] } = useQuery({
+    queryKey: ['documentos-all-stats'],
+    queryFn: async () => {
+      const response = await legajoService.getByEmpleado(0).catch(() => [])
+      return response
+    },
+    // Fallback: try fetching without empleado filter for stats
+    enabled: false,
+  })
+
+  // Stats globales - computadas desde documentos si están disponibles
+  const pendientes = allDocs.filter((d: Documento) => d.estado_documento === 'pendiente_revision').length
+  const vencidos = allDocs.filter((d: Documento) => d.estado_documento === 'vencido').length
+
+  // Filtrar empleados por búsqueda
+  const empleadosFiltrados = useMemo(() => {
+    if (!search.trim()) return empleados
+    const q = search.toLowerCase()
+    return empleados.filter((emp: any) => {
+      const nombre = (emp.nombre_completo ?? `${emp.nombres ?? emp.nombres_empleado ?? ''} ${emp.ape_paterno ?? emp.apellido_paterno ?? ''} ${emp.ape_materno ?? emp.apellido_materno ?? ''}`).toLowerCase()
+      const doc = (emp.dni ?? emp.numero_documento ?? '').toLowerCase()
+      return nombre.includes(q) || doc.includes(q)
+    })
+  }, [empleados, search])
+
+  return (
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <FolderOpen className="h-6 w-6 text-blue-600" />
+            Legajo Digital — Gestion
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Seleccione un empleado para ver o gestionar su legajo digital
+          </p>
+        </div>
+        <Button onClick={() => navigate('/legajo/gestion')} variant="outline">
+          <Upload className="h-4 w-4 mr-2" />
+          Subir Institucional
+        </Button>
+      </div>
+
+      {/* Stats globales */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-blue-600" />
+            <p className="text-xs text-muted-foreground">Empleados</p>
+          </div>
+          <p className="text-2xl font-bold mt-1">{empleados.length}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-yellow-600" />
+            <p className="text-xs text-muted-foreground">Docs Pendientes</p>
+          </div>
+          <p className="text-2xl font-bold text-yellow-600 mt-1">{pendientes}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <p className="text-xs text-muted-foreground">Docs Vencidos</p>
+          </div>
+          <p className="text-2xl font-bold text-red-600 mt-1">{vencidos}</p>
+        </Card>
+      </div>
+
+      {/* Buscador */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Empleados</CardTitle>
+          <CardDescription>Busque por nombre o numero de documento</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar empleado..."
+              className="pl-10"
+            />
+          </div>
+
+          {loadingEmpleados && (
+            <div className="flex justify-center py-8"><LoadingSpinner /></div>
+          )}
+          {!loadingEmpleados && empleadosFiltrados.length === 0 && (
+            <p className="text-center text-muted-foreground py-8 text-sm">
+              {search ? 'No se encontraron empleados con ese criterio' : 'No hay empleados registrados'}
+            </p>
+          )}
+          {!loadingEmpleados && empleadosFiltrados.length > 0 && (
+            <div className="divide-y max-h-[500px] overflow-y-auto">
+              {empleadosFiltrados.map((emp: any) => {
+                const id = emp.id ?? emp.empleado_id
+                const nombre = emp.nombre_completo ?? `${emp.nombres ?? emp.nombres_empleado ?? ''} ${emp.ape_paterno ?? emp.apellido_paterno ?? ''} ${emp.ape_materno ?? emp.apellido_materno ?? ''}`
+                const doc = emp.dni ?? emp.numero_documento ?? ''
+                const area = emp.area?.siglas ?? emp.area?.organo ?? ''
+                const estado = emp.estado ?? emp.estado_empleado ?? 'activo'
+
+                return (
+                  <button
+                    key={id}
+                    onClick={() => navigate(`/legajo/${id}`)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                        <span className="text-sm font-medium text-blue-700">
+                          {(nombre.charAt(0) ?? '').toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{nombre.trim()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc}{area ? ` · ${area}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {estado}
+                      </span>
+                      <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/* --------------------------------------------------------
    LegajoPage (main)
    -------------------------------------------------------- */
 
@@ -488,6 +670,7 @@ export default function LegajoPage() {
   const { empleadoId: paramId } = useParams<{ empleadoId: string }>()
   const { user, isAdminOrRRHH } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const isAdmin = isAdminOrRRHH()
 
   // Si no hay parametro en URL, usar el empleado_id del usuario autenticado
@@ -495,24 +678,34 @@ export default function LegajoPage() {
     ? Number.parseInt(paramId, 10)
     : (user?.empleado?.id ?? 0)
 
+  // showAdminPanel se evalúa pero hooks siempre se llaman
+  const showAdminPanel = isAdmin && !paramId
+
   const [activeTab, setActiveTab] = useState('todos')
   const [uploadOpen, setUploadOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [viewDoc, setViewDoc] = useState<Documento | null>(null)
   const [rechazoDocId, setRechazoDocId] = useState<number | null>(null)
 
+  // Fetch datos del empleado (cuando admin ve legajo de otro)
+  const { data: empleadoData } = useQuery({
+    queryKey: ['empleado-legajo', empId],
+    queryFn: () => employeesService.getById(empId),
+    enabled: !showAdminPanel && !!paramId && empId > 0,
+  })
+
   // Fetch documentos
   const { data: documentos = [], isLoading } = useQuery({
     queryKey: ['documentos', empId],
     queryFn: () => legajoService.getByEmpleado(empId),
-    enabled: empId > 0,
+    enabled: !showAdminPanel && empId > 0,
   })
 
   // Fetch contratos
   const { data: contratos = [] } = useQuery({
     queryKey: ['contratos-empleado', empId],
     queryFn: () => contratosService.getByEmpleado(empId),
-    enabled: empId > 0,
+    enabled: !showAdminPanel && empId > 0,
   })
 
   // Notificar si no hay documentos una vez cargado
@@ -569,12 +762,17 @@ export default function LegajoPage() {
   const totalDocs = documentos.length
   const pendientes = documentos.filter(d => d.estado_documento === 'pendiente_revision').length
 
+  // Admin sin paramId → mostrar panel administrativo
+  if (showAdminPanel) {
+    return <LegajoAdminPanel />
+  }
+
   if (!empId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
         <FolderOpen className="h-12 w-12" />
-        <p>Selecciona un empleado para ver su legajo</p>
-        <p className="text-sm">URL esperada: /legajo/:empleadoId</p>
+        <p>No se pudo determinar su legajo</p>
+        <p className="text-sm">Contacte al administrador si el problema persiste</p>
       </div>
     )
   }
@@ -603,14 +801,23 @@ export default function LegajoPage() {
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FolderOpen className="h-6 w-6 text-blue-600" />
-            Legajo Digital
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {paramId ? `Empleado ID: ${empId}` : 'Mi legajo digital'}
-          </p>
+        <div className="flex items-center gap-3">
+          {isAdmin && paramId && (
+            <Button variant="ghost" size="icon" onClick={() => navigate('/legajo')} title="Volver a la lista">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <FolderOpen className="h-6 w-6 text-blue-600" />
+              Legajo Digital
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {paramId
+                ? (empleadoData?.data?.nombre_completo ?? empleadoData?.nombre_completo ?? `Empleado ID: ${empId}`)
+                : 'Mi legajo digital'}
+            </p>
+          </div>
         </div>
         <Button onClick={() => setUploadOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />

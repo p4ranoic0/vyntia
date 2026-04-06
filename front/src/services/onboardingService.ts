@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { apiClient } from '@/lib/api'
 
 export interface OnboardingStatus {
@@ -59,9 +60,14 @@ export function getEstadoLabel(estado: string): string {
 }
 
 export const onboardingService = {
-  async getMiOnboarding(): Promise<OnboardingStatus> {
-    const response = await apiClient.get('/api/v1/rrhh/onboarding/mi-onboarding/')
-    return response.data?.data || response.data
+  async getMiOnboarding(): Promise<OnboardingStatus | null> {
+    try {
+      const response = await apiClient.get('/api/v1/rrhh/onboarding/mi-onboarding/')
+      return response.data?.data || response.data
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) return null
+      throw err
+    }
   },
 
   async getAll(params?: Record<string, any>): Promise<{ results: OnboardingStatus[]; count: number }> {

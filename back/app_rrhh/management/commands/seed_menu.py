@@ -69,6 +69,13 @@ MENU_STRUCTURE = [
                 "orden": 5,
                 "permisos": "ver_empleados",
             },
+            {
+                "nombre": "Contratos",
+                "icono": "file-signature",
+                "ruta": "/contratos",
+                "orden": 6,
+                "permisos": "gestionar_usuarios",
+            },
         ],
     },
     {
@@ -123,14 +130,7 @@ MENU_STRUCTURE = [
         "permisos": "ver_empleados",
         "hijos": [],
     },
-    {
-        "nombre": "Contratos",
-        "icono": "file-check",
-        "ruta": "/contratos",
-        "orden": 5,
-        "permisos": "gestionar_usuarios",
-        "hijos": [],
-    },
+
     {
         "nombre": "Remuneraciones",
         "icono": "banknote",

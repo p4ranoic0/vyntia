@@ -349,6 +349,26 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
     enabled: open && contratoId != null,
   })
 
+  const generarPdfMutation = useMutation({
+    mutationFn: () => {
+      if (!contratoId) throw new Error('No se selecciono contrato')
+      const esAdenda = contrato?.es_adenda || contrato?.tipo_documento?.startsWith('ADENDA_')
+      return esAdenda
+        ? contratosService.generarAdendaPdf({ adenda_id: contratoId })
+        : contratosService.generarContratoPdf({ contrato_id: contratoId })
+    },
+    onSuccess: (data) => {
+      const label = contrato?.es_adenda ? 'Adenda' : 'Contrato'
+      toast.success(`${label} PDF generado exitosamente`)
+      if (data.archivo_url) {
+        window.open(data.archivo_url, '_blank', 'noopener,noreferrer')
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al generar PDF')
+    },
+  })
+
   const renovarMutation = useMutation({
     mutationFn: (data: { fecha_inicio: string; fecha_fin?: string; salario_bruto?: number; observaciones?: string }) =>
       contratosService.renovar(contratoId!, data),
@@ -518,15 +538,34 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
               </div>
             )}
 
-            {/* Renovar section */}
-            {(contrato.estado === 'ACTIVO' || contrato.estado === 'VENCIDO') && (
-              <div className="border-t pt-4">
-                {!showRenovar ? (
+            {/* Actions */}
+            <div className="border-t pt-4">
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  onClick={() => generarPdfMutation.mutate()}
+                  disabled={generarPdfMutation.isPending}
+                >
+                  {generarPdfMutation.isPending ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Generando PDF...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="mr-2 h-4 w-4" />
+                      Generar PDF
+                    </>
+                  )}
+                </Button>
+                {(contrato.estado === 'ACTIVO' || contrato.estado === 'VENCIDO') && !showRenovar && (
                   <Button onClick={() => setShowRenovar(true)} className="bg-blue-600 hover:bg-blue-700">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Renovar Contrato
                   </Button>
-                ) : (
+                )}
+              </div>
+              {showRenovar && (
                   <div className="space-y-4">
                     <h4 className="font-medium">Renovar Contrato</h4>
                     <div className="grid grid-cols-2 gap-4">
@@ -605,7 +644,6 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
                   </div>
                 )}
               </div>
-            )}
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">No se pudo cargar el contrato.</div>
@@ -635,6 +673,9 @@ function GenerarCertificadoDialog({ open, onOpenChange, employees }: Certificado
       contratosService.generarCertificado(data),
     onSuccess: (data) => {
       toast.success(`Certificado generado: ${data.numero_certificado || 'OK'}`)
+      if (data.archivo_url) {
+        window.open(data.archivo_url, '_blank', 'noopener,noreferrer')
+      }
       resetForm()
       onOpenChange(false)
     },
@@ -750,33 +791,42 @@ interface GenerarContratoPdfDialogProps {
   onOpenChange: (open: boolean) => void
   contratoId: number | null
   contratoNumero?: string
+  esAdenda?: boolean
 }
 
-function GenerarContratoPdfDialog({ open, onOpenChange, contratoId, contratoNumero }: GenerarContratoPdfDialogProps) {
+function GenerarContratoPdfDialog({ open, onOpenChange, contratoId, contratoNumero, esAdenda }: GenerarContratoPdfDialogProps) {
   const generarMutation = useMutation({
-    mutationFn: (data: { contrato_id: number }) =>
-      contratosService.generarContratoPdf(data),
-    onSuccess: () => {
-      toast.success('Contrato PDF generado exitosamente')
+    mutationFn: (id: number) =>
+      esAdenda
+        ? contratosService.generarAdendaPdf({ adenda_id: id })
+        : contratosService.generarContratoPdf({ contrato_id: id }),
+    onSuccess: (data) => {
+      const label = esAdenda ? 'Adenda' : 'Contrato'
+      toast.success(`${label} PDF generado exitosamente`)
+      if (data.archivo_url) {
+        window.open(data.archivo_url, '_blank', 'noopener,noreferrer')
+      }
       onOpenChange(false)
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Error al generar contrato PDF')
+      toast.error(error.message || 'Error al generar PDF')
     },
   })
 
   const handleGenerar = () => {
     if (!contratoId) return
-    generarMutation.mutate({ contrato_id: contratoId })
+    generarMutation.mutate(contratoId)
   }
+
+  const label = esAdenda ? 'Adenda' : 'Contrato'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Generar Contrato PDF</DialogTitle>
+          <DialogTitle>Generar {label} PDF</DialogTitle>
           <DialogDescription>
-            Se generara un PDF del contrato {contratoNumero || ''} y se guardara en el legajo digital.
+            Se generara un PDF del {label.toLowerCase()} {contratoNumero || ''} y se guardara en el legajo digital.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -816,6 +866,7 @@ export default function ContratosPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [selectedContratoId, setSelectedContratoId] = useState<number | null>(null)
   const [selectedContratoNumero, setSelectedContratoNumero] = useState<string>('')
+  const [selectedEsAdenda, setSelectedEsAdenda] = useState(false)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isCertificadoOpen, setIsCertificadoOpen] = useState(false)
   const [isGenerarPdfOpen, setIsGenerarPdfOpen] = useState(false)
@@ -1160,6 +1211,7 @@ export default function ContratosPage() {
                               e.stopPropagation()
                               setSelectedContratoId(contrato.contrato_id)
                               setSelectedContratoNumero(contrato.numero_contrato)
+                              setSelectedEsAdenda(contrato.tipo_documento?.startsWith('ADENDA_') ?? false)
                               setIsGenerarPdfOpen(true)
                             }}
                           >
@@ -1210,6 +1262,7 @@ export default function ContratosPage() {
         onOpenChange={setIsGenerarPdfOpen}
         contratoId={selectedContratoId}
         contratoNumero={selectedContratoNumero}
+        esAdenda={selectedEsAdenda}
       />
     </div>
   )

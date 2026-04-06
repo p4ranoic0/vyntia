@@ -359,9 +359,12 @@ class ConceptoPlanillaSerializer(serializers.ModelSerializer):
 class DetallePlanillaListSerializer(serializers.ModelSerializer):
     """Serializer para listar detalles de planilla."""
 
-    empleado_nombre = serializers.CharField(
-        source="empleado.nombre_completo", read_only=True
+    empleado = serializers.SerializerMethodField()
+    total_ingresos = serializers.DecimalField(
+        source="total_haberes", max_digits=10, decimal_places=2, read_only=True
     )
+    estado = serializers.CharField(source="estado_laboral", read_only=True)
+    estado_texto = serializers.SerializerMethodField()
 
     class Meta:
         model = DetallePlanilla
@@ -369,20 +372,46 @@ class DetallePlanillaListSerializer(serializers.ModelSerializer):
             "detalle_id",
             "planilla",
             "empleado",
-            "empleado_nombre",
             "area_nombre",
             "cargo",
             "dni",
             "sistema_pensiones",
+            "tipo_comision_afp",
             "dias_laborados",
             "remuneracion_basica",
+            "asignacion_familiar",
+            "bonificacion_especial",
+            "otras_bonificaciones",
+            "total_ingresos",
             "total_haberes",
+            "aporte_afp_obligatorio",
+            "comision_afp",
+            "prima_seguro_afp",
+            "total_afp",
+            "aporte_onp",
+            "essalud",
+            "renta_quinta_categoria",
             "total_descuentos",
             "neto_pagar",
+            "estado",
+            "estado_texto",
             "banco",
             "numero_cuenta",
         ]
         read_only_fields = ["detalle_id"]
+
+    def get_empleado(self, obj):
+        """Retorna datos del empleado como objeto anidado."""
+        return {
+            "empleado_id": obj.empleado_id,
+            "dni": obj.dni,
+            "nombres_completos": obj.empleado.nombre_completo if obj.empleado else "",
+            "area_nombre": obj.area_nombre,
+        }
+
+    def get_estado_texto(self, obj):
+        """Retorna el texto del estado laboral."""
+        return obj.get_estado_laboral_display()
 
 
 class DetallePlanillaDetailSerializer(serializers.ModelSerializer):
@@ -586,8 +615,29 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
     empleado_nombre = serializers.CharField(
         source="detalle_planilla.empleado.nombre_completo", read_only=True
     )
+    empleado_dni = serializers.CharField(
+        source="detalle_planilla.empleado.numero_documento", read_only=True
+    )
     periodo = serializers.CharField(
         source="detalle_planilla.planilla.periodo", read_only=True
+    )
+    total_ingresos = serializers.DecimalField(
+        source="detalle_planilla.total_haberes",
+        max_digits=12,
+        decimal_places=2,
+        read_only=True,
+    )
+    total_descuentos = serializers.DecimalField(
+        source="detalle_planilla.total_descuentos",
+        max_digits=12,
+        decimal_places=2,
+        read_only=True,
+    )
+    neto_pagar = serializers.DecimalField(
+        source="detalle_planilla.neto_pagar",
+        max_digits=12,
+        decimal_places=2,
+        read_only=True,
     )
 
     class Meta:
@@ -599,7 +649,11 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
             "estado",
             "estado_texto",
             "empleado_nombre",
+            "empleado_dni",
             "periodo",
+            "total_ingresos",
+            "total_descuentos",
+            "neto_pagar",
             "fecha_generacion",
             "fecha_envio_email",
             "fecha_descarga",

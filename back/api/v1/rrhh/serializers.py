@@ -194,24 +194,23 @@ class DatosAcademicosSerializer(serializers.ModelSerializer):
             "verificado_sunedu",
         ]
         read_only_fields = ["academico_id"]
-        read_only_fields = ["academico_id"]
 
     def validate(self, data):
         """Validate academic data."""
-        fecha_inicio = data.get("fecha_inicio_estudios")
-        fecha_termino = data.get("fecha_termino_estudios")
+        fecha_inicio = data.get("fecha_inicio")
+        fecha_fin = data.get("fecha_fin")
 
-        if fecha_inicio and fecha_termino:
-            if fecha_termino <= fecha_inicio:
+        if fecha_inicio and fecha_fin:
+            if fecha_fin <= fecha_inicio:
                 raise serializers.ValidationError(
                     {
-                        "fecha_termino_estudios": "La fecha de término debe ser posterior a la fecha de inicio."
+                        "fecha_fin": "La fecha de fin debe ser posterior a la fecha de inicio."
                     }
                 )
 
         if fecha_inicio and fecha_inicio > timezone.now().date():
             raise serializers.ValidationError(
-                {"fecha_inicio_estudios": "La fecha de inicio no puede ser futura."}
+                {"fecha_inicio": "La fecha de inicio no puede ser futura."}
             )
 
         return data
@@ -582,6 +581,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.ReadOnlyField()
     edad = serializers.ReadOnlyField()
     ubicacion_actual = serializers.SerializerMethodField()
+    datos_laborales_resumen = serializers.SerializerMethodField()
 
     class Meta:
         model = Empleado
@@ -597,6 +597,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
             "nombre_completo",
             "edad",
             "ubicacion_actual",
+            "datos_laborales_resumen",
             "telefono_celular",
             "correo_personal",
             "estado_civil",
@@ -626,6 +627,19 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
                 "area_nombre": datos_lab.area.nombre_unidad_organica,
             }
         return None
+
+    def get_datos_laborales_resumen(self, obj):
+        """Get summary of active datos laborales for list view."""
+        datos_lab = obj.datos_laborales_actuales()
+        if not datos_lab:
+            return None
+        return {
+            "cargo": datos_lab.cargo_empleado,
+            "tipo_contrato": datos_lab.tipo_contrato,
+            "tipo_contrato_texto": datos_lab.get_tipo_contrato_display() if datos_lab.tipo_contrato else None,
+            "regimen_laboral": datos_lab.regimen_laboral,
+            "fecha_ingreso": datos_lab.fecha_ingreso,
+        }
 
 
 class DatosLaboralesCreateSerializer(serializers.ModelSerializer):
