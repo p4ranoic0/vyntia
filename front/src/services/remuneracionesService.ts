@@ -505,25 +505,25 @@ export const remuneracionesService = {
   // Acciones especiales de planilla
   async generarPlanilla(
     id: number,
-  ): Promise<{ message: string; empleados_agregados: number; total_empleados: number }> {
+  ): Promise<{
+    message: string;
+    empleados_agregados: number;
+    total_empleados: number;
+  }> {
     const response = await apiClient.post(
       `/api/v1/rrhh/planillas-mensuales/${id}/generar_planilla/`,
     );
     return (response.data as any).data || response.data;
   },
 
-  async regenerarPlanilla(
-    id: number,
-  ): Promise<{ message: string }> {
+  async regenerarPlanilla(id: number): Promise<{ message: string }> {
     const response = await apiClient.post(
       `/api/v1/rrhh/planillas-mensuales/${id}/regenerar/`,
     );
     return (response.data as any).data || response.data;
   },
 
-  async calcularPlanilla(
-    id: number,
-  ): Promise<{ message: string }> {
+  async calcularPlanilla(id: number): Promise<{ message: string }> {
     const response = await apiClient.post(
       `/api/v1/rrhh/planillas-mensuales/${id}/calcular_planilla/`,
     );

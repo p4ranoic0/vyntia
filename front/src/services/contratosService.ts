@@ -113,7 +113,10 @@ export const TIPO_CONTRATO_LABELS: Record<string, string> = {
 };
 
 export const TIPOS_REQUIEREN_FECHA_FIN = new Set([
-  'CAS_DETERMINADO', 'CAS_SUPLENCIA', 'LEY_728_FIJO', 'LEY_728_FIJO_SUPLENCIA',
+  "CAS_DETERMINADO",
+  "CAS_SUPLENCIA",
+  "LEY_728_FIJO",
+  "LEY_728_FIJO_SUPLENCIA",
 ]);
 
 export const ESTADO_CONTRATO_LABELS: Record<string, string> = {

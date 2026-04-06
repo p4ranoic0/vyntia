@@ -136,7 +136,11 @@ class DatosFamiliaresSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "fecha_nacimiento": {"required": False, "allow_null": True},
             "genero_familiar": {"required": False, "allow_blank": True, "default": ""},
-            "tipo_documento": {"required": False, "allow_blank": True, "default": "DNI"},
+            "tipo_documento": {
+                "required": False,
+                "allow_blank": True,
+                "default": "DNI",
+            },
         }
 
     def get_edad(self, obj) -> int | None:
@@ -221,13 +225,23 @@ class CursosCertificacionesSerializer(serializers.ModelSerializer):
 
     class Meta:
         from app_rrhh.models import CursosCertificaciones
+
         model = CursosCertificaciones
         fields = [
-            'curso_id', 'empleado', 'nombre_curso', 'institucion',
-            'fecha_inicio', 'fecha_fin', 'horas', 'descripcion',
-            'documento', 'estado_registro', 'fecha_registro', 'fecha_actualizacion',
+            "curso_id",
+            "empleado",
+            "nombre_curso",
+            "institucion",
+            "fecha_inicio",
+            "fecha_fin",
+            "horas",
+            "descripcion",
+            "documento",
+            "estado_registro",
+            "fecha_registro",
+            "fecha_actualizacion",
         ]
-        read_only_fields = ['curso_id', 'fecha_registro', 'fecha_actualizacion']
+        read_only_fields = ["curso_id", "fecha_registro", "fecha_actualizacion"]
 
 
 class DatosLaboralesSerializer(serializers.ModelSerializer):
@@ -636,7 +650,11 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
         return {
             "cargo": datos_lab.cargo_empleado,
             "tipo_contrato": datos_lab.tipo_contrato,
-            "tipo_contrato_texto": datos_lab.get_tipo_contrato_display() if datos_lab.tipo_contrato else None,
+            "tipo_contrato_texto": (
+                datos_lab.get_tipo_contrato_display()
+                if datos_lab.tipo_contrato
+                else None
+            ),
             "regimen_laboral": datos_lab.regimen_laboral,
             "fecha_ingreso": datos_lab.fecha_ingreso,
         }
@@ -1145,7 +1163,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
     def get_archivo_url(self, obj):
         """Return absolute URL for the document file."""
         if obj.archivo:
-            request = self.context.get('request')
+            request = self.context.get("request")
             if request:
                 return request.build_absolute_uri(obj.archivo.url)
             return obj.archivo.url
@@ -1206,7 +1224,9 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
     progreso_porcentaje = serializers.ReadOnlyField()
     items_pendientes = serializers.ReadOnlyField()
     documentos_pendientes = serializers.SerializerMethodField()
-    last_login = serializers.DateTimeField(source='usuario.last_login', read_only=True, allow_null=True)
+    last_login = serializers.DateTimeField(
+        source="usuario.last_login", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = OnboardingEmpleado
@@ -1250,7 +1270,9 @@ class OnboardingIniciarSerializer(serializers.Serializer):
 
     nombres_empleado = serializers.CharField(max_length=100)
     apellido_paterno = serializers.CharField(max_length=100)
-    apellido_materno = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
+    apellido_materno = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=""
+    )
     numero_documento = serializers.CharField(max_length=20)
     correo_personal = serializers.EmailField()
     genero_empleado = serializers.ChoiceField(
@@ -1299,16 +1321,29 @@ class ConfiguracionEmpresaSerializer(serializers.ModelSerializer):
 
     class Meta:
         from app_rrhh.models import ConfiguracionEmpresa as _CE
+
         model = _CE
         fields = [
-            'id', 'nombre', 'ruc', 'direccion', 'distrito', 'provincia', 'departamento',
-            'telefono', 'email', 'web', 'logo', 'logo_url',
-            'representante_legal', 'cargo_representante', 'dni_representante',
-            'resolucion_creacion',
+            "id",
+            "nombre",
+            "ruc",
+            "direccion",
+            "distrito",
+            "provincia",
+            "departamento",
+            "telefono",
+            "email",
+            "web",
+            "logo",
+            "logo_url",
+            "representante_legal",
+            "cargo_representante",
+            "dni_representante",
+            "resolucion_creacion",
         ]
 
     def get_logo_url(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.logo and request:
             return request.build_absolute_uri(obj.logo.url)
         return None

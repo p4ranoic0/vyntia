@@ -130,7 +130,6 @@ MENU_STRUCTURE = [
         "permisos": "ver_empleados",
         "hijos": [],
     },
-
     {
         "nombre": "Remuneraciones",
         "icono": "banknote",

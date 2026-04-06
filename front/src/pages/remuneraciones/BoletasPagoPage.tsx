@@ -7,11 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/use-toast'
 import {
-  useBoletas,
-  useDescargaMasivaBoletas,
-  useDownloadBoletaPdf,
-  useGenerarBoletas,
-  usePlanillas,
+    useBoletas,
+    useDescargaMasivaBoletas,
+    useDownloadBoletaPdf,
+    useGenerarBoletas,
+    usePlanillas,
 } from '@/hooks/useRemuneraciones'
 import { Download, FileText, Loader2, PackageOpen } from 'lucide-react'
 import { useState, type ReactNode } from 'react'

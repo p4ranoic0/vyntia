@@ -6,10 +6,12 @@ Contiene la definición del modelo DatosLaborales que almacena toda la informaci
 laboral, contractual y de puesto de los empleados.
 """
 
-from django.db import models
-from django.utils import timezone
 from datetime import date, timedelta
 from decimal import Decimal
+
+from django.db import models
+from django.utils import timezone
+
 # from ..managers import DatosLaboralesManager  # Comentado temporalmente para migraciones
 
 
@@ -312,4 +314,5 @@ class DatosLaborales(models.Model):
         self.estado_datos = 'inactivo'
         if motivo:
             self.observaciones = f"{self.observaciones or ''}\nCese: {motivo}"
+        self.save()            self.observaciones = f"{self.observaciones or ''}\nCese: {motivo}"
         self.save()

@@ -119,7 +119,6 @@ MODULES_CONFIG = [
             },
         ],
     },
-
     {
         "id": "onboarding",
         "nombre": "Onboarding",

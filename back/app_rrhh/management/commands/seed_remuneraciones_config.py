@@ -7,9 +7,8 @@ Comando para cargar configuración base de remuneraciones:
 
 from decimal import Decimal
 
-from django.core.management.base import BaseCommand
-
 from app_rrhh.models import ConfiguracionAfp, ConfiguracionUit
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -43,7 +42,9 @@ class Command(BaseCommand):
         self._seed_uit(anio_uit, valor_uit)
         self._seed_afp(vigencia)
 
-        self.stdout.write(self.style.SUCCESS("Configuración de remuneraciones cargada exitosamente"))
+        self.stdout.write(
+            self.style.SUCCESS("Configuración de remuneraciones cargada exitosamente")
+        )
 
     def _seed_uit(self, anio, valor_uit):
         obj, created = ConfiguracionUit.objects.update_or_create(

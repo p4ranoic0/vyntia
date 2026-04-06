@@ -249,7 +249,12 @@ class PlanillaCalculoService:
         - Otros: 9% de la remuneración total
         """
 
-        if modalidad in ["plazo_determinado", "subsidio", "locacion", "consultoria"]:  # CAS y similares
+        if modalidad in [
+            "plazo_determinado",
+            "subsidio",
+            "locacion",
+            "consultoria",
+        ]:  # CAS y similares
             if config_uit:
                 # 9% del 45% de UIT dividido entre 12 meses
                 detalle.essalud = config_uit.essalud_cas_mensual

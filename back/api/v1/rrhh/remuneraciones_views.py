@@ -347,10 +347,14 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             }
 
             # Obtener empleados activos con datos laborales
-            empleados_qs = Empleado.objects.filter(
-                estado_empleado="activo",
-                datos_laborales__estado_datos="activo",
-            ).prefetch_related("datos_laborales__area").distinct()
+            empleados_qs = (
+                Empleado.objects.filter(
+                    estado_empleado="activo",
+                    datos_laborales__estado_datos="activo",
+                )
+                .prefetch_related("datos_laborales__area")
+                .distinct()
+            )
 
             # Filtrar por modalidad de contrato según planilla.modalidad
             tipos_contrato = MODALIDAD_A_TIPO_CONTRATO.get(planilla.modalidad)
@@ -389,7 +393,11 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                     planilla=planilla,
                     empleado=empleado,
                     datos_laborales=datos_laborales,
-                    area_nombre=datos_laborales.area.nombre_unidad_organica if datos_laborales.area else "",
+                    area_nombre=(
+                        datos_laborales.area.nombre_unidad_organica
+                        if datos_laborales.area
+                        else ""
+                    ),
                     cargo=datos_laborales.cargo_empleado,
                     dni=empleado.numero_documento,
                     sistema_pensiones=empleado.sistema_pensiones,
@@ -645,10 +653,14 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         dl_activos = DatosLaborales.objects.filter(estado_datos="activo").count()
 
         # Empleados activos con DL activos
-        activos_con_dl = Empleado.objects.filter(
-            estado_empleado="activo",
-            datos_laborales__estado_datos="activo",
-        ).distinct().count()
+        activos_con_dl = (
+            Empleado.objects.filter(
+                estado_empleado="activo",
+                datos_laborales__estado_datos="activo",
+            )
+            .distinct()
+            .count()
+        )
 
         # Estados únicos
         estados_emp = list(
@@ -669,40 +681,54 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         # Muestra de empleados activos
         muestra = list(
             Empleado.objects.filter(estado_empleado="activo")[:5].values(
-                "empleado_id", "numero_documento", "nombres_empleado",
-                "apellido_paterno", "estado_empleado"
+                "empleado_id",
+                "numero_documento",
+                "nombres_empleado",
+                "apellido_paterno",
+                "estado_empleado",
             )
         )
 
         # Planillas existentes
         planillas = list(
-            PlanillaMensual.objects.all().values(
-                "planilla_id", "periodo", "modalidad", "estado",
-                "total_trabajadores", "total_remuneracion_bruta",
-            ).order_by("-periodo")
+            PlanillaMensual.objects.all()
+            .values(
+                "planilla_id",
+                "periodo",
+                "modalidad",
+                "estado",
+                "total_trabajadores",
+                "total_remuneracion_bruta",
+            )
+            .order_by("-periodo")
         )
 
         # DatosLaborales detalle con sueldo
         dl_detalle = list(
             DatosLaborales.objects.filter(estado_datos="activo").values(
-                "dato_laboral_id", "empleado_id", "tipo_contrato",
-                "sueldo_basico", "cargo_empleado",
+                "dato_laboral_id",
+                "empleado_id",
+                "tipo_contrato",
+                "sueldo_basico",
+                "cargo_empleado",
             )
         )
 
-        return APIResponse.success(data={
-            "total_empleados": total_empleados,
-            "empleados_activos": empleados_activos,
-            "datos_laborales_total": dl_total,
-            "datos_laborales_activos": dl_activos,
-            "activos_con_dl_activos": activos_con_dl,
-            "estados_empleado": estados_emp,
-            "estados_datos_laborales": estados_dl,
-            "tipos_contrato_activos": tipos_contrato,
-            "muestra_empleados_activos": muestra,
-            "planillas": planillas,
-            "datos_laborales_activos_detalle": dl_detalle,
-        })
+        return APIResponse.success(
+            data={
+                "total_empleados": total_empleados,
+                "empleados_activos": empleados_activos,
+                "datos_laborales_total": dl_total,
+                "datos_laborales_activos": dl_activos,
+                "activos_con_dl_activos": activos_con_dl,
+                "estados_empleado": estados_emp,
+                "estados_datos_laborales": estados_dl,
+                "tipos_contrato_activos": tipos_contrato,
+                "muestra_empleados_activos": muestra,
+                "planillas": planillas,
+                "datos_laborales_activos_detalle": dl_detalle,
+            }
+        )
 
     @require_authenticated()
     @action(detail=True, methods=["get"])
@@ -798,8 +824,12 @@ class DetallePlanillaViewSet(viewsets.ModelViewSet):
         ).order_by("area_nombre", "empleado__apellido_paterno")
 
         # Filtros (acepta tanto planilla_id como planilla)
-        planilla_id = self.request.query_params.get("planilla_id") or self.request.query_params.get("planilla")
-        empleado_id = self.request.query_params.get("empleado_id") or self.request.query_params.get("empleado")
+        planilla_id = self.request.query_params.get(
+            "planilla_id"
+        ) or self.request.query_params.get("planilla")
+        empleado_id = self.request.query_params.get(
+            "empleado_id"
+        ) or self.request.query_params.get("empleado")
         dni = self.request.query_params.get("dni")
         sistema_pensiones = self.request.query_params.get("sistema_pensiones")
 
@@ -1043,9 +1073,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
 
         boletas = BoletaPago.objects.filter(
             detalle_planilla__planilla_id=planilla_id
-        ).select_related(
-            "detalle_planilla__empleado", "detalle_planilla__planilla"
-        )
+        ).select_related("detalle_planilla__empleado", "detalle_planilla__planilla")
 
         if not boletas.exists():
             return APIResponse.error(
@@ -1065,9 +1093,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                 )
 
                 if boleta.archivo_pdf:
-                    zf.writestr(
-                        f"{nombre_archivo}.pdf", boleta.archivo_pdf.read()
-                    )
+                    zf.writestr(f"{nombre_archivo}.pdf", boleta.archivo_pdf.read())
                 else:
                     content = (
                         f"BOLETA DE PAGO\n"
@@ -1104,9 +1130,9 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                 boleta.estado = "descargada"
                 boleta.fecha_descarga = timezone.now()
 
-            BoletaPago.objects.filter(
-                detalle_planilla__planilla_id=planilla_id
-            ).update(estado="descargada", fecha_descarga=timezone.now())
+            BoletaPago.objects.filter(detalle_planilla__planilla_id=planilla_id).update(
+                estado="descargada", fecha_descarga=timezone.now()
+            )
 
         buffer.seek(0)
         planilla_obj = boletas.first().detalle_planilla.planilla

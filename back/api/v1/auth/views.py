@@ -204,9 +204,7 @@ class UserProfileAPIView(APIView):
         """Update user profile information."""
         try:
             usuario = Usuario.objects.select_related("empleado").get(pk=request.user.pk)
-            serializer = UserUpdateSerializer(
-                usuario, data=request.data, partial=True
-            )
+            serializer = UserUpdateSerializer(usuario, data=request.data, partial=True)
 
             if serializer.is_valid():
                 serializer.save()
@@ -254,7 +252,7 @@ class UserProfileAPIView(APIView):
             permisos = usuario.permisos_activos()
             if permisos == "*":
                 permisos_data = [{"nombre": "*", "descripcion": "Acceso total"}]
-            elif hasattr(permisos, 'values'):
+            elif hasattr(permisos, "values"):
                 permisos_data = [
                     {
                         "id": p.permiso_id,

@@ -1,62 +1,62 @@
-import { useState, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  FileText,
-  Plus,
-  Search,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Eye,
-  RefreshCw,
-  Award,
-  FileDown,
-} from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { toast } from 'sonner'
 import {
-  contratosService,
-  type ContratoListItem,
-  type Contrato,
-  type ContratoFormData,
-  type ContratoFilters,
-  TIPO_CONTRATO_LABELS,
-  TIPOS_REQUIEREN_FECHA_FIN,
-  ESTADO_CONTRATO_LABELS,
-  JORNADA_LABELS,
-  ESTADO_CONTRATO_BADGE,
+    contratosService,
+    ESTADO_CONTRATO_BADGE,
+    ESTADO_CONTRATO_LABELS,
+    JORNADA_LABELS,
+    TIPO_CONTRATO_LABELS,
+    TIPOS_REQUIEREN_FECHA_FIN,
+    type Contrato,
+    type ContratoFilters,
+    type ContratoFormData,
+    type ContratoListItem,
 } from '@/services/contratosService'
 import { employeesService, type Employee } from '@/services/employeesService'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+    AlertTriangle,
+    Award,
+    CheckCircle,
+    Clock,
+    Eye,
+    FileDown,
+    FileText,
+    Plus,
+    RefreshCw,
+    Search,
+    XCircle,
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
 // Helpers
