@@ -13,6 +13,7 @@ Thumbs.db
 # Local agent/tooling folders
 .claude/
 .playwright-mcp/
+.planning/
 
 # Python
 .venv/
@@ -61,3 +62,9 @@ nul
 
 # Local binary/doc artifacts
 NOVIEMBRE IND_organized.pdf
+
+# Root-level manual test artifacts
+tests/html/
+tests/data/cookies.txt
+tests/data/*.json
+back/package-lock.json
