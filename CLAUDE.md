@@ -143,7 +143,7 @@ count = pagination.total_items || items.length
 
 ### Database
 
-MySQL `bd_rrhh_intranet` on localhost:3306. The `base.py` settings show `postgres` defaults, but the actual running environment uses MySQL. Override via environment variables `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`.
+PostgreSQL `bd_rrhh_intranet` on localhost:5432. Override via environment variables `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`.
 
 ---
 

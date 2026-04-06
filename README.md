@@ -8,7 +8,7 @@ Sistema de gestión de recursos humanos para uso interno corporativo. Monorepo c
 [![Django](https://img.shields.io/badge/Django-4.2-green?style=flat&logo=django)](https://www.djangoproject.com/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql)](https://www.mysql.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-336791?style=flat&logo=postgresql)](https://www.postgresql.org/)
 
 </div>
 
@@ -49,7 +49,7 @@ INTRANET/
 |-------------|----------------|
 | Python | 3.11+ |
 | Node.js | 18+ |
-| MySQL | 8.0+ |
+| PostgreSQL | 15+ |
 | npm | 9+ |
 
 ---
@@ -76,18 +76,18 @@ pip install -r back/requirements.txt
 
 # Configurar variables de entorno
 Copy-Item back\.env.example back\.env
-# Editar back/.env con tus credenciales MySQL
+# Editar back/.env con tus credenciales PostgreSQL
 ```
 
 Ajustar en `back/.env`:
 
 ```env
-DB_ENGINE=django.db.backends.mysql
+DB_ENGINE=django.db.backends.postgresql
 DB_NAME=bd_rrhh_intranet
-DB_USER=tu_usuario_mysql
-DB_PASSWORD=tu_password_mysql
+DB_USER=tu_usuario_postgresql
+DB_PASSWORD=tu_password_postgresql
 DB_HOST=localhost
-DB_PORT=3306
+DB_PORT=5432
 SECRET_KEY=genera-una-clave-segura
 ```
 
@@ -97,8 +97,8 @@ SECRET_KEY=genera-una-clave-segura
 > ```
 
 ```powershell
-# Crear la base de datos en MySQL
-# (Ejecutar el script bd/create bd_rrhh_intranet.sql desde MySQL Workbench o CLI)
+# Crear la base de datos en PostgreSQL
+# (Ejecutar el script bd/create bd_rrhh_intranet.sql desde psql o pgAdmin)
 
 # Aplicar migraciones
 cd back
@@ -186,10 +186,10 @@ npm run playwright     # Tests E2E
 | `DEBUG` | Modo debug Django | `True` |
 | `SECRET_KEY` | Clave secreta Django | — (obligatorio) |
 | `DB_NAME` | Nombre de la base de datos | `bd_rrhh_intranet` |
-| `DB_USER` | Usuario MySQL | `postgres` |
-| `DB_PASSWORD` | Contraseña MySQL | — (obligatorio) |
-| `DB_HOST` | Host MySQL | `localhost` |
-| `DB_PORT` | Puerto MySQL | `3306` |
+| `DB_USER` | Usuario PostgreSQL | `postgres` |
+| `DB_PASSWORD` | Contraseña PostgreSQL | — (obligatorio) |
+| `DB_HOST` | Host PostgreSQL | `localhost` |
+| `DB_PORT` | Puerto PostgreSQL | `5432` |
 | `FRONTEND_URL` | URL del frontend (CORS) | `http://localhost:5173` |
 | `JWT_ACCESS_TOKEN_LIFETIME` | Duración token acceso (segundos) | `3600` |
 

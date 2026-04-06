@@ -145,16 +145,15 @@ SOURCE vistas.sql;
 ## 🛠️ Configuración de la Base de Datos
 
 ### Requisitos
-- MySQL 8.0 o superior
-- Charset: utf8mb4
-- Collation: utf8mb4_unicode_ci
+- PostgreSQL 15 o superior
+- Encoding: UTF8
+- Collation: es_PE.UTF-8 (o según locale del servidor)
 
 ### Variables de Configuración
 ```sql
 -- Configuración recomendada
-SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO';
-SET GLOBAL innodb_file_per_table = ON;
-SET GLOBAL innodb_buffer_pool_size = 1G; -- Ajustar según recursos disponibles
+SET timezone = 'America/Lima';
+ALTER DATABASE bd_rrhh_intranet SET default_text_search_config = 'pg_catalog.spanish';
 ```
 
 ## 📝 Notas de Mantenimiento
@@ -176,9 +175,9 @@ SET GLOBAL innodb_buffer_pool_size = 1G; -- Ajustar según recursos disponibles
 
 ## 🔗 Enlaces Útiles
 
-- [Documentación MySQL](https://dev.mysql.com/doc/)
-- [Mejores Prácticas SQL](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html)
-- [Optimización de Consultas](https://dev.mysql.com/doc/refman/8.0/en/optimization.html)
+- [Documentación PostgreSQL](https://www.postgresql.org/docs/)
+- [Mejores Prácticas PostgreSQL](https://wiki.postgresql.org/wiki/Performance_Optimization)
+- [Optimización de Consultas](https://www.postgresql.org/docs/current/performance-tips.html)
 
 ---
 
