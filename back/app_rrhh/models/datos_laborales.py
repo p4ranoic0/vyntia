@@ -314,5 +314,4 @@ class DatosLaborales(models.Model):
         self.estado_datos = 'inactivo'
         if motivo:
             self.observaciones = f"{self.observaciones or ''}\nCese: {motivo}"
-        self.save()            self.observaciones = f"{self.observaciones or ''}\nCese: {motivo}"
         self.save()
