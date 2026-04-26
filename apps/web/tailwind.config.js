@@ -17,8 +17,8 @@ export default {
   	},
   	extend: {
   		fontFamily: {
-  			sans:    ['Source Sans 3', 'system-ui', 'sans-serif'],
-  			heading: ['Lexend',         'system-ui', 'sans-serif'],
+  			sans:    ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+  			heading: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
   		},
   		colors: {
   			border: 'hsl(var(--border))',
