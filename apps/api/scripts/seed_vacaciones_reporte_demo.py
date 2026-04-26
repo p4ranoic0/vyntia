@@ -6,7 +6,8 @@ Run with:
 
 from datetime import date, timedelta
 
-from app_rrhh.models import Area, Empleado
+from app_rrhh.models import Empleado
+from apps.organization.models import Area
 from apps.identity.models import Usuario
 from app_rrhh.models.datos_laborales import DatosLaborales
 from app_rrhh.models.contratos_adendas import ContratosAdendas

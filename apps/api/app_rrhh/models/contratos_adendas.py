@@ -72,7 +72,7 @@ class ContratosAdendas(models.Model):
     )
     
     area = models.ForeignKey(
-        'Area',
+        'organization.Area',
         on_delete=models.PROTECT,
         related_name='contratos_adendas_area',
         help_text='Área donde se ejecuta el contrato'

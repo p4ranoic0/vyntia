@@ -33,6 +33,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.core.apps.CoreConfig",
     "apps.identity.apps.IdentityConfig",
+    "apps.organization.apps.OrganizationConfig",
     "app_rrhh",
 ]
 

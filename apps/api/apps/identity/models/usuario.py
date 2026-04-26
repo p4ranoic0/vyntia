@@ -368,7 +368,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def areas_accesibles(self):
         """Obtiene las áreas a las que el usuario tiene acceso."""
-        from app_rrhh.models import Area
+        from apps.organization.models import Area
 
         if self.es_administrador or self.nivel_acceso == "total":
             return Area.objects.filter(estado_area="activo")

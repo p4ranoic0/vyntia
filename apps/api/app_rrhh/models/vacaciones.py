@@ -42,7 +42,7 @@ class ConfiguracionVacaciones(models.Model):
     
     # Relaciones opcionales
     area = models.ForeignKey(
-        'Area',
+        'organization.Area',
         on_delete=models.CASCADE,
         null=True,
         blank=True,

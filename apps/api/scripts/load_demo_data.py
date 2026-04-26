@@ -54,10 +54,10 @@ import django
 django.setup()
 
 from app_rrhh.models import (
-    Area,
     DatosLaborales,
     Empleado,
 )
+from apps.organization.models import Area
 from apps.identity.models import (
     Modulos,
     Permiso,

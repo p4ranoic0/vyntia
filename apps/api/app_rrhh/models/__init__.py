@@ -7,10 +7,7 @@ Cada archivo contiene modelos relacionados funcionalmente.
 """
 
 # Importar todos los modelos para mantener compatibilidad
-from .area import Area
-
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
-from .configuracion_empresa import ConfiguracionEmpresa
 from .configuracion_uit import ConfiguracionUit
 from .contratos_adendas import ContratosAdendas
 from .cursos_certificaciones import CursosCertificaciones
@@ -31,7 +28,6 @@ from .remuneracion import (
     DetallePlanilla,
     PlanillaMensual,
 )
-from .ubicacion import HistorialUbicaciones
 from .vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,
@@ -43,10 +39,8 @@ from .vacaciones import (
 # Lista de todos los modelos para facilitar importaciones
 __all__ = [
     # Modelos principales
-    "Area",
     "Empleado",
     "DatosLaborales",
-    "HistorialUbicaciones",
     "DatosFamiliares",
     "CursosCertificaciones",
     "DatosAcademicos",
@@ -64,8 +58,6 @@ __all__ = [
     "OnboardingEmpleado",
     # Plantillas Word
     "PlantillaDocumento",
-    # Configuración de empresa
-    "ConfiguracionEmpresa",
     # Modelos de remuneraciones
     "ConfiguracionAfp",
     "ConfiguracionRemuneracion",

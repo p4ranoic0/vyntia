@@ -73,7 +73,7 @@ class DatosLaborales(models.Model):
         related_name='datos_laborales'
     )
     area = models.ForeignKey(
-        'Area',
+        'organization.Area',
         on_delete=models.PROTECT,
         related_name='empleados_laborales'
     )

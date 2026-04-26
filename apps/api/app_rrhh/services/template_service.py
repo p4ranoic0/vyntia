@@ -13,7 +13,8 @@ from django.template.loader import get_template
 from django.template import Context, Template
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from app_rrhh.models import ContratosAdendas, Empleado, Area, DocumentosDigitales
+from app_rrhh.models import ContratosAdendas, Empleado, DocumentosDigitales
+from apps.organization.models import Area
 
 
 class TemplateService:
@@ -292,7 +293,7 @@ class TemplateService:
         Returns:
             Dict: Datos de la institución
         """
-        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
+        from apps.organization.models import ConfiguracionEmpresa
         cfg = ConfiguracionEmpresa.get_config()
         return {
             'nombre': cfg.nombre,

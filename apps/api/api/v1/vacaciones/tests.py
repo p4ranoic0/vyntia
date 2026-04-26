@@ -8,9 +8,10 @@ from rest_framework import status
 from datetime import date, timedelta
 
 from app_rrhh.models import (
-    Empleado, Area, ConfiguracionVacaciones, PeriodoVacacional,
+    Empleado, ConfiguracionVacaciones, PeriodoVacacional,
     SolicitudVacaciones, GoceVacaciones
 )
+from apps.organization.models import Area
 from .validators import (
     VacacionesAPIValidator, VacacionesPermissionValidator,
     VacacionesStateValidator

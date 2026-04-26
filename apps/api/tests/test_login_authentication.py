@@ -19,7 +19,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from app_rrhh.models import Area
+from apps.organization.models import Area
 from apps.identity.models import (
     Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
 )
