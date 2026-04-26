@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
 
-from app_rrhh.models import UsuarioRoles, Usuario, Rol
+from apps.identity.models import UsuarioRoles, Usuario, Rol
 from apps.core.responses import APIResponse
 from apps.core.permissions import IsAuthenticated
 from apps.core.decorators import (

@@ -9,7 +9,7 @@ Uso:
     python manage.py seed_menu --reset   # Elimina y recrea todo
 """
 
-from app_rrhh.models import ModuloPermiso, Modulos, Permiso
+from apps.identity.models import ModuloPermiso, Modulos, Permiso
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 

@@ -9,7 +9,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from app_rrhh.models.usuario import Usuario
+from apps.identity.models.usuario import Usuario
 from django.contrib.auth.hashers import check_password
 
 def verify_admin_password():

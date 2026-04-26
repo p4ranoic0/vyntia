@@ -15,8 +15,9 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-from app_rrhh.models import (
-    Usuario, Rol, Permiso, RolPermisos, UsuarioRoles, Area
+from app_rrhh.models import Area
+from apps.identity.models import (
+    Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
 )
 
 

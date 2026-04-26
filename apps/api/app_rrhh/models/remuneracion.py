@@ -166,14 +166,14 @@ class PlanillaMensual(models.Model):
 
     # Auditoría
     usuario_generacion = models.ForeignKey(
-        "Usuario",
+        "identity.Usuario",
         on_delete=models.PROTECT,
         related_name="planillas_generadas",
         null=True,
         blank=True,
     )
     usuario_aprobacion = models.ForeignKey(
-        "Usuario",
+        "identity.Usuario",
         on_delete=models.PROTECT,
         related_name="planillas_aprobadas",
         null=True,
@@ -435,7 +435,7 @@ class DescuentoMasivo(models.Model):
 
     # Auditoría
     usuario_carga = models.ForeignKey(
-        "Usuario",
+        "identity.Usuario",
         on_delete=models.PROTECT,
         related_name="descuentos_masivos_cargados",
     )
@@ -528,7 +528,7 @@ class CalendarioPago(models.Model):
 
     # Auditoría
     usuario_programacion = models.ForeignKey(
-        "Usuario",
+        "identity.Usuario",
         on_delete=models.PROTECT,
         related_name="calendarios_programados",
     )

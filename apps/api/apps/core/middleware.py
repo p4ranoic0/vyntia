@@ -5,7 +5,7 @@ import logging
 import time
 from typing import Callable, Optional
 
-from app_rrhh.models import Usuario
+from apps.identity.models import Usuario
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache

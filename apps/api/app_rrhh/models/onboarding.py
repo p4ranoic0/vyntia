@@ -25,7 +25,7 @@ class OnboardingEmpleado(models.Model):
         related_name='onboarding',
     )
     usuario = models.OneToOneField(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.CASCADE,
         related_name='onboarding',
     )
@@ -48,7 +48,7 @@ class OnboardingEmpleado(models.Model):
 
     # Validacion por RRHH
     validado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

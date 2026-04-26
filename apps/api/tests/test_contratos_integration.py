@@ -15,9 +15,10 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 
 from app_rrhh.models import (
-    Usuario, Empleado, Area, DatosLaborales, 
+    Empleado, Area, DatosLaborales,
     ContratosAdendas, DocumentosDigitales
 )
+from apps.identity.models import Usuario
 
 
 @pytest.mark.django_db

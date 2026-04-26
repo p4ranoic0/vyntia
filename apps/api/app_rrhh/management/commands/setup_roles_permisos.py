@@ -3,7 +3,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from app_rrhh.models import Permiso, Rol, RolPermisos, Usuario, UsuarioRoles
+from apps.identity.models import Permiso, Rol, RolPermisos, Usuario, UsuarioRoles
 
 
 ROLES_DATA = [

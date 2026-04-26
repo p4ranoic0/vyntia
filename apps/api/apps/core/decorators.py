@@ -4,8 +4,8 @@ from functools import wraps
 from typing import Any, Callable, List, Union
 
 from app_rrhh.constants import Roles
-from app_rrhh.models import Usuario
 from app_rrhh.permission_service import PermissionService
+from apps.identity.models import Usuario
 from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
 from rest_framework import status

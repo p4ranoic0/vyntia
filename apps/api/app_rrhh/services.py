@@ -9,8 +9,9 @@ from decimal import Decimal
 
 from .models import (
     Area, Empleado, DatosLaborales, DatosFamiliares,
-    DatosAcademicos, HistorialUbicaciones, Usuario, Rol, Permiso
+    DatosAcademicos, HistorialUbicaciones,
 )
+from apps.identity.models import Usuario, Rol, Permiso
 from apps.core.exceptions import (
     BusinessLogicError, ResourceNotFoundError,
     DuplicateResourceError, InvalidOperationError

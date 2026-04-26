@@ -8,7 +8,7 @@ Uso:
     python manage.py audit_rbac --verbose
 """
 
-from app_rrhh.models import (
+from apps.identity.models import (
     ModuloPermiso,
     Modulos,
     Permiso,

@@ -3,8 +3,8 @@
 from typing import Any, Dict, List, Optional
 
 from app_rrhh.constants import Roles
-from app_rrhh.models import Permiso, Rol, Usuario
 from app_rrhh.permission_service import PermissionService
+from apps.identity.models import Permiso, Rol, Usuario
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions
 from rest_framework.request import Request

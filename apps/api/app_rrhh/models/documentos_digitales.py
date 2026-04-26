@@ -160,7 +160,7 @@ class DocumentosDigitales(models.Model):
     # Estado y validación
     estado_documento = models.CharField(max_length=20, choices=ESTADO_DOCUMENTO_CHOICES, default='activo')
     validado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -171,7 +171,7 @@ class DocumentosDigitales(models.Model):
     
     # Información de digitalización
     digitalizado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -188,7 +188,7 @@ class DocumentosDigitales(models.Model):
     fecha_subida = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     subido_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

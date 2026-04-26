@@ -13,8 +13,10 @@ from app_rrhh.models import (
     DatosLaborales,
     DocumentosDigitales,
     Empleado,
-    Modulos,
     OnboardingEmpleado,
+)
+from apps.identity.models import (
+    Modulos,
     Permiso,
     Rol,
     RolPermisos,

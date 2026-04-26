@@ -4,7 +4,8 @@ import logging
 from typing import List
 
 from app_rrhh.constants import Roles
-from app_rrhh.models import Empleado, Usuario
+from app_rrhh.models import Empleado
+from apps.identity.models import Usuario
 from app_rrhh.models.vacaciones import HistorialSolicitudVacaciones, SolicitudVacaciones
 from app_rrhh.permission_service import PermissionService
 from apps.core.exceptions import BusinessLogicError

@@ -111,7 +111,7 @@ class HistorialUbicaciones(models.Model):
         help_text='Estado de la ubicación'
     )
     registrado_por_usuario = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

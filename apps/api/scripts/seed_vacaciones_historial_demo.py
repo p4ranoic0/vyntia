@@ -21,7 +21,8 @@ django.setup()
 
 from django.utils import timezone
 
-from app_rrhh.models import Area, Usuario
+from app_rrhh.models import Area
+from apps.identity.models import Usuario
 from app_rrhh.models.contratos_adendas import ContratosAdendas
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,

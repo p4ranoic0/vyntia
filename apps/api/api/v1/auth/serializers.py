@@ -3,7 +3,8 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from app_rrhh.models import Empleado, Usuario
+from app_rrhh.models import Empleado
+from apps.identity.models import Usuario
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
@@ -79,7 +80,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             List of role dictionaries
         """
         try:
-            from app_rrhh.models import UsuarioRoles
+            from apps.identity.models import UsuarioRoles
 
             # Obtener roles activos del usuario
             usuario_roles = UsuarioRoles.objects.filter(
@@ -111,7 +112,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             List of simplified role dictionaries
         """
         try:
-            from app_rrhh.models import UsuarioRoles
+            from apps.identity.models import UsuarioRoles
 
             # Obtener roles activos del usuario
             usuario_roles = UsuarioRoles.objects.filter(
@@ -141,7 +142,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             List of permission dictionaries
         """
         try:
-            from app_rrhh.models import RolPermisos, UsuarioRoles
+            from apps.identity.models import RolPermisos, UsuarioRoles
 
             # Obtener roles activos del usuario
             usuario_roles = UsuarioRoles.objects.filter(
@@ -183,7 +184,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             List of module dictionaries with their permissions
         """
         try:
-            from app_rrhh.models import Modulos, RolPermisos, UsuarioRoles
+            from apps.identity.models import Modulos, RolPermisos, UsuarioRoles
 
             # Obtener roles activos del usuario
             usuario_roles = UsuarioRoles.objects.filter(
