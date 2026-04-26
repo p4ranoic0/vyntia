@@ -8,18 +8,7 @@ Cada archivo contiene modelos relacionados funcionalmente.
 
 # Importar todos los modelos para mantener compatibilidad
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
-from .configuracion_uit import ConfiguracionUit
 from .onboarding import OnboardingEmpleado
-from .remuneracion import (
-    BoletaPago,
-    CalendarioPago,
-    ConceptoPlanilla,
-    ConfiguracionAfp,
-    ConfiguracionRemuneracion,
-    DescuentoMasivo,
-    DetallePlanilla,
-    PlanillaMensual,
-)
 from .vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,
@@ -38,14 +27,4 @@ __all__ = [
     "HistorialSolicitudVacaciones",
     # Modelo de onboarding
     "OnboardingEmpleado",
-    # Modelos de remuneraciones
-    "ConfiguracionAfp",
-    "ConfiguracionRemuneracion",
-    "ConfiguracionUit",
-    "PlanillaMensual",
-    "DetallePlanilla",
-    "ConceptoPlanilla",
-    "DescuentoMasivo",
-    "BoletaPago",
-    "CalendarioPago",
 ]

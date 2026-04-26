@@ -15,7 +15,7 @@ try:
 except ImportError:
     OPENPYXL_AVAILABLE = False
 
-from app_rrhh.models import (
+from apps.payroll.models import (
     ConceptoPlanilla,
     ConfiguracionRemuneracion,
     DescuentoMasivo,

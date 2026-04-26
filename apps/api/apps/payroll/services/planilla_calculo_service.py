@@ -6,7 +6,7 @@ Implementa la lógica completa del proceso de remuneraciones según normativa pe
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
-from app_rrhh.models import (
+from apps.payroll.models import (
     ConfiguracionAfp,
     ConfiguracionUit,
     DetallePlanilla,

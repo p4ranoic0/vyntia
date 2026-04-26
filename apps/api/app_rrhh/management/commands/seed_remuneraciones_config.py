@@ -7,7 +7,7 @@ Comando para cargar configuración base de remuneraciones:
 
 from decimal import Decimal
 
-from app_rrhh.models import ConfiguracionAfp, ConfiguracionUit
+from apps.payroll.models import ConfiguracionAfp, ConfiguracionUit
 from django.core.management.base import BaseCommand
 
 
