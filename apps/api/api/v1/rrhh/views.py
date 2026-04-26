@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from app_rrhh import services
-from app_rrhh.models import OnboardingEmpleado
+from apps.onboarding.models import OnboardingEmpleado
 from apps.payroll.models import ConfiguracionAfp, ConfiguracionRemuneracion
 from apps.contracts.models import DatosLaborales
 from apps.documents.models import DocumentosDigitales
@@ -2392,7 +2392,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def retrieve(self, request, *args, **kwargs):
         """Ver detalle de onboarding - empleado solo ve el suyo."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         onboarding = self.get_object()
         user = request.user
@@ -2418,7 +2418,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def mi_onboarding(self, request):
         """Obtener el onboarding del usuario actual, recalculando el estado al momento."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         try:
             onboarding = OnboardingEmpleado.objects.select_related(
@@ -2446,7 +2446,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def validar(self, request, pk=None):
         """Validar el onboarding y aprobar todos los documentos."""
-        from app_rrhh.services.onboarding_service import (
+        from apps.onboarding.services import (
             OnboardingNotificationService,
             OnboardingService,
         )
@@ -2496,7 +2496,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def aprobar_documento(self, request, pk=None, doc_id=None):
         """RRHH approves a specific document from the onboarding legajo."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         onboarding = self.get_object()
         try:
@@ -2527,7 +2527,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def rechazar_documento(self, request, pk=None, doc_id=None):
         """RRHH rejects a specific document with a mandatory motivo."""
-        from app_rrhh.services.onboarding_service import (
+        from apps.onboarding.services import (
             OnboardingNotificationService,
             OnboardingService,
         )
@@ -2568,7 +2568,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def reenviar_email(self, request, pk=None):
         """Reenviar email de bienvenida."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         onboarding = self.get_object()
         result = OnboardingService.reenviar_email_bienvenida(onboarding.onboarding_id)
@@ -2591,7 +2591,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def corregir_correo(self, request, pk=None):
         """Actualiza el correo del empleado y reenvía el email de bienvenida."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         nuevo_correo = request.data.get("correo_personal", "").strip()
         if not nuevo_correo:
@@ -2621,7 +2621,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_hr()
     def actualizar_estado(self, request, pk=None):
         """Recalcula el estado del checklist de onboarding basado en documentos y datos actuales."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         onboarding = self.get_object()
         resultado = OnboardingService.actualizar_estado_onboarding(
@@ -2647,7 +2647,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def subir_foto(self, request):
         """El empleado en onboarding sube su foto de perfil (JPG o PNG)."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         archivo = request.FILES.get("archivo")
         if not archivo:
@@ -2713,7 +2713,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def subir_documento(self, request):
         """El empleado en onboarding sube un documento PDF a su legajo."""
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         _TIPO_CATEGORIA_MAP = {
             "dni": "personal",

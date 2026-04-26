@@ -3,7 +3,7 @@
 import logging
 import unicodedata
 
-from app_rrhh.models import OnboardingEmpleado
+from ..models import OnboardingEmpleado
 from apps.documents.models import DocumentosDigitales
 from apps.employees.models import Empleado
 from apps.identity.models import Rol, Usuario, UsuarioRoles

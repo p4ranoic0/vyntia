@@ -10,8 +10,8 @@ Cubre: ONBD-01 (corregir correo), ONBD-04 (notificar progreso),
 
 import pytest
 
-from app_rrhh.models import OnboardingEmpleado
-from app_rrhh.services.onboarding_service import OnboardingService
+from apps.onboarding.models import OnboardingEmpleado
+from apps.onboarding.services import OnboardingService
 
 
 @pytest.mark.django_db

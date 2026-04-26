@@ -11,7 +11,7 @@ import io
 
 from rest_framework.test import APIClient
 
-from app_rrhh.models import OnboardingEmpleado
+from apps.onboarding.models import OnboardingEmpleado
 from apps.documents.models import DocumentosDigitales
 from apps.employees.models import Empleado
 
