@@ -64,7 +64,6 @@ CORS_ALLOWED_ORIGINS = [o for o in _cors_origins if o]
 
 # Static files configuration for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Media files configuration for production
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -72,7 +71,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # S3 Storage configuration for production (optional - uses local storage if not configured)
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 if AWS_STORAGE_BUCKET_NAME:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
@@ -80,6 +78,26 @@ if AWS_STORAGE_BUCKET_NAME:
     AWS_DEFAULT_ACL = 'private'
     AWS_QUERYSTRING_AUTH = True
     AWS_QUERYSTRING_EXPIRE = 3600
+
+# Storage backends (Django 5+ uses STORAGES dict)
+if AWS_STORAGE_BUCKET_NAME:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 # Email configuration for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

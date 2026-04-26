@@ -63,8 +63,15 @@ CACHES = {
 # Configuración de email para pruebas
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
-# Configuración de archivos estáticos para pruebas
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# Configuración de archivos estáticos para pruebas (Django 5+ STORAGES dict)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # Password hashers más rápidos para pruebas
 PASSWORD_HASHERS = [
