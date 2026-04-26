@@ -1,4 +1,4 @@
-"""Configuración de desarrollo para project_intranet."""
+"""Configuración de desarrollo para VYNTIA."""
 
 import os
 
@@ -52,7 +52,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "bd_rrhh_intranet"),
+        "NAME": os.environ.get("DB_NAME", "bd_vyntia"),
         "USER": os.environ.get("DB_USER", "postgres"),
         "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),
@@ -66,7 +66,7 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
         "ATOMIC_REQUESTS": True,
         "TEST": {
-            "NAME": os.environ.get("DB_TEST_NAME", "test_bd_rrhh_intranet"),
+            "NAME": os.environ.get("DB_TEST_NAME", "test_bd_vyntia"),
         },
     }
 }

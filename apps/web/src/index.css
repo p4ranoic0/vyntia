@@ -1,9 +1,10 @@
 /* ========================================
-   SISTEMA DE DISEÑO - HR INTRANET
+   VYNTIA — DESIGN SYSTEM
    ======================================== */
 
-/* Colores y tokens configurables — editar styles/colors.css para personalizar temas */
-@import './styles/colors.css';
+/* Tokens de marca — editar packages/design-tokens/tokens.json
+   y reflejar en styles/tokens.css */
+@import './styles/tokens.css';
 
 @tailwind base;
 @tailwind components;

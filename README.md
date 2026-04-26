@@ -29,9 +29,9 @@ vyntia/
 cd apps/api
 python -m venv ../../.venv
 source ../../.venv/Scripts/activate  # Windows Git Bash
-pip install -r requirements.txt
-python manage.py migrate --settings=config.settings.development
-python manage.py runserver --settings=config.settings.development
+pip install -e ".[dev]"
+python manage.py migrate --settings=vyntia.settings.development
+python manage.py runserver --settings=vyntia.settings.development
 ```
 
 ### Frontend
@@ -45,11 +45,11 @@ O desde la raíz: `npm run dev:web`.
 
 ## Estado del proyecto
 
-VYNTIA está en migración desde el proyecto INTRANET previo. Ver
+VYNTIA está en migración desde un repo intranet legacy. Ver
 `docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md`
 para el plan completo.
 
-**Capa actual:** L0 — Bootstrap del monorepo.
+**Capa actual:** L1 — Rebrand superficial. Próximo: L2 — Django 5 upgrade.
 
 ## Licencia
 

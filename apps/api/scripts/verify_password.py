@@ -6,7 +6,7 @@ import sys
 import django
 
 # Configurar Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
 from app_rrhh.models.usuario import Usuario

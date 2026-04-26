@@ -1,4 +1,4 @@
-# Quickstart - RRHH Intranet
+# Quickstart - VYNTIA
 
 ## Requisitos Previos
 
@@ -17,7 +17,7 @@
 # Inicia servicio PostgreSQL desde servicios de Windows
 
 # Opcion B: Docker
-docker run -d --name rrhh-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=bd_rrhh_intranet -p 5432:5432 postgres:15
+docker run -d --name rrhh-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=bd_vyntia -p 5432:5432 postgres:15
 ```
 
 ### 1. Redis
@@ -36,7 +36,7 @@ redis-cli ping  # retorna PONG
 ### 2. Backend
 
 ```powershell
-cd d:\INTRANET\back
+cd d:\VYNTIA\back
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -48,7 +48,7 @@ python manage.py runserver 8000
 ### 3. Frontend (nueva terminal)
 
 ```powershell
-cd d:\INTRANET\front
+cd d:\VYNTIA\front
 npm install
 copy .env.template .env
 npm run dev
@@ -66,7 +66,7 @@ npm run dev
 ### Backend
 
 ```powershell
-cd d:\INTRANET\back
+cd d:\VYNTIA\back
 .\.venv\Scripts\Activate.ps1
 python -m pytest tests -v --tb=short
 ```
@@ -74,7 +74,7 @@ python -m pytest tests -v --tb=short
 ### Frontend
 
 ```powershell
-cd d:\INTRANET\front
+cd d:\VYNTIA\front
 npm run test
 ```
 
@@ -83,7 +83,7 @@ npm run test
 Para procesar tareas asíncronas (emails, etc.):
 
 ```powershell
-cd d:\INTRANET\back
+cd d:\VYNTIA\back
 .\.venv\Scripts\Activate.ps1
 celery -A config worker -l info
 ```

@@ -71,3 +71,26 @@ yarn-error.log*
 apps/api/media/
 apps/api/staticfiles/
 apps/api/logs/
+
+# === Claude / agent state (restored from legacy) ===
+.planning/
+.claude/
+.playwright-mcp/
+
+# === VS Code (allow shareable configs only) ===
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# === Env file exceptions (allow templates) ===
+!.env.example
+!**/.env.example
+!**/.env.template
+
+# === Local-only logs and scratch (legacy patterns) ===
+backend_foreground.log
+server_err*.log
+test_output.log
+nul
+tests/data/*.json
+tests/html/
+back/package-lock.json

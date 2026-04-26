@@ -23,7 +23,7 @@ def load_env_file(env_path=".env"):
 
 load_env_file()
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.development")
 django.setup()
 
 from app_rrhh.models import Permiso

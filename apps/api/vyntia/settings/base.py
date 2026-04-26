@@ -1,4 +1,4 @@
-"""Configuración base de Django para project_intranet."""
+"""Configuración base de Django para VYNTIA."""
 
 import os
 from datetime import timedelta
@@ -54,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "vyntia.urls"
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+WSGI_APPLICATION = "vyntia.wsgi.application"
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -334,8 +334,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # DRF Spectacular settings
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Intranet RRHH API",
-    "DESCRIPTION": "API para el sistema de gestión de recursos humanos de la intranet corporativa",
+    "TITLE": "VYNTIA API",
+    "DESCRIPTION": "API del SaaS modular VYNTIA — gestión de Recursos Humanos para Perú",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1/",

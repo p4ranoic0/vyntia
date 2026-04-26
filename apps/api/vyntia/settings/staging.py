@@ -1,4 +1,4 @@
-"""Configuración de staging para project_intranet."""
+"""Configuración de staging para VYNTIA."""
 
 import os
 
@@ -8,13 +8,13 @@ from .production import *
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 # Hosts permitidos para staging
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'staging.intranet-rrhh.com').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'staging.vyntia.com').split(',')
 
 # Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'bd_rrhh_intranet_staging'),
+        'NAME': os.environ.get('DB_NAME', 'bd_vyntia_staging'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
@@ -27,14 +27,14 @@ DATABASES = {
         'CONN_MAX_AGE': DATABASE_CONNECTION_POOLING['CONN_MAX_AGE'],
         'CONN_HEALTH_CHECKS': True,
         'TEST': {
-            'NAME': os.environ.get('DB_TEST_NAME', 'test_bd_rrhh_intranet_staging'),
+            'NAME': os.environ.get('DB_TEST_NAME', 'test_bd_vyntia_staging'),
         },
     }
 }
 
 # CORS más permisivo para staging
 CORS_ALLOWED_ORIGINS = [
-    'https://staging.intranet-rrhh.com',
+    'https://staging.vyntia.com',
     'http://localhost:3000',
     'http://localhost:5173',
 ] + [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]

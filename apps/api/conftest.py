@@ -3,7 +3,7 @@ import os
 import django
 import pytest
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.testing")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.testing")
 django.setup()
 
 

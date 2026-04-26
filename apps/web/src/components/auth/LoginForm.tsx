@@ -193,15 +193,15 @@ export default function LoginForm() {
 
       <div className="relative mx-auto grid min-h-[92vh] max-w-6xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="hidden rounded-3xl border border-slate-700/60 bg-slate-900/65 p-10 text-slate-100 shadow-2xl backdrop-blur-md lg:block">
-          <div className="inline-flex items-center gap-2 rounded-full bg-cyan-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#6C63FF]/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#A5A0FF]">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Acceso Seguro RRHH
+            VYNTIA · Acceso seguro
           </div>
           <h1 className="mt-5 text-4xl font-black leading-tight text-white">
-            Controla planillas, legajos y procesos laborales en un solo portal.
+            Donde el talento se convierte en valor.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
-            Administra remuneraciones, vacaciones y documentación del personal con trazabilidad y permisos por rol.
+            VYNTIA conecta a tu equipo con datos, decisiones y procesos de RRHH en una sola plataforma.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-3">

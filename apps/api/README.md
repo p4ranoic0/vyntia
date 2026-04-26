@@ -1,4 +1,4 @@
-# Intranet RRHH - Backend API
+# VYNTIA - Backend API
 
 <div align="center">
 
@@ -16,7 +16,7 @@ Sistema integrado de gestión de RRHH, nómina, vacaciones y administración cor
 
 ## 📋 Descripción
 
-Backend REST API para la **Intranet Corporativa** - Sistema de gestión integrado de recursos humanos con:
+Backend REST API para **VYNTIA** - Sistema de gestión integrado de recursos humanos con:
 
 - 👥 **Gestión de Empleados** - Datos personales, familiares, académicos, laborales
 - 🏢 **Estructura Organizacional** - Áreas, departamentos, cargos, ubicaciones
@@ -49,8 +49,8 @@ Backend REST API para la **Intranet Corporativa** - Sistema de gestión integrad
 
 ```bash
 # 1. Clonar
-git clone https://github.com/tu-org/intranet-rrhh-backend.git
-cd intranet-rrhh-backend
+git clone https://github.com/tu-org/vyntia.git
+cd vyntia/apps/api
 
 # 2. Entorno virtual
 python -m venv .venv
@@ -65,7 +65,7 @@ cp .env.example .env
 # Editar .env con credenciales PostgreSQL
 
 # 5. Migraciones
-python manage.py migrate --settings=config.settings.development
+python manage.py migrate --settings=vyntia.settings.development
 
 # 6. Datos demo (opcional)
 python scripts/load_demo_data.py
@@ -196,13 +196,13 @@ black --check .
 
 ```bash
 # Build
-docker build -t intranet-rrhh-backend .
+docker build -t vyntia-api .
 
 # Run
 docker run -p 8000:8000 \
   -e DB_HOST=host.docker.internal \
-  -e DB_NAME=bd_rrhh_intranet \
-  intranet-rrhh-backend
+  -e DB_NAME=bd_vyntia \
+  vyntia-api
 
 # Full stack
 docker-compose up
@@ -277,7 +277,7 @@ Logs en:
 ## 📞 Soporte
 
 - 📧 soporte@rrhh.interno
-- 🐛 [GitHub Issues](https://github.com/tu-org/intranet-rrhh/issues)
+- 🐛 [GitHub Issues](https://github.com/tu-org/vyntia/issues)
 
 ## 📄 Licencia
 

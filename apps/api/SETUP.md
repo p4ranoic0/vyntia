@@ -1,6 +1,6 @@
 # Backend Setup
 
-Setup automático del backend de Intranet RRHH para desarrollo local.
+Setup automático del backend de VYNTIA para desarrollo local.
 
 ## Requisitos Previos
 
@@ -25,16 +25,16 @@ cp .env.example .env
 # Edita .env con tus credenciales PostgreSQL
 
 # 4. Ejecutar migraciones
-python manage.py migrate --settings=config.settings.development
+python manage.py migrate --settings=vyntia.settings.development
 
 # 5. Cargar datos de demostración
-python scripts/load_demo_data.py --settings=config.settings.development
+python scripts/load_demo_data.py --settings=vyntia.settings.development
 
 # 6. Crear superusuario (opcional)
-python manage.py createsuperuser --settings=config.settings.development
+python manage.py createsuperuser --settings=vyntia.settings.development
 
 # 7. Ejecutar servidor de desarrollo
-python manage.py runserver 8000 --settings=config.settings.development
+python manage.py runserver 8000 --settings=vyntia.settings.development
 ```
 
 ### Linux/macOS
@@ -52,13 +52,13 @@ cp .env.example .env
 # Edita .env con tus credenciales PostgreSQL
 
 # 4. Ejecutar migraciones
-python manage.py migrate --settings=config.settings.development
+python manage.py migrate --settings=vyntia.settings.development
 
 # 5. Cargar datos de demostración
-python scripts/load_demo_data.py --settings=config.settings.development
+python scripts/load_demo_data.py --settings=vyntia.settings.development
 
 # 6. Ejecutar servidor de desarrollo
-python manage.py runserver 8000 --settings=config.settings.development
+python manage.py runserver 8000 --settings=vyntia.settings.development
 ```
 
 ## Estructura de Directorios
@@ -107,7 +107,7 @@ Copiar `.env.example` a `.env` y configurar:
 ```env
 # Base de Datos PostgreSQL
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=bd_rrhh_intranet
+DB_NAME=bd_vyntia
 DB_USER=postgres
 DB_PASSWORD=tu_password
 DB_HOST=localhost
@@ -152,7 +152,7 @@ CELERY_REDIS_URL=redis://127.0.0.1:6379/1
 
 ```bash
 # Ejecutar todos los tests
-python manage.py test --settings=config.settings.testing
+python manage.py test --settings=vyntia.settings.testing
 
 # Tests específicos
 pytest tests/ -v
@@ -192,7 +192,7 @@ psql -U postgres -h localhost
 
 # Verifica credenciales en .env
 # Crea la BD si no existe:
-createdb bd_rrhh_intranet
+createdb bd_vyntia
 ```
 
 ### Error: ModuleNotFoundError

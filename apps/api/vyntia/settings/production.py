@@ -1,4 +1,4 @@
-"""Configuración de producción para project_intranet."""
+"""Configuración de producción para VYNTIA."""
 
 import os
 
@@ -13,7 +13,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'bd_rrhh_intranet'),
+        'NAME': os.environ.get('DB_NAME', 'bd_vyntia'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
@@ -26,13 +26,13 @@ DATABASES = {
         'CONN_MAX_AGE': DATABASE_CONNECTION_POOLING['CONN_MAX_AGE'],
         'CONN_HEALTH_CHECKS': True,
         'TEST': {
-            'NAME': os.environ.get('DB_TEST_NAME', 'test_bd_rrhh_intranet_prod'),
+            'NAME': os.environ.get('DB_TEST_NAME', 'test_bd_vyntia_prod'),
         },
     },
     # Read replica for read-only operations (optional)
     'read_replica': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_READ_NAME', os.environ.get('DB_NAME', 'bd_rrhh_intranet')),
+        'NAME': os.environ.get('DB_READ_NAME', os.environ.get('DB_NAME', 'bd_vyntia')),
         'USER': os.environ.get('DB_READ_USER', os.environ.get('DB_USER', 'postgres')),
         'PASSWORD': os.environ.get('DB_READ_PASSWORD', os.environ.get('DB_PASSWORD')),
         'HOST': os.environ.get('DB_READ_HOST', os.environ.get('DB_HOST', 'localhost')),
