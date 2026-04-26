@@ -24,13 +24,13 @@ from django.utils import timezone
 from apps.organization.models import Area
 from apps.identity.models import Usuario
 from apps.contracts.models import ContratosAdendas
-from app_rrhh.models.vacaciones import (
+from apps.time_off.models import (
     ConfiguracionVacaciones,
     GoceVacaciones,
     HistorialSolicitudVacaciones,
     SolicitudVacaciones,
 )
-from app_rrhh.services.vacation_service import VacationService
+from apps.time_off.services import VacationService
 
 
 def _get_configuracion(usuario):

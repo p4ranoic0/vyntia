@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from apps.employees.models import Empleado
-from app_rrhh.models.vacaciones import GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
+from ..models import GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
 
 
 @dataclass

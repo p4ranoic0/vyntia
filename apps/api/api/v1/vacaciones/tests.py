@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from datetime import date, timedelta
 
-from app_rrhh.models import (
+from apps.time_off.models import (
     ConfiguracionVacaciones, PeriodoVacacional,
     SolicitudVacaciones, GoceVacaciones
 )

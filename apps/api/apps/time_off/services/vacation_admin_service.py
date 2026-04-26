@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from apps.employees.models import Empleado
 from apps.identity.models import Usuario
-from app_rrhh.models.vacaciones import (
+from ..models import (
     ConfiguracionVacaciones,
     GoceVacaciones,
     PeriodoVacacional,

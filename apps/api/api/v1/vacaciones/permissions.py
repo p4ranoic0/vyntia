@@ -2,7 +2,7 @@
 
 from app_rrhh.constants import Roles
 from apps.employees.models import Empleado
-from app_rrhh.models.vacaciones import (
+from apps.time_off.models import (
     ConfiguracionVacaciones,
     GoceVacaciones,
     HistorialSolicitudVacaciones,

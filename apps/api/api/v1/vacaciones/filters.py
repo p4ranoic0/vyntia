@@ -5,7 +5,7 @@ from django_filters import rest_framework as filters
 
 from apps.employees.models import Empleado
 from apps.organization.models import Area
-from app_rrhh.models.vacaciones import ConfiguracionVacaciones, GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
+from apps.time_off.models import ConfiguracionVacaciones, GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
 
 
 class ConfiguracionVacacionesFilter(filters.FilterSet):

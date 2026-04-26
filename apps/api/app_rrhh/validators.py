@@ -152,7 +152,7 @@ class VacacionesValidator:
         """
         Valida que no exista una solicitud duplicada en las mismas fechas
         """
-        from .models import SolicitudVacaciones
+        from apps.time_off.models import SolicitudVacaciones
         
         # Buscar solicitudes que se solapen con las fechas
         solicitudes_existentes = SolicitudVacaciones.objects.filter(
@@ -253,7 +253,7 @@ class VacacionesBusinessRules:
         if anio is None:
             anio = timezone.now().year
         
-        from .models import SolicitudVacaciones
+        from apps.time_off.models import SolicitudVacaciones
         
         # Contar solicitudes del empleado en el año
         count = SolicitudVacaciones.objects.filter(

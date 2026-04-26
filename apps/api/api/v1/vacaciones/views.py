@@ -4,14 +4,14 @@ import logging
 from datetime import date
 
 from apps.employees.models import Empleado
-from app_rrhh.models.vacaciones import (
+from apps.time_off.models import (
     ConfiguracionVacaciones,
     GoceVacaciones,
     HistorialSolicitudVacaciones,
     PeriodoVacacional,
     SolicitudVacaciones,
 )
-from app_rrhh.services import (
+from apps.time_off.services import (
     VacationAdminService,
     VacationApprovalService,
     VacationReportService,
