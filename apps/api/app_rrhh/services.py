@@ -7,10 +7,8 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any, Tuple
 from decimal import Decimal
 
-from .models import (
-    Empleado, DatosLaborales, DatosFamiliares,
-    DatosAcademicos,
-)
+from apps.contracts.models import DatosLaborales
+from apps.employees.models import DatosAcademicos, DatosFamiliares, Empleado
 from apps.organization.models import Area, HistorialUbicaciones
 from apps.identity.models import Usuario, Rol, Permiso
 from apps.core.exceptions import (

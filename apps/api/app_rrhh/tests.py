@@ -7,10 +7,8 @@ from rest_framework import status
 from datetime import datetime, timedelta
 import json
 
-from .models import (
-    Empleado, DatosFamiliares, DatosAcademicos,
-    DatosLaborales,
-)
+from apps.contracts.models import DatosLaborales
+from apps.employees.models import DatosAcademicos, DatosFamiliares, Empleado
 from apps.organization.models import Area, HistorialUbicaciones
 from apps.identity.models import Usuario, Rol, Permiso
 

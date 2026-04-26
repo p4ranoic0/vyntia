@@ -35,6 +35,7 @@ LOCAL_APPS = [
     "apps.identity.apps.IdentityConfig",
     "apps.organization.apps.OrganizationConfig",
     "apps.employees.apps.EmployeesConfig",
+    "apps.contracts.apps.ContractsConfig",
     "app_rrhh",
 ]
 

@@ -174,7 +174,7 @@ class PeriodoVacacional(models.Model):
         related_name='periodos_vacacionales'
     )
     contrato = models.ForeignKey(
-        'ContratosAdendas',
+        'contracts.ContratosAdendas',
         on_delete=models.PROTECT,
         related_name='periodos_vacacionales',
         null=True,

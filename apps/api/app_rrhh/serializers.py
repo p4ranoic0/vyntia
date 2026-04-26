@@ -1,8 +1,6 @@
 from rest_framework import serializers
 
-from .models import (
-    DatosLaborales,
-)
+from apps.contracts.models import DatosLaborales
 from apps.employees.models import (
     DatosAcademicos,
     DatosFamiliares,

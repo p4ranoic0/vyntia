@@ -170,7 +170,7 @@ class WordTemplateService:
         salario = ''
         if incluir_salario and datos_laborales:
             # Buscar salario del último contrato activo
-            from app_rrhh.models import ContratosAdendas
+            from apps.contracts.models import ContratosAdendas
             contrato = ContratosAdendas.objects.filter(
                 empleado=empleado, estado='ACTIVO'
             ).order_by('-fecha_inicio').first()

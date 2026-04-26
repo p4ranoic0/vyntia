@@ -7,10 +7,12 @@ certificados y reportes desde plantillas HTML y convertirlos a PDF.
 """
 
 from app_rrhh.models import (
-    ContratosAdendas,
-    DatosLaborales,
     DocumentosDigitales,
     PlantillaDocumento,
+)
+from apps.contracts.models import (
+    ContratosAdendas,
+    DatosLaborales,
 )
 from apps.employees.models import Empleado
 from app_rrhh.services import TemplateService

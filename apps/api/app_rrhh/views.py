@@ -17,9 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .filters import EmpleadoFilter
-from .models import (
-    DatosLaborales,
-)
+from apps.contracts.models import DatosLaborales
 from apps.employees.models import (
     DatosAcademicos,
     DatosFamiliares,

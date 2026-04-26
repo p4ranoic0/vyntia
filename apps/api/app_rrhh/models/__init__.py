@@ -9,8 +9,6 @@ Cada archivo contiene modelos relacionados funcionalmente.
 # Importar todos los modelos para mantener compatibilidad
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
 from .configuracion_uit import ConfiguracionUit
-from .contratos_adendas import ContratosAdendas
-from .datos_laborales import DatosLaborales
 from .documentos_digitales import DocumentosDigitales
 from .onboarding import OnboardingEmpleado
 from .plantilla_documento import PlantillaDocumento
@@ -35,7 +33,6 @@ from .vacaciones import (
 # Lista de todos los modelos para facilitar importaciones
 __all__ = [
     # Modelos principales
-    "DatosLaborales",
     "DocumentosDigitales",
     # Modelos de vacaciones
     "ConfiguracionVacaciones",
@@ -43,9 +40,6 @@ __all__ = [
     "SolicitudVacaciones",
     "GoceVacaciones",
     "HistorialSolicitudVacaciones",
-    # Modelos de contratos
-    # 'ContratoAdenda',  # Comentado para evitar conflicto de tabla
-    "ContratosAdendas",
     # Modelo de onboarding
     "OnboardingEmpleado",
     # Plantillas Word
