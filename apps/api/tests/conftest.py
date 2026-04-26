@@ -12,7 +12,8 @@ import pytest
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from app_rrhh.models import Empleado, OnboardingEmpleado
+from app_rrhh.models import OnboardingEmpleado
+from apps.employees.models import Empleado
 from apps.identity.models import Rol, Usuario, UsuarioRoles
 
 

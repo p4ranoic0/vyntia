@@ -17,9 +17,9 @@ from app_rrhh.models import (
     ConfiguracionUit,
     DescuentoMasivo,
     DetallePlanilla,
-    Empleado,
     PlanillaMensual,
 )
+from apps.employees.models import Empleado
 from app_rrhh.services import DescuentoMasivoService, PlanillaCalculoService
 from apps.core.decorators import require_admin, require_authenticated, require_hr
 from apps.core.pagination import StandardResultsSetPagination

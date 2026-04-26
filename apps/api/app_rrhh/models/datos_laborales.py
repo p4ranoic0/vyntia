@@ -68,7 +68,7 @@ class DatosLaborales(models.Model):
     # Campos principales
     dato_laboral_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='datos_laborales'
     )
@@ -109,7 +109,7 @@ class DatosLaborales(models.Model):
     
     # Información de jefe directo
     jefe_directo = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

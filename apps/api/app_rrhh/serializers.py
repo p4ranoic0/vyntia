@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
 from .models import (
+    DatosLaborales,
+)
+from apps.employees.models import (
     DatosAcademicos,
     DatosFamiliares,
-    DatosLaborales,
     Empleado,
 )
 from apps.organization.models import Area, HistorialUbicaciones

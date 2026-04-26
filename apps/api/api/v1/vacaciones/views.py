@@ -3,7 +3,7 @@
 import logging
 from datetime import date
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,

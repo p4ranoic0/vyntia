@@ -44,7 +44,8 @@ try:
 except Exception:
     XHTML2PDF_AVAILABLE = False
 
-from app_rrhh.models import DocumentosDigitales, ContratosAdendas, Empleado
+from app_rrhh.models import DocumentosDigitales, ContratosAdendas
+from apps.employees.models import Empleado
 from .template_service import TemplateService
 
 

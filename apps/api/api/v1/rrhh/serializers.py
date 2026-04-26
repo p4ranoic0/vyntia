@@ -7,12 +7,14 @@ from app_rrhh.models import (
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
     ContratosAdendas,
-    DatosAcademicos,
-    DatosFamiliares,
     DatosLaborales,
     DocumentosDigitales,
-    Empleado,
     OnboardingEmpleado,
+)
+from apps.employees.models import (
+    DatosAcademicos,
+    DatosFamiliares,
+    Empleado,
 )
 from apps.organization.models import Area
 from apps.identity.models import (
@@ -226,7 +228,7 @@ class CursosCertificacionesSerializer(serializers.ModelSerializer):
     """Serializer for CursosCertificaciones model."""
 
     class Meta:
-        from app_rrhh.models import CursosCertificaciones
+        from apps.employees.models import CursosCertificaciones
 
         model = CursosCertificaciones
         fields = [

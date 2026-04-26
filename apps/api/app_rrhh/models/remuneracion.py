@@ -223,7 +223,7 @@ class DetallePlanilla(models.Model):
         related_name="detalles",
     )
     empleado = models.ForeignKey(
-        "Empleado",
+        "employees.Empleado",
         on_delete=models.PROTECT,
         related_name="detalles_planilla",
     )

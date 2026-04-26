@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from apps.identity.models import Usuario
 
 try:

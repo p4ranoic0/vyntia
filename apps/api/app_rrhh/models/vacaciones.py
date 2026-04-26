@@ -49,7 +49,7 @@ class ConfiguracionVacaciones(models.Model):
         related_name='configuraciones_vacaciones'
     )
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -169,7 +169,7 @@ class PeriodoVacacional(models.Model):
     # Campos principales
     periodo_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='periodos_vacacionales'
     )
@@ -313,7 +313,7 @@ class SolicitudVacaciones(models.Model):
     # Campos principales
     solicitud_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='solicitudes_vacaciones'
     )
@@ -345,7 +345,7 @@ class SolicitudVacaciones(models.Model):
     # Aprobación del jefe
     aprobado_por_jefe = models.BooleanField(default=False)
     jefe_aprobador = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -455,7 +455,7 @@ class GoceVacaciones(models.Model):
         related_name='goce'
     )
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='goces_vacaciones'
     )

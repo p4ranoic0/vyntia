@@ -12,7 +12,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Dict, Any
 
-from app_rrhh.models import ContratosAdendas, Empleado, DocumentosDigitales
+from app_rrhh.models import ContratosAdendas, DocumentosDigitales
+from apps.employees.models import Empleado
 from apps.organization.models import Area
 from .serializers import EmpleadoListSerializer, AreaSerializer
 

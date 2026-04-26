@@ -1,6 +1,6 @@
 import django_filters
 from django.db import models
-from .models import Empleado
+from apps.employees.models import Empleado
 
 class EmpleadoFilter(django_filters.FilterSet):
     # Filtro para buscar por nombre (nombres, apellido paterno o materno)

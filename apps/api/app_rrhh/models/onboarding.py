@@ -20,7 +20,7 @@ class OnboardingEmpleado(models.Model):
 
     # Relaciones principales
     empleado = models.OneToOneField(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='onboarding',
     )

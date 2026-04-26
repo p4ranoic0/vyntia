@@ -47,7 +47,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # Campos principales
     usuario_id = models.AutoField(primary_key=True)
     empleado = models.OneToOneField(
-        "app_rrhh.Empleado",
+        "employees.Empleado",
         on_delete=models.CASCADE,
         related_name="usuario",
         null=True,

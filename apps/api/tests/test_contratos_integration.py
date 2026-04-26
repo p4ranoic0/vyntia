@@ -15,9 +15,10 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 
 from app_rrhh.models import (
-    Empleado, DatosLaborales,
+    DatosLaborales,
     ContratosAdendas, DocumentosDigitales
 )
+from apps.employees.models import Empleado
 from apps.organization.models import Area
 from apps.identity.models import Usuario
 

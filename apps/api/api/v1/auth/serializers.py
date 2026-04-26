@@ -3,7 +3,7 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from apps.identity.models import Usuario
 from django.conf import settings
 from django.contrib.auth import authenticate

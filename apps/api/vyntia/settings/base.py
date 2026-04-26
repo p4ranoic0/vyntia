@@ -34,6 +34,7 @@ LOCAL_APPS = [
     "apps.core.apps.CoreConfig",
     "apps.identity.apps.IdentityConfig",
     "apps.organization.apps.OrganizationConfig",
+    "apps.employees.apps.EmployeesConfig",
     "app_rrhh",
 ]
 

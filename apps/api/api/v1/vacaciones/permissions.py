@@ -1,7 +1,7 @@
 """Permisos personalizados para las APIs de vacaciones."""
 
 from app_rrhh.constants import Roles
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,

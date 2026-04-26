@@ -9,7 +9,8 @@ incluyendo campos, métodos, propiedades y relaciones jerárquicas.
 from datetime import datetime, timedelta
 
 import pytest
-from app_rrhh.models import DatosLaborales, Empleado
+from app_rrhh.models import DatosLaborales
+from apps.employees.models import Empleado
 from apps.organization.models import Area
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
