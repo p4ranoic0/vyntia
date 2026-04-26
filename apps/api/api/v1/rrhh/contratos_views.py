@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app_rrhh.models import ContratosAdendas
+from apps.contracts.models import ContratosAdendas
 from apps.employees.models import Empleado
 from apps.organization.models import Area
 from apps.core.decorators import (

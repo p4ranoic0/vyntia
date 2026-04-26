@@ -260,7 +260,7 @@ class Empleado(models.Model):
 
     def datos_laborales_actuales(self):
         """Obtiene los datos laborales actuales del empleado."""
-        from app_rrhh.models import DatosLaborales
+        from apps.contracts.models import DatosLaborales
 
         return DatosLaborales.objects.filter(
             empleado=self, estado_datos="activo"

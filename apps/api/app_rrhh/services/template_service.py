@@ -13,7 +13,8 @@ from django.template.loader import get_template
 from django.template import Context, Template
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from app_rrhh.models import ContratosAdendas, DocumentosDigitales
+from app_rrhh.models import DocumentosDigitales
+from apps.contracts.models import ContratosAdendas
 from apps.employees.models import Empleado
 from apps.organization.models import Area
 

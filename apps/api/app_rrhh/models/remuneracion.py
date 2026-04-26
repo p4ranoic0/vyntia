@@ -228,7 +228,7 @@ class DetallePlanilla(models.Model):
         related_name="detalles_planilla",
     )
     datos_laborales = models.ForeignKey(
-        "DatosLaborales",
+        "contracts.DatosLaborales",
         on_delete=models.PROTECT,
         related_name="detalles_planilla",
         null=True,

@@ -645,7 +645,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def diagnostico(self, request):
         """Endpoint temporal de diagnóstico para verificar datos de empleados."""
-        from app_rrhh.models.datos_laborales import DatosLaborales
+        from apps.contracts.models import DatosLaborales
 
         total_empleados = Empleado.objects.count()
         empleados_activos = Empleado.objects.filter(estado_empleado="activo").count()

@@ -103,7 +103,7 @@ class Area(models.Model):
     
     def empleados_activos_count(self):
         """Cuenta empleados activos en el área."""
-        from app_rrhh.models import DatosLaborales
+        from apps.contracts.models import DatosLaborales
         return DatosLaborales.objects.filter(
             area=self,
             estado_datos='activo'

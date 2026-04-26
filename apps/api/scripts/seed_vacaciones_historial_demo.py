@@ -23,7 +23,7 @@ from django.utils import timezone
 
 from apps.organization.models import Area
 from apps.identity.models import Usuario
-from app_rrhh.models.contratos_adendas import ContratosAdendas
+from apps.contracts.models import ContratosAdendas
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,
