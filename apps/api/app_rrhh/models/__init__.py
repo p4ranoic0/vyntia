@@ -9,22 +9,9 @@ Cada archivo contiene modelos relacionados funcionalmente.
 # Importar todos los modelos para mantener compatibilidad
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
 from .onboarding import OnboardingEmpleado
-from .vacaciones import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
-)
 
 # Lista de todos los modelos para facilitar importaciones
 __all__ = [
-    # Modelos de vacaciones
-    "ConfiguracionVacaciones",
-    "PeriodoVacacional",
-    "SolicitudVacaciones",
-    "GoceVacaciones",
-    "HistorialSolicitudVacaciones",
     # Modelo de onboarding
     "OnboardingEmpleado",
 ]

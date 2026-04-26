@@ -2,14 +2,14 @@
 
 from rest_framework import serializers
 
-from app_rrhh.models.vacaciones import (
+from apps.time_off.models import (
     ConfiguracionVacaciones,
     GoceVacaciones,
     HistorialSolicitudVacaciones,
     PeriodoVacacional,
     SolicitudVacaciones,
 )
-from app_rrhh.services import VacationService
+from apps.time_off.services import VacationService
 
 
 def _nombre_area(area):

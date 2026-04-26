@@ -10,7 +10,7 @@ from apps.employees.models import Empleado
 from apps.organization.models import Area
 from apps.identity.models import Usuario
 from apps.contracts.models import ContratosAdendas, DatosLaborales
-from app_rrhh.models.vacaciones import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones, GoceVacaciones
+from apps.time_off.models import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones, GoceVacaciones
 
 
 def seed():

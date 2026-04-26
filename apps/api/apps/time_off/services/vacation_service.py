@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 from apps.employees.models import Empleado
 from apps.identity.models import Usuario
-from app_rrhh.models.vacaciones import (
+from ..models import (
     ConfiguracionVacaciones,
     HistorialSolicitudVacaciones,
     PeriodoVacacional,

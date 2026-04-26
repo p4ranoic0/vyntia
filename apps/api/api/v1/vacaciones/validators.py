@@ -4,8 +4,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app_rrhh.models import (
-    ConfiguracionVacaciones, PeriodoVacacional, 
+from apps.time_off.models import (
+    ConfiguracionVacaciones, PeriodoVacacional,
     SolicitudVacaciones, GoceVacaciones
 )
 from app_rrhh.validators import VacacionesValidator, VacacionesBusinessRules
