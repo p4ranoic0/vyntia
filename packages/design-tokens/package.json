@@ -1,0 +1,11 @@
+{
+  "name": "@vyntia/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VYNTIA design tokens — single source of truth for brand colors, typography, spacing and layout",
+  "main": "index.js",
+  "files": [
+    "tokens.json",
+    "index.js"
+  ]
+}
