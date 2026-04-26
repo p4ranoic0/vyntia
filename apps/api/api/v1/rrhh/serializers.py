@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from app_rrhh.models import OnboardingEmpleado
+from apps.onboarding.models import OnboardingEmpleado
 from apps.payroll.models import ConfiguracionAfp, ConfiguracionRemuneracion
 from apps.contracts.models import (
     ContratosAdendas,
@@ -1263,7 +1263,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
         read_only_fields = ["onboarding_id", "fecha_inicio", "fecha_completado"]
 
     def get_documentos_pendientes(self, obj):
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         return OnboardingService.obtener_documentos_pendientes(obj.empleado_id)
 
@@ -1298,7 +1298,7 @@ class OnboardingIniciarSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        from app_rrhh.services.onboarding_service import OnboardingService
+        from apps.onboarding.services import OnboardingService
 
         creado_por = self.context["request"].user
         result = OnboardingService.crear_onboarding_completo(validated_data, creado_por)

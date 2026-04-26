@@ -8,10 +8,6 @@ Cada archivo contiene modelos relacionados funcionalmente.
 
 # Importar todos los modelos para mantener compatibilidad
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
-from .onboarding import OnboardingEmpleado
 
 # Lista de todos los modelos para facilitar importaciones
-__all__ = [
-    # Modelo de onboarding
-    "OnboardingEmpleado",
-]
+__all__ = []
