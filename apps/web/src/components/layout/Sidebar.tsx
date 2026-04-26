@@ -1,3 +1,4 @@
+import { VyntiaLogo } from '@/components/brand/VyntiaLogo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -511,13 +512,13 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-sidebar-border">
-          <div className="flex items-center space-x-2 min-w-0">
-            <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/10">
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <VyntiaLogo size={isCollapsed ? 32 : 36} className="flex-shrink-0" />
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-lg sm:text-xl font-bold text-foreground truncate">HR Sistema</span>
+                <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">
+                  VYNTIA
+                </span>
                 {user && (
                   <Badge variant={isAdminOrRRHH() ? 'default' : 'secondary'} className="text-[10px] mt-0.5 w-fit">
                     {isAdminOrRRHH() ? 'Administrador' : 'Personal'}
