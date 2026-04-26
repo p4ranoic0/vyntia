@@ -2,7 +2,7 @@
 
 import logging
 
-from app_rrhh.models import DocumentosDigitales
+from apps.documents.models import DocumentosDigitales
 from apps.employees.models import Empleado
 from django.http import HttpResponse
 from django.template.loader import render_to_string

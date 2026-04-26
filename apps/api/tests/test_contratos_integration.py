@@ -14,7 +14,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import authenticate
 
-from app_rrhh.models import DocumentosDigitales
+from apps.documents.models import DocumentosDigitales
 from apps.contracts.models import (
     ContratosAdendas,
     DatosLaborales,

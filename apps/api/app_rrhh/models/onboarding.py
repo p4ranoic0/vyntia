@@ -100,7 +100,7 @@ class OnboardingEmpleado(models.Model):
         Separate from progreso_porcentaje (which tracks upload completion).
         Returns int 0-100.
         """
-        from app_rrhh.models.documentos_digitales import DocumentosDigitales
+        from apps.documents.models import DocumentosDigitales
         total = DocumentosDigitales.objects.filter(
             empleado=self.empleado, es_version_actual=True
         ).count()

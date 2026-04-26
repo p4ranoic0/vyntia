@@ -16,7 +16,7 @@ xhtml2pdf uses ReportLab internally, so both strings appear in xhtml2pdf output.
 import logging
 import pytest
 
-from app_rrhh.services.pdf_generator import PDFGenerator
+from apps.documents.services import PDFGenerator
 
 # Minimal HTML — contains identifiable title text for content verification
 MINIMAL_HTML = """<!DOCTYPE html>
@@ -147,7 +147,7 @@ class TestFallbackLogging:
         monkeypatch.setattr(generator, '_html_to_pdf_xhtml2pdf', mock_xhtml2pdf_fail)
 
         # Capture log output at WARNING level and above
-        with caplog.at_level(logging.WARNING, logger='app_rrhh.services.pdf_generator'):
+        with caplog.at_level(logging.WARNING, logger='apps.documents.services.pdf_generator'):
             # _html_to_pdf will call xhtml2pdf (raises), then WeasyPrint (unavailable),
             # then fall through to ReportLab stub
             result = generator._html_to_pdf(MINIMAL_HTML)

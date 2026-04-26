@@ -115,7 +115,7 @@ class DatosAcademicos(models.Model):
     ruta_titulo = models.CharField(max_length=255, null=True, blank=True)
     ruta_diploma = models.CharField(max_length=255, null=True, blank=True)
     documento = models.ForeignKey(
-        'app_rrhh.DocumentosDigitales',
+        'documents.DocumentosDigitales',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='dato_academico',

@@ -6,17 +6,16 @@ Este módulo contiene las vistas API para generar contratos, adendas,
 certificados y reportes desde plantillas HTML y convertirlos a PDF.
 """
 
-from app_rrhh.models import (
-    DocumentosDigitales,
-    PlantillaDocumento,
-)
 from apps.contracts.models import (
     ContratosAdendas,
     DatosLaborales,
 )
+from apps.documents.models import (
+    DocumentosDigitales,
+    PlantillaDocumento,
+)
 from apps.employees.models import Empleado
-from app_rrhh.services import TemplateService
-from app_rrhh.services.word_template_service import WordTemplateService
+from apps.documents.services import TemplateService, WordTemplateService
 from apps.core.decorators import (
     require_admin,
     require_authenticated,
@@ -41,7 +40,7 @@ from rest_framework.viewsets import ViewSet
 
 def _get_pdf_generator():
     """Lazy import de PDFGenerator para evitar crash si WeasyPrint no esta disponible."""
-    from app_rrhh.services.pdf_generator import PDFGenerator
+    from apps.documents.services import PDFGenerator
 
     return PDFGenerator()
 

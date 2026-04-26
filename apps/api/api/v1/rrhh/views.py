@@ -9,10 +9,10 @@ from app_rrhh import services
 from app_rrhh.models import (
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
-    DocumentosDigitales,
     OnboardingEmpleado,
 )
 from apps.contracts.models import DatosLaborales
+from apps.documents.models import DocumentosDigitales
 from apps.employees.models import (
     DatosAcademicos,
     DatosFamiliares,
