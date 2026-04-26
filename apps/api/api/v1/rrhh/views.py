@@ -6,11 +6,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from app_rrhh import services
-from app_rrhh.models import (
-    ConfiguracionAfp,
-    ConfiguracionRemuneracion,
-    OnboardingEmpleado,
-)
+from app_rrhh.models import OnboardingEmpleado
+from apps.payroll.models import ConfiguracionAfp, ConfiguracionRemuneracion
 from apps.contracts.models import DatosLaborales
 from apps.documents.models import DocumentosDigitales
 from apps.employees.models import (

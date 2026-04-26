@@ -9,7 +9,7 @@ boletas de pago, descuentos masivos y reportes de remuneraciones.
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app_rrhh.models import (
+from apps.payroll.models import (
     BoletaPago,
     CalendarioPago,
     ConfiguracionAfp,
@@ -20,7 +20,7 @@ from app_rrhh.models import (
     PlanillaMensual,
 )
 from apps.employees.models import Empleado
-from app_rrhh.services import DescuentoMasivoService, PlanillaCalculoService
+from apps.payroll.services import DescuentoMasivoService, PlanillaCalculoService
 from apps.core.decorators import require_admin, require_authenticated, require_hr
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse

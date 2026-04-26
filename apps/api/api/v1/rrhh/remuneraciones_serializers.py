@@ -8,7 +8,7 @@ boletas de pago, descuentos masivos y reportes de remuneraciones.
 
 from decimal import Decimal
 
-from app_rrhh.models import (
+from apps.payroll.models import (
     BoletaPago,
     CalendarioPago,
     ConceptoPlanilla,
