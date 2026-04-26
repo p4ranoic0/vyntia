@@ -1,6 +1,6 @@
 Param(
-    [string]$SourceSettings = "config.settings.development",
-    [string]$TargetSettings = "config.settings.development",
+    [string]$SourceSettings = "vyntia.settings.development",
+    [string]$TargetSettings = "vyntia.settings.development",
     [string]$OutDir = "tmp"
 )
 

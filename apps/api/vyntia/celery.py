@@ -1,12 +1,12 @@
-"""Celery app configuration for RRHH intranet."""
+"""Celery app configuration for VYNTIA."""
 
 import os
 
 from celery import Celery
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.development")
 
-app = Celery("intranet_rrhh")
+app = Celery("vyntia")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 

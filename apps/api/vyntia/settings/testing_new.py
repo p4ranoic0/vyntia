@@ -1,4 +1,4 @@
-"""Configuración de pruebas para project_intranet."""
+"""Configuración de pruebas para VYNTIA."""
 
 import os
 

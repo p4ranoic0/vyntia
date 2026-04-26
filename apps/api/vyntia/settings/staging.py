@@ -1,4 +1,4 @@
-"""Configuración de staging para project_intranet."""
+"""Configuración de staging para VYNTIA."""
 
 import os
 

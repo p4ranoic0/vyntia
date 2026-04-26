@@ -1,4 +1,4 @@
-"""Configuración de desarrollo para project_intranet."""
+"""Configuración de desarrollo para VYNTIA."""
 
 import os
 

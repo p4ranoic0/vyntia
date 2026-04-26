@@ -25,7 +25,7 @@ import os
 import sys
 from datetime import date
 
-# Agregar el directorio back/ al path para que Django encuentre config.settings
+# Agregar el directorio apps/api/ al path para que Django encuentre vyntia.settings
 back_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, back_dir)
 
@@ -47,7 +47,7 @@ def load_env_file(env_path=None):
 
 load_env_file()
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.development")
 
 import django
 

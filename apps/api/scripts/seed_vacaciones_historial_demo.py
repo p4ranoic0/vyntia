@@ -16,7 +16,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
 from django.utils import timezone

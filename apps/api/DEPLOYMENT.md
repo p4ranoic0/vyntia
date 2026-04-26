@@ -90,7 +90,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Collect static files
-RUN python manage.py collectstatic --noinput --settings=config.settings.production
+RUN python manage.py collectstatic --noinput --settings=vyntia.settings.production
 
 # Create user
 RUN useradd -m appuser && chown -R appuser /app
@@ -101,7 +101,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
 # Run gunicorn
-CMD gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4
+CMD gunicorn vyntia.wsgi:application --bind 0.0.0.0:$PORT --workers 4
 ```
 
 ## Docker Compose (Local con stack completo)

@@ -7,7 +7,7 @@ import sys
 import django
 
 # Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.development")
 sys.path.insert(0, os.path.dirname(__file__))
 django.setup()
 

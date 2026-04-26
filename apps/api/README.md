@@ -65,7 +65,7 @@ cp .env.example .env
 # Editar .env con credenciales PostgreSQL
 
 # 5. Migraciones
-python manage.py migrate --settings=config.settings.development
+python manage.py migrate --settings=vyntia.settings.development
 
 # 6. Datos demo (opcional)
 python scripts/load_demo_data.py
