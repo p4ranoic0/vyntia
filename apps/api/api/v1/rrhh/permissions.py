@@ -2,8 +2,8 @@
 
 from typing import Any
 
-from core.logging import get_logger
-from core.permissions import BasePermission
+from apps.core.logging import get_logger
+from apps.core.permissions import BasePermission
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions
 

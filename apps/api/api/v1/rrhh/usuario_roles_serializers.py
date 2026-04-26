@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 from app_rrhh.models import UsuarioRoles, Usuario, Rol
-from core.exceptions import BusinessLogicError
+from apps.core.exceptions import BusinessLogicError
 
 
 class UsuarioRolesSerializer(serializers.ModelSerializer):

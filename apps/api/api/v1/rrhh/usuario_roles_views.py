@@ -5,9 +5,9 @@ from django.utils import timezone
 from django.db.models import Q
 
 from app_rrhh.models import UsuarioRoles, Usuario, Rol
-from core.responses import APIResponse
-from core.permissions import IsAuthenticated
-from core.decorators import (
+from apps.core.responses import APIResponse
+from apps.core.permissions import IsAuthenticated
+from apps.core.decorators import (
     require_authenticated, require_hr, require_permissions,
     require_manager, require_admin
 )

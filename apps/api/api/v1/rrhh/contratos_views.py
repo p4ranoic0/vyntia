@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
 
 from app_rrhh.models import Area, ContratosAdendas, Empleado
-from core.decorators import (
+from apps.core.decorators import (
     require_admin,
     require_authenticated,
     require_hr,
     require_manager,
     require_permissions,
 )
-from core.pagination import StandardResultsSetPagination
-from core.responses import APIResponse
+from apps.core.pagination import StandardResultsSetPagination
+from apps.core.responses import APIResponse
 from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view

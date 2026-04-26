@@ -21,8 +21,8 @@ from app_rrhh.models import (
     Usuario,
     UsuarioRoles,
 )
-from core.exceptions import BusinessLogicError
-from core.validators import EmailDomainValidator, PhoneValidator, RUTValidator
+from apps.core.exceptions import BusinessLogicError
+from apps.core.validators import EmailDomainValidator, PhoneValidator, RUTValidator
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from django.utils import timezone

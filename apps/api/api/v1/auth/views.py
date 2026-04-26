@@ -4,15 +4,15 @@ from typing import Any, Dict
 
 from app_rrhh.menu_service import MenuService
 from app_rrhh.models import Modulos, Permiso, Rol, Usuario
-from core.decorators import (
+from apps.core.decorators import (
     require_admin,
     require_authenticated,
     require_hr,
     require_manager,
     require_permissions,
 )
-from core.permissions import IsAuthenticated
-from core.responses import APIResponse
+from apps.core.permissions import IsAuthenticated
+from apps.core.responses import APIResponse
 from django.contrib.auth import login, logout
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes

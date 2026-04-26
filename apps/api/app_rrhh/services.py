@@ -11,7 +11,7 @@ from .models import (
     Area, Empleado, DatosLaborales, DatosFamiliares,
     DatosAcademicos, HistorialUbicaciones, Usuario, Rol, Permiso
 )
-from core.exceptions import (
+from apps.core.exceptions import (
     BusinessLogicError, ResourceNotFoundError,
     DuplicateResourceError, InvalidOperationError
 )

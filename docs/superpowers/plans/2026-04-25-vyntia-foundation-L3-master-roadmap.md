@@ -1,0 +1,131 @@
+# VYNTIA Foundation L3 — Master Roadmap
+
+> **Este NO es un plan ejecutable.** Es un índice y orden de ejecución para los 11 sub-PRs que componen L3 (división de `app_rrhh` en bounded contexts). Cada sub-PR tiene su propio plan detallado en `docs/superpowers/plans/2026-04-25-vyntia-foundation-L3.X-<name>.md`.
+
+**Spec de origen:** `docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md` § 4 "L3 — División de apps Django"
+
+**Pre-condiciones (mismas para todos los sub-PRs):**
+- L2 mergeado a master: commit `cbd2fb8f Merge L2: Django 4.2 → 5.2 LTS upgrade`
+- Django 5.2.13 activo
+- BD `bd_vyntia` provisionada (esquema `app_rrhh_*` actual)
+- pytest baseline: 125 passed, 44 failed, 3 skipped
+
+**Filosofía de ejecución:**
+- Un sub-PR = una branch = un merge a master con `--no-ff`
+- Cada sub-PR debe preservar el baseline pytest (125/44/3) post-merge
+- Los planes detallados se generan **uno a la vez** — el siguiente plan se escribe DESPUÉS del merge del anterior, para incorporar lecciones del previo
+- Si un sub-PR descubre que la división propuesta no funciona (ej. circular imports irresolvibles), se ajusta el plan del siguiente, no se rompe la regla de un-merge-por-sub-PR
+
+---
+
+## Estructura objetivo (al final de L3.11)
+
+```
+apps/api/
+├── manage.py
+├── pyproject.toml
+├── vyntia/                              # Django settings (post-L1)
+├── apps/                                # NUEVO en L3.1 — namespace de bounded contexts
+│   ├── __init__.py
+│   ├── core/                            # ← L3.1 (sin modelos: APIResponse, paginación, decorators, middleware)
+│   ├── identity/                        # ← L3.2 (User, Role, Permission, auth)
+│   ├── organization/                    # ← L3.3 (Department, Location, Company, SystemSetting)
+│   ├── employees/                       # ← L3.4 (Employee, FamilyMember, AcademicRecord, Certification)
+│   ├── contracts/                       # ← L3.5 (Contract + ContractAmendment, EmploymentData)
+│   ├── documents/                       # ← L3.6 (DigitalDocument, DocumentTemplate, PDF generators)
+│   ├── payroll/                         # ← L3.7 (Compensation, MonthlyPayroll, TaxParameter)
+│   ├── time_off/                        # ← L3.8 (VacationRequest, VacationBalance, vacation services)
+│   └── onboarding/                      # ← L3.9 (OnboardingProcess)
+├── api/v1/
+│   ├── identity/
+│   ├── employees/
+│   ├── contracts/
+│   ├── documents/
+│   ├── payroll/
+│   ├── time-off/
+│   └── onboarding/
+├── tests/
+└── (app_rrhh/ se elimina en L3.11)
+```
+
+---
+
+## Sub-PR Index
+
+| # | Sub-PR | Branch | Scope | Tasks (est.) | Riesgo | Dependencias | Status |
+|---|---|---|---|---|---|---|---|
+| L3.1 | `core` extraction | `vyntia/L3.1-core-app` | Mover `apps/api/core/` → `apps/api/apps/core/`, registrar como Django app, actualizar 33 import lines + 11 settings strings | ~10 | Bajo | — | ⏳ NEXT |
+| L3.2 | `identity` app | `vyntia/L3.2-identity-app` | Crear `apps/api/apps/identity/`, mover `Usuario` → `User` (rename + migration), `Rol`/`Permiso`, `app_rrhh/auth.py` → `apps/identity/auth.py` | ~15 | Alto (AUTH_USER_MODEL change) | L3.1 | ⏳ |
+| L3.3 | `organization` app | `vyntia/L3.3-organization-app` | Mover `Area`/`Ubicacion`/`ConfiguracionEmpresa`/`Sistema` a `apps/api/apps/organization/` con FKs lazy | ~12 | Medio | L3.1, L3.2 | ⏳ |
+| L3.4 | `employees` app | `vyntia/L3.4-employees-app` | Mover `Empleado`/`DatosFamiliares`/`DatosAcademicos`/`CursosCertificaciones` a `apps/api/apps/employees/`. Empleado tiene FKs a casi todo | ~18 | Alto (Empleado es el hub) | L3.1, L3.2, L3.3 | ⏳ |
+| L3.5 | `contracts` app | `vyntia/L3.5-contracts-app` | `ContratosAdendas` → split a `Contract` + `ContractAmendment`, `DatosLaborales` → `EmploymentData`. Cambio de modelo de datos | ~16 | Alto (model split + data migration) | L3.4 | ⏳ |
+| L3.6 | `documents` app | `vyntia/L3.6-documents-app` | Mover `DocumentosDigitales`/`PlantillaDocumento` + `services/{pdf_generator,template_service,word_template_service}.py` | ~12 | Medio | L3.4 | ⏳ |
+| L3.7 | `payroll` app | `vyntia/L3.7-payroll-app` | Mover `Remuneracion`/`ConfiguracionUit` + `services/{planilla_calculo,descuento_masivo}.py`. NO incluye motor multi-régimen (eso es Vyntia Pay sub-proyecto D) | ~14 | Medio | L3.4 | ⏳ |
+| L3.8 | `time_off` app | `vyntia/L3.8-timeoff-app` | Mover modelos `Vacaciones` (5 archivos) + 5 vacation services. `VacationRequest` + `VacationBalance` split | ~18 | Alto (5 services + split) | L3.4 | ⏳ |
+| L3.9 | `onboarding` app | `vyntia/L3.9-onboarding-app` | Mover `OnboardingEmpleado` + `services/onboarding_service.py` (581 líneas) | ~10 | Bajo | L3.4 | ⏳ |
+| L3.10 | Spanish → English rename | `vyntia/L3.10-rename-en` | Aplicar tabla del spec § 3.6: `nombres`→`first_name`, `Empleado`→`Employee`, etc. Migration `RenameModel` + `AlterField` masiva. **Frontend services + tipos TS también** | ~30+ | **Crítico** (toca todo) | L3.1–L3.9 | ⏳ |
+| L3.11 | `app_rrhh` removal | `vyntia/L3.11-cleanup-app-rrhh` | Borrar carpeta vacía `apps/api/app_rrhh/`, actualizar URL raíz, eliminar redirects 301 que se pusieron en L3.2-L3.9 | ~6 | Bajo | L3.10 | ⏳ |
+
+**Estimación total:** 8–15 días working alone. Escala con interrupciones.
+
+---
+
+## Reglas duras (mismas que el spec, recordadas aquí)
+
+1. **FK cross-app SOLO con string lazy**: `models.ForeignKey('employees.Employee', ...)`. Nunca `from apps.employees.models import Employee` desde otra app de dominio.
+2. **Imports cross-app prohibidos**. Si una app necesita lógica de otra, va por **service public API** exportada en `apps/<other>/services/__init__.py`.
+3. **`apps.core` NO depende de ninguna app de dominio** — solo es utilidad pura.
+4. **Cada app tiene su propio** `urls.py`, `serializers.py`, `views/`, `services/`, `tests/`.
+5. **Naming en inglés** (en L3.10) para todo el código Python y TypeScript. Strings UI en español. Términos legales peruanos preservados (DNI, RUC, CTS, PLAME, T-Registro, SUNAT).
+6. **Test baseline 125/44/3** se preserva en cada merge a master. Si cambia, se diagnostica antes del merge.
+
+---
+
+## Patrón de migración por sub-PR (L3.2 a L3.9)
+
+Cada sub-PR de extracción de modelos sigue esta plantilla. Los planes individuales detallan los pasos exactos.
+
+1. **Pre-flight:** branch + baseline pytest
+2. **Crear nueva app Django**: `apps/api/apps/<name>/` con `apps.py`, `__init__.py`, `models/__init__.py`, `migrations/__init__.py`, `tests/__init__.py`
+3. **Registrar en INSTALLED_APPS** (`vyntia/settings/base.py`)
+4. **Mover modelos**: `git mv apps/api/app_rrhh/models/<file>.py apps/api/apps/<name>/models/<file>.py`
+5. **Actualizar `app_rrhh/models/__init__.py`** para que ya no exporte los modelos movidos
+6. **Generar migration de movimiento**: Django soporta `--rename-app` indirectamente vía `db_table` lock + `Meta.app_label`. Se usa `migrations.SeparateDatabaseAndState` para mover el modelo lógicamente sin alterar la tabla física (que mantiene su nombre original)
+7. **Cambiar FKs cross-app a string lazy**: `'employees.Employee'` en lugar de `Empleado` directo
+8. **Mover serializers/views/services** asociados a la nueva app
+9. **Mantener URL legacy** vía wildcard redirect 301 en `vyntia/urls.py` (`/api/v1/rrhh/empleados/` → `/api/v1/employees/`)
+10. **Smoke tests**: pytest baseline + manage.py check + runserver smoke
+11. **Commit + merge**
+
+---
+
+## Riesgos transversales L3
+
+| # | Riesgo | Probabilidad | Impacto | Mitigación |
+|---|---|:---:|:---:|---|
+| LR1 | Circular imports al separar apps | Alta | Medio | FK string lazy + service public API. Cada plan incluye grep de `from apps.X import` cruzados |
+| LR2 | Migración `RenameModel` rompe BD | Media | Alto | Usar `SeparateDatabaseAndState` para que la tabla física no cambie, solo el state lógico de Django. Test rollback antes de aplicar a `bd_vyntia` |
+| LR3 | Frontend rompe por URLs cambiadas | Alta | Medio | URLs viejas mantienen redirect 301 hasta el final de L4 (frontend reorg). El frontend sigue llamando `/api/v1/rrhh/empleados/` durante L3 |
+| LR4 | Signal handlers ocultos en `app_rrhh` | Media | Alto | Antes de L3.2 ejecutar `grep -r "@receiver\|signal\|@app.task" apps/api/app_rrhh/` y catalogar TODO. Cada sub-PR mueve los signals que pertenezcan a sus modelos |
+| LR5 | Tests legacy hardcoded a `app_rrhh.X` paths | Alta | Bajo | Cada sub-PR de extracción actualiza imports en `tests/test_*.py` correspondientes. Los 44 fails pre-existing se preservan; nuevos fails son red flag |
+| LR6 | Inicialización de drf_spectacular schema con duplicados | Cierta | Bajo | Los 254 W001 actuales (de L2) se eliminan progresivamente conforme L3.X mueve serializers. Verificable post-L3.10 |
+| LR7 | `AUTH_USER_MODEL = 'app_rrhh.Usuario'` en L3.2 | Cierta | Crítico | Cambiar `AUTH_USER_MODEL` requiere drop+recreate de tablas auth/sessions o migration cuidadosa. L3.2 detalla el procedimiento exacto |
+| LR8 | App label collisions (Django built-in vs nuestras) | Baja | Medio | Si elegimos `apps.core` como label, Django lo registra como `core`. Si choca con `django.core` (no debería, son módulos no apps), renombrar app_label en `apps.py` |
+
+---
+
+## Cómo empezar
+
+**Ahora:** generar el plan detallado de L3.1 → ejecutar → merge → verificar baseline.
+
+**Después de cada merge:** actualizar este roadmap (`Status` column → ✅ con merge SHA), generar el siguiente plan, ejecutar.
+
+Cuando los 11 sub-PRs estén ✅, L3 está completo. Comenzamos L4 (frontend reorg).
+
+---
+
+## Notas sobre el spec
+
+El spec § 4 lista L3 como una sola sección de 8-15 días. Este roadmap descompone esa sección en 11 sub-PRs concretos siguiendo el mismo orden (L3.1 a L3.11) que el spec ya definió. No hay deviation del spec — solo separación física de los planes.
+
+La numeración decimal (`L3.1`, `L3.2`, ...) es para distinguir sub-PRs dentro de L3. El branch convention sigue: `vyntia/L3.<N>-<short-name>`. El commit prefix sigue: `chore(L3.<N>):` / `docs(L3.<N>):`.
