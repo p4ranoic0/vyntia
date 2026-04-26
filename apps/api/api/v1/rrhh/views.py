@@ -25,7 +25,7 @@ from app_rrhh.models import (
 )
 
 # Importar decoradores de permisos y cache
-from core.decorators import (
+from apps.core.decorators import (
     cache_response,
     invalidate_cache,
     require_admin,
@@ -35,9 +35,9 @@ from core.decorators import (
     require_permissions,
     require_roles,
 )
-from core.exceptions import BusinessLogicError
-from core.pagination import StandardResultsSetPagination
-from core.responses import APIResponse
+from apps.core.exceptions import BusinessLogicError
+from apps.core.pagination import StandardResultsSetPagination
+from apps.core.responses import APIResponse
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend

@@ -17,7 +17,7 @@ from app_rrhh.services import (
     VacationReportService,
     VacationService,
 )
-from core.decorators import (
+from apps.core.decorators import (
     cache_response,
     invalidate_cache,
     require_admin,
@@ -25,8 +25,8 @@ from core.decorators import (
     require_hr,
     require_manager,
 )
-from core.pagination import StandardResultsSetPagination
-from core.responses import APIResponse
+from apps.core.pagination import StandardResultsSetPagination
+from apps.core.responses import APIResponse
 from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend

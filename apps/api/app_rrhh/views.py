@@ -1,6 +1,6 @@
 # from django.shortcuts import render
 
-from core.decorators import (
+from apps.core.decorators import (
     require_admin,
     require_authenticated,
     require_hr,

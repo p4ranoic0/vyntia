@@ -11,7 +11,7 @@ from django.db.models import Q, Sum
 
 from app_rrhh.models import ContratosAdendas, Empleado
 from app_rrhh.models.vacaciones import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones
-from core.exceptions import BusinessLogicError
+from apps.core.exceptions import BusinessLogicError
 
 logger = logging.getLogger(__name__)
 

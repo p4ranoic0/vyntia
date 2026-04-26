@@ -21,9 +21,9 @@ from app_rrhh.models import (
     PlanillaMensual,
 )
 from app_rrhh.services import DescuentoMasivoService, PlanillaCalculoService
-from core.decorators import require_admin, require_authenticated, require_hr
-from core.pagination import StandardResultsSetPagination
-from core.responses import APIResponse
+from apps.core.decorators import require_admin, require_authenticated, require_hr
+from apps.core.pagination import StandardResultsSetPagination
+from apps.core.responses import APIResponse
 from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from rest_framework import status, viewsets

@@ -15,15 +15,15 @@ from app_rrhh.models import (
 )
 from app_rrhh.services import TemplateService
 from app_rrhh.services.word_template_service import WordTemplateService
-from core.decorators import (
+from apps.core.decorators import (
     require_admin,
     require_authenticated,
     require_hr,
     require_manager,
     require_permissions,
 )
-from core.permissions import IsHRUser
-from core.responses import APIResponse
+from apps.core.permissions import IsHRUser
+from apps.core.responses import APIResponse
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import Http404, HttpResponse

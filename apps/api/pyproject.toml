@@ -70,7 +70,7 @@ dev = [
 ]
 
 [tool.setuptools]
-# Backend package layout: solo se distribuyen estos top-levels.
-# Cuando L3 cree apps/api/apps/, este `packages` debe actualizarse.
-packages = ["vyntia", "app_rrhh", "api", "core"]
+# Backend package layout. `apps` namespace contiene bounded contexts (L3+).
+# Cada nueva app L3.X (identity, organization, employees, ...) se anade aqui.
+packages = ["vyntia", "app_rrhh", "api", "apps", "apps.core"]
 include-package-data = true

@@ -15,7 +15,7 @@ from app_rrhh.models.vacaciones import (
     PeriodoVacacional,
     SolicitudVacaciones,
 )
-from core.exceptions import BusinessLogicError
+from apps.core.exceptions import BusinessLogicError
 
 from .vacation_service import VacationService
 from decimal import Decimal

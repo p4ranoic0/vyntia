@@ -31,6 +31,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "apps.core.apps.CoreConfig",
     "app_rrhh",
 ]
 
@@ -38,18 +39,18 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "core.middleware.SecurityHeadersMiddleware",
-    "core.middleware.HealthCheckMiddleware",
+    "apps.core.middleware.SecurityHeadersMiddleware",
+    "apps.core.middleware.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "core.middleware.JWTCookieMiddleware",
+    "apps.core.middleware.JWTCookieMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "core.middleware.RequestLoggingMiddleware",
-    "core.middleware.PerformanceMonitoringMiddleware",
-    "core.middleware.AuditMiddleware",
-    # "core.middleware.RateLimitingMiddleware",  # Deshabilitado temporalmente (requiere Redis)
+    "apps.core.middleware.RequestLoggingMiddleware",
+    "apps.core.middleware.PerformanceMonitoringMiddleware",
+    "apps.core.middleware.AuditMiddleware",
+    # "apps.core.middleware.RateLimitingMiddleware",  # Deshabilitado temporalmente (requiere Redis)
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -119,7 +120,7 @@ DATABASE_CONNECTION_POOLING = {
 }
 
 # Database routing
-DATABASE_ROUTERS = ["core.database.DatabaseRouter"]
+DATABASE_ROUTERS = ["apps.core.database.DatabaseRouter"]
 
 # Custom User Model
 AUTH_USER_MODEL = "app_rrhh.Usuario"
@@ -136,14 +137,14 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "core.permissions.IsAuthenticated",
+        "apps.core.permissions.IsAuthenticated",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsSetPagination",
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -153,7 +154,7 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
-    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
     # Throttling deshabilitado temporalmente (requiere Redis)
     # "DEFAULT_THROTTLE_CLASSES": [
     #     "rest_framework.throttling.AnonRateThrottle",
