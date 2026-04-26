@@ -78,7 +78,7 @@ class HistorialUbicaciones(models.Model):
     
     # Documentación del movimiento
     documento = models.ForeignKey(
-        'app_rrhh.DocumentosDigitales',
+        'documents.DocumentosDigitales',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

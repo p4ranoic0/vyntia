@@ -8,7 +8,7 @@ tamano_archivo al ser leida.
 """
 
 import pytest
-from app_rrhh.models.documentos_digitales import DocumentosDigitales
+from apps.documents.models import DocumentosDigitales
 
 
 def make_doc(tamano):

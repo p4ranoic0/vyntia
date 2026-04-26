@@ -17,7 +17,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 
-from app_rrhh.models import PlantillaDocumento
+from apps.documents.models import PlantillaDocumento
 
 
 # ──────────────────────────────────────────────────────────────────────────────

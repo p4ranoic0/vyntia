@@ -5,8 +5,6 @@
 from .descuento_masivo_service import DescuentoMasivoService
 from .planilla_calculo_service import PlanillaCalculoService
 
-# Servicios de plantillas
-from .template_service import TemplateService
 from .vacation_admin_service import VacationAdminService
 from .vacation_approval_service import VacationApprovalService
 from .vacation_calculation_service import VacationCalculationService
@@ -19,7 +17,6 @@ __all__ = [
     "VacationAdminService",
     "VacationCalculationService",
     "VacationReportService",
-    "TemplateService",
     "DescuentoMasivoService",
     "PlanillaCalculoService",
 ]

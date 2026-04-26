@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Dict, Any
 
-from app_rrhh.models import DocumentosDigitales
+from apps.documents.models import DocumentosDigitales
 from apps.contracts.models import ContratosAdendas
 from apps.employees.models import Empleado
 from apps.organization.models import Area

@@ -6,13 +6,13 @@ from typing import Any, Dict
 from app_rrhh.models import (
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
-    DocumentosDigitales,
     OnboardingEmpleado,
 )
 from apps.contracts.models import (
     ContratosAdendas,
     DatosLaborales,
 )
+from apps.documents.models import DocumentosDigitales
 from apps.employees.models import (
     DatosAcademicos,
     DatosFamiliares,

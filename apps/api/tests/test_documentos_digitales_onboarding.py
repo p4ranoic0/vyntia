@@ -9,7 +9,7 @@ import io
 import pytest
 from django.core.files.base import ContentFile
 
-from app_rrhh.models import DocumentosDigitales
+from apps.documents.models import DocumentosDigitales
 
 
 def _make_doc(empleado, tipo='dni', categoria='personal', nombre='Doc Test',
