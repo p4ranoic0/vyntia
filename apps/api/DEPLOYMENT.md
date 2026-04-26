@@ -1,6 +1,6 @@
 # Backend Deployment Guide
 
-Guía de deployment del backend de Intranet RRHH.
+Guía de deployment del backend de VYNTIA.
 
 ## Opciones de Hosting
 
@@ -113,7 +113,7 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: bd_rrhh_intranet
+      POSTGRES_DB: bd_vyntia
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: temporary_password
     volumes:
@@ -174,7 +174,7 @@ ENVIRONMENT=production
 
 # Database (RDS/CloudSQL)
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=bd_rrhh_intranet_prod
+DB_NAME=bd_vyntia_prod
 DB_USER=postgres_prod
 DB_PASSWORD=super_secure_password_123
 DB_HOST=rds.amazonaws.com
@@ -286,10 +286,10 @@ railway logs
 heroku logs --tail
 
 # Database backup (PostgreSQL)
-pg_dump -U postgres bd_rrhh_intranet > backup_$(date +%Y%m%d).sql
+pg_dump -U postgres bd_vyntia > backup_$(date +%Y%m%d).sql
 
 # Restaurar backup
-psql -U postgres bd_rrhh_intranet < backup_20260307.sql
+psql -U postgres bd_vyntia < backup_20260307.sql
 ```
 
 ## Rollback

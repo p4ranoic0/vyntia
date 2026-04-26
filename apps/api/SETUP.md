@@ -1,6 +1,6 @@
 # Backend Setup
 
-Setup automático del backend de Intranet RRHH para desarrollo local.
+Setup automático del backend de VYNTIA para desarrollo local.
 
 ## Requisitos Previos
 
@@ -107,7 +107,7 @@ Copiar `.env.example` a `.env` y configurar:
 ```env
 # Base de Datos PostgreSQL
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=bd_rrhh_intranet
+DB_NAME=bd_vyntia
 DB_USER=postgres
 DB_PASSWORD=tu_password
 DB_HOST=localhost
@@ -192,7 +192,7 @@ psql -U postgres -h localhost
 
 # Verifica credenciales en .env
 # Crea la BD si no existe:
-createdb bd_rrhh_intranet
+createdb bd_vyntia
 ```
 
 ### Error: ModuleNotFoundError
