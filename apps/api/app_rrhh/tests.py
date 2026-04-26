@@ -8,9 +8,10 @@ from datetime import datetime, timedelta
 import json
 
 from .models import (
-    Area, Empleado, DatosFamiliares, DatosAcademicos,
-    DatosLaborales, HistorialUbicaciones,
+    Empleado, DatosFamiliares, DatosAcademicos,
+    DatosLaborales,
 )
+from apps.organization.models import Area, HistorialUbicaciones
 from apps.identity.models import Usuario, Rol, Permiso
 
 

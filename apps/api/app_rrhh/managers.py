@@ -176,7 +176,7 @@ class EmpleadoManager(models.Manager):
 
     def con_ubicacion_actual(self):
         """Get employees with their current location."""
-        from .models import HistorialUbicaciones
+        from apps.organization.models import HistorialUbicaciones
 
         return self.prefetch_related(
             Prefetch(

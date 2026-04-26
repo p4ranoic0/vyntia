@@ -18,13 +18,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .filters import EmpleadoFilter
 from .models import (
-    Area,
     DatosAcademicos,
     DatosFamiliares,
     DatosLaborales,
     Empleado,
-    HistorialUbicaciones,
 )
+from apps.organization.models import Area, HistorialUbicaciones
 from apps.identity.models import (
     Permiso,
     Rol,

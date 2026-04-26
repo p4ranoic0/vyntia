@@ -16,7 +16,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from unittest.mock import patch
 
-from app_rrhh.models import Area, Empleado
+from app_rrhh.models import Empleado
+from apps.organization.models import Area
 from apps.identity.models import Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
 
 

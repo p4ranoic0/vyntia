@@ -252,7 +252,7 @@ class Empleado(models.Model):
 
     def ubicacion_actual(self):
         """Obtiene la ubicación actual del empleado."""
-        from .ubicacion import HistorialUbicaciones
+        from apps.organization.models import HistorialUbicaciones
 
         return HistorialUbicaciones.objects.filter(
             empleado=self, estado_ubicacion="activo"
@@ -268,7 +268,7 @@ class Empleado(models.Model):
 
     def historial_ubicaciones(self):
         """Obtiene el historial de ubicaciones del empleado."""
-        from .ubicacion import HistorialUbicaciones
+        from apps.organization.models import HistorialUbicaciones
 
         return HistorialUbicaciones.objects.filter(empleado=self).order_by(
             "-fecha_inicio"

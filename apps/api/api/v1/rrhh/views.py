@@ -7,7 +7,6 @@ from typing import Any, Dict
 
 from app_rrhh import services
 from app_rrhh.models import (
-    Area,
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
     DatosAcademicos,
@@ -17,6 +16,7 @@ from app_rrhh.models import (
     Empleado,
     OnboardingEmpleado,
 )
+from apps.organization.models import Area
 from apps.identity.models import (
     Modulos,
     Permiso,
@@ -2840,7 +2840,7 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
     def list(self, request):
         """Obtener configuración actual de la empresa."""
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
-        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
+        from apps.organization.models import ConfiguracionEmpresa
 
         cfg = ConfiguracionEmpresa.get_config()
         serializer = ConfiguracionEmpresaSerializer(cfg, context={"request": request})
@@ -2850,7 +2850,7 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
     def create(self, request):
         """Actualizar configuración de la empresa (upsert)."""
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
-        from app_rrhh.models.configuracion_empresa import ConfiguracionEmpresa
+        from apps.organization.models import ConfiguracionEmpresa
 
         cfg = ConfiguracionEmpresa.get_config()
         serializer = ConfiguracionEmpresaSerializer(

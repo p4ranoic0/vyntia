@@ -36,7 +36,7 @@ class HistorialUbicaciones(models.Model):
         help_text='ID único del registro de ubicación'
     )
     empleado = models.ForeignKey(
-        'Empleado',
+        'app_rrhh.Empleado',
         on_delete=models.CASCADE,
         related_name='historial_ubicaciones',
         help_text='ID del empleado'
@@ -78,7 +78,7 @@ class HistorialUbicaciones(models.Model):
     
     # Documentación del movimiento
     documento = models.ForeignKey(
-        'DocumentosDigitales',
+        'app_rrhh.DocumentosDigitales',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -282,7 +282,7 @@ class HistorialUbicaciones(models.Model):
     @classmethod
     def empleados_sin_movimiento_activo(cls):
         """Obtiene empleados que no tienen movimiento activo."""
-        from .empleado import Empleado
+        from app_rrhh.models import Empleado
         empleados_con_movimiento = cls.objects.filter(
             estado_ubicacion='activo'
         ).values_list('empleado_id', flat=True)

@@ -3,7 +3,8 @@
 from django.utils import timezone
 from django_filters import rest_framework as filters
 
-from app_rrhh.models import Area, Empleado
+from app_rrhh.models import Empleado
+from apps.organization.models import Area
 from app_rrhh.models.vacaciones import ConfiguracionVacaciones, GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
 
 

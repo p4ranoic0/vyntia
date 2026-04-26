@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from app_rrhh.models import (
-    Area,
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
     ContratosAdendas,
@@ -15,6 +14,7 @@ from app_rrhh.models import (
     Empleado,
     OnboardingEmpleado,
 )
+from apps.organization.models import Area
 from apps.identity.models import (
     Modulos,
     Permiso,
@@ -1322,7 +1322,7 @@ class ConfiguracionEmpresaSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
 
     class Meta:
-        from app_rrhh.models import ConfiguracionEmpresa as _CE
+        from apps.organization.models import ConfiguracionEmpresa as _CE
 
         model = _CE
         fields = [
