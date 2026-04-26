@@ -22,7 +22,7 @@
 ```
 D:\VYNTIA\
 ├── apps/
-│   ├── api/              # Django 4.2 + DRF backend
+│   ├── api/              # Django 5.2 LTS + DRF backend
 │   │   ├── manage.py
 │   │   ├── vyntia/       # settings module (renamed from config/ in L1)
 │   │   ├── app_rrhh/     # SINGLE Django app — split into 8 bounded contexts in L3
@@ -238,7 +238,7 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 **Foundation layers (L0-L5):**
 - L0 ✅ Bootstrap monorepo (apps/api, apps/web, packages, docs)
 - L1 ✅ Rebrand superficial done (BD `bd_vyntia`, `config/`→`vyntia/`, design tokens VYNTIA, Inter font)
-- L2 ⏳ Django 4.2 → Django 5 upgrade
+- L2 ✅ Django 5.2 LTS upgrade done
 - L3 ⏳ Split `app_rrhh` into 8 Django apps (the big one — 11 sub-PRs)
 - L4 ⏳ Reorganize frontend by feature
 - L5 ⏳ Cleanup final + docs + CI
