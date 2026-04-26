@@ -54,8 +54,8 @@ apps/api/
 
 | # | Sub-PR | Branch | Scope | Tasks (est.) | Riesgo | Dependencias | Status |
 |---|---|---|---|---|---|---|---|
-| L3.1 | `core` extraction | `vyntia/L3.1-core-app` | Mover `apps/api/core/` → `apps/api/apps/core/`, registrar como Django app, actualizar 33 import lines + 11 settings strings | ~10 | Bajo | — | ⏳ NEXT |
-| L3.2 | `identity` app | `vyntia/L3.2-identity-app` | Crear `apps/api/apps/identity/`, mover `Usuario` → `User` (rename + migration), `Rol`/`Permiso`, `app_rrhh/auth.py` → `apps/identity/auth.py` | ~15 | Alto (AUTH_USER_MODEL change) | L3.1 | ⏳ |
+| L3.1 | `core` extraction | `vyntia/L3.1-core-app` | Mover `apps/api/core/` → `apps/api/apps/core/`, registrar como Django app, actualizar 33 import lines + 11 settings strings | ~10 | Bajo | — | ✅ merged `faa108a3` |
+| L3.2 | `identity` app | `vyntia/L3.2-identity-app` | Crear `apps/api/apps/identity/`, mover `Usuario` → `User` (rename + migration), `Rol`/`Permiso`, `app_rrhh/auth.py` → `apps/identity/auth.py` | ~15 | Alto (AUTH_USER_MODEL change) | L3.1 | ⏳ NEXT |
 | L3.3 | `organization` app | `vyntia/L3.3-organization-app` | Mover `Area`/`Ubicacion`/`ConfiguracionEmpresa`/`Sistema` a `apps/api/apps/organization/` con FKs lazy | ~12 | Medio | L3.1, L3.2 | ⏳ |
 | L3.4 | `employees` app | `vyntia/L3.4-employees-app` | Mover `Empleado`/`DatosFamiliares`/`DatosAcademicos`/`CursosCertificaciones` a `apps/api/apps/employees/`. Empleado tiene FKs a casi todo | ~18 | Alto (Empleado es el hub) | L3.1, L3.2, L3.3 | ⏳ |
 | L3.5 | `contracts` app | `vyntia/L3.5-contracts-app` | `ContratosAdendas` → split a `Contract` + `ContractAmendment`, `DatosLaborales` → `EmploymentData`. Cambio de modelo de datos | ~16 | Alto (model split + data migration) | L3.4 | ⏳ |
