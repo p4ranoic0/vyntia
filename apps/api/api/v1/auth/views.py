@@ -3,7 +3,7 @@
 from typing import Any, Dict
 
 from app_rrhh.menu_service import MenuService
-from app_rrhh.models import Modulos, Permiso, Rol, Usuario
+from apps.identity.models import Modulos, Permiso, Rol, Usuario
 from apps.core.decorators import (
     require_admin,
     require_authenticated,

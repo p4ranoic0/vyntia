@@ -6,7 +6,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from app_rrhh.models import UsuarioRoles, Usuario, Rol
+from apps.identity.models import UsuarioRoles, Usuario, Rol
 from apps.core.exceptions import BusinessLogicError
 
 

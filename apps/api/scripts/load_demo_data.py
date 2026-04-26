@@ -57,6 +57,8 @@ from app_rrhh.models import (
     Area,
     DatosLaborales,
     Empleado,
+)
+from apps.identity.models import (
     Modulos,
     Permiso,
     Rol,

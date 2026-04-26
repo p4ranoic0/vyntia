@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "apps.core.apps.CoreConfig",
+    "apps.identity.apps.IdentityConfig",
     "app_rrhh",
 ]
 
@@ -123,11 +124,11 @@ DATABASE_CONNECTION_POOLING = {
 DATABASE_ROUTERS = ["apps.core.database.DatabaseRouter"]
 
 # Custom User Model
-AUTH_USER_MODEL = "app_rrhh.Usuario"
+AUTH_USER_MODEL = "identity.Usuario"
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
-    "app_rrhh.auth.CustomAuthBackend",
+    "apps.identity.auth.CustomAuthBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 

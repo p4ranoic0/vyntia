@@ -18,8 +18,8 @@ from app_rrhh.models import (
     DescuentoMasivo,
     DetallePlanilla,
     PlanillaMensual,
-    Usuario,
 )
+from apps.identity.models import Usuario
 from django.utils import timezone
 from rest_framework import serializers
 

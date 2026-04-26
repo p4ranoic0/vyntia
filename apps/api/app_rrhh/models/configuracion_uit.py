@@ -41,7 +41,7 @@ class ConfiguracionUit(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        "Usuario",
+        "identity.Usuario",
         on_delete=models.PROTECT,
         related_name="configuraciones_uit_creadas",
         null=True,

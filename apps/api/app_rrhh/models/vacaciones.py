@@ -125,7 +125,7 @@ class ConfiguracionVacaciones(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -240,7 +240,7 @@ class PeriodoVacacional(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -357,7 +357,7 @@ class SolicitudVacaciones(models.Model):
     # Aprobación de RRHH
     aprobado_por_rrhh = models.BooleanField(default=False)
     rrhh_aprobador = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -369,7 +369,7 @@ class SolicitudVacaciones(models.Model):
     # Información de rechazo
     motivo_rechazo = models.TextField(null=True, blank=True)
     rechazado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -380,7 +380,7 @@ class SolicitudVacaciones(models.Model):
     # Información de cancelación
     motivo_cancelacion = models.TextField(null=True, blank=True)
     cancelado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -506,7 +506,7 @@ class GoceVacaciones(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     registrado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -586,7 +586,7 @@ class HistorialSolicitudVacaciones(models.Model):
     
     # Usuario que realizó la acción
     usuario_accion = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

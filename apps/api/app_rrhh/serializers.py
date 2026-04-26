@@ -7,6 +7,8 @@ from .models import (
     DatosLaborales,
     Empleado,
     HistorialUbicaciones,
+)
+from apps.identity.models import (
     Permiso,
     Rol,
     RolPermisos,

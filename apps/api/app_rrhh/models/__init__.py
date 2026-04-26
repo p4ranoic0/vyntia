@@ -31,10 +31,7 @@ from .remuneracion import (
     DetallePlanilla,
     PlanillaMensual,
 )
-from .roles import Permiso, Rol
-from .sistema import ModuloPermiso, Modulos, RolPermisos, UsuarioRoles
 from .ubicacion import HistorialUbicaciones
-from .usuario import Usuario
 from .vacaciones import (
     ConfiguracionVacaciones,
     GoceVacaciones,
@@ -50,7 +47,6 @@ __all__ = [
     "Empleado",
     "DatosLaborales",
     "HistorialUbicaciones",
-    "Usuario",
     "DatosFamiliares",
     "CursosCertificaciones",
     "DatosAcademicos",
@@ -64,14 +60,6 @@ __all__ = [
     # Modelos de contratos
     # 'ContratoAdenda',  # Comentado para evitar conflicto de tabla
     "ContratosAdendas",
-    # Modelos de roles y permisos
-    "Rol",
-    "Permiso",
-    # Modelos del sistema
-    "Modulos",
-    "ModuloPermiso",
-    "RolPermisos",
-    "UsuarioRoles",
     # Modelo de onboarding
     "OnboardingEmpleado",
     # Plantillas Word

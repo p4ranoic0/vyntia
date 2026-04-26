@@ -196,7 +196,7 @@ class ContratosAdendas(models.Model):
     )
     
     creado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.PROTECT,
         related_name='contratos_creados',
         null=True,
@@ -205,7 +205,7 @@ class ContratosAdendas(models.Model):
     )
 
     modificado_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.PROTECT,
         related_name='contratos_modificados',
         null=True,

@@ -47,7 +47,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # Campos principales
     usuario_id = models.AutoField(primary_key=True)
     empleado = models.OneToOneField(
-        "Empleado",
+        "app_rrhh.Empleado",
         on_delete=models.CASCADE,
         related_name="usuario",
         null=True,
@@ -368,7 +368,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def areas_accesibles(self):
         """Obtiene las áreas a las que el usuario tiene acceso."""
-        from .area import Area
+        from app_rrhh.models import Area
 
         if self.es_administrador or self.nivel_acceso == "total":
             return Area.objects.filter(estado_area="activo")

@@ -16,7 +16,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from unittest.mock import patch
 
-from app_rrhh.models import Usuario, Area, Empleado, Rol, Permiso, RolPermisos, UsuarioRoles
+from app_rrhh.models import Area, Empleado
+from apps.identity.models import Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
 
 
 class AuthAPITestCase(APITestCase):

@@ -9,8 +9,9 @@ import json
 
 from .models import (
     Area, Empleado, DatosFamiliares, DatosAcademicos,
-    DatosLaborales, HistorialUbicaciones, Usuario, Rol, Permiso
+    DatosLaborales, HistorialUbicaciones,
 )
+from apps.identity.models import Usuario, Rol, Permiso
 
 
 class BaseAPITestCase(APITestCase):
@@ -107,7 +108,7 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Assign admin role to admin user
-        from app_rrhh.models import UsuarioRoles
+        from apps.identity.models import UsuarioRoles
         UsuarioRoles.objects.get_or_create(
             usuario=self.admin_user,
             rol=self.admin_rol,

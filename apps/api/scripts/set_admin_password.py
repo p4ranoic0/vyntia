@@ -10,7 +10,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from app_rrhh.models.usuario import Usuario
+from apps.identity.models.usuario import Usuario
 
 def set_admin_password():
     """Establece una contraseña conocida para el usuario admin"""

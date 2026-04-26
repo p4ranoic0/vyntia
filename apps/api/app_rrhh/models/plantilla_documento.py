@@ -37,7 +37,7 @@ class PlantillaDocumento(models.Model):
     activa = models.BooleanField(default=True, help_text='Si esta plantilla esta disponible para uso')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     creada_por = models.ForeignKey(
-        'Usuario',
+        'identity.Usuario',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

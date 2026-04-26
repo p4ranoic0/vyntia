@@ -6,7 +6,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from app_rrhh.models import Usuario, Empleado
+from app_rrhh.models import Empleado
+from apps.identity.models import Usuario
 
 try:
     # Obtener el usuario admin
