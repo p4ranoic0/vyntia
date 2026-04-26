@@ -5,9 +5,9 @@ import unicodedata
 
 from app_rrhh.models import (
     DocumentosDigitales,
-    Empleado,
     OnboardingEmpleado,
 )
+from apps.employees.models import Empleado
 from apps.identity.models import Rol, Usuario, UsuarioRoles
 from app_rrhh.tasks import send_email_html_task
 from django.conf import settings

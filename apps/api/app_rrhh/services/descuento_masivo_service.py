@@ -20,8 +20,8 @@ from app_rrhh.models import (
     ConfiguracionRemuneracion,
     DescuentoMasivo,
     DetallePlanilla,
-    Empleado,
 )
+from apps.employees.models import Empleado
 
 
 class DescuentoMasivoService:

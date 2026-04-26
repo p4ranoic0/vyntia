@@ -10,9 +10,9 @@ from app_rrhh.models import (
     ConfiguracionAfp,
     ConfiguracionUit,
     DetallePlanilla,
-    Empleado,
     PlanillaMensual,
 )
+from apps.employees.models import Empleado
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone

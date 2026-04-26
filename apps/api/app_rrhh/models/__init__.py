@@ -10,12 +10,8 @@ Cada archivo contiene modelos relacionados funcionalmente.
 # from .contratos import ContratoAdenda  # Comentado para evitar conflicto de tabla
 from .configuracion_uit import ConfiguracionUit
 from .contratos_adendas import ContratosAdendas
-from .cursos_certificaciones import CursosCertificaciones
-from .datos_academicos import DatosAcademicos
-from .datos_familiares import DatosFamiliares
 from .datos_laborales import DatosLaborales
 from .documentos_digitales import DocumentosDigitales
-from .empleado import Empleado
 from .onboarding import OnboardingEmpleado
 from .plantilla_documento import PlantillaDocumento
 from .remuneracion import (
@@ -39,11 +35,7 @@ from .vacaciones import (
 # Lista de todos los modelos para facilitar importaciones
 __all__ = [
     # Modelos principales
-    "Empleado",
     "DatosLaborales",
-    "DatosFamiliares",
-    "CursosCertificaciones",
-    "DatosAcademicos",
     "DocumentosDigitales",
     # Modelos de vacaciones
     "ConfiguracionVacaciones",

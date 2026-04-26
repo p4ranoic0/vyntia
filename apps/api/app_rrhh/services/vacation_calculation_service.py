@@ -9,7 +9,8 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db.models import Q, Sum
 
-from app_rrhh.models import ContratosAdendas, Empleado
+from app_rrhh.models import ContratosAdendas
+from apps.employees.models import Empleado
 from app_rrhh.models.vacaciones import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones
 from apps.core.exceptions import BusinessLogicError
 

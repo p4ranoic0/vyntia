@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from apps.identity.models import Usuario
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,

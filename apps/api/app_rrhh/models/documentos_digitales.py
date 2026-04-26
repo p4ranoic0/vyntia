@@ -106,7 +106,7 @@ class DocumentosDigitales(models.Model):
     # Campos principales
     documento_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='documentos_digitales'
     )
@@ -150,7 +150,7 @@ class DocumentosDigitales(models.Model):
         related_name='versiones'
     )
     familiar = models.ForeignKey(
-        'DatosFamiliares',
+        'employees.DatosFamiliares',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='documentos',

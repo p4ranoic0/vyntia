@@ -9,12 +9,14 @@ from app_rrhh import services
 from app_rrhh.models import (
     ConfiguracionAfp,
     ConfiguracionRemuneracion,
-    DatosAcademicos,
-    DatosFamiliares,
     DatosLaborales,
     DocumentosDigitales,
-    Empleado,
     OnboardingEmpleado,
+)
+from apps.employees.models import (
+    DatosAcademicos,
+    DatosFamiliares,
+    Empleado,
 )
 from apps.organization.models import Area
 from apps.identity.models import (
@@ -1220,7 +1222,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
 class CursosCertificacionesViewSet(viewsets.ModelViewSet):
     """CRUD for employee courses and certifications. Employees manage own records."""
 
-    from app_rrhh.models import CursosCertificaciones as _CursosCertificaciones
+    from apps.employees.models import CursosCertificaciones as _CursosCertificaciones
 
     queryset = _CursosCertificaciones.objects.select_related(
         "empleado", "documento"
@@ -1245,7 +1247,7 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        from app_rrhh.models import CursosCertificaciones
+        from apps.employees.models import CursosCertificaciones
 
         queryset = CursosCertificaciones.objects.select_related(
             "empleado", "documento"
@@ -2792,7 +2794,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         academico_id = request.data.get("academico_id")
         if academico_id:
             try:
-                from app_rrhh.models import DatosAcademicos
+                from apps.employees.models import DatosAcademicos
 
                 academico = DatosAcademicos.objects.get(
                     academico_id=int(academico_id), empleado=onboarding.empleado
@@ -2805,7 +2807,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         curso_id = request.data.get("curso_id")
         if curso_id:
             try:
-                from app_rrhh.models import CursosCertificaciones
+                from apps.employees.models import CursosCertificaciones
 
                 curso = CursosCertificaciones.objects.get(
                     curso_id=int(curso_id), empleado=onboarding.empleado

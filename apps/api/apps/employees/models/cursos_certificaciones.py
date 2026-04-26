@@ -23,7 +23,7 @@ class CursosCertificaciones(models.Model):
     horas = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
     descripcion = models.TextField(null=True, blank=True)
     documento = models.ForeignKey(
-        'DocumentosDigitales',
+        'app_rrhh.DocumentosDigitales',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='curso_certificacion',

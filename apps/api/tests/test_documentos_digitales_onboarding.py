@@ -83,7 +83,7 @@ class TestDocumentosDigitalesOnboardingEmployee:
 
         Creates a second employee directly (not via factory) to avoid email uniqueness clash.
         """
-        from app_rrhh.models import Empleado
+        from apps.employees.models import Empleado
         other_empleado = Empleado.objects.create(
             nombres_empleado='Otro',
             apellido_paterno='Empleado',

@@ -10,9 +10,9 @@ from app_rrhh.models import (
     ContratosAdendas,
     DatosLaborales,
     DocumentosDigitales,
-    Empleado,
     PlantillaDocumento,
 )
+from apps.employees.models import Empleado
 from app_rrhh.services import TemplateService
 from app_rrhh.services.word_template_service import WordTemplateService
 from apps.core.decorators import (

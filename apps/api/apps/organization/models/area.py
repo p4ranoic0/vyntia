@@ -111,7 +111,7 @@ class Area(models.Model):
 
     def empleados_activos(self):
         """Obtiene empleados activos en el área."""
-        from app_rrhh.models import Empleado
+        from apps.employees.models import Empleado
         return Empleado.objects.filter(
             datos_laborales__area=self,
             datos_laborales__estado_datos='activo',

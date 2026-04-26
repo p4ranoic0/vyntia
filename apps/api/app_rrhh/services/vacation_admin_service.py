@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import Avg, Case, Count, F, FloatField, Q, Sum, Value, When
 from django.utils import timezone
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from apps.identity.models import Usuario
 from app_rrhh.models.vacaciones import (
     ConfiguracionVacaciones,

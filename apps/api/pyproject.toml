@@ -72,5 +72,5 @@ dev = [
 [tool.setuptools]
 # Backend package layout. `apps` namespace contiene bounded contexts (L3+).
 # Cada nueva app L3.X (identity, organization, employees, ...) se anade aqui.
-packages = ["vyntia", "app_rrhh", "api", "apps", "apps.core", "apps.identity", "apps.organization"]
+packages = ["vyntia", "app_rrhh", "api", "apps", "apps.core", "apps.identity", "apps.organization", "apps.employees"]
 include-package-data = true

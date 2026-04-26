@@ -144,7 +144,7 @@ class TestCursosCertificacionesModel:
 
     def test_cursos_certificaciones_model_stub(self):
         """Placeholder — full tests added when ViewSet is wired (plan 01-09)."""
-        from app_rrhh.models import CursosCertificaciones
+        from apps.employees.models import CursosCertificaciones
         assert hasattr(CursosCertificaciones, 'nombre_curso')
         assert hasattr(CursosCertificaciones, 'empleado_id')
         assert hasattr(CursosCertificaciones, 'documento_id')

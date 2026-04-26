@@ -3,7 +3,8 @@
 from datetime import timedelta
 
 import django_filters
-from app_rrhh.models import DatosLaborales, Empleado
+from app_rrhh.models import DatosLaborales
+from apps.employees.models import Empleado
 from apps.organization.models import Area
 from apps.identity.models import Usuario
 from django.db.models import Count, Q

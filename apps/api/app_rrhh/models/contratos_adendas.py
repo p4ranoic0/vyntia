@@ -65,7 +65,7 @@ class ContratosAdendas(models.Model):
     
     # Relaciones
     empleado = models.ForeignKey(
-        'Empleado',
+        'employees.Empleado',
         on_delete=models.CASCADE,
         related_name='contratos_adendas',
         help_text='Empleado asociado al contrato/adenda'

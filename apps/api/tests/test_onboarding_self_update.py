@@ -12,7 +12,7 @@ Tests for onboarding self-service fixes (UAT round 2):
 import pytest
 from django.core.cache import cache
 
-from app_rrhh.models import DatosFamiliares, Empleado
+from apps.employees.models import DatosFamiliares, Empleado
 
 
 @pytest.fixture(autouse=True)

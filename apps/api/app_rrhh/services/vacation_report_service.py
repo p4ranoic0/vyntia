@@ -8,7 +8,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from app_rrhh.models import Empleado
+from apps.employees.models import Empleado
 from app_rrhh.models.vacaciones import GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
 
 
