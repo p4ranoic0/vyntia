@@ -30,27 +30,19 @@ class ContratosAdendasManager(models.Manager):
         return self.filter(estado='TERMINADO')
     
     def contratos(self):
-        """Retorna solo los documentos de tipo contrato."""
-        return self.filter(
-            tipo_documento__in=[
-                'CONTRATO_INDEFINIDO',
-                'CONTRATO_FIJO',
-                'CONTRATO_OBRA',
-                'CONTRATO_HONORARIOS',
-                'CONTRATO_PRACTICA'
-            ]
-        )
-    
+        """
+        DEPRECATED post-L3.10.3: Contract model now contains only contracts
+        (no amendments). All Contract instances are contracts; this filter
+        is a no-op kept for backward compatibility.
+        """
+        return self.all()
+
     def adendas(self):
-        """Retorna solo los documentos de tipo adenda."""
-        return self.filter(
-            tipo_documento__in=[
-                'ADENDA_SALARIAL',
-                'ADENDA_CARGO',
-                'ADENDA_HORARIO',
-                'ADENDA_EXTENSION'
-            ]
-        )
+        """
+        DEPRECATED post-L3.10.3: Amendments now live in apps.contracts.ContractAmendment.
+        Returns empty queryset — callers should query ContractAmendment.objects directly.
+        """
+        return self.none()
     
     def por_empleado(self, empleado_id):
         """Retorna contratos de un empleado específico."""

@@ -29,10 +29,9 @@ class VacationCalculationService:
         return (
             Contract.objects.filter(
                 empleado=empleado,
-                tipo_documento__startswith='CONTRATO',
-                estado='ACTIVO',
+                status='ACTIVO',
             )
-            .order_by('-fecha_inicio', '-contrato_id')
+            .order_by('-fecha_inicio', '-id')
             .first()
         )
 
@@ -42,11 +41,10 @@ class VacationCalculationService:
         return (
             Contract.objects.filter(
                 empleado=empleado,
-                tipo_documento__startswith='CONTRATO',
                 fecha_inicio__lte=fecha_ref,
             )
             .filter(Q(fecha_fin__isnull=True) | Q(fecha_fin__gte=fecha_ref))
-            .order_by('-fecha_inicio', '-contrato_id')
+            .order_by('-fecha_inicio', '-id')
             .first()
         )
 

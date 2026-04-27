@@ -167,6 +167,16 @@ vyntia/                                   ← repo nuevo
 | **onboarding** | `onboarding.py → OnboardingProcess` | Proceso de inducción |
 | **core** | (sin modelos) `APIResponse`, paginación, decorators, mixins | Utilidad transversal |
 
+### 3.2.1 Scope clarification (L3.10.3)
+
+L3.10.3 implementa solo el split `Contract → Contract + ContractAmendment`. El split listado en § 3.2 para `VacationRequest → VacationRequest + VacationBalance` se DESCARTA por análisis posterior:
+
+- `VacationRequest` actual NO contiene fields de balance — solo solicitud/aprobación/rechazo/cancelación con `dias_solicitados`, `motivo_solicitud`, `estado_solicitud`, etc.
+- Los fields de balance (`dias_correspondientes`, `dias_adicionales`, `dias_totales`, `dias_gozados`, `dias_pendientes`, `dias_vencidos`) ya viven en `VacationPeriod`. `VacationPeriod` cumple efectivamente el rol de "balance" por período anual.
+- Crear un nuevo `VacationBalance` separado de `VacationPeriod` agregaría complejidad sin valor — sería un modelo 1:1 OneToOne con VacationPeriod.
+
+**Decisión:** mantener la estructura actual de 5 modelos en time_off (`VacationConfiguration`, `VacationPeriod`, `VacationRequest`, `VacationGrant`, `VacationRequestHistory`). VacationPeriod es el balance per period.
+
 ### 3.3 Mapeo de services
 
 | App | Services absorbidos (de `app_rrhh/services/`) |

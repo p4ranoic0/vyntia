@@ -8,6 +8,7 @@ certificados y reportes desde plantillas HTML y convertirlos a PDF.
 
 from apps.contracts.models import (
     Contract,
+    ContractAmendment,
     EmploymentData,
 )
 from apps.documents.models import (
@@ -207,7 +208,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener la adenda
-            adenda = get_object_or_404(Contract, contrato_id=adenda_id)
+            adenda = get_object_or_404(ContractAmendment, pk=adenda_id)
 
             if formato == "html":
                 html_content = self.template_service.generar_adenda(
@@ -227,7 +228,7 @@ class DocumentGenerationViewSet(ViewSet):
                     nombre_doc = f"Adenda {adenda.numero_adenda or adenda.pk}"
                     nombre_archivo = f"adenda_{adenda.pk}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
                     documento = DigitalDocument.objects.create(
-                        empleado=adenda.empleado,
+                        empleado=adenda.parent_contract.empleado,
                         tipo_documento="adenda_contrato",
                         categoria="laboral",
                         nombre_documento=nombre_doc,
@@ -262,7 +263,7 @@ class DocumentGenerationViewSet(ViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        except Contract.DoesNotExist:
+        except ContractAmendment.DoesNotExist:
             return APIResponse.error(
                 message="Adenda no encontrada", status_code=status.HTTP_404_NOT_FOUND
             )
