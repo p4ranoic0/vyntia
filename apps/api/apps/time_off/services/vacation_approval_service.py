@@ -246,7 +246,7 @@ class VacationApprovalService:
             return list(
                 VacationRequest.objects.filter(estado_solicitud="en_revision")
                 .select_related("empleado", "periodo_vacacional")
-                .order_by("-fecha_envio", "-fecha_creacion")
+                .order_by("-fecha_envio", "-created_at")
             )
 
         if not getattr(usuario_jefe, "empleado", None):
@@ -262,7 +262,7 @@ class VacationApprovalService:
                 empleado__in=subordinados,
             )
             .select_related("empleado", "periodo_vacacional")
-            .order_by("-fecha_envio", "-fecha_creacion")
+            .order_by("-fecha_envio", "-created_at")
         )
 
     @staticmethod
@@ -277,7 +277,7 @@ class VacationApprovalService:
         return list(
             VacationRequest.objects.filter(estado_solicitud="aprobada_jefe")
             .select_related("empleado", "periodo_vacacional")
-            .order_by("-fecha_envio", "-fecha_creacion")
+            .order_by("-fecha_envio", "-created_at")
         )
 
     # Alias para compatibilidad con llamadas existentes en views.

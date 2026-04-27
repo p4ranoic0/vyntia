@@ -362,5 +362,5 @@ class VacationService:
             Decimal("0.0"), periodo.dias_totales - periodo.dias_gozados
         )
         periodo.save(
-            update_fields=["dias_gozados", "dias_pendientes", "fecha_actualizacion"]
+            update_fields=["dias_gozados", "dias_pendientes", "updated_at"]
         )

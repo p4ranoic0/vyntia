@@ -6,6 +6,8 @@ Contiene la definición de todos los modelos relacionados con la gestión
 de vacaciones: configuración, períodos, solicitudes, goce e historial.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -37,7 +39,7 @@ class VacationConfiguration(models.Model):
     ]
     
     # Campos principales
-    configuracion_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tipo_configuracion = models.CharField(max_length=15, choices=TIPO_CONFIGURACION_CHOICES)
     
     # Relaciones opcionales
@@ -116,20 +118,21 @@ class VacationConfiguration(models.Model):
     )
     
     # Campos de control
-    activo = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_column='activo')
     fecha_inicio_vigencia = models.DateField()
     fecha_fin_vigencia = models.DateField(null=True, blank=True)
     observaciones = models.TextField(null=True, blank=True)
     
     # Campos de auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-    creado_por = models.ForeignKey(
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
+    created_by = models.ForeignKey(
         'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='configuraciones_vacaciones_creadas'
+        related_name='configuraciones_vacaciones_creadas',
+        db_column='creado_por',
     )
     
     # Manager personalizado
@@ -141,7 +144,7 @@ class VacationConfiguration(models.Model):
             models.Index(fields=['tipo_configuracion']),
             models.Index(fields=['area']),
             models.Index(fields=['empleado']),
-            models.Index(fields=['activo']),
+            models.Index(fields=['is_active']),
             models.Index(fields=['fecha_inicio_vigencia']),
             models.Index(fields=['fecha_fin_vigencia']),
         ]
@@ -167,7 +170,7 @@ class VacationPeriod(models.Model):
     ]
     
     # Campos principales
-    periodo_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -237,14 +240,15 @@ class VacationPeriod(models.Model):
     motivo_cancelacion = models.TextField(null=True, blank=True)
     
     # Campos de auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-    creado_por = models.ForeignKey(
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
+    created_by = models.ForeignKey(
         'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='periodos_vacacionales_creados'
+        related_name='periodos_vacacionales_creados',
+        db_column='creado_por',
     )
     
     # Manager personalizado
@@ -311,7 +315,7 @@ class VacationRequest(models.Model):
     ]
     
     # Campos principales
-    solicitud_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -387,11 +391,11 @@ class VacationRequest(models.Model):
         related_name='solicitudes_canceladas'
     )
     fecha_cancelacion = models.DateTimeField(null=True, blank=True)
-    
+
     # Campos de auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
+
     # Manager personalizado
     objects = SolicitudVacacionesManager()
     
@@ -448,7 +452,7 @@ class VacationGrant(models.Model):
     ]
     
     # Campos principales
-    goce_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     solicitud_vacaciones = models.OneToOneField(
         VacationRequest,
         on_delete=models.CASCADE,
@@ -503,8 +507,8 @@ class VacationGrant(models.Model):
     observaciones = models.TextField(null=True, blank=True)
     
     # Campos de auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     registrado_por = models.ForeignKey(
         'identity.User',
         on_delete=models.SET_NULL,
@@ -571,7 +575,7 @@ class VacationRequestHistory(models.Model):
     ]
     
     # Campos principales
-    historial_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     solicitud_vacaciones = models.ForeignKey(
         VacationRequest,
         on_delete=models.CASCADE,
@@ -614,7 +618,7 @@ class VacationRequestHistory(models.Model):
         ]
     
     def __str__(self):
-        return f"Solicitud {self.solicitud_vacaciones.solicitud_id} - {self.tipo_accion}"
+        return f"Solicitud {self.solicitud_vacaciones.id} - {self.tipo_accion}"
     
     @property
     def tipo_accion_texto(self):

@@ -48,7 +48,7 @@ class TestDocumentosDigitalesOnboardingEmployee:
 
         _make_doc(empleado, tipo='dni', nombre='DNI del empleado', version='1.0')
 
-        url = f'/api/v1/rrhh/documentos-digitales/?empleado={empleado.empleado_id}'
+        url = f'/api/v1/rrhh/documentos-digitales/?empleado={empleado.pk}'
         response = onboarding_client.get(url)
         assert response.status_code == 200, (
             f'Expected 200, got {response.status_code}: {response.data}'
@@ -61,7 +61,7 @@ class TestDocumentosDigitalesOnboardingEmployee:
 
         _make_doc(empleado, tipo='foto', nombre='Foto del empleado', version='1.0')
 
-        url = f'/api/v1/rrhh/documentos-digitales/?empleado={empleado.empleado_id}'
+        url = f'/api/v1/rrhh/documentos-digitales/?empleado={empleado.pk}'
         response = onboarding_client.get(url)
         assert response.status_code == 200
 
@@ -104,7 +104,7 @@ class TestDocumentosDigitalesOnboardingEmployee:
         _make_doc(other_empleado, tipo='dni', nombre='DNI del otro', version='1.0')
 
         # Request the OTHER employee's documents — must return 0 results
-        url = f'/api/v1/rrhh/documentos-digitales/?empleado={other_empleado.empleado_id}'
+        url = f'/api/v1/rrhh/documentos-digitales/?empleado={other_empleado.pk}'
         response = onboarding_client.get(url)
         assert response.status_code == 200
 
@@ -128,7 +128,7 @@ class TestDocumentosDigitalesOnboardingEmployee:
 
         url = (
             f'/api/v1/rrhh/documentos-digitales/'
-            f'?empleado={empleado.empleado_id}&es_version_actual=true'
+            f'?empleado={empleado.pk}&es_version_actual=true'
         )
         response = onboarding_client.get(url)
         assert response.status_code == 200

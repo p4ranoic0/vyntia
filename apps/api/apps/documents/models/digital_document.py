@@ -6,6 +6,8 @@ Contiene la definición del modelo DigitalDocument que almacena la información
 de documentos digitalizados y archivos asociados a los empleados.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
@@ -104,7 +106,7 @@ class DigitalDocument(models.Model):
     ]
     
     # Campos principales
-    documento_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -186,7 +188,7 @@ class DigitalDocument(models.Model):
     
     # Campos de auditoría
     fecha_subida = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     subido_por = models.ForeignKey(
         'identity.User',
         on_delete=models.SET_NULL,
@@ -324,7 +326,7 @@ class DigitalDocument(models.Model):
         if not self.es_version_actual:
             info += " (Versión anterior)"
         if self.documento_padre:
-            info += f" - Basado en documento #{self.documento_padre.documento_id}"
+            info += f" - Basado en documento #{self.documento_padre.id}"
         return info
     
     @property
@@ -420,7 +422,7 @@ class DigitalDocument(models.Model):
             self.archivo = archivo
             self.nombre_archivo_original = archivo.name
             self.tamano_archivo = archivo.size
-            self.fecha_actualizacion = timezone.now()
+            self.updated_at = timezone.now()
         
         self.save()
     
@@ -543,7 +545,7 @@ class DigitalDocument(models.Model):
         ).values(
             'tipo_documento'
         ).annotate(
-            total=Count('documento_id')
+            total=Count('id')
         ).order_by('tipo_documento')
     
     @classmethod

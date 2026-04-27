@@ -29,7 +29,7 @@ def _nombre_area(area):
 class ConfiguracionVacacionesSerializer(serializers.ModelSerializer):
     area_nombre = serializers.SerializerMethodField()
     empleado_nombre = serializers.CharField(source='empleado.nombre_completo', read_only=True)
-    creado_por_nombre = serializers.CharField(source='creado_por.nombre_completo', read_only=True)
+    creado_por_nombre = serializers.CharField(source='created_by.nombre_completo', read_only=True)
     tipo_configuracion_display = serializers.CharField(source='get_tipo_configuracion_display', read_only=True)
     tipo_calculo_display = serializers.CharField(source='get_tipo_calculo_display', read_only=True)
 
@@ -50,7 +50,7 @@ class ConfiguracionVacacionesSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationConfiguration
         fields = [
-            'configuracion_id',
+            'id',
             'tipo_configuracion',
             'tipo_configuracion_display',
             'area',
@@ -79,12 +79,12 @@ class ConfiguracionVacacionesSerializer(serializers.ModelSerializer):
             'fecha_inicio_vigencia',
             'fecha_fin_vigencia',
             'observaciones',
-            'creado_por',
+            'created_by',
             'creado_por_nombre',
-            'fecha_creacion',
-            'fecha_actualizacion',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ['configuracion_id', 'creado_por', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
 
 
 class PeriodoVacacionalSerializer(serializers.ModelSerializer):
@@ -114,13 +114,13 @@ class PeriodoVacacionalSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationPeriod
         fields = [
-            'periodo_id',
+            'id',
             'empleado',
             'empleado_nombre',
             'empleado_rut',
             'area_nombre',
             'contrato',
-            'contrato_id',
+            'id',
             'contrato_numero',
             'contrato_fecha_inicio',
             'contrato_fecha_fin',
@@ -143,10 +143,10 @@ class PeriodoVacacionalSerializer(serializers.ModelSerializer):
             'esta_vencido',
             'dias_para_vencimiento',
             'observaciones',
-            'fecha_creacion',
-            'fecha_actualizacion',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ['periodo_id', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class SolicitudVacacionesSerializer(serializers.ModelSerializer):
@@ -180,7 +180,7 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
         return f"{obj.periodo_vacacional.fecha_inicio_periodo.year}-{obj.periodo_vacacional.fecha_fin_periodo.year}"
 
     def get_contrato_id(self, obj):
-        return getattr(obj.periodo_vacacional.contrato, 'contrato_id', None)
+        return getattr(obj.periodo_vacacional.contrato, 'id', None)
 
     def get_contrato_numero(self, obj):
         return getattr(obj.periodo_vacacional.contrato, 'numero_contrato', None)
@@ -188,14 +188,14 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationRequest
         fields = [
-            'solicitud_id',
+            'id',
             'empleado',
             'empleado_nombre',
             'empleado_rut',
             'area_nombre',
             'periodo_vacacional',
             'periodo_label',
-            'contrato_id',
+            'id',
             'contrato_numero',
             'tipo_solicitud',
             'tipo_solicitud_display',
@@ -226,11 +226,11 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
             'motivo_cancelacion',
             'cancelado_por',
             'fecha_cancelacion',
-            'fecha_creacion',
-            'fecha_actualizacion',
+            'created_at',
+            'updated_at',
         ]
         read_only_fields = [
-            'solicitud_id',
+            'id',
             'estado_solicitud',
             'fecha_envio',
             'aprobado_por_jefe',
@@ -243,8 +243,8 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
             'fecha_rechazo',
             'cancelado_por',
             'fecha_cancelacion',
-            'fecha_creacion',
-            'fecha_actualizacion',
+            'created_at',
+            'updated_at',
         ]
 
 
@@ -305,13 +305,13 @@ class GoceVacacionesSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationGrant
         fields = [
-            'goce_id',
+            'id',
             'empleado',
             'empleado_nombre',
             'solicitud_vacaciones',
-            'solicitud_id',
+            'id',
             'periodo_vacacional',
-            'contrato_id',
+            'id',
             'contrato_numero',
             'fecha_inicio_real',
             'fecha_fin_real',
@@ -328,10 +328,10 @@ class GoceVacacionesSerializer(serializers.ModelSerializer):
             'observaciones_reincorporacion',
             'observaciones',
             'registrado_por',
-            'fecha_creacion',
-            'fecha_actualizacion',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ['goce_id', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class HistorialSolicitudVacacionesSerializer(serializers.ModelSerializer):
@@ -341,7 +341,7 @@ class HistorialSolicitudVacacionesSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationRequestHistory
         fields = [
-            'historial_id',
+            'id',
             'solicitud_vacaciones',
             'tipo_accion',
             'tipo_accion_display',
@@ -355,7 +355,7 @@ class HistorialSolicitudVacacionesSerializer(serializers.ModelSerializer):
             'fecha_accion',
             'ip_usuario',
         ]
-        read_only_fields = ['historial_id', 'fecha_accion']
+        read_only_fields = ['id', 'fecha_accion']
 
 
 class EstadisticasVacacionesSerializer(serializers.Serializer):

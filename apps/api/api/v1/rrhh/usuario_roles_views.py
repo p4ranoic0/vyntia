@@ -63,12 +63,12 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
         queryset = UserRole.objects.select_related('usuario', 'rol', 'asignado_por_usuario')
         
         # Filtrar por usuario
-        usuario_id = self.request.query_params.get('usuario_id')
+        usuario_id = self.request.query_params.get('id')
         if usuario_id:
             queryset = queryset.filter(usuario_id=usuario_id)
         
         # Filtrar por rol
-        rol_id = self.request.query_params.get('rol_id')
+        rol_id = self.request.query_params.get('id')
         if rol_id:
             queryset = queryset.filter(rol_id=rol_id)
         
@@ -182,11 +182,11 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
         Obtiene las asignaciones de roles para un usuario específico
         """
         try:
-            usuario_id = request.query_params.get('usuario_id')
+            usuario_id = request.query_params.get('id')
             if not usuario_id:
                 return APIResponse.error(
                     message="ID del usuario es requerido",
-                    errors={"usuario_id": ["Este parámetro es requerido"]}
+                    errors={"id": ["Este parámetro es requerido"]}
                 )
             
             asignaciones = self.get_queryset().filter(
@@ -212,11 +212,11 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
         Obtiene los usuarios que tienen un rol específico
         """
         try:
-            rol_id = request.query_params.get('rol_id')
+            rol_id = request.query_params.get('id')
             if not rol_id:
                 return APIResponse.error(
                     message="ID del rol es requerido",
-                    errors={"rol_id": ["Este parámetro es requerido"]}
+                    errors={"id": ["Este parámetro es requerido"]}
                 )
             
             asignaciones = self.get_queryset().filter(
@@ -377,7 +377,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
                 ).select_related('rol')
                 
                 usuario_data = {
-                    'usuario_id': usuario.usuario_id,
+                    'id': usuario.usuario_id,
                     'nombres_usuario': usuario.nombres_usuario,
                     'correo_institucional': usuario.correo_institucional,
                     'empleado': {
@@ -387,7 +387,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
                     } if usuario.empleado else None,
                     'roles_asignados': [
                         {
-                            'rol_id': ur.rol.rol_id,
+                            'id': ur.rol.rol_id,
                             'nombre_rol': ur.rol.nombre_rol,
                             'descripcion_rol': ur.rol.descripcion_rol,
                             'fecha_asignacion': ur.fecha_asignacion,
@@ -401,7 +401,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
             
             # Información adicional
             total_usuarios = len(usuarios_data)
-            roles_info = Role.objects.filter(rol_id__in=rol_ids).values('rol_id', 'nombre_rol')
+            roles_info = Role.objects.filter(rol_id__in=rol_ids).values('id', 'nombre_rol')
             
             response_data = {
                 'usuarios': usuarios_data,

@@ -36,21 +36,21 @@ class ContratosAdendasSerializer(serializers.ModelSerializer):
 
     # Campos de texto para choices
     tipo_documento_texto = serializers.CharField(source='get_tipo_documento_display', read_only=True)
-    estado_texto = serializers.CharField(source='get_estado_display', read_only=True)
+    estado_texto = serializers.CharField(source='get_status_display', read_only=True)
     jornada_texto = serializers.CharField(source='get_jornada_laboral_display', read_only=True)
 
     class Meta:
         model = Contract
         fields = [
-            'contrato_id', 'empleado', 'empleado_detalle', 'area', 'area_detalle',
+            'id', 'empleado', 'empleado_detalle', 'area', 'area_detalle',
             'numero_contrato', 'numero_adenda', 'tipo_documento',
             'fecha_inicio', 'fecha_fin', 'fecha_firma',
             'salario_bruto', 'salario_neto',
             'cargo', 'jornada_laboral', 'funciones',
             'lugar_trabajo', 'horario_trabajo',
-            'observaciones', 'estado', 'documento_generado',
-            'fecha_creacion', 'fecha_modificacion',
-            'creado_por', 'modificado_por',
+            'observaciones', 'status', 'documento_generado',
+            'created_at', 'updated_at',
+            'created_by', 'updated_by',
             # Campos calculados
             'dias_hasta_vencimiento', 'esta_vigente', 'esta_vencido',
             'duracion_dias', 'duracion_meses', 'es_contrato_inicial', 'es_adenda',
@@ -58,8 +58,8 @@ class ContratosAdendasSerializer(serializers.ModelSerializer):
             'tipo_documento_texto', 'estado_texto', 'jornada_texto',
         ]
         read_only_fields = [
-            'contrato_id', 'fecha_creacion', 'fecha_modificacion',
-            'creado_por', 'modificado_por',
+            'id', 'created_at', 'updated_at',
+            'created_by', 'updated_by',
         ]
 
     def validate_fecha_fin(self, value):
@@ -134,7 +134,7 @@ class ContratosAdendasCreateSerializer(serializers.ModelSerializer):
 
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
-            validated_data['creado_por'] = request.user
+            validated_data['created_by'] = request.user
 
         return super().create(validated_data)
 
@@ -148,7 +148,7 @@ class ContratosAdendasUpdateSerializer(serializers.ModelSerializer):
             'fecha_inicio', 'fecha_fin', 'fecha_firma', 'salario_bruto',
             'cargo', 'jornada_laboral', 'funciones',
             'lugar_trabajo', 'horario_trabajo',
-            'observaciones', 'estado',
+            'observaciones', 'status',
         ]
 
     def update(self, instance, validated_data):
@@ -160,7 +160,7 @@ class ContratosAdendasUpdateSerializer(serializers.ModelSerializer):
 
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
-            validated_data['modificado_por'] = request.user
+            validated_data['updated_by'] = request.user
 
         return super().update(instance, validated_data)
 
@@ -171,7 +171,7 @@ class ContratosAdendasListSerializer(serializers.ModelSerializer):
     empleado_nombre = serializers.CharField(source='empleado.nombre_completo', read_only=True)
     area_nombre = serializers.CharField(source='area.nombre_completo', read_only=True)
     tipo_documento_texto = serializers.CharField(source='get_tipo_documento_display', read_only=True)
-    estado_texto = serializers.CharField(source='get_estado_display', read_only=True)
+    estado_texto = serializers.CharField(source='get_status_display', read_only=True)
 
     # Campos calculados
     dias_hasta_vencimiento = serializers.ReadOnlyField()
@@ -180,12 +180,12 @@ class ContratosAdendasListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = [
-            'contrato_id', 'numero_contrato', 'numero_adenda',
+            'id', 'numero_contrato', 'numero_adenda',
             'empleado', 'empleado_nombre', 'area_nombre',
             'tipo_documento', 'tipo_documento_texto',
             'fecha_inicio', 'fecha_fin',
             'salario_bruto', 'salario_neto',
-            'cargo', 'estado', 'estado_texto',
+            'cargo', 'status', 'estado_texto',
             'dias_hasta_vencimiento', 'esta_vigente',
         ]
 
@@ -229,9 +229,9 @@ class AlertaVencimientoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = [
-            'contrato_id', 'numero_contrato', 'empleado', 'empleado_nombre',
+            'id', 'numero_contrato', 'empleado', 'empleado_nombre',
             'tipo_documento', 'tipo_documento_texto',
-            'fecha_inicio', 'fecha_fin', 'estado',
+            'fecha_inicio', 'fecha_fin', 'status',
             'cargo', 'dias_hasta_vencimiento',
         ]
 

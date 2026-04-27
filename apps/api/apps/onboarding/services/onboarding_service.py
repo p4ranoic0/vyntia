@@ -208,7 +208,7 @@ class OnboardingService:
 
     @staticmethod
     @transaction.atomic
-    def crear_onboarding_completo(empleado_data, creado_por):
+    def crear_onboarding_completo(empleado_data, created_by):
         """
         Crea el flujo completo de onboarding:
         1. Crea el registro de Employee
@@ -219,7 +219,7 @@ class OnboardingService:
 
         Args:
             empleado_data: dict con datos del empleado (nombres, apellidos, DNI, email, etc.)
-            creado_por: User que inicia el onboarding (RRHH)
+            created_by: User que inicia el onboarding (RRHH)
 
         Returns:
             dict con onboarding, empleado, usuario y password_temporal
@@ -289,7 +289,7 @@ class OnboardingService:
 
         logger.info(
             f"Onboarding creado para {empleado.nombre_completo} "
-            f"(usuario: {username}) por {creado_por.username}"
+            f"(usuario: {username}) por {created_by.username}"
         )
 
         return {
@@ -321,7 +321,7 @@ class OnboardingService:
             onboarding = OnboardingProcess.objects.get(empleado_id=empleado_id)
         except OnboardingProcess.DoesNotExist:
             try:
-                onboarding = OnboardingProcess.objects.get(onboarding_id=empleado_id)
+                onboarding = OnboardingProcess.objects.get(pk=empleado_id)
             except OnboardingProcess.DoesNotExist:
                 return None
 
@@ -466,7 +466,7 @@ class OnboardingService:
         try:
             onboarding = OnboardingProcess.objects.select_related(
                 "empleado", "usuario"
-            ).get(onboarding_id=onboarding_id)
+            ).get(pk=onboarding_id)
         except OnboardingProcess.DoesNotExist:
             return None
 
@@ -530,7 +530,7 @@ class OnboardingService:
         try:
             onboarding = OnboardingProcess.objects.select_related(
                 "empleado", "usuario"
-            ).get(onboarding_id=onboarding_id)
+            ).get(pk=onboarding_id)
         except OnboardingProcess.DoesNotExist:
             return None
 

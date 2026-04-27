@@ -46,16 +46,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         
         data.update({
             'user': {
-                'id': usuario.usuario_id,
+                'id': usuario.pk,
                 'username': usuario.username,
                 'email': usuario.email,
                 'is_active': usuario.is_active,
-                'usuario_id': usuario.usuario_id,
+                'id': usuario.pk,
                 'tipo_usuario': usuario.tipo_usuario,
                 'nivel_acceso': usuario.nivel_acceso,
                 'requiere_cambio_password': usuario.requiere_cambio_password,
                 'empleado': {
-                    'id': usuario.empleado.empleado_id if usuario.empleado else None,
+                    'id': usuario.empleado.pk if usuario.empleado else None,
                     'nombres': usuario.empleado.nombres_empleado if usuario.empleado else None,
                     'apellido_paterno': usuario.empleado.apellido_paterno if usuario.empleado else None,
                     'apellido_materno': usuario.empleado.apellido_materno if usuario.empleado else None,
@@ -92,7 +92,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             for ur in usuario_roles:
                 if ur.rol:
                     roles.append({
-                        'id': ur.rol.rol_id,
+                        'id': ur.rol.pk,
                         'nombre': ur.rol.nombre_rol,
                         'descripcion': ur.rol.descripcion_rol,
                         'estado': ur.rol.estado_rol
@@ -124,7 +124,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             for ur in usuario_roles:
                 if ur.rol:
                     roles.append({
-                        'id': ur.rol.rol_id,
+                        'id': ur.rol.pk,
                         'nombre': ur.rol.nombre_rol
                     })
             
@@ -148,7 +148,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
-            ).values_list('rol_id', flat=True)
+            ).values_list('id', flat=True)
             
             # Obtener permisos de esos roles
             roles_permisos = RolePermission.objects.filter(
@@ -159,16 +159,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             permisos_vistos = set()  # Para evitar duplicados
             
             for rp in roles_permisos:
-                if rp.permiso and rp.permiso.permiso_id not in permisos_vistos:
+                if rp.permiso and rp.permiso.pk not in permisos_vistos:
                     permisos.append({
-                        'id': rp.permiso.permiso_id,
+                        'id': rp.permiso.pk,
                         'nombre': rp.permiso.nombre_permiso,
                         'descripcion': rp.permiso.descripcion_permiso,
-                        'modulo_id': rp.permiso.modulo_id,
+                        'id': rp.permiso.modulo,
                         'tipo': rp.permiso.tipo_permiso,
                         'estado': rp.permiso.estado_permiso
                     })
-                    permisos_vistos.add(rp.permiso.permiso_id)
+                    permisos_vistos.add(rp.permiso.pk)
             
             return permisos
         except Exception:
@@ -190,7 +190,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
-            ).values_list('rol_id', flat=True)
+            ).values_list('id', flat=True)
             
             # Obtener permisos de esos roles
             roles_permisos = RolePermission.objects.filter(
@@ -202,17 +202,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             for rp in roles_permisos:
                 if rp.permiso and rp.permiso.modulo:
                     modulo = rp.permiso.modulo
-                    if modulo.modulo_id not in modulos_permisos:
-                        modulos_permisos[modulo.modulo_id] = {
-                            'id': modulo.modulo_id,
+                    if modulo.pk not in modulos_permisos:
+                        modulos_permisos[modulo.pk] = {
+                            'id': modulo.pk,
                             'name': modulo.nombre_modulo,
                             'status': modulo.estado_modulo,
                             'permissions': []
                         }
                     
                     # Agregar permiso al módulo
-                    modulos_permisos[modulo.modulo_id]['permissions'].append({
-                        'id': rp.permiso.permiso_id,
+                    modulos_permisos[modulo.pk]['permissions'].append({
+                        'id': rp.permiso.pk,
                         'nombre': rp.permiso.nombre_permiso,
                         'descripcion': rp.permiso.descripcion_permiso,
                         'tipo': rp.permiso.tipo_permiso,
@@ -292,12 +292,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'usuario_id', 'username', 'email', 
-            'is_active', 'fecha_creacion', 'last_login',
+            'id', 'username', 'email', 
+            'is_active', 'created_at', 'last_login',
             'empleado', 'roles', 'permisos'
         ]
         read_only_fields = [
-            'usuario_id', 'username', 'fecha_creacion', 'last_login',
+            'id', 'username', 'created_at', 'last_login',
             'empleado', 'roles', 'permisos'
         ]
     
@@ -306,7 +306,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         try:
             if obj.empleado:
                 return {
-                    'id': obj.empleado.empleado_id,
+                    'id': obj.empleado.pk,
                     'nombres': obj.empleado.nombres_empleado,
                     'apellido_paterno': obj.empleado.apellido_paterno,
                     'apellido_materno': obj.empleado.apellido_materno,
@@ -335,7 +335,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             for usuario_rol in usuario_roles:
                 rol = usuario_rol.rol
                 roles_data.append({
-                    'rol_id': rol.rol_id,
+                    'id': rol.pk,
                     'nombre_rol': rol.nombre_rol,
                     'descripcion_rol': rol.descripcion_rol,
                     'nivel_jerarquico': rol.nivel_jerarquico,
@@ -372,13 +372,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 for rol_permiso in rol_permisos:
                     permiso = rol_permiso.permiso
                     # Evitar duplicados
-                    if permiso.permiso_id not in permisos_ids and permiso.estado_permiso == 'activo':
-                        permisos_ids.add(permiso.permiso_id)
+                    if permiso.pk not in permisos_ids and permiso.estado_permiso == 'activo':
+                        permisos_ids.add(permiso.pk)
                         permisos_data.append({
-                            'permiso_id': permiso.permiso_id,
+                            'id': permiso.pk,
                             'nombre_permiso': permiso.nombre_permiso,
                             'descripcion_permiso': permiso.descripcion_permiso,
-                            'modulo_id': permiso.modulo_id,
+                            'id': permiso.modulo,
                             'tipo_permiso': permiso.tipo_permiso,
                             'rol_origen': usuario_rol.rol.nombre_rol
                         })
@@ -518,7 +518,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
         return {
             'message': 'Contraseña cambiada exitosamente',
-            'user_id': user.usuario_id
+            'user_id': user.pk
         }
 
 

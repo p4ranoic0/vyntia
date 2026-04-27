@@ -28,7 +28,7 @@ class TestCorregirCorreo:
         """
         onboarding = onboarding_factory()
         nuevo_correo = "nuevo.correo@test.com"
-        url = f"/api/v1/rrhh/onboarding/{onboarding.onboarding_id}/corregir-correo/"
+        url = f"/api/v1/rrhh/onboarding/{onboarding.pk}/corregir-correo/"
 
         response = hr_client.post(url, {"correo_personal": nuevo_correo}, format="json")
 
@@ -55,7 +55,7 @@ class TestPhotoUpload:
         y actualiza ruta_fotografia en el Employee.
         """
         onboarding = onboarding_client._onboarding
-        empleado_id = onboarding.empleado.empleado_id
+        empleado_id = onboarding.empleado.pk
 
         # Simular archivo de imagen pequeño (PNG header)
         imagen = io.BytesIO(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)

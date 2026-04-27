@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -10,7 +12,7 @@ class Role(models.Model):
     ]
 
     # Campos principales de la tabla roles
-    rol_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre_rol = models.CharField(max_length=100, unique=True)
     descripcion_rol = models.TextField(null=True, blank=True)
     nivel_jerarquico = models.IntegerField(default=1)
@@ -18,8 +20,8 @@ class Role(models.Model):
     estado_rol = models.CharField(
         max_length=10, choices=ESTADO_ROL_CHOICES, default="activo"
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     # objects = RolManager()  # Comentado temporalmente para migraciones
 
@@ -60,12 +62,12 @@ class Role(models.Model):
     def activar(self):
         """Activar el rol."""
         self.estado_rol = "activo"
-        self.save(update_fields=["estado_rol", "fecha_actualizacion"])
+        self.save(update_fields=["estado_rol", "updated_at"])
 
     def desactivar(self):
         """Desactivar el rol."""
         self.estado_rol = "inactivo"
-        self.save(update_fields=["estado_rol", "fecha_actualizacion"])
+        self.save(update_fields=["estado_rol", "updated_at"])
 
     def asignar_permisos(self, permisos_ids):
         """Asignar permisos al rol."""
@@ -106,7 +108,7 @@ class Permission(models.Model):
     ]
 
     # Campos principales de la tabla permiso
-    permiso_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre_permiso = models.CharField(max_length=100)
     descripcion_permiso = models.TextField(null=True, blank=True)
     # Módulo como string (referencia al ID en config/modules_config.py)
@@ -119,7 +121,7 @@ class Permission(models.Model):
     estado_permiso = models.CharField(
         max_length=10, choices=ESTADO_PERMISO_CHOICES, default="activo"
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
 
     class Meta:
         db_table = "permiso"  # Nombre real de la tabla en MySQL

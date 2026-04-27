@@ -96,7 +96,7 @@ class PDFGenerator:
             # Obtener datos del contrato para el nombre del archivo
             contrato = Contract.objects.select_related(
                 'empleado', 'area'
-            ).get(contrato_id=contrato_id)
+            ).get(pk=contrato_id)
 
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_contrato(contrato)
@@ -141,7 +141,7 @@ class PDFGenerator:
             # Obtener datos del contrato
             contrato = Contract.objects.select_related(
                 'empleado', 'area'
-            ).get(contrato_id=contrato_id)
+            ).get(pk=contrato_id)
 
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_adenda(contrato, tipo_adenda)
@@ -186,7 +186,7 @@ class PDFGenerator:
             )
             
             # Obtener datos del empleado
-            empleado = Employee.objects.get(empleado_id=empleado_id)
+            empleado = Employee.objects.get(pk=empleado_id)
             
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_certificado(

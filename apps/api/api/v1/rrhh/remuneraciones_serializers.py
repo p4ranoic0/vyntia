@@ -34,12 +34,12 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
     """Serializer para configuración de AFP."""
 
     es_activo = serializers.ReadOnlyField()
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = AfpConfiguration
         fields = [
-            "afp_config_id",
+            "id",
             "afp_nombre",
             "vigencia_mes",
             "aporte_obligatorio_pct",
@@ -50,17 +50,17 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
             "estado",
             "estado_texto",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["afp_config_id", "fecha_creacion", "fecha_actualizacion"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class ConfiguracionUitSerializer(serializers.ModelSerializer):
     """Serializer para configuración de UIT (Unidad Impositiva Tributaria)."""
 
     es_activo = serializers.SerializerMethodField()
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     tope_renta_cuarta_soles = serializers.DecimalField(
         max_digits=12, decimal_places=2, read_only=True
     )
@@ -68,13 +68,13 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
         max_digits=10, decimal_places=2, read_only=True
     )
     creado_por_nombre = serializers.CharField(
-        source="creado_por.nombres_usuario", read_only=True, allow_null=True
+        source="created_by.nombres_usuario", read_only=True, allow_null=True
     )
 
     class Meta:
         model = TaxParameter
         fields = [
-            "configuracion_uit_id",
+            "id",
             "anio",
             "valor_uit",
             "tope_renta_cuarta_uit",
@@ -84,16 +84,16 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
             "es_activo",
             "tope_renta_cuarta_soles",
             "essalud_cas_mensual",
-            "creado_por",
+            "created_by",
             "creado_por_nombre",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "configuracion_uit_id",
-            "fecha_creacion",
-            "fecha_actualizacion",
-            "creado_por",
+            "id",
+            "created_at",
+            "updated_at",
+            "created_by",
         ]
 
     def get_es_activo(self, obj):
@@ -139,12 +139,12 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
 
     es_activo = serializers.ReadOnlyField()
     tipo_texto = serializers.CharField(source="get_tipo_display", read_only=True)
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = CompensationConfiguration
         fields = [
-            "configuracion_id",
+            "id",
             "tipo",
             "tipo_texto",
             "codigo",
@@ -157,10 +157,10 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
             "estado",
             "estado_texto",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["configuracion_id", "fecha_creacion", "fecha_actualizacion"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 # ========================================
@@ -174,7 +174,7 @@ class PlanillaMensualListSerializer(serializers.ModelSerializer):
     modalidad_texto = serializers.CharField(
         source="get_modalidad_display", read_only=True
     )
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     esta_cerrada = serializers.ReadOnlyField()
     puede_generarse = serializers.ReadOnlyField()
     usuario_generacion_nombre = serializers.CharField(
@@ -187,7 +187,7 @@ class PlanillaMensualListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonthlyPayroll
         fields = [
-            "planilla_id",
+            "id",
             "periodo",
             "modalidad",
             "modalidad_texto",
@@ -209,13 +209,13 @@ class PlanillaMensualListSerializer(serializers.ModelSerializer):
             "usuario_aprobacion_nombre",
             "esta_cerrada",
             "puede_generarse",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "planilla_id",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "id",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -225,7 +225,7 @@ class PlanillaMensualDetailSerializer(serializers.ModelSerializer):
     modalidad_texto = serializers.CharField(
         source="get_modalidad_display", read_only=True
     )
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     esta_cerrada = serializers.ReadOnlyField()
     puede_generarse = serializers.ReadOnlyField()
     usuario_generacion_detalle = UsuarioSerializer(
@@ -238,7 +238,7 @@ class PlanillaMensualDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonthlyPayroll
         fields = [
-            "planilla_id",
+            "id",
             "periodo",
             "modalidad",
             "modalidad_texto",
@@ -262,13 +262,13 @@ class PlanillaMensualDetailSerializer(serializers.ModelSerializer):
             "usuario_aprobacion_detalle",
             "esta_cerrada",
             "puede_generarse",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "planilla_id",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "id",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -342,7 +342,7 @@ class ConceptoPlanillaSerializer(serializers.ModelSerializer):
     class Meta:
         model = PayrollConcept
         fields = [
-            "concepto_planilla_id",
+            "id",
             "detalle_planilla",
             "configuracion_concepto",
             "tipo",
@@ -351,9 +351,9 @@ class ConceptoPlanillaSerializer(serializers.ModelSerializer):
             "nombre",
             "monto",
             "observaciones",
-            "fecha_creacion",
+            "created_at",
         ]
-        read_only_fields = ["concepto_planilla_id", "fecha_creacion"]
+        read_only_fields = ["id", "created_at"]
 
 
 class DetallePlanillaListSerializer(serializers.ModelSerializer):
@@ -369,7 +369,7 @@ class DetallePlanillaListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PayrollDetail
         fields = [
-            "detalle_id",
+            "id",
             "planilla",
             "empleado",
             "area_nombre",
@@ -398,12 +398,12 @@ class DetallePlanillaListSerializer(serializers.ModelSerializer):
             "banco",
             "numero_cuenta",
         ]
-        read_only_fields = ["detalle_id"]
+        read_only_fields = ["id"]
 
     def get_empleado(self, obj):
         """Retorna datos del empleado como objeto anidado."""
         return {
-            "empleado_id": obj.empleado_id,
+            "id": obj.empleado_id,
             "dni": obj.dni,
             "nombres_completos": obj.empleado.nombre_completo if obj.empleado else "",
             "area_nombre": obj.area_nombre,
@@ -424,7 +424,7 @@ class DetallePlanillaDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = PayrollDetail
         fields = [
-            "detalle_id",
+            "id",
             "planilla",
             "empleado",
             "empleado_detalle",
@@ -459,10 +459,10 @@ class DetallePlanillaDetailSerializer(serializers.ModelSerializer):
             "numero_cuenta",
             "conceptos",
             "tiene_boleta",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["detalle_id", "fecha_creacion", "fecha_actualizacion"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_tiene_boleta(self, obj):
         """Verificar si el detalle tiene boleta generada."""
@@ -512,7 +512,7 @@ class DetallePlanillaCreateSerializer(serializers.ModelSerializer):
 class DescuentoMasivoListSerializer(serializers.ModelSerializer):
     """Serializer para listar descuentos masivos."""
 
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     concepto_nombre = serializers.CharField(
         source="configuracion_concepto.nombre", read_only=True
     )
@@ -523,7 +523,7 @@ class DescuentoMasivoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MassDeduction
         fields = [
-            "descuento_masivo_id",
+            "id",
             "periodo",
             "configuracion_concepto",
             "concepto_nombre",
@@ -539,7 +539,7 @@ class DescuentoMasivoListSerializer(serializers.ModelSerializer):
             "fecha_procesado",
         ]
         read_only_fields = [
-            "descuento_masivo_id",
+            "id",
             "fecha_carga",
             "fecha_procesado",
         ]
@@ -548,7 +548,7 @@ class DescuentoMasivoListSerializer(serializers.ModelSerializer):
 class DescuentoMasivoDetailSerializer(serializers.ModelSerializer):
     """Serializer detallado para descuentos masivos."""
 
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     concepto_detalle = ConfiguracionRemuneracionSerializer(
         source="configuracion_concepto", read_only=True
     )
@@ -557,7 +557,7 @@ class DescuentoMasivoDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = MassDeduction
         fields = [
-            "descuento_masivo_id",
+            "id",
             "periodo",
             "configuracion_concepto",
             "concepto_detalle",
@@ -573,13 +573,13 @@ class DescuentoMasivoDetailSerializer(serializers.ModelSerializer):
             "usuario_detalle",
             "fecha_carga",
             "fecha_procesado",
-            "fecha_actualizacion",
+            "updated_at",
         ]
         read_only_fields = [
-            "descuento_masivo_id",
+            "id",
             "fecha_carga",
             "fecha_procesado",
-            "fecha_actualizacion",
+            "updated_at",
         ]
 
 
@@ -611,7 +611,7 @@ class DescuentoMasivoCreateSerializer(serializers.ModelSerializer):
 class BoletaPagoListSerializer(serializers.ModelSerializer):
     """Serializer para listar boletas de pago."""
 
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     empleado_nombre = serializers.CharField(
         source="detalle_planilla.empleado.nombre_completo", read_only=True
     )
@@ -643,7 +643,7 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaySlip
         fields = [
-            "boleta_id",
+            "id",
             "detalle_planilla",
             "archivo_pdf",
             "estado",
@@ -659,7 +659,7 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
             "fecha_descarga",
         ]
         read_only_fields = [
-            "boleta_id",
+            "id",
             "fecha_generacion",
             "fecha_envio_email",
             "fecha_descarga",
@@ -669,7 +669,7 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
 class BoletaPagoDetailSerializer(serializers.ModelSerializer):
     """Serializer detallado para boletas de pago."""
 
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     detalle_planilla_info = DetallePlanillaDetailSerializer(
         source="detalle_planilla", read_only=True
     )
@@ -677,7 +677,7 @@ class BoletaPagoDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaySlip
         fields = [
-            "boleta_id",
+            "id",
             "detalle_planilla",
             "detalle_planilla_info",
             "archivo_pdf",
@@ -689,7 +689,7 @@ class BoletaPagoDetailSerializer(serializers.ModelSerializer):
             "hash_documento",
         ]
         read_only_fields = [
-            "boleta_id",
+            "id",
             "fecha_generacion",
             "fecha_envio_email",
             "fecha_descarga",
@@ -708,7 +708,7 @@ class CalendarioPagoListSerializer(serializers.ModelSerializer):
     tipo_pago_texto = serializers.CharField(
         source="get_tipo_pago_display", read_only=True
     )
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     periodo = serializers.CharField(source="planilla.periodo", read_only=True)
     modalidad_planilla = serializers.CharField(
         source="planilla.get_modalidad_display", read_only=True
@@ -717,7 +717,7 @@ class CalendarioPagoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentSchedule
         fields = [
-            "calendario_id",
+            "id",
             "planilla",
             "periodo",
             "modalidad_planilla",
@@ -728,11 +728,11 @@ class CalendarioPagoListSerializer(serializers.ModelSerializer):
             "descripcion",
             "estado",
             "estado_texto",
-            "fecha_creacion",
+            "created_at",
         ]
         read_only_fields = [
-            "calendario_id",
-            "fecha_creacion",
+            "id",
+            "created_at",
         ]
 
 
@@ -742,14 +742,14 @@ class CalendarioPagoDetailSerializer(serializers.ModelSerializer):
     tipo_pago_texto = serializers.CharField(
         source="get_tipo_pago_display", read_only=True
     )
-    estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
+    estado_texto = serializers.CharField(source="get_status_display", read_only=True)
     planilla_detalle = PlanillaMensualListSerializer(source="planilla", read_only=True)
     usuario_detalle = UsuarioSerializer(source="usuario_programacion", read_only=True)
 
     class Meta:
         model = PaymentSchedule
         fields = [
-            "calendario_id",
+            "id",
             "planilla",
             "planilla_detalle",
             "tipo_pago",
@@ -761,13 +761,13 @@ class CalendarioPagoDetailSerializer(serializers.ModelSerializer):
             "estado_texto",
             "usuario_programacion",
             "usuario_detalle",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "calendario_id",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "id",
+            "created_at",
+            "updated_at",
         ]
 
 

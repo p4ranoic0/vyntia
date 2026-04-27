@@ -6,6 +6,7 @@ Contiene la definición del modelo Employee que almacena toda la información
 personal, de contacto y básica de los empleados de la institución.
 """
 
+import uuid
 from datetime import date
 
 from django.db import models
@@ -87,7 +88,7 @@ class Employee(models.Model):
     ]
 
     # Campos principales
-    empleado_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     numero_documento = models.CharField(max_length=20, unique=True)
     tipo_documento = models.CharField(
         max_length=10, choices=TIPO_DOCUMENTO_CHOICES, default="DNI"
@@ -168,8 +169,8 @@ class Employee(models.Model):
     estado_empleado = models.CharField(
         max_length=15, choices=ESTADO_EMPLEADO_CHOICES, default="activo"
     )
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_registro')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
 
     # Manager personalizado
     # objects = EmpleadoManager()  # Comentado temporalmente

@@ -6,6 +6,8 @@ Contiene la definición del modelo Department que representa las unidades organi
 de la institución, incluyendo su jerarquía y estructura.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 # from ..managers import AreaManager  # Comentado temporalmente para migraciones
@@ -21,7 +23,7 @@ class Department(models.Model):
     ]
     
     # Campos principales
-    area_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     # Información organizacional
     nombre_organo = models.CharField(max_length=150, default='SIN ESPECIFICAR')
@@ -40,8 +42,8 @@ class Department(models.Model):
     
     # Campos de control
     estado_area = models.CharField(max_length=20, choices=ESTADO_AREA_CHOICES, default='activo')
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     
     # Manager personalizado
     # objects = AreaManager()  # Comentado temporalmente para migraciones

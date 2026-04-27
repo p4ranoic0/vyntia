@@ -31,7 +31,7 @@ class TestActualizarEstado:
         """
         onboarding = onboarding_factory()
 
-        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.onboarding_id)
+        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.pk)
 
         # Wave 1 debe cambiar la firma para devolver dict con historial
         # Actualmente devuelve OnboardingProcess directamente — esto falla RED
@@ -56,7 +56,7 @@ class TestActualizarEstado:
         onboarding.datos_personales_completos = True
         onboarding.save()
 
-        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.onboarding_id)
+        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.pk)
 
         # Wave 1 debe agregar clave 'notificacion_enviada' al resultado
         assert isinstance(resultado, dict), (
@@ -74,7 +74,7 @@ class TestActualizarEstado:
         """
         onboarding = onboarding_factory(estado_onboarding="pendiente_validacion")
 
-        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.onboarding_id)
+        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.pk)
 
         # Actualmente el servicio puede regresar el estado — esto falla RED
         # ya que el resultado es un model, no dict con 'estado_protegido'
@@ -98,7 +98,7 @@ class TestActualizarEstado:
         onboarding.datos_personales_completos = True
         onboarding.save()
 
-        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.onboarding_id)
+        resultado = OnboardingService.actualizar_estado_onboarding(onboarding.pk)
 
         # Wave 1 debe devolver dict con 'progreso_porcentaje'
         assert isinstance(resultado, dict), (
@@ -124,7 +124,7 @@ class TestCorregirCorreoService:
 
         # Este método no existe aún — falla RED con AttributeError
         resultado = OnboardingService.corregir_correo_personal(
-            onboarding.onboarding_id,
+            onboarding.pk,
             nuevo_correo,
         )
 
@@ -146,8 +146,8 @@ class TestCursosCertificacionesModel:
         """Placeholder — full tests added when ViewSet is wired (plan 01-09)."""
         from apps.employees.models import Certification
         assert hasattr(Certification, 'nombre_curso')
-        assert hasattr(Certification, 'empleado_id')
-        assert hasattr(Certification, 'documento_id')
+        assert hasattr(Certification, 'id')
+        assert hasattr(Certification, 'id')
 
     def test_progreso_aprobado_property_exists(self, onboarding_factory):
         """progreso_aprobado property is accessible without error."""

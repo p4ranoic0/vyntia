@@ -70,8 +70,8 @@ class TemplateService:
             contrato = Contract.objects.select_related(
                 'empleado',
                 'area',
-                'creado_por'
-            ).get(contrato_id=contrato_id)
+                'created_by'
+            ).get(pk=contrato_id)
 
             # Determinar la plantilla a usar
             if tipo_plantilla:
@@ -115,8 +115,8 @@ class TemplateService:
             contrato = Contract.objects.select_related(
                 'empleado',
                 'area',
-                'creado_por'
-            ).get(contrato_id=contrato_id)
+                'created_by'
+            ).get(pk=contrato_id)
 
             plantilla = self.PLANTILLAS_ADENDA.get(tipo_adenda, 'adendas/adenda_base.html')
             
@@ -148,7 +148,7 @@ class TemplateService:
             str: HTML generado del certificado
         """
         try:
-            empleado = Employee.objects.get(empleado_id=empleado_id)
+            empleado = Employee.objects.get(pk=empleado_id)
 
             # Auto-detect: active employee → CONSTANCIA, cesado → CERTIFICADO
             if tipo_certificado in ('LABORAL', None, ''):
@@ -226,7 +226,7 @@ class TemplateService:
             # Datos de generación
             'generacion': {
                 'fecha': datetime.now(),
-                'usuario': contrato.creado_por.nombre_completo if contrato.creado_por_id else 'Sistema',
+                'usuario': contrato.created_by.nombre_completo if contrato.creado_por_id else 'Sistema',
             },
             'fecha_generacion': datetime.now(),
         }
@@ -374,7 +374,7 @@ class TemplateService:
         if reporte_data.get('tipo_contrato'):
             filtros &= Q(tipo_documento=reporte_data['tipo_contrato'])
         if reporte_data.get('estado'):
-            filtros &= Q(estado=reporte_data['estado'])
+            filtros &= Q(status=reporte_data['estado'])
         if reporte_data.get('area'):
             filtros &= Q(area_id=reporte_data['area'])
 

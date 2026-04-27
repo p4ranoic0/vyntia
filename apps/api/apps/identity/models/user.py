@@ -6,6 +6,7 @@ Contiene la definición del modelo User que gestiona los usuarios
 del sistema de intranet y sus permisos de acceso.
 """
 
+import uuid
 from datetime import date, timedelta
 
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -45,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ]
 
     # Campos principales
-    usuario_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.OneToOneField(
         "employees.Employee",
         on_delete=models.CASCADE,
@@ -99,15 +100,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     recibir_notificaciones_sistema = models.BooleanField(default=True)
 
     # Campos de auditoría
-    creado_por = models.ForeignKey(
+    created_by = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="usuarios_creados",
+        db_column="creado_por_id",
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     # Manager personalizado
     objects = UsuarioManager()
@@ -376,7 +378,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.nivel_acceso == "departamental" and self.empleado:
             datos_laborales = self.empleado.datos_laborales_actuales()
             if datos_laborales:
-                return Department.objects.filter(area_id=datos_laborales.area.area_id)
+                return Department.objects.filter(pk=datos_laborales.area.pk)
 
         return Department.objects.none()
 
@@ -415,10 +417,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                 usuario_rol.fecha_expiracion is None
                 or usuario_rol.fecha_expiracion > timezone.now()
             ) and usuario_rol.rol.estado_rol == "activo":
-                roles_ids.append(usuario_rol.rol.rol_id)
+                roles_ids.append(usuario_rol.rol.pk)
 
         # Devolver QuerySet de roles activos
-        return Role.objects.filter(rol_id__in=roles_ids, estado_rol="activo")
+        return Role.objects.filter(pk__in=roles_ids, estado_rol="activo")
 
     def permisos_activos(self):
         """Obtiene los permisos activos del usuario a traves de sus roles."""
@@ -439,7 +441,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             ).values_list('permiso_id', flat=True).distinct()
 
             return Permission.objects.filter(
-                permiso_id__in=permiso_ids,
+                pk__in=permiso_ids,
                 estado_permiso='activo'
             )
         except Exception:

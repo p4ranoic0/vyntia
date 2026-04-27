@@ -6,6 +6,8 @@ Este modelo maneja tanto contratos iniciales como adendas en una estructura
 unificada, facilitando la gestión, reportes y alertas de vencimiento.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
@@ -61,7 +63,7 @@ class Contract(models.Model):
     ]
     
     # Campos principales
-    contrato_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     # Relaciones
     empleado = models.ForeignKey(
@@ -165,10 +167,11 @@ class Contract(models.Model):
     )
     
     # Estado y observaciones
-    estado = models.CharField(
+    status = models.CharField(
         max_length=15,
         choices=ESTADO_CHOICES,
         default='BORRADOR',
+        db_column='estado',
         help_text='Estado actual del contrato/adenda'
     )
     
@@ -185,31 +188,35 @@ class Contract(models.Model):
     )
     
     # Campos de auditoría
-    fecha_creacion = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add=True,
+        db_column='fecha_creacion',
         help_text='Fecha de creación del registro'
     )
-    
-    fecha_modificacion = models.DateTimeField(
+
+    updated_at = models.DateTimeField(
         auto_now=True,
+        db_column='fecha_modificacion',
         help_text='Fecha de última modificación'
     )
-    
-    creado_por = models.ForeignKey(
+
+    created_by = models.ForeignKey(
         'identity.User',
         on_delete=models.PROTECT,
         related_name='contratos_creados',
         null=True,
         blank=True,
+        db_column='creado_por_id',
         help_text='User que creó el registro'
     )
 
-    modificado_por = models.ForeignKey(
+    updated_by = models.ForeignKey(
         'identity.User',
         on_delete=models.PROTECT,
         related_name='contratos_modificados',
         null=True,
         blank=True,
+        db_column='modificado_por_id',
         help_text='User que modificó el registro'
     )
     
@@ -224,12 +231,12 @@ class Contract(models.Model):
             models.Index(fields=['area']),
             models.Index(fields=['numero_contrato']),
             models.Index(fields=['fecha_fin']),
-            models.Index(fields=['estado']),
+            models.Index(fields=['status']),
             models.Index(fields=['tipo_documento']),
             models.Index(fields=['fecha_inicio']),
-            models.Index(fields=['creado_por']),
+            models.Index(fields=['created_by']),
         ]
-        ordering = ['-fecha_creacion']
+        ordering = ['-created_at']
         verbose_name = 'Contrato/Adenda'
         verbose_name_plural = 'Contratos/Adendas'
     
@@ -291,7 +298,7 @@ class Contract(models.Model):
     @property
     def esta_vigente(self):
         """Indica si el contrato está vigente."""
-        if self.estado != 'ACTIVO':
+        if self.status != 'ACTIVO':
             return False
         
         hoy = timezone.now().date()
@@ -367,7 +374,7 @@ class Contract(models.Model):
         """Verifica si se puede generar una adenda para este contrato."""
         return (
             self.es_contrato_inicial and
-            self.estado in ['ACTIVO', 'PENDIENTE'] and
+            self.status in ['ACTIVO', 'PENDIENTE'] and
             not self.esta_vencido
         )
     
@@ -379,7 +386,7 @@ class Contract(models.Model):
         return Contract.objects.filter(
             numero_contrato=self.numero_contrato,
             numero_adenda__isnull=False
-        ).order_by('fecha_creacion')
+        ).order_by('created_at')
     
     def obtener_contrato_base(self):
         """Si es una adenda, obtiene el contrato base."""

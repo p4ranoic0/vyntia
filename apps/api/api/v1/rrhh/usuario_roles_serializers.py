@@ -22,11 +22,11 @@ class UsuarioRolesSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = [
-            'usuario_rol_id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
+            'id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
             'asignado_por_usuario', 'estado_asignacion', 'usuario_nombre', 'rol_nombre',
             'asignado_por_nombre', 'es_activo', 'dias_hasta_expiracion'
         ]
-        read_only_fields = ['usuario_rol_id', 'fecha_asignacion']
+        read_only_fields = ['id', 'fecha_asignacion']
     
     def get_es_activo(self, obj):
         """Verificar si la asignación está activa y no ha expirado."""
@@ -153,7 +153,7 @@ class UsuarioRolesListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = [
-            'usuario_rol_id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
+            'id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
             'estado_asignacion', 'usuario_nombre', 'rol_nombre', 'rol_descripcion', 'es_activo'
         ]
     
@@ -187,7 +187,7 @@ class AsignarRolSerializer(serializers.Serializer):
         roles = Role.objects.filter(rol_id__in=value, estado_rol='activo')
         
         if len(roles) != len(value):
-            roles_encontrados = set(roles.values_list('rol_id', flat=True))
+            roles_encontrados = set(roles.values_list('id', flat=True))
             roles_solicitados = set(value)
             roles_no_encontrados = roles_solicitados - roles_encontrados
             

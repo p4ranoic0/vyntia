@@ -61,7 +61,7 @@ class VacationAdminService:
             fecha_inicio_vigencia=data.get('fecha_inicio_vigencia') or date.today(),
             fecha_fin_vigencia=data.get('fecha_fin_vigencia'),
             observaciones=data.get('observaciones'),
-            creado_por=usuario_creador,
+            created_by=usuario_creador,
         )
 
     @staticmethod
@@ -124,9 +124,9 @@ class VacationAdminService:
                 periodo = VacationService.obtener_o_crear_periodo(empleado, fecha_ref)
                 resultados['exitosos'].append(
                     {
-                        'empleado_id': empleado.empleado_id,
+                        'id': empleado.empleado_id,
                         'empleado_nombre': empleado.nombre_completo,
-                        'periodo_id': periodo.periodo_id,
+                        'id': periodo.periodo_id,
                         'periodo': f"{periodo.fecha_inicio_periodo:%Y-%m-%d} / {periodo.fecha_fin_periodo:%Y-%m-%d}",
                     }
                 )
@@ -134,7 +134,7 @@ class VacationAdminService:
             except Exception as exc:
                 resultados['errores'].append(
                     {
-                        'empleado_id': empleado.empleado_id,
+                        'id': empleado.empleado_id,
                         'empleado_nombre': empleado.nombre_completo,
                         'error': str(exc),
                     }
@@ -172,7 +172,7 @@ class VacationAdminService:
 
         return {
             'ano': ano_ref,
-            'area_id': area_id,
+            'id': area_id,
             'periodos': {
                 'total_empleados': resumen_periodos['total_empleados'] or 0,
                 'total_dias_correspondientes': resumen_periodos['total_dias_correspondientes'] or 0,
@@ -185,14 +185,14 @@ class VacationAdminService:
                 'total_solicitudes': solicitudes.count(),
                 'por_estado': {
                     fila['estado_solicitud']: fila['total']
-                    for fila in solicitudes.values('estado_solicitud').annotate(total=Count('solicitud_id'))
+                    for fila in solicitudes.values('estado_solicitud').annotate(total=Count('id'))
                 },
             },
             'goces': {
                 'total_goces': goces.count(),
                 'por_estado': {
                     fila['estado_goce']: fila['total']
-                    for fila in goces.values('estado_goce').annotate(total=Count('goce_id'))
+                    for fila in goces.values('estado_goce').annotate(total=Count('id'))
                 },
             },
             'fecha_generacion': timezone.now().isoformat(),
@@ -216,7 +216,7 @@ class VacationAdminService:
             dias_vencidos = periodo.dias_vencidos or (periodo.dias_pendientes if periodo.fecha_vencimiento < hoy else 0)
             resultado.append(
                 {
-                    'empleado_id': periodo.empleado.empleado_id,
+                    'id': periodo.empleado.empleado_id,
                     'empleado_nombre': periodo.empleado.nombre_completo,
                     'empleado_rut': periodo.empleado.numero_documento,
                     'area_nombre': datos_laborales.area.nombre_area if datos_laborales and datos_laborales.area else 'Sin área',
@@ -275,18 +275,18 @@ class VacationAdminService:
         if empleado_id:
             qs = qs.filter(empleado_id=empleado_id)
         if contrato_id:
-            qs = qs.filter(periodo_vacacional__contrato__contrato_id=contrato_id)
+            qs = qs.filter(periodo_vacacional__contrato__id=contrato_id)
 
         reporte = []
-        for solicitud in qs.order_by('-fecha_envio', '-fecha_creacion').distinct():
+        for solicitud in qs.order_by('-fecha_envio', '-created_at').distinct():
             datos_laborales = solicitud.empleado.datos_laborales_actuales()
             reporte.append(
                 {
-                    'solicitud_id': solicitud.solicitud_id,
+                    'id': solicitud.solicitud_id,
                     'empleado_nombre': solicitud.empleado.nombre_completo,
                     'empleado_rut': solicitud.empleado.numero_documento,
                     'area_nombre': datos_laborales.area.nombre_area if datos_laborales and datos_laborales.area else 'Sin área',
-                    'contrato_id': getattr(solicitud.periodo_vacacional.contrato, 'contrato_id', None),
+                    'id': getattr(solicitud.periodo_vacacional.contrato, 'id', None),
                     'contrato_numero': getattr(solicitud.periodo_vacacional.contrato, 'numero_contrato', None),
                     'tipo_solicitud': solicitud.get_tipo_solicitud_display(),
                     'fecha_inicio': solicitud.fecha_inicio,

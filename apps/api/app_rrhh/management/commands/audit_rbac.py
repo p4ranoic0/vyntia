@@ -277,7 +277,7 @@ class Command(BaseCommand):
         """Detecta permisos con nombres duplicados."""
         duplicates = (
             Permission.objects.values("nombre_permiso")
-            .annotate(count=Count("permiso_id"))
+            .annotate(count=Count("id"))
             .filter(count__gt=1)
         )
         count = duplicates.count()

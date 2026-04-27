@@ -18,7 +18,7 @@ def test_permisos_debug(request):
         # Test 1: User info
         result = {
             "username": user.nombres_usuario,
-            "user_id": user.usuario_id,
+            "user_id": user.pk,
             "authenticated": user.is_authenticated,
         }
 

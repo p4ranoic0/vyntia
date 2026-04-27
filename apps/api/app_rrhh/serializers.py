@@ -49,7 +49,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "usuario_id",
+            "id",
             "nombres_usuario",
             "date_joined",
             "last_login",

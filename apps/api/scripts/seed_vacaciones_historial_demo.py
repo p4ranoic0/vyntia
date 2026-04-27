@@ -53,7 +53,7 @@ def _get_configuracion(usuario):
         dias_por_ano=30,
         activo=True,
         fecha_inicio_vigencia=hoy - timedelta(days=365),
-        creado_por=usuario,
+        created_by=usuario,
     )
 
 
@@ -88,7 +88,7 @@ def _get_or_create_contrato(empleado, usuario):
         salario_bruto=Decimal('3000.00'),
         cargo=getattr(datos_laborales, 'cargo_empleado', 'Analista'),
         estado='ACTIVO',
-        creado_por=usuario,
+        created_by=usuario,
     )
 
 

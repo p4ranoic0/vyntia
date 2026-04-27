@@ -39,21 +39,21 @@ class AuthSystemIntegrationTest(TestCase):
         self.permiso_leer = Permission.objects.create(
             nombre_permiso='Leer Empleados',
             descripcion_permiso='Permission para leer información de empleados',
-            modulo_id=1,
+            modulo='empleados',
             tipo_permiso='leer'
         )
-        
+
         self.permiso_escribir = Permission.objects.create(
             nombre_permiso='Escribir Empleados',
             descripcion_permiso='Permission para modificar información de empleados',
-            modulo_id=1,
+            modulo='empleados',
             tipo_permiso='actualizar'
         )
-        
+
         self.permiso_admin = Permission.objects.create(
             nombre_permiso='Administrar Sistema',
             descripcion_permiso='Permission de administración completa',
-            modulo_id=2,
+            modulo='admin',
             tipo_permiso='ejecutar'
         )
         

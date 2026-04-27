@@ -1,5 +1,7 @@
 """Modelo para gestionar el proceso de onboarding de nuevos empleados."""
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 
@@ -16,7 +18,7 @@ class OnboardingProcess(models.Model):
     ]
 
     # Primary key
-    onboarding_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     # Relaciones principales
     empleado = models.OneToOneField(
@@ -64,7 +66,7 @@ class OnboardingProcess(models.Model):
     # Timestamps
     fecha_inicio = models.DateTimeField(auto_now_add=True)
     fecha_completado = models.DateTimeField(null=True, blank=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
 
     class Meta:
         db_table = 'onboarding_empleado'

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Modelos para configuración maestra de remuneraciones."""
 
+import uuid
 from decimal import Decimal
 
 from django.db import models
@@ -14,7 +15,7 @@ class AfpConfiguration(models.Model):
         ("inactivo", "Inactivo"),
     ]
 
-    afp_config_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     afp_nombre = models.CharField(max_length=80)
     vigencia_mes = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     aporte_obligatorio_pct = models.DecimalField(
@@ -30,16 +31,16 @@ class AfpConfiguration(models.Model):
         max_digits=6, decimal_places=3, default=Decimal("1.370")
     )
     remuneracion_max_asegurable = models.DecimalField(max_digits=12, decimal_places=2)
-    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default="activo")
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=10, choices=ESTADO_CHOICES, default="activo", db_column="estado")
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "configuracion_afp"
         indexes = [
             models.Index(fields=["afp_nombre"]),
             models.Index(fields=["vigencia_mes"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
         ]
         constraints = [
             models.UniqueConstraint(
@@ -54,7 +55,7 @@ class AfpConfiguration(models.Model):
 
     @property
     def es_activo(self):
-        return self.estado == "activo"
+        return self.status == "activo"
 
 
 class CompensationConfiguration(models.Model):
@@ -70,7 +71,7 @@ class CompensationConfiguration(models.Model):
         ("inactivo", "Inactivo"),
     ]
 
-    configuracion_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     codigo = models.CharField(max_length=30)
     nombre = models.CharField(max_length=120)
@@ -83,16 +84,16 @@ class CompensationConfiguration(models.Model):
     )
     aplica_base_imponible = models.BooleanField(default=True)
     orden = models.PositiveIntegerField(default=1)
-    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default="activo")
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=10, choices=ESTADO_CHOICES, default="activo", db_column="estado")
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "configuracion_remuneracion"
         indexes = [
             models.Index(fields=["tipo"]),
             models.Index(fields=["codigo"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
             models.Index(fields=["orden"]),
         ]
         constraints = [
@@ -108,7 +109,7 @@ class CompensationConfiguration(models.Model):
 
     @property
     def es_activo(self):
-        return self.estado == "activo"
+        return self.status == "activo"
 
 
 class MonthlyPayroll(models.Model):
@@ -131,14 +132,14 @@ class MonthlyPayroll(models.Model):
         ("anulada", "Anulada"),
     ]
 
-    planilla_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     periodo = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     modalidad = models.CharField(max_length=30, choices=MODALIDAD_CHOICES)
     meta_presupuestal = models.CharField(max_length=100, null=True, blank=True)
     descripcion = models.CharField(max_length=200, null=True, blank=True)
 
     # Control de estado y totales
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="borrador")
+    status = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="borrador", db_column="estado")
     total_trabajadores = models.PositiveIntegerField(default=0)
     total_remuneracion_bruta = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal("0.00")
@@ -179,17 +180,17 @@ class MonthlyPayroll(models.Model):
         null=True,
         blank=True,
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "planilla_mensual"
         indexes = [
             models.Index(fields=["periodo"]),
             models.Index(fields=["modalidad"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
             models.Index(fields=["meta_presupuestal"]),
-            models.Index(fields=["-fecha_creacion"]),
+            models.Index(fields=["-created_at"]),
         ]
         constraints = [
             models.UniqueConstraint(
@@ -205,18 +206,18 @@ class MonthlyPayroll(models.Model):
     @property
     def esta_cerrada(self):
         """Indica si la planilla ya no puede modificarse."""
-        return self.estado in ["aprobada", "pagada", "anulada"]
+        return self.status in ["aprobada", "pagada", "anulada"]
 
     @property
     def puede_generarse(self):
         """Indica si la planilla puede procesarse."""
-        return self.estado in ["borrador", "procesando"]
+        return self.status in ["borrador", "procesando"]
 
 
 class PayrollDetail(models.Model):
     """Detalle de planilla mensual por empleado."""
 
-    detalle_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     planilla = models.ForeignKey(
         MonthlyPayroll,
         on_delete=models.CASCADE,
@@ -337,8 +338,8 @@ class PayrollDetail(models.Model):
     numero_cuenta = models.CharField(max_length=50, null=True, blank=True)
 
     # Auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "detalle_planilla"
@@ -369,7 +370,7 @@ class PayrollConcept(models.Model):
         ("descuento", "Descuento"),
     ]
 
-    concepto_planilla_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     detalle_planilla = models.ForeignKey(
         PayrollDetail,
         on_delete=models.CASCADE,
@@ -385,7 +386,7 @@ class PayrollConcept(models.Model):
     nombre = models.CharField(max_length=120)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     observaciones = models.TextField(null=True, blank=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
 
     class Meta:
         db_table = "concepto_planilla"
@@ -410,7 +411,7 @@ class MassDeduction(models.Model):
         ("anulado", "Anulado"),
     ]
 
-    descuento_masivo_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     periodo = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     configuracion_concepto = models.ForeignKey(
         CompensationConfiguration,
@@ -428,8 +429,8 @@ class MassDeduction(models.Model):
     monto_total = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal("0.00")
     )
-    estado = models.CharField(
-        max_length=20, choices=ESTADO_CHOICES, default="pendiente"
+    status = models.CharField(
+        max_length=20, choices=ESTADO_CHOICES, default="pendiente", db_column="estado"
     )
     errores_log = models.TextField(null=True, blank=True)
 
@@ -441,13 +442,13 @@ class MassDeduction(models.Model):
     )
     fecha_carga = models.DateTimeField(auto_now_add=True)
     fecha_procesado = models.DateTimeField(null=True, blank=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "descuento_masivo"
         indexes = [
             models.Index(fields=["periodo"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
             models.Index(fields=["-fecha_carga"]),
         ]
         ordering = ["-fecha_carga"]
@@ -465,7 +466,7 @@ class PaySlip(models.Model):
         ("descargada", "Descargada"),
     ]
 
-    boleta_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     detalle_planilla = models.OneToOneField(
         PayrollDetail,
         on_delete=models.CASCADE,
@@ -477,7 +478,7 @@ class PaySlip(models.Model):
         null=True,
         blank=True,
     )
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="generada")
+    status = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="generada", db_column="estado")
     fecha_generacion = models.DateTimeField(auto_now_add=True)
     fecha_envio_email = models.DateTimeField(null=True, blank=True)
     fecha_descarga = models.DateTimeField(null=True, blank=True)
@@ -489,7 +490,7 @@ class PaySlip(models.Model):
         db_table = "boleta_pago"
         indexes = [
             models.Index(fields=["detalle_planilla"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
             models.Index(fields=["-fecha_generacion"]),
         ]
         ordering = ["-fecha_generacion"]
@@ -514,7 +515,7 @@ class PaymentSchedule(models.Model):
         ("cancelado", "Cancelado"),
     ]
 
-    calendario_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     planilla = models.ForeignKey(
         MonthlyPayroll,
         on_delete=models.CASCADE,
@@ -524,7 +525,7 @@ class PaymentSchedule(models.Model):
     fecha_pago_programada = models.DateField()
     fecha_pago_ejecutada = models.DateField(null=True, blank=True)
     descripcion = models.CharField(max_length=200, null=True, blank=True)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="activo")
+    status = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="activo", db_column="estado")
 
     # Auditoría
     usuario_programacion = models.ForeignKey(
@@ -532,16 +533,16 @@ class PaymentSchedule(models.Model):
         on_delete=models.PROTECT,
         related_name="calendarios_programados",
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     class Meta:
         db_table = "calendario_pago"
         indexes = [
             models.Index(fields=["planilla"]),
             models.Index(fields=["fecha_pago_programada"]),
-            models.Index(fields=["estado"]),
-            models.Index(fields=["-fecha_creacion"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["-created_at"]),
         ]
         ordering = ["fecha_pago_programada"]
 

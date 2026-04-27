@@ -57,7 +57,7 @@ class VacacionesAPIValidatorTest(TestCase):
         self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
-            creado_por=self.user
+            created_by=self.user
         )
         
         # Crear período vacacional
@@ -113,7 +113,7 @@ class VacacionesAPIValidatorTest(TestCase):
             fecha_fin_solicitud=date.today() + timedelta(days=15),
             dias_solicitados=5,
             estado_solicitud='aprobada',
-            creado_por=self.user
+            created_by=self.user
         )
         
         data = {
@@ -206,7 +206,7 @@ class VacacionesPermissionValidatorTest(TestCase):
         self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
-            creado_por=self.empleado_user
+            created_by=self.empleado_user
         )
         
         self.periodo = VacationPeriod.objects.create(
@@ -227,7 +227,7 @@ class VacacionesPermissionValidatorTest(TestCase):
             fecha_fin_solicitud=date.today() + timedelta(days=15),
             dias_solicitados=5,
             estado_solicitud='enviada',
-            creado_por=self.empleado_user
+            created_by=self.empleado_user
         )
     
     def test_can_approve_solicitud_jefe(self):
@@ -302,7 +302,7 @@ class VacacionesStateValidatorTest(TestCase):
         self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
-            creado_por=self.user
+            created_by=self.user
         )
         
         self.periodo = VacationPeriod.objects.create(
@@ -323,7 +323,7 @@ class VacacionesStateValidatorTest(TestCase):
             fecha_fin_solicitud=date.today() + timedelta(days=15),
             dias_solicitados=5,
             estado_solicitud='enviada',
-            creado_por=self.user
+            created_by=self.user
         )
     
     def test_valid_state_transition(self):
@@ -383,7 +383,7 @@ class VacacionesSerializerTest(TestCase):
             'dias_maximos_solicitud': 30,
             'permite_fraccionamiento': True,
             'min_dias_por_fraccion': 1,
-            'creado_por': self.user.id
+            'created_by': self.user.id
         }
         
         serializer = ConfiguracionVacacionesSerializer(data=data)
@@ -396,7 +396,7 @@ class VacacionesSerializerTest(TestCase):
             'dias_por_ano': 0,  # Inválido
             'dias_minimos_solicitud': 10,
             'dias_maximos_solicitud': 5,  # Menor que mínimo
-            'creado_por': self.user.id
+            'created_by': self.user.id
         }
         
         serializer = ConfiguracionVacacionesSerializer(data=data)

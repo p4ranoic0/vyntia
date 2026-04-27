@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
 
@@ -14,7 +16,7 @@ class Module(models.Model):
     ]
 
     # Campos principales
-    modulo_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre_modulo = models.CharField(max_length=100)
     descripcion_modulo = models.TextField(null=True, blank=True)
     icono_modulo = models.CharField(max_length=100, null=True, blank=True)
@@ -23,8 +25,8 @@ class Module(models.Model):
     estado_modulo = models.CharField(
         max_length=15, choices=ESTADO_MODULO_CHOICES, default="activo"
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
 
     # Soporte para menú jerárquico
     modulo_padre = models.ForeignKey(
@@ -85,17 +87,17 @@ class Module(models.Model):
     def activar(self):
         """Activar el módulo."""
         self.estado_modulo = "activo"
-        self.save(update_fields=["estado_modulo", "fecha_actualizacion"])
+        self.save(update_fields=["estado_modulo", "updated_at"])
 
     def desactivar(self):
         """Desactivar el módulo."""
         self.estado_modulo = "inactivo"
-        self.save(update_fields=["estado_modulo", "fecha_actualizacion"])
+        self.save(update_fields=["estado_modulo", "updated_at"])
 
     def poner_en_mantenimiento(self):
         """Poner el módulo en mantenimiento."""
         self.estado_modulo = "mantenimiento"
-        self.save(update_fields=["estado_modulo", "fecha_actualizacion"])
+        self.save(update_fields=["estado_modulo", "updated_at"])
 
     def get_children(self):
         """Obtener submódulos directos activos, ordenados."""
@@ -165,7 +167,7 @@ class RolePermission(models.Model):
     """Modelo para gestionar la relación entre roles y permisos."""
 
     # Campos principales
-    rol_permiso_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     rol = models.ForeignKey(
         "Role", on_delete=models.CASCADE, related_name="permisos_asignados"
     )
@@ -238,7 +240,7 @@ class RolePermission(models.Model):
 class ModulePermission(models.Model):
     """Relación explícita entre módulos y permisos requeridos para visibilidad."""
 
-    modulo_permiso_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     modulo = models.ForeignKey(
         "Module",
         on_delete=models.CASCADE,
@@ -251,7 +253,7 @@ class ModulePermission(models.Model):
         related_name="modulos_relacionados",
         db_column="permiso_id",
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
 
     class Meta:
         db_table = "modulo_permisos"
@@ -276,7 +278,7 @@ class UserRole(models.Model):
     ]
 
     # Campos principales
-    usuario_rol_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(
         "User", on_delete=models.CASCADE, related_name="roles_asignados"
     )

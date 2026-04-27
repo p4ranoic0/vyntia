@@ -7,6 +7,8 @@ el historial de movimientos y desplazamientos de los empleados en la institució
 Basado en la tabla historial_ubicaciones de la base de datos.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from datetime import date
@@ -31,8 +33,10 @@ class LocationHistory(models.Model):
     ]
     
     # Campos principales
-    ubicacion_id = models.AutoField(
+    id = models.UUIDField(
         primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
         help_text='ID único del registro de ubicación'
     )
     empleado = models.ForeignKey(
@@ -118,8 +122,9 @@ class LocationHistory(models.Model):
         related_name='ubicaciones_registradas',
         help_text='User que registró el movimiento'
     )
-    fecha_registro = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add=True,
+        db_column='fecha_registro',
         help_text='Fecha de registro'
     )
     
@@ -139,7 +144,7 @@ class LocationHistory(models.Model):
             models.Index(fields=['estado_ubicacion']),
             models.Index(fields=['registrado_por_usuario']),
         ]
-        ordering = ['-fecha_inicio', '-fecha_registro']
+        ordering = ['-fecha_inicio', '-created_at']
     
     def __str__(self):
         return f"{self.empleado.nombre_completo} - {self.get_tipo_movimiento_display()} ({self.fecha_inicio})"
@@ -209,7 +214,7 @@ class LocationHistory(models.Model):
         # Generar código automático basado en el movimiento
         tipo_codigo = self.tipo_movimiento[:3].upper()
         area_destino_codigo = self.area_destino.codigo_area[:3].upper() if self.area_destino.codigo_area else 'GEN'
-        movimiento_id = str(self.ubicacion_id).zfill(4)
+        movimiento_id = str(self.id).zfill(4)
         fecha_codigo = self.fecha_inicio.strftime('%y%m')
         
         return f"{tipo_codigo}-{area_destino_codigo}-{fecha_codigo}-{movimiento_id}"
@@ -265,7 +270,7 @@ class LocationHistory(models.Model):
             tipo_movimiento=self.tipo_movimiento,
             area_destino=self.area_destino,
             estado_ubicacion='activo'
-        ).exclude(ubicacion_id=self.ubicacion_id)
+        ).exclude(id=self.id)
     
     @classmethod
     def movimientos_activos(cls, tipo_movimiento=None, area_destino=None):
@@ -303,5 +308,5 @@ class LocationHistory(models.Model):
         """Obtiene estadísticas de movimientos por tipo."""
         from django.db.models import Count
         return cls.objects.values('tipo_movimiento').annotate(
-            total=Count('ubicacion_id')
+            total=Count('id')
         ).order_by('-total')
