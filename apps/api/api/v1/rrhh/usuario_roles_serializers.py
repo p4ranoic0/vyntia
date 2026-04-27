@@ -1,4 +1,4 @@
-"""Serializers for UsuarioRoles management."""
+"""Serializers for UserRole management."""
 
 from rest_framework import serializers
 from django.db import transaction
@@ -6,12 +6,12 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from apps.identity.models import UsuarioRoles, Usuario, Rol
+from apps.identity.models import UserRole, User, Role
 from apps.core.exceptions import BusinessLogicError
 
 
 class UsuarioRolesSerializer(serializers.ModelSerializer):
-    """Serializer for UsuarioRoles model."""
+    """Serializer for UserRole model."""
     
     usuario_nombre = serializers.CharField(source='usuario.nombre_completo', read_only=True)
     rol_nombre = serializers.CharField(source='rol.nombre_rol', read_only=True)
@@ -20,7 +20,7 @@ class UsuarioRolesSerializer(serializers.ModelSerializer):
     dias_hasta_expiracion = serializers.SerializerMethodField()
     
     class Meta:
-        model = UsuarioRoles
+        model = UserRole
         fields = [
             'usuario_rol_id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
             'asignado_por_usuario', 'estado_asignacion', 'usuario_nombre', 'rol_nombre',
@@ -65,7 +65,7 @@ class UsuarioRolesSerializer(serializers.ModelSerializer):
         
         # Verificar que no existe una asignación activa del mismo rol al usuario
         if usuario and rol:
-            existing = UsuarioRoles.objects.filter(
+            existing = UserRole.objects.filter(
                 usuario=usuario,
                 rol=rol,
                 estado_asignacion='activo'
@@ -90,7 +90,7 @@ class UsuarioRolesCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating user role assignments."""
     
     class Meta:
-        model = UsuarioRoles
+        model = UserRole
         fields = [
             'usuario', 'rol', 'fecha_expiracion', 'estado_asignacion'
         ]
@@ -113,7 +113,7 @@ class UsuarioRolesCreateSerializer(serializers.ModelSerializer):
             })
         
         # Verificar que no existe una asignación activa del mismo rol al usuario
-        existing = UsuarioRoles.objects.filter(
+        existing = UserRole.objects.filter(
             usuario=usuario,
             rol=rol,
             estado_asignacion='activo'
@@ -151,7 +151,7 @@ class UsuarioRolesListSerializer(serializers.ModelSerializer):
     es_activo = serializers.SerializerMethodField()
     
     class Meta:
-        model = UsuarioRoles
+        model = UserRole
         fields = [
             'usuario_rol_id', 'usuario', 'rol', 'fecha_asignacion', 'fecha_expiracion',
             'estado_asignacion', 'usuario_nombre', 'rol_nombre', 'rol_descripcion', 'es_activo'
@@ -184,7 +184,7 @@ class AsignarRolSerializer(serializers.Serializer):
     
     def validate_roles(self, value):
         """Validar que los roles existen y están activos."""
-        roles = Rol.objects.filter(rol_id__in=value, estado_rol='activo')
+        roles = Role.objects.filter(rol_id__in=value, estado_rol='activo')
         
         if len(roles) != len(value):
             roles_encontrados = set(roles.values_list('rol_id', flat=True))

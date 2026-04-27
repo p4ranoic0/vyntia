@@ -7,10 +7,10 @@ from rest_framework import status
 from datetime import datetime, timedelta
 import json
 
-from apps.contracts.models import DatosLaborales
-from apps.employees.models import DatosAcademicos, DatosFamiliares, Empleado
-from apps.organization.models import Area, HistorialUbicaciones
-from apps.identity.models import Usuario, Rol, Permiso
+from apps.contracts.models import EmploymentData
+from apps.employees.models import AcademicRecord, FamilyMember, Employee
+from apps.organization.models import Department, LocationHistory
+from apps.identity.models import User, Role, Permission
 
 
 class BaseAPITestCase(APITestCase):
@@ -21,7 +21,7 @@ class BaseAPITestCase(APITestCase):
         self.client = APIClient()
         
         # Create test area
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre_organo="Gerencia de Tecnología",
             nombre_unidad_organica="Desarrollo de Software",
             siglas_area="GTS",
@@ -30,7 +30,7 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Create test employee
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             nombres_empleado="Juan Carlos",
             apellido_paterno="García",
             apellido_materno="López",
@@ -49,7 +49,7 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Create test user
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             nombre_usuario="testuser",
             correo_institucional="test@empresa.com",
             password="testpass123",
@@ -58,7 +58,7 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Create admin employee first
-        self.admin_empleado = Empleado.objects.create(
+        self.admin_empleado = Employee.objects.create(
             nombres_empleado="Admin",
             apellido_paterno="Sistema",
             apellido_materno="Test",
@@ -80,7 +80,7 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Create admin user
-        self.admin_user = Usuario.objects.create(
+        self.admin_user = User.objects.create(
             nombre_usuario="admin",
             correo_institucional="admin@empresa.com",
             empleado=self.admin_empleado,
@@ -90,7 +90,7 @@ class BaseAPITestCase(APITestCase):
         self.admin_user.save()
         
         # Create roles
-        self.admin_rol, _ = Rol.objects.get_or_create(
+        self.admin_rol, _ = Role.objects.get_or_create(
             nombre_rol="Administrador",
             defaults={
                 'descripcion_rol': 'Acceso completo al sistema',
@@ -98,7 +98,7 @@ class BaseAPITestCase(APITestCase):
             }
         )
         
-        self.rrhh_rol, _ = Rol.objects.get_or_create(
+        self.rrhh_rol, _ = Role.objects.get_or_create(
             nombre_rol="RRHH",
             defaults={
                 'descripcion_rol': 'Gestión de recursos humanos',
@@ -107,8 +107,8 @@ class BaseAPITestCase(APITestCase):
         )
         
         # Assign admin role to admin user
-        from apps.identity.models import UsuarioRoles
-        UsuarioRoles.objects.get_or_create(
+        from apps.identity.models import UserRole
+        UserRole.objects.get_or_create(
             usuario=self.admin_user,
             rol=self.admin_rol,
             defaults={
@@ -176,7 +176,7 @@ class AuthenticationAPITestCase(BaseAPITestCase):
 
 
 class AreaAPITestCase(BaseAPITestCase):
-    """Test cases for Area endpoints."""
+    """Test cases for Department endpoints."""
     
     def test_list_areas(self):
         """Test listing areas."""
@@ -201,7 +201,7 @@ class AreaAPITestCase(BaseAPITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Area.objects.count(), 2)
+        self.assertEqual(Department.objects.count(), 2)
     
     def test_get_area_detail(self):
         """Test getting area details."""
@@ -241,7 +241,7 @@ class AreaAPITestCase(BaseAPITestCase):
 
 
 class EmpleadoAPITestCase(BaseAPITestCase):
-    """Test cases for Empleado endpoints."""
+    """Test cases for Employee endpoints."""
     
     def test_list_empleados(self):
         """Test listing employees."""
@@ -276,7 +276,7 @@ class EmpleadoAPITestCase(BaseAPITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Empleado.objects.count(), 2)
+        self.assertEqual(Employee.objects.count(), 2)
     
     def test_get_empleado_detail(self):
         """Test getting employee details."""
@@ -316,11 +316,11 @@ class EmpleadoAPITestCase(BaseAPITestCase):
 
 
 class DatosFamiliaresAPITestCase(BaseAPITestCase):
-    """Test cases for DatosFamiliares endpoints."""
+    """Test cases for FamilyMember endpoints."""
     
     def setUp(self):
         super().setUp()
-        self.datos_familiares = DatosFamiliares.objects.create(
+        self.datos_familiares = FamilyMember.objects.create(
             empleado=self.empleado,
             parentesco='HIJO',
             nombres_familiar='Pedro',
@@ -365,15 +365,15 @@ class DatosFamiliaresAPITestCase(BaseAPITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(DatosFamiliares.objects.count(), 2)
+        self.assertEqual(FamilyMember.objects.count(), 2)
 
 
 class DatosAcademicosAPITestCase(BaseAPITestCase):
-    """Test cases for DatosAcademicos endpoints."""
+    """Test cases for AcademicRecord endpoints."""
     
     def setUp(self):
         super().setUp()
-        self.datos_academicos = DatosAcademicos.objects.create(
+        self.datos_academicos = AcademicRecord.objects.create(
             empleado=self.empleado,
             tipo_formacion='UNIVERSITARIA',
             nombre_institucion='Universidad Nacional',
@@ -416,15 +416,15 @@ class DatosAcademicosAPITestCase(BaseAPITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(DatosAcademicos.objects.count(), 2)
+        self.assertEqual(AcademicRecord.objects.count(), 2)
 
 
 class DatosLaboralesAPITestCase(BaseAPITestCase):
-    """Test cases for DatosLaborales endpoints."""
+    """Test cases for EmploymentData endpoints."""
     
     def setUp(self):
         super().setUp()
-        self.datos_laborales = DatosLaborales.objects.create(
+        self.datos_laborales = EmploymentData.objects.create(
             empleado=self.empleado,
             area=self.area,
             fecha_ingreso=datetime(2020, 1, 15).date(),
@@ -450,7 +450,7 @@ class DatosLaboralesAPITestCase(BaseAPITestCase):
         self.authenticate_admin()
         
         # Create another employee for this test
-        empleado2 = Empleado.objects.create(
+        empleado2 = Employee.objects.create(
             nombres_empleado="María",
             apellido_paterno="López",
             apellido_materno="Vega",
@@ -475,11 +475,11 @@ class DatosLaboralesAPITestCase(BaseAPITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(DatosLaborales.objects.count(), 2)
+        self.assertEqual(EmploymentData.objects.count(), 2)
 
 
 class UsuarioAPITestCase(BaseAPITestCase):
-    """Test cases for Usuario endpoints."""
+    """Test cases for User endpoints."""
     
     def test_list_usuarios(self):
         """Test listing users."""
@@ -596,7 +596,7 @@ class APISearchFilterTestCase(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         # Create additional test data
-        self.empleado2 = Empleado.objects.create(
+        self.empleado2 = Employee.objects.create(
             nombres_empleado="Ana María",
             apellido_paterno="Rodríguez",
             apellido_materno="Silva",

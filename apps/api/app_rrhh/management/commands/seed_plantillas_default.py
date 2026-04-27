@@ -4,7 +4,7 @@ Comando de gestión: seed_plantillas_default
 
 Genera las plantillas Word (.docx) por defecto para el sistema de documentos.
 Crea los archivos .docx con marcadores {{VARIABLE}} y los registra en la BD
-como PlantillaDocumento si aún no existen.
+como DocumentTemplate si aún no existen.
 
 Uso:
     python manage.py seed_plantillas_default
@@ -17,7 +17,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 
-from apps.documents.models import PlantillaDocumento
+from apps.documents.models import DocumentTemplate
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -463,7 +463,7 @@ class Command(BaseCommand):
             nombre = cfg['nombre']
 
             # Verificar si ya existe
-            existe = PlantillaDocumento.objects.filter(
+            existe = DocumentTemplate.objects.filter(
                 tipo=tipo, nombre=nombre
             ).exists()
 
@@ -474,12 +474,12 @@ class Command(BaseCommand):
 
             # Eliminar la anterior si --force
             if existe and force:
-                PlantillaDocumento.objects.filter(tipo=tipo, nombre=nombre).delete()
+                DocumentTemplate.objects.filter(tipo=tipo, nombre=nombre).delete()
                 self.stdout.write(self.style.WARNING(f'  Eliminada versión anterior: {nombre}'))
 
             try:
                 docx_bytes = cfg['builder']()
-                plantilla = PlantillaDocumento(
+                plantilla = DocumentTemplate(
                     tipo=tipo,
                     nombre=nombre,
                     descripcion=cfg['descripcion'],

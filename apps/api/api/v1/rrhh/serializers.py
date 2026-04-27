@@ -3,26 +3,26 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from apps.onboarding.models import OnboardingEmpleado
-from apps.payroll.models import ConfiguracionAfp, ConfiguracionRemuneracion
+from apps.onboarding.models import OnboardingProcess
+from apps.payroll.models import AfpConfiguration, CompensationConfiguration
 from apps.contracts.models import (
-    ContratosAdendas,
-    DatosLaborales,
+    Contract,
+    EmploymentData,
 )
-from apps.documents.models import DocumentosDigitales
+from apps.documents.models import DigitalDocument
 from apps.employees.models import (
-    DatosAcademicos,
-    DatosFamiliares,
-    Empleado,
+    AcademicRecord,
+    FamilyMember,
+    Employee,
 )
-from apps.organization.models import Area
+from apps.organization.models import Department
 from apps.identity.models import (
-    Modulos,
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
-    UsuarioRoles,
+    Module,
+    Permission,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
 )
 from apps.core.exceptions import BusinessLogicError
 from apps.core.validators import EmailDomainValidator, PhoneValidator, RUTValidator
@@ -34,14 +34,14 @@ from rest_framework import serializers
 
 
 class AreaSerializer(serializers.ModelSerializer):
-    """Serializer for Area model."""
+    """Serializer for Department model."""
 
     nombre_completo = serializers.SerializerMethodField()
     es_activa = serializers.SerializerMethodField()
     empleados_activos_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Area
+        model = Department
         fields = [
             "area_id",
             "nombre_organo",
@@ -73,7 +73,7 @@ class AreaSerializer(serializers.ModelSerializer):
     def validate_siglas_area(self, value):
         """Validate siglas uniqueness."""
         if value:
-            queryset = Area.objects.filter(siglas_area__iexact=value)
+            queryset = Department.objects.filter(siglas_area__iexact=value)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
@@ -87,7 +87,7 @@ class AreaListSerializer(serializers.ModelSerializer):
     empleados_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Area
+        model = Department
         fields = [
             "area_id",
             "nombre_organo",
@@ -97,7 +97,7 @@ class AreaListSerializer(serializers.ModelSerializer):
             "empleados_count",
         ]
 
-    def get_empleados_count(self, obj: Area) -> int:
+    def get_empleados_count(self, obj: Department) -> int:
         """Get total number of employees in area."""
         # Use the annotated field if available, otherwise calculate
         if hasattr(obj, "empleados_activos_count"):
@@ -109,14 +109,14 @@ class AreaListSerializer(serializers.ModelSerializer):
 
 
 class DatosFamiliaresSerializer(serializers.ModelSerializer):
-    """Serializer for DatosFamiliares model."""
+    """Serializer for FamilyMember model."""
 
     edad = serializers.SerializerMethodField()
     es_menor_edad = serializers.SerializerMethodField()
     nombre_completo = serializers.SerializerMethodField()
 
     class Meta:
-        model = DatosFamiliares
+        model = FamilyMember
         fields = [
             "familiar_id",
             "empleado",
@@ -168,10 +168,10 @@ class DatosFamiliaresSerializer(serializers.ModelSerializer):
 
 
 class DatosAcademicosSerializer(serializers.ModelSerializer):
-    """Serializer for DatosAcademicos model."""
+    """Serializer for AcademicRecord model."""
 
     class Meta:
-        model = DatosAcademicos
+        model = AcademicRecord
         fields = [
             "academico_id",
             "empleado",
@@ -224,12 +224,12 @@ class DatosAcademicosSerializer(serializers.ModelSerializer):
 
 
 class CursosCertificacionesSerializer(serializers.ModelSerializer):
-    """Serializer for CursosCertificaciones model."""
+    """Serializer for Certification model."""
 
     class Meta:
-        from apps.employees.models import CursosCertificaciones
+        from apps.employees.models import Certification
 
-        model = CursosCertificaciones
+        model = Certification
         fields = [
             "curso_id",
             "empleado",
@@ -248,7 +248,7 @@ class CursosCertificacionesSerializer(serializers.ModelSerializer):
 
 
 class DatosLaboralesSerializer(serializers.ModelSerializer):
-    """Serializer for DatosLaborales model."""
+    """Serializer for EmploymentData model."""
 
     empleado_nombre = serializers.CharField(
         source="empleado.nombres_empleado", read_only=True
@@ -288,7 +288,7 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
         return None
 
     class Meta:
-        model = DatosLaborales
+        model = EmploymentData
         fields = [
             "dato_laboral_id",
             "empleado",
@@ -346,7 +346,7 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
     es_activo = serializers.ReadOnlyField()
 
     class Meta:
-        model = ConfiguracionRemuneracion
+        model = CompensationConfiguration
         fields = [
             "configuracion_id",
             "tipo",
@@ -372,7 +372,7 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
     def validate_codigo(self, value):
         """Normaliza el código para evitar duplicados por casing/espacios."""
         value = value.strip().upper()
-        queryset = ConfiguracionRemuneracion.objects.filter(
+        queryset = CompensationConfiguration.objects.filter(
             tipo=self.initial_data.get("tipo"), codigo=value
         )
         if self.instance:
@@ -412,7 +412,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
     es_activo = serializers.ReadOnlyField()
 
     class Meta:
-        model = ConfiguracionAfp
+        model = AfpConfiguration
         fields = [
             "afp_config_id",
             "afp_nombre",
@@ -463,7 +463,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
         afp_nombre = data.get("afp_nombre")
         vigencia_mes = data.get("vigencia_mes")
         if afp_nombre and vigencia_mes:
-            queryset = ConfiguracionAfp.objects.filter(
+            queryset = AfpConfiguration.objects.filter(
                 afp_nombre__iexact=afp_nombre.strip(),
                 vigencia_mes=vigencia_mes,
             )
@@ -481,7 +481,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
 
 
 class EmpleadoSerializer(serializers.ModelSerializer):
-    """Serializer for Empleado model."""
+    """Serializer for Employee model."""
 
     nombre_completo = serializers.ReadOnlyField()
     edad = serializers.ReadOnlyField()
@@ -497,7 +497,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "empleado_id",
             "nombres_empleado",
@@ -536,7 +536,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
         """Validate document number uniqueness and format."""
         if value:
             # Check uniqueness
-            queryset = Empleado.objects.filter(numero_documento=value)
+            queryset = Employee.objects.filter(numero_documento=value)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
@@ -593,7 +593,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
 
 
 class EmpleadoListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for Empleado list views."""
+    """Simplified serializer for Employee list views."""
 
     nombre_completo = serializers.ReadOnlyField()
     edad = serializers.ReadOnlyField()
@@ -601,7 +601,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
     datos_laborales_resumen = serializers.SerializerMethodField()
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "empleado_id",
             "nombres_empleado",
@@ -627,7 +627,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
         ]
 
     def get_ubicacion_actual(self, obj):
-        """Get current location info from HistorialUbicaciones or DatosLaborales."""
+        """Get current location info from LocationHistory or EmploymentData."""
         ubicacion = obj.ubicacion_actual()
         if ubicacion:
             return {
@@ -664,10 +664,10 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
 
 
 class DatosLaboralesCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating DatosLaborales without empleado and area fields."""
+    """Serializer for creating EmploymentData without empleado and area fields."""
 
     class Meta:
-        model = DatosLaborales
+        model = EmploymentData
         exclude = ["dato_laboral_id", "empleado", "area"]
 
 
@@ -684,7 +684,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "empleado_id",
             "nombres_empleado",
@@ -717,8 +717,8 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     def validate_area_inicial(self, value):
         """Validate initial area exists and is active."""
         try:
-            area = Area.objects.get(area_id=value, estado_area="activo")
-        except Area.DoesNotExist:
+            area = Department.objects.get(area_id=value, estado_area="activo")
+        except Department.DoesNotExist:
             raise serializers.ValidationError("Área no encontrada o inactiva.")
         return value
 
@@ -731,21 +731,21 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
         datos_academicos = validated_data.pop("datos_academicos", [])
 
         # Create employee
-        empleado = Empleado.objects.create(**validated_data)
+        empleado = Employee.objects.create(**validated_data)
 
         # Get area and create labor data
-        area = Area.objects.get(area_id=area_inicial_id)
+        area = Department.objects.get(area_id=area_inicial_id)
 
         # Create labor data
-        DatosLaborales.objects.create(empleado=empleado, area=area, **datos_laborales)
+        EmploymentData.objects.create(empleado=empleado, area=area, **datos_laborales)
 
         # Create family data
         for familiar_data in datos_familiares:
-            DatosFamiliares.objects.create(empleado=empleado, **familiar_data)
+            FamilyMember.objects.create(empleado=empleado, **familiar_data)
 
         # Create academic data
         for academico_data in datos_academicos:
-            DatosAcademicos.objects.create(empleado=empleado, **academico_data)
+            AcademicRecord.objects.create(empleado=empleado, **academico_data)
 
         return empleado
 
@@ -754,7 +754,7 @@ class EmpleadoSimpleCreateSerializer(serializers.ModelSerializer):
     """Simplified serializer for creating employees."""
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "nombres_empleado",
             "apellido_paterno",
@@ -775,7 +775,7 @@ class EmpleadoSimpleCreateSerializer(serializers.ModelSerializer):
 
     def validate_correo_personal(self, value):
         """Validate email uniqueness."""
-        if value and Empleado.objects.filter(correo_personal=value).exists():
+        if value and Employee.objects.filter(correo_personal=value).exists():
             raise serializers.ValidationError("Ya existe un empleado con este email.")
         return value
 
@@ -784,7 +784,7 @@ class EmpleadoSimpleCreateSerializer(serializers.ModelSerializer):
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    """Serializer for Usuario model."""
+    """Serializer for User model."""
 
     es_activo = serializers.ReadOnlyField()
     nombre_completo = serializers.ReadOnlyField()
@@ -794,7 +794,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     dias_sin_login = serializers.SerializerMethodField()
 
     class Meta:
-        model = Usuario
+        model = User
         fields = [
             "usuario_id",
             "username",
@@ -858,7 +858,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Usuario
+        model = User
         fields = [
             "username",
             "nombres_usuario",
@@ -892,17 +892,17 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         email = validated_data.pop("email", None)
 
         # Create user
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username=username, email=email, password=password, **validated_data
         )
 
-        # Assign roles via UsuarioRoles intermediate table
+        # Assign roles via UserRole intermediate table
         if roles_nombres:
-            roles = Rol.objects.filter(
+            roles = Role.objects.filter(
                 nombre_rol__in=roles_nombres, estado_rol="activo"
             )
             for rol in roles:
-                UsuarioRoles.objects.create(
+                UserRole.objects.create(
                     usuario=usuario,
                     rol=rol,
                     estado_asignacion="activo",
@@ -912,7 +912,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
 
 
 class RolSerializer(serializers.ModelSerializer):
-    """Serializer for Rol model."""
+    """Serializer for Role model."""
 
     es_activo = serializers.ReadOnlyField()
     total_usuarios = serializers.ReadOnlyField()
@@ -920,7 +920,7 @@ class RolSerializer(serializers.ModelSerializer):
     permisos = serializers.SerializerMethodField()
 
     class Meta:
-        model = Rol
+        model = Role
         fields = [
             "rol_id",
             "nombre_rol",
@@ -953,12 +953,12 @@ class RolSerializer(serializers.ModelSerializer):
 
 
 class PermisoSerializer(serializers.ModelSerializer):
-    """Serializer for Permiso model."""
+    """Serializer for Permission model."""
 
     es_activo = serializers.ReadOnlyField()
 
     class Meta:
-        model = Permiso
+        model = Permission
         fields = [
             "permiso_id",
             "nombre_permiso",
@@ -972,13 +972,13 @@ class PermisoSerializer(serializers.ModelSerializer):
 
 
 class ModulosSerializer(serializers.ModelSerializer):
-    """Serializer for Modulos model."""
+    """Serializer for Module model."""
 
     es_activo = serializers.ReadOnlyField()
     permisos_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Modulos
+        model = Module
         fields = [
             "modulo_id",
             "nombre_modulo",
@@ -1000,7 +1000,7 @@ class ModulosSerializer(serializers.ModelSerializer):
 
     def validate_nombre_modulo(self, value):
         """Validar que el nombre del módulo sea único."""
-        queryset = Modulos.objects.filter(nombre_modulo__iexact=value)
+        queryset = Module.objects.filter(nombre_modulo__iexact=value)
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.pk)
         if queryset.exists():
@@ -1010,7 +1010,7 @@ class ModulosSerializer(serializers.ModelSerializer):
     def validate_ruta_modulo(self, value):
         """Validar que la ruta del módulo sea única."""
         if value:
-            queryset = Modulos.objects.filter(ruta_modulo__iexact=value)
+            queryset = Module.objects.filter(ruta_modulo__iexact=value)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
@@ -1019,7 +1019,7 @@ class ModulosSerializer(serializers.ModelSerializer):
 
 
 class RolPermisosSerializer(serializers.ModelSerializer):
-    """Serializer for RolPermisos model."""
+    """Serializer for RolePermission model."""
 
     rol_nombre = serializers.CharField(source="rol.nombre_rol", read_only=True)
     permiso_nombre = serializers.CharField(
@@ -1033,7 +1033,7 @@ class RolPermisosSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = RolPermisos
+        model = RolePermission
         fields = [
             "rol_permiso_id",
             "rol_id",
@@ -1053,7 +1053,7 @@ class RolPermisosSerializer(serializers.ModelSerializer):
         permiso_id = data.get("permiso_id")
 
         if rol_id and permiso_id:
-            queryset = RolPermisos.objects.filter(rol_id=rol_id, permiso_id=permiso_id)
+            queryset = RolePermission.objects.filter(rol_id=rol_id, permiso_id=permiso_id)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
@@ -1071,7 +1071,7 @@ class EmpleadoUpdateSerializer(serializers.ModelSerializer):
     """Specialized serializer for updating employees."""
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "nombres_empleado",
             "apellido_paterno",
@@ -1099,7 +1099,7 @@ class EmpleadoUpdateSerializer(serializers.ModelSerializer):
         """Validate email uniqueness excluding current instance."""
         if value and self.instance:
             if (
-                Empleado.objects.exclude(pk=self.instance.pk)
+                Employee.objects.exclude(pk=self.instance.pk)
                 .filter(correo_personal=value)
                 .exists()
             ):
@@ -1110,7 +1110,7 @@ class EmpleadoUpdateSerializer(serializers.ModelSerializer):
 
 
 class DocumentosDigitalesSerializer(serializers.ModelSerializer):
-    """Serializer for DocumentosDigitales model."""
+    """Serializer for DigitalDocument model."""
 
     empleado_detalle = EmpleadoListSerializer(source="empleado", read_only=True)
     tamano_mb = serializers.SerializerMethodField()
@@ -1121,7 +1121,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
     dias_para_vencimiento = serializers.ReadOnlyField()
 
     class Meta:
-        model = DocumentosDigitales
+        model = DigitalDocument
         fields = [
             "documento_id",
             "empleado",
@@ -1182,10 +1182,10 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
 
 
 class DocumentosDigitalesCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating DocumentosDigitales."""
+    """Serializer for creating DigitalDocument."""
 
     class Meta:
-        model = DocumentosDigitales
+        model = DigitalDocument
         fields = [
             "empleado",
             "tipo_documento",
@@ -1232,7 +1232,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = OnboardingEmpleado
+        model = OnboardingProcess
         fields = [
             "onboarding_id",
             "empleado",
@@ -1286,14 +1286,14 @@ class OnboardingIniciarSerializer(serializers.Serializer):
     fecha_nacimiento = serializers.DateField(required=False, allow_null=True)
 
     def validate_numero_documento(self, value):
-        if Empleado.objects.filter(numero_documento=value).exists():
+        if Employee.objects.filter(numero_documento=value).exists():
             raise serializers.ValidationError(
                 "Ya existe un empleado con este numero de documento."
             )
         return value
 
     def validate_correo_personal(self, value):
-        if Empleado.objects.filter(correo_personal=value).exists():
+        if Employee.objects.filter(correo_personal=value).exists():
             raise serializers.ValidationError("Ya existe un empleado con este correo.")
         return value
 
@@ -1323,7 +1323,7 @@ class ConfiguracionEmpresaSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
 
     class Meta:
-        from apps.organization.models import ConfiguracionEmpresa as _CE
+        from apps.organization.models import Company as _CE
 
         model = _CE
         fields = [

@@ -131,7 +131,7 @@ DATABASE_CONNECTION_POOLING = {
 DATABASE_ROUTERS = ["apps.core.database.DatabaseRouter"]
 
 # Custom User Model
-AUTH_USER_MODEL = "identity.Usuario"
+AUTH_USER_MODEL = "identity.User"
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [

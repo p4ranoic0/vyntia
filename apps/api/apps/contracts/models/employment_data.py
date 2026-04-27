@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo DatosLaborales - Gestión de información laboral de empleados
+Modelo EmploymentData - Gestión de información laboral de empleados
 
-Contiene la definición del modelo DatosLaborales que almacena toda la información
+Contiene la definición del modelo EmploymentData que almacena toda la información
 laboral, contractual y de puesto de los empleados.
 """
 
@@ -15,7 +15,7 @@ from django.utils import timezone
 # from ..managers import DatosLaboralesManager  # Comentado temporalmente para migraciones
 
 
-class DatosLaborales(models.Model):
+class EmploymentData(models.Model):
     """Modelo para gestionar la información laboral de los empleados."""
     
     TIPO_CONTRATO_CHOICES = [
@@ -68,12 +68,12 @@ class DatosLaborales(models.Model):
     # Campos principales
     dato_laboral_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='datos_laborales'
     )
     area = models.ForeignKey(
-        'organization.Area',
+        'organization.Department',
         on_delete=models.PROTECT,
         related_name='empleados_laborales'
     )
@@ -109,7 +109,7 @@ class DatosLaborales(models.Model):
     
     # Información de jefe directo
     jefe_directo = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -282,7 +282,7 @@ class DatosLaborales(models.Model):
     
     def es_jefe_de(self, empleado):
         """Verifica si es jefe directo de otro empleado."""
-        return DatosLaborales.objects.filter(
+        return EmploymentData.objects.filter(
             empleado=empleado,
             jefe_directo=self.empleado,
             estado_datos='activo'
@@ -290,14 +290,14 @@ class DatosLaborales(models.Model):
     
     def subordinados_directos(self):
         """Obtiene los subordinados directos."""
-        return DatosLaborales.objects.filter(
+        return EmploymentData.objects.filter(
             jefe_directo=self.empleado,
             estado_datos='activo'
         )
     
     def historial_cargos(self):
         """Obtiene el historial de cargos del empleado."""
-        return DatosLaborales.objects.filter(
+        return EmploymentData.objects.filter(
             empleado=self.empleado
         ).order_by('-fecha_inicio_contrato')
     

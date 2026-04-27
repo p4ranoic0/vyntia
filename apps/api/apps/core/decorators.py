@@ -5,7 +5,7 @@ from typing import Any, Callable, List, Union
 
 from app_rrhh.constants import Roles
 from app_rrhh.permission_service import PermissionService
-from apps.identity.models import Usuario
+from apps.identity.models import User
 from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
 from rest_framework import status
@@ -16,7 +16,7 @@ def require_roles(roles: Union[str, List[str]]):
     """Decorador que requiere que el usuario tenga uno de los roles especificados.
 
     Args:
-        roles: Rol o lista de roles requeridos
+        roles: Role o lista de roles requeridos
 
     Returns:
         Decorador que valida los roles
@@ -54,11 +54,11 @@ def require_roles(roles: Union[str, List[str]]):
                 or not request.user.is_authenticated
             ):
                 return _create_error_response(
-                    "Usuario no autenticado", "AUTHENTICATION_REQUIRED"
+                    "User no autenticado", "AUTHENTICATION_REQUIRED"
                 )
 
             try:
-                # request.user IS already the Usuario instance (custom user model)
+                # request.user IS already the User instance (custom user model)
                 usuario = request.user
 
                 # Superusuarios de Django tienen acceso completo sin necesidad de roles
@@ -87,7 +87,7 @@ def require_permissions(permissions: Union[str, List[str]]):
     """Decorador que requiere que el usuario tenga uno de los permisos especificados.
 
     Args:
-        permissions: Permiso o lista de permisos requeridos
+        permissions: Permission o lista de permisos requeridos
 
     Returns:
         Decorador que valida los permisos
@@ -122,11 +122,11 @@ def require_permissions(permissions: Union[str, List[str]]):
                 or not request.user.is_authenticated
             ):
                 return _create_error_response(
-                    "Usuario no autenticado", "AUTHENTICATION_REQUIRED"
+                    "User no autenticado", "AUTHENTICATION_REQUIRED"
                 )
 
             try:
-                # request.user IS already the Usuario instance
+                # request.user IS already the User instance
                 usuario = request.user
 
                 # Superusuarios de Django tienen acceso completo
@@ -231,7 +231,7 @@ def require_authenticated():
                 or not request.user.is_authenticated
             ):
                 return _create_error_response(
-                    "Usuario no autenticado", "AUTHENTICATION_REQUIRED"
+                    "User no autenticado", "AUTHENTICATION_REQUIRED"
                 )
 
             return func(*args, **kwargs)
@@ -371,7 +371,7 @@ def cache_queryset(timeout: int = 300, key_prefix: str = ""):
     Example:
         @cache_queryset(timeout=600, key_prefix='active_areas')
         def get_active_areas():
-            return Area.objects.filter(estado=True)
+            return Department.objects.filter(estado=True)
     """
     import hashlib
 
@@ -432,7 +432,7 @@ def invalidate_cache(patterns: Union[str, List[str]]):
         @invalidate_cache(['view_cache:*areas*', 'queryset_cache:*active_areas*'])
         def crear_area(data):
             # Después de crear, se invalidarán todas las caches de áreas
-            return Area.objects.create(**data)
+            return Department.objects.create(**data)
     """
     from django.core.cache import cache
 

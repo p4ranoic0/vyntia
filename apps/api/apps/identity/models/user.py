@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo Usuario - Gestión de usuarios del sistema
+Modelo User - Gestión de usuarios del sistema
 
-Contiene la definición del modelo Usuario que gestiona los usuarios
+Contiene la definición del modelo User que gestiona los usuarios
 del sistema de intranet y sus permisos de acceso.
 """
 
@@ -16,14 +16,14 @@ from django.utils import timezone
 from ..managers import UsuarioManager
 
 
-class Usuario(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     """Modelo personalizado de usuario para el sistema."""
 
     TIPO_USUARIO_CHOICES = [
         ("administrador", "Administrador"),
         ("rrhh", "Recursos Humanos"),
         ("jefe", "Jefe de Área"),
-        ("empleado", "Empleado"),
+        ("empleado", "Employee"),
         ("consulta", "Solo Consulta"),
         ("invitado", "Invitado"),
     ]
@@ -47,7 +47,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # Campos principales
     usuario_id = models.AutoField(primary_key=True)
     empleado = models.OneToOneField(
-        "employees.Empleado",
+        "employees.Employee",
         on_delete=models.CASCADE,
         related_name="usuario",
         null=True,
@@ -368,17 +368,17 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def areas_accesibles(self):
         """Obtiene las áreas a las que el usuario tiene acceso."""
-        from apps.organization.models import Area
+        from apps.organization.models import Department
 
         if self.es_administrador or self.nivel_acceso == "total":
-            return Area.objects.filter(estado_area="activo")
+            return Department.objects.filter(estado_area="activo")
 
         if self.nivel_acceso == "departamental" and self.empleado:
             datos_laborales = self.empleado.datos_laborales_actuales()
             if datos_laborales:
-                return Area.objects.filter(area_id=datos_laborales.area.area_id)
+                return Department.objects.filter(area_id=datos_laborales.area.area_id)
 
-        return Area.objects.none()
+        return Department.objects.none()
 
     @classmethod
     def usuarios_activos(cls):
@@ -400,11 +400,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def roles_activos(self):
         """Obtiene los roles activos del usuario."""
-        from .roles import Rol
-        from .sistema import UsuarioRoles
+        from .roles import Role
+        from .rbac import UserRole
 
         # Obtener IDs de roles válidos (activos y no expirados)
-        roles_usuario = UsuarioRoles.objects.filter(
+        roles_usuario = UserRole.objects.filter(
             usuario=self, estado_asignacion="activo"
         ).select_related("rol")
 
@@ -418,29 +418,29 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
                 roles_ids.append(usuario_rol.rol.rol_id)
 
         # Devolver QuerySet de roles activos
-        return Rol.objects.filter(rol_id__in=roles_ids, estado_rol="activo")
+        return Role.objects.filter(rol_id__in=roles_ids, estado_rol="activo")
 
     def permisos_activos(self):
         """Obtiene los permisos activos del usuario a traves de sus roles."""
-        from .roles import Permiso
-        from .sistema import RolPermisos
+        from .roles import Permission
+        from .rbac import RolePermission
 
         try:
             roles = self.roles_activos()
             if not roles.exists():
-                return Permiso.objects.none()
+                return Permission.objects.none()
 
             # Super Admin tiene acceso total
             if roles.filter(nombre_rol="Super Administrador").exists():
                 return "*"
 
-            permiso_ids = RolPermisos.objects.filter(
+            permiso_ids = RolePermission.objects.filter(
                 rol__in=roles
             ).values_list('permiso_id', flat=True).distinct()
 
-            return Permiso.objects.filter(
+            return Permission.objects.filter(
                 permiso_id__in=permiso_ids,
                 estado_permiso='activo'
             )
         except Exception:
-            return Permiso.objects.none()
+            return Permission.objects.none()

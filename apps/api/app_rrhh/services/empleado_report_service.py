@@ -2,8 +2,8 @@
 
 import logging
 
-from apps.documents.models import DocumentosDigitales
-from apps.employees.models import Empleado
+from apps.documents.models import DigitalDocument
+from apps.employees.models import Employee
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -36,7 +36,7 @@ class EmpleadoReportService:
         Returns:
             tuple: (pdf_bytes, nombre_archivo)
         """
-        empleado = Empleado.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(empleado_id=empleado_id)
         context = self._obtener_contexto_completo(empleado)
         html_content = render_to_string("reportes/reporte_empleado.html", context)
         pdf_content = self.pdf_generator._html_to_pdf(html_content)
@@ -54,7 +54,7 @@ class EmpleadoReportService:
         Returns:
             tuple: (pdf_bytes, nombre_archivo)
         """
-        empleado = Empleado.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(empleado_id=empleado_id)
         context = self._obtener_contexto_completo(empleado)
         context["seccion"] = seccion
 
@@ -83,7 +83,7 @@ class EmpleadoReportService:
         )
 
         # Documentos del legajo
-        documentos = DocumentosDigitales.objects.filter(
+        documentos = DigitalDocument.objects.filter(
             empleado=empleado,
             es_version_actual=True,
         ).order_by("categoria", "tipo_documento")

@@ -14,14 +14,14 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import authenticate
 
-from apps.documents.models import DocumentosDigitales
+from apps.documents.models import DigitalDocument
 from apps.contracts.models import (
-    ContratosAdendas,
-    DatosLaborales,
+    Contract,
+    EmploymentData,
 )
-from apps.employees.models import Empleado
-from apps.organization.models import Area
-from apps.identity.models import Usuario
+from apps.employees.models import Employee
+from apps.organization.models import Department
+from apps.identity.models import User
 
 
 @pytest.mark.django_db
@@ -31,7 +31,7 @@ class TestContratosIntegration(TestCase):
     def setUp(self):
         """Configuración inicial para los tests."""
         # Crear usuario
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='admin_contratos',
             email='admin@empresa.com',
             password='password123',
@@ -40,7 +40,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear área
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre_unidad_organica='Recursos Humanos',
             siglas_area='RRHH',
             descripcion_area='Área de gestión de personal',
@@ -48,7 +48,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear empleado
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             numero_documento='12345678',
             tipo_documento='DNI',
             nombres_empleado='Juan Carlos',
@@ -70,7 +70,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear datos laborales
-        self.datos_laborales = DatosLaborales.objects.create(
+        self.datos_laborales = EmploymentData.objects.create(
             empleado=self.empleado,
             area=self.area,
             cargo_empleado='Analista de Sistemas',
@@ -85,7 +85,7 @@ class TestContratosIntegration(TestCase):
     
     def test_crear_contrato_inicial(self):
         """Test para crear un contrato inicial."""
-        contrato = ContratosAdendas.objects.create(
+        contrato = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-001',
@@ -108,7 +108,7 @@ class TestContratosIntegration(TestCase):
     def test_crear_adenda_contrato(self):
         """Test para crear una adenda de un contrato existente."""
         # Crear contrato inicial
-        contrato_inicial = ContratosAdendas.objects.create(
+        contrato_inicial = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-002',
@@ -122,7 +122,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear adenda salarial
-        adenda = ContratosAdendas.objects.create(
+        adenda = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-002',
@@ -151,7 +151,7 @@ class TestContratosIntegration(TestCase):
         """Test para validaciones del modelo de contratos."""
         # Test: Fecha fin debe ser posterior a fecha inicio
         with self.assertRaises(ValidationError):
-            contrato = ContratosAdendas(
+            contrato = Contract(
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-003',
@@ -166,7 +166,7 @@ class TestContratosIntegration(TestCase):
         
         # Test: Contrato indefinido no debe tener fecha fin
         with self.assertRaises(ValidationError):
-            contrato = ContratosAdendas(
+            contrato = Contract(
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-004',
@@ -181,7 +181,7 @@ class TestContratosIntegration(TestCase):
         
         # Test: Contrato a plazo fijo debe tener fecha fin
         with self.assertRaises(ValidationError):
-            contrato = ContratosAdendas(
+            contrato = Contract(
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-005',
@@ -196,7 +196,7 @@ class TestContratosIntegration(TestCase):
     
     def test_propiedades_calculadas_contrato(self):
         """Test para propiedades calculadas del contrato."""
-        contrato = ContratosAdendas.objects.create(
+        contrato = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-006',
@@ -227,7 +227,7 @@ class TestContratosIntegration(TestCase):
     
     def test_contrato_vencido(self):
         """Test para contrato vencido."""
-        contrato = ContratosAdendas.objects.create(
+        contrato = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-007',
@@ -246,7 +246,7 @@ class TestContratosIntegration(TestCase):
     
     def test_generacion_numeros_contrato(self):
         """Test para generación automática de números de contrato."""
-        contrato = ContratosAdendas(
+        contrato = Contract(
             empleado=self.empleado,
             area=self.area,
             tipo_documento='CONTRATO_FIJO',
@@ -267,7 +267,7 @@ class TestContratosIntegration(TestCase):
         contrato.save()
         
         # Crear adenda y generar número
-        adenda = ContratosAdendas(
+        adenda = Contract(
             empleado=self.empleado,
             area=self.area,
             numero_contrato=contrato.numero_contrato,
@@ -288,7 +288,7 @@ class TestContratosIntegration(TestCase):
     
     def test_calculo_salario_neto(self):
         """Test para cálculo automático de salario neto."""
-        contrato = ContratosAdendas.objects.create(
+        contrato = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-008',
@@ -310,7 +310,7 @@ class TestContratosIntegration(TestCase):
     def test_integracion_empleado_contrato(self):
         """Test de integración entre empleado y contrato."""
         # Crear múltiples contratos para el mismo empleado
-        contrato1 = ContratosAdendas.objects.create(
+        contrato1 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-009',
@@ -323,7 +323,7 @@ class TestContratosIntegration(TestCase):
             creado_por=self.usuario
         )
         
-        contrato2 = ContratosAdendas.objects.create(
+        contrato2 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-010',
@@ -349,7 +349,7 @@ class TestContratosIntegration(TestCase):
     def test_integracion_area_contratos(self):
         """Test de integración entre área y contratos."""
         # Crear otra área
-        area2 = Area.objects.create(
+        area2 = Department.objects.create(
             nombre_unidad_organica='Tecnología',
             siglas_area='TECH',
             descripcion_area='Área de desarrollo',
@@ -357,7 +357,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear contratos en diferentes áreas
-        ContratosAdendas.objects.create(
+        Contract.objects.create(
             empleado=self.empleado,
             area=self.area,  # RRHH
             numero_contrato='CON-2024-011',
@@ -370,7 +370,7 @@ class TestContratosIntegration(TestCase):
             creado_por=self.usuario
         )
         
-        ContratosAdendas.objects.create(
+        Contract.objects.create(
             empleado=self.empleado,
             area=area2,  # Tecnología
             numero_contrato='CON-2024-012',
@@ -396,7 +396,7 @@ class TestContratosIntegration(TestCase):
     def test_integracion_usuario_contratos(self):
         """Test de integración entre usuario y contratos creados."""
         # Crear otro usuario
-        usuario2 = Usuario.objects.create_user(
+        usuario2 = User.objects.create_user(
             username='supervisor',
             email='supervisor@empresa.com',
             password='password123',
@@ -405,7 +405,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # Crear contratos con diferentes usuarios
-        contrato1 = ContratosAdendas.objects.create(
+        contrato1 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-013',
@@ -418,7 +418,7 @@ class TestContratosIntegration(TestCase):
             creado_por=self.usuario
         )
         
-        contrato2 = ContratosAdendas.objects.create(
+        contrato2 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-014',
@@ -443,7 +443,7 @@ class TestContratosIntegration(TestCase):
     def test_sistema_completo_workflow(self):
         """Test del workflow completo del sistema de contratos."""
         # 1. Crear contrato inicial
-        contrato = ContratosAdendas.objects.create(
+        contrato = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-015',
@@ -460,7 +460,7 @@ class TestContratosIntegration(TestCase):
         self.assertTrue(contrato.puede_generar_adenda())
         
         # 3. Crear adenda de extensión
-        adenda_extension = ContratosAdendas.objects.create(
+        adenda_extension = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato=contrato.numero_contrato,
@@ -475,7 +475,7 @@ class TestContratosIntegration(TestCase):
         )
         
         # 4. Crear adenda salarial
-        adenda_salarial = ContratosAdendas.objects.create(
+        adenda_salarial = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato=contrato.numero_contrato,

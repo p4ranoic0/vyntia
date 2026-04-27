@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Modelo CursosCertificaciones - Gestión de cursos y certificaciones de empleados
+Modelo Certification - Gestión de cursos y certificaciones de empleados
 
 Almacena los cursos, capacitaciones y certificaciones completados por los empleados,
 con referencia opcional al documento digital que los certifica.
@@ -9,12 +9,12 @@ con referencia opcional al documento digital que los certifica.
 from django.db import models
 
 
-class CursosCertificaciones(models.Model):
+class Certification(models.Model):
     """Modelo para gestionar cursos y certificaciones de los empleados."""
 
     curso_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado', on_delete=models.CASCADE, related_name='cursos_certificaciones'
+        'Employee', on_delete=models.CASCADE, related_name='cursos_certificaciones'
     )
     nombre_curso = models.CharField(max_length=200)
     institucion = models.CharField(max_length=200)
@@ -23,7 +23,7 @@ class CursosCertificaciones(models.Model):
     horas = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
     descripcion = models.TextField(null=True, blank=True)
     documento = models.ForeignKey(
-        'documents.DocumentosDigitales',
+        'documents.DigitalDocument',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='curso_certificacion',

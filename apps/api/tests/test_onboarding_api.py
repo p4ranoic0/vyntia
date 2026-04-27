@@ -11,9 +11,9 @@ import io
 
 from rest_framework.test import APIClient
 
-from apps.onboarding.models import OnboardingEmpleado
-from apps.documents.models import DocumentosDigitales
-from apps.employees.models import Empleado
+from apps.onboarding.models import OnboardingProcess
+from apps.documents.models import DigitalDocument
+from apps.employees.models import Employee
 
 
 @pytest.mark.django_db
@@ -21,7 +21,7 @@ class TestCorregirCorreo:
     """ONBD-01: POST /api/v1/rrhh/onboarding/{id}/corregir-correo/ — no existe todavía."""
 
     def test_corregir_correo_updates_email(self, hr_client, onboarding_factory):
-        """El endpoint corregir-correo debe actualizar Empleado.correo_personal.
+        """El endpoint corregir-correo debe actualizar Employee.correo_personal.
 
         DEBE FALLAR en RED — el endpoint no existe aún (404 o 405).
         El test espera HTTP 2xx, que no ocurrirá hasta Wave 1.
@@ -48,11 +48,11 @@ class TestCorregirCorreo:
 
 @pytest.mark.django_db
 class TestPhotoUpload:
-    """ONBD-03: Subida de foto de perfil crea DocumentosDigitales con tipo_documento='foto'."""
+    """ONBD-03: Subida de foto de perfil crea DigitalDocument con tipo_documento='foto'."""
 
     def test_photo_upload_creates_documento(self, onboarding_client):
-        """POST /api/v1/rrhh/onboarding/subir-foto/ crea DocumentosDigitales con tipo='foto'
-        y actualiza ruta_fotografia en el Empleado.
+        """POST /api/v1/rrhh/onboarding/subir-foto/ crea DigitalDocument con tipo='foto'
+        y actualiza ruta_fotografia en el Employee.
         """
         onboarding = onboarding_client._onboarding
         empleado_id = onboarding.empleado.empleado_id
@@ -74,12 +74,12 @@ class TestPhotoUpload:
         )
 
         # Verificar que se creó el documento con tipo foto
-        existe_foto = DocumentosDigitales.objects.filter(
+        existe_foto = DigitalDocument.objects.filter(
             empleado_id=empleado_id,
             tipo_documento="foto",
         ).exists()
         assert existe_foto, (
-            "No se encontró DocumentosDigitales con tipo_documento='foto' "
+            "No se encontró DigitalDocument con tipo_documento='foto' "
             "para el empleado tras el upload."
         )
 
@@ -141,5 +141,5 @@ class TestPerDocumentApproval:
         pass
 
     def test_familiar_employee_create_own_record(self):
-        """Stub — employee can create DatosFamiliares for own empleado_id."""
+        """Stub — employee can create FamilyMember for own empleado_id."""
         pass

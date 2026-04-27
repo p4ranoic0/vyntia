@@ -9,7 +9,7 @@ Uso:
     python manage.py seed_menu --reset   # Elimina y recrea todo
 """
 
-from apps.identity.models import ModuloPermiso, Modulos, Permiso
+from apps.identity.models import ModulePermission, Module, Permission
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
@@ -270,7 +270,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options["reset"]:
-            count, _ = Modulos.objects.all().delete()
+            count, _ = Module.objects.all().delete()
             self.stdout.write(
                 self.style.WARNING(f"  Eliminados {count} módulos existentes.")
             )
@@ -314,20 +314,20 @@ class Command(BaseCommand):
             "permisos_requeridos": permisos_raw or None,
             "modulo_padre": padre,
         }
-        obj, created = Modulos.objects.update_or_create(
+        obj, created = Module.objects.update_or_create(
             nombre_modulo=data["nombre"],
             defaults=defaults,
         )
 
         # Sincronizar tabla pivote modulo_permisos.
-        current_relations = ModuloPermiso.objects.filter(modulo=obj).select_related(
+        current_relations = ModulePermission.objects.filter(modulo=obj).select_related(
             "permiso"
         )
         current_names = {rel.permiso.nombre_permiso for rel in current_relations}
 
         to_remove = current_names - required_permission_names
         if to_remove:
-            ModuloPermiso.objects.filter(
+            ModulePermission.objects.filter(
                 modulo=obj,
                 permiso__nombre_permiso__in=to_remove,
             ).delete()
@@ -335,7 +335,7 @@ class Command(BaseCommand):
         if required_permission_names:
             existing_permisos = {
                 permiso.nombre_permiso: permiso
-                for permiso in Permiso.objects.filter(
+                for permiso in Permission.objects.filter(
                     nombre_permiso__in=required_permission_names
                 )
             }
@@ -353,9 +353,9 @@ class Command(BaseCommand):
                     )
                 )
                 for permission_name in missing_permissions:
-                    permiso = Permiso.objects.create(
+                    permiso = Permission.objects.create(
                         nombre_permiso=permission_name,
-                        descripcion_permiso=f"Permiso generado automaticamente para el modulo {data['nombre']}",
+                        descripcion_permiso=f"Permission generado automaticamente para el modulo {data['nombre']}",
                         modulo=modulo_ref,
                         tipo_permiso="ejecutar",
                         estado_permiso="activo",
@@ -369,7 +369,7 @@ class Command(BaseCommand):
 
             for permission_name, permiso in existing_permisos.items():
                 if permission_name not in current_names:
-                    ModuloPermiso.objects.create(modulo=obj, permiso=permiso)
+                    ModulePermission.objects.create(modulo=obj, permiso=permiso)
 
         action = "Creado" if created else "Actualizado"
         indent = "    " if padre else ""

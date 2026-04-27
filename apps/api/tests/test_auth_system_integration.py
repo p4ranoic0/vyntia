@@ -15,9 +15,9 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-from apps.organization.models import Area
+from apps.organization.models import Department
 from apps.identity.models import (
-    Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
+    User, Role, Permission, RolePermission, UserRole
 )
 
 
@@ -27,7 +27,7 @@ class AuthSystemIntegrationTest(TestCase):
     def setUp(self):
         """Configuración inicial para cada test."""
         # Crear área de prueba
-        self.area_rrhh = Area.objects.create(
+        self.area_rrhh = Department.objects.create(
             nombre_organo='Recursos Humanos',
             nombre_unidad_organica='Gestión de Personal',
             siglas_area='RRHH',
@@ -36,73 +36,73 @@ class AuthSystemIntegrationTest(TestCase):
         )
         
         # Crear permisos de prueba
-        self.permiso_leer = Permiso.objects.create(
+        self.permiso_leer = Permission.objects.create(
             nombre_permiso='Leer Empleados',
-            descripcion_permiso='Permiso para leer información de empleados',
+            descripcion_permiso='Permission para leer información de empleados',
             modulo_id=1,
             tipo_permiso='leer'
         )
         
-        self.permiso_escribir = Permiso.objects.create(
+        self.permiso_escribir = Permission.objects.create(
             nombre_permiso='Escribir Empleados',
-            descripcion_permiso='Permiso para modificar información de empleados',
+            descripcion_permiso='Permission para modificar información de empleados',
             modulo_id=1,
             tipo_permiso='actualizar'
         )
         
-        self.permiso_admin = Permiso.objects.create(
+        self.permiso_admin = Permission.objects.create(
             nombre_permiso='Administrar Sistema',
-            descripcion_permiso='Permiso de administración completa',
+            descripcion_permiso='Permission de administración completa',
             modulo_id=2,
             tipo_permiso='ejecutar'
         )
         
         # Crear roles de prueba
-        self.rol_empleado = Rol.objects.create(
-            nombre_rol='Empleado',
-            descripcion_rol='Rol básico para empleados',
+        self.rol_empleado = Role.objects.create(
+            nombre_rol='Employee',
+            descripcion_rol='Role básico para empleados',
             nivel_jerarquico=1
         )
         
-        self.rol_supervisor = Rol.objects.create(
+        self.rol_supervisor = Role.objects.create(
             nombre_rol='Supervisor',
-            descripcion_rol='Rol para supervisores de área',
+            descripcion_rol='Role para supervisores de área',
             nivel_jerarquico=2
         )
         
-        self.rol_admin = Rol.objects.create(
+        self.rol_admin = Role.objects.create(
             nombre_rol='Administrador',
-            descripcion_rol='Rol de administrador del sistema',
+            descripcion_rol='Role de administrador del sistema',
             nivel_jerarquico=3
         )
         
         # Asignar permisos a roles
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_empleado,
             permiso=self.permiso_leer
         )
         
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_supervisor,
             permiso=self.permiso_leer
         )
         
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_supervisor,
             permiso=self.permiso_escribir
         )
         
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_admin,
             permiso=self.permiso_leer
         )
         
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_admin,
             permiso=self.permiso_escribir
         )
         
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_admin,
             permiso=self.permiso_admin
         )
@@ -110,7 +110,7 @@ class AuthSystemIntegrationTest(TestCase):
     def test_creacion_usuario_completo_con_roles(self):
         """Test de creación completa de usuario con asignación de roles."""
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='juan.perez',
             email='juan.perez@empresa.com',
             password='password123',
@@ -124,7 +124,7 @@ class AuthSystemIntegrationTest(TestCase):
         self.assertFalse(usuario.is_superuser)
         
         # Asignar rol de empleado
-        usuario_rol = UsuarioRoles.objects.create(
+        usuario_rol = UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_empleado,
 
@@ -140,7 +140,7 @@ class AuthSystemIntegrationTest(TestCase):
     def test_autenticacion_usuario_con_permisos(self):
         """Test de autenticación y verificación de permisos."""
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='maria.gonzalez',
             email='maria.gonzalez@empresa.com',
             password='password456',
@@ -150,7 +150,7 @@ class AuthSystemIntegrationTest(TestCase):
         )
         
         # Asignar rol de supervisor
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_supervisor,
             estado_asignacion='activo',
@@ -177,7 +177,7 @@ class AuthSystemIntegrationTest(TestCase):
     def test_escalacion_permisos_multiple_roles(self):
         """Test de escalación de permisos con múltiples roles."""
         # Crear usuario con nivel de acceso total
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='admin.sistema',
             email='admin@empresa.com',
             password='admin123',
@@ -187,7 +187,7 @@ class AuthSystemIntegrationTest(TestCase):
         )
         
         # Asignar múltiples roles
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_empleado,
             estado_asignacion='activo',
@@ -195,7 +195,7 @@ class AuthSystemIntegrationTest(TestCase):
             fecha_expiracion=timezone.now() + timedelta(days=365)
         )
         
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_admin,
             estado_asignacion='activo',
@@ -215,16 +215,16 @@ class AuthSystemIntegrationTest(TestCase):
     def test_expiracion_roles_y_permisos(self):
         """Test de expiración de roles y su efecto en permisos."""
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='temporal.user',
             email='temporal@empresa.com',
             password='temp123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Temporal'
         )
         
         # Asignar rol con fecha de expiración pasada
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_supervisor,
 
@@ -242,16 +242,16 @@ class AuthSystemIntegrationTest(TestCase):
     def test_desactivacion_rol_y_efecto_permisos(self):
         """Test de desactivación de rol y su efecto en permisos de usuarios."""
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='affected.user',
             email='affected@empresa.com',
             password='affected123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Afectado'
         )
         
         # Asignar rol activo
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_empleado,
 
@@ -278,7 +278,7 @@ class AuthSystemIntegrationTest(TestCase):
                 'username': 'empleado1',
                 'email': 'emp1@empresa.com',
                 'password': 'emp123',
-                'nombres_usuario': 'Empleado',
+                'nombres_usuario': 'Employee',
                 'apellidos_usuario': 'Uno',
                 'rol': self.rol_empleado
             },
@@ -304,7 +304,7 @@ class AuthSystemIntegrationTest(TestCase):
         
         # Crear usuarios y asignar roles
         for data in usuarios_data:
-            usuario = Usuario.objects.create_user(
+            usuario = User.objects.create_user(
                 username=data['username'],
                 email=data['email'],
                 password=data['password'],
@@ -312,7 +312,7 @@ class AuthSystemIntegrationTest(TestCase):
                 apellidos_usuario=data['apellidos_usuario']
             )
             
-            UsuarioRoles.objects.create(
+            UserRole.objects.create(
                 usuario=usuario,
                 rol=data['rol'],
                 fecha_asignacion=timezone.now(),
@@ -326,7 +326,7 @@ class AuthSystemIntegrationTest(TestCase):
         supervisor = usuarios_creados[1]
         admin = usuarios_creados[2]
         
-        # Empleado: solo lectura
+        # Employee: solo lectura
         permisos_empleado = empleado.permisos_activos()
         self.assertIn(self.permiso_leer, permisos_empleado)
         self.assertNotIn(self.permiso_escribir, permisos_empleado)
@@ -345,14 +345,14 @@ class AuthSystemIntegrationTest(TestCase):
         self.assertIn(self.permiso_admin, permisos_admin)
         
         # Verificar conteos totales
-        self.assertEqual(Usuario.objects.count(), 3)
-        self.assertEqual(UsuarioRoles.objects.filter(estado_asignacion='activo').count(), 3)
-        self.assertEqual(RolPermisos.objects.count(), 6)  # 3 roles con diferentes permisos
+        self.assertEqual(User.objects.count(), 3)
+        self.assertEqual(UserRole.objects.filter(estado_asignacion='activo').count(), 3)
+        self.assertEqual(RolePermission.objects.count(), 6)  # 3 roles con diferentes permisos
     
     def test_cambio_area_usuario_y_permisos(self):
         """Test de cambio de área de usuario y mantenimiento de permisos."""
         # Crear segunda área
-        area_finanzas = Area.objects.create(
+        area_finanzas = Department.objects.create(
             nombre_organo='Finanzas',
             nombre_unidad_organica='Contabilidad',
             siglas_area='FIN',
@@ -361,16 +361,16 @@ class AuthSystemIntegrationTest(TestCase):
         )
         
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='mobile.user',
             email='mobile@empresa.com',
             password='mobile123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Móvil'
         )
         
         # Asignar rol en área RRHH
-        rol_rrhh = UsuarioRoles.objects.create(
+        rol_rrhh = UserRole.objects.create(
             usuario=usuario,
             rol=self.rol_supervisor,
             estado_asignacion='activo',

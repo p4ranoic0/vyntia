@@ -31,7 +31,7 @@ class WordTemplateService:
         Genera un documento Word reemplazando variables en la plantilla.
 
         Args:
-            plantilla: Instancia de PlantillaDocumento
+            plantilla: Instancia de DocumentTemplate
             variables: Diccionario con los valores a sustituir
 
         Returns:
@@ -99,7 +99,7 @@ class WordTemplateService:
         Construye el diccionario de variables para documentos de empleado.
 
         Args:
-            empleado: Instancia de Empleado
+            empleado: Instancia de Employee
             datos_adicionales: Variables adicionales (para certificados, etc.)
         """
         datos_laborales = empleado.datos_laborales_actuales()
@@ -170,8 +170,8 @@ class WordTemplateService:
         salario = ''
         if incluir_salario and datos_laborales:
             # Buscar salario del último contrato activo
-            from apps.contracts.models import ContratosAdendas
-            contrato = ContratosAdendas.objects.filter(
+            from apps.contracts.models import Contract
+            contrato = Contract.objects.filter(
                 empleado=empleado, estado='ACTIVO'
             ).order_by('-fecha_inicio').first()
             if contrato:

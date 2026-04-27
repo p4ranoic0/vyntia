@@ -10,13 +10,13 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from apps.identity.models.usuario import Usuario
+from apps.identity.models.user import User
 
 def set_admin_password():
     """Establece una contraseña conocida para el usuario admin"""
     try:
         # Buscar el usuario admin
-        admin_user = Usuario.objects.get(username='admin')
+        admin_user = User.objects.get(username='admin')
         
         # Establecer nueva contraseña
         new_password = 'admin123'
@@ -24,10 +24,10 @@ def set_admin_password():
         admin_user.save()
         
         print(f"Contraseña establecida para {admin_user.username}: {new_password}")
-        print(f"Usuario activo: {admin_user.is_active}")
+        print(f"User activo: {admin_user.is_active}")
         
-    except Usuario.DoesNotExist:
-        print("Usuario admin no encontrado")
+    except User.DoesNotExist:
+        print("User admin no encontrado")
     except Exception as e:
         print(f"Error: {e}")
 

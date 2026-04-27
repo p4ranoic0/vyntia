@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Manager personalizado para el modelo Usuario
+Manager personalizado para el modelo User
 
 Contiene métodos de consulta optimizados y funcionalidades específicas
-para el modelo Usuario.
+para el modelo User.
 """
 
 from django.db import models
@@ -14,7 +14,7 @@ from datetime import timedelta
 
 
 class UsuarioManager(BaseUserManager):
-    """Custom manager for Usuario model."""
+    """Custom manager for User model."""
     
     def get_queryset(self):
         """Override queryset to optimize default queries."""

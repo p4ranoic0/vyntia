@@ -101,7 +101,7 @@ class RRHHPermission(BasePermission):
 
 
 class AreaPermission(RRHHPermission):
-    """Permission for Area management.
+    """Permission for Department management.
 
     Permite:
     - RRHH/Admin: lectura y escritura completa
@@ -262,7 +262,7 @@ class EmpleadoPermission(RRHHPermission):
 
 
 class DocumentosDigitalesPermission(BasePermission):
-    """Permission for DocumentosDigitales.
+    """Permission for DigitalDocument.
 
     Allows any authenticated user to list, retrieve, and create documents
     (the view handles ownership validation for non-HR users).

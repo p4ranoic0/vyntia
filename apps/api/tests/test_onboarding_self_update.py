@@ -4,7 +4,7 @@ Tests for onboarding self-service fixes (UAT round 2):
 
 - Fix 1: Employee can PATCH their own personal/banking/pension fields
 - Fix 2: Employee cannot PATCH restricted fields (nombres_empleado, etc.)
-- Fix 3: DatosFamiliares — 'hijo' accepted, 'hija' rejected by backend
+- Fix 3: FamilyMember — 'hijo' accepted, 'hija' rejected by backend
 - Fix 4: Employee can DELETE their own dependents
 - Fix 5: Employee cannot delete another employee's dependents
 """
@@ -12,7 +12,7 @@ Tests for onboarding self-service fixes (UAT round 2):
 import pytest
 from django.core.cache import cache
 
-from apps.employees.models import DatosFamiliares, Empleado
+from apps.employees.models import FamilyMember, Employee
 
 
 @pytest.fixture(autouse=True)
@@ -99,9 +99,9 @@ class TestEmpleadoSelfUpdate:
 
     def test_employee_cannot_patch_another_employees_record(self, onboarding_client):
         """Employee cannot PATCH another employee's record even with allowed fields."""
-        other_empleado = Empleado.objects.create(
+        other_empleado = Employee.objects.create(
             nombres_empleado="Otro",
-            apellido_paterno="Empleado",
+            apellido_paterno="Employee",
             apellido_materno="Dos",
             numero_documento="88776655",
             tipo_documento="DNI",
@@ -183,7 +183,7 @@ class TestDatosFamiliaresDestroy:
     """Employee can delete their own dependents but not another's (Fix 4)."""
 
     def _create_familiar(self, empleado, parentesco="hijo"):
-        return DatosFamiliares.objects.create(
+        return FamilyMember.objects.create(
             empleado=empleado,
             nombres_familiar="Test",
             apellido_paterno="Familiar",
@@ -200,12 +200,12 @@ class TestDatosFamiliaresDestroy:
 
         response = onboarding_client.delete(_familiares_url(familiar.familiar_id))
         assert response.status_code == 204, f"Expected 204, got {response.status_code}: {response.data}"
-        assert not DatosFamiliares.objects.filter(pk=familiar.familiar_id).exists()
+        assert not FamilyMember.objects.filter(pk=familiar.familiar_id).exists()
 
     def test_employee_cannot_delete_other_employees_familiar(self, onboarding_client):
-        other_empleado = Empleado.objects.create(
+        other_empleado = Employee.objects.create(
             nombres_empleado="Otro",
-            apellido_paterno="Empleado",
+            apellido_paterno="Employee",
             apellido_materno="X",
             numero_documento="77665544",
             tipo_documento="DNI",
@@ -218,7 +218,7 @@ class TestDatosFamiliaresDestroy:
         assert response.status_code in (403, 404), (
             f"Expected 403 or 404, got {response.status_code}"
         )
-        assert DatosFamiliares.objects.filter(pk=other_familiar.familiar_id).exists()
+        assert FamilyMember.objects.filter(pk=other_familiar.familiar_id).exists()
 
     def test_hr_can_delete_any_familiar(self, hr_client, onboarding_factory):
         onboarding = onboarding_factory()

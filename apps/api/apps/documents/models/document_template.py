@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Modelo PlantillaDocumento - Plantillas Word para generación de documentos.
+Modelo DocumentTemplate - Plantillas Word para generación de documentos.
 """
 
 from django.db import models
 
 
-class PlantillaDocumento(models.Model):
+class DocumentTemplate(models.Model):
     """
     Modelo para almacenar plantillas Word (.docx) que se usan para generar
     contratos, certificados, constancias y adendas.
@@ -37,7 +37,7 @@ class PlantillaDocumento(models.Model):
     activa = models.BooleanField(default=True, help_text='Si esta plantilla esta disponible para uso')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     creada_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

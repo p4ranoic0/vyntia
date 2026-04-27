@@ -5,13 +5,13 @@ from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
-from apps.employees.models import Empleado
-from apps.identity.models import Usuario
+from apps.employees.models import Employee
+from apps.identity.models import User
 from ..models import (
-    ConfiguracionVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationRequestHistory,
+    VacationPeriod,
+    VacationRequest,
 )
 from app_rrhh.tasks import send_email_html_task
 from apps.core.exceptions import BusinessLogicError
@@ -30,14 +30,14 @@ class VacationService:
     """Servicio de solicitudes y periodos de vacaciones."""
 
     @staticmethod
-    def _obtener_email_jefe(jefe: Empleado) -> Optional[str]:
-        usuario = Usuario.objects.filter(empleado=jefe).first()
+    def _obtener_email_jefe(jefe: Employee) -> Optional[str]:
+        usuario = User.objects.filter(empleado=jefe).first()
         if usuario and usuario.email:
             return usuario.email
         return jefe.correo_personal
 
     @staticmethod
-    def _enviar_notificacion_jefe(solicitud: SolicitudVacaciones) -> bool:
+    def _enviar_notificacion_jefe(solicitud: VacationRequest) -> bool:
         jefe = solicitud.jefe_aprobador
         if not jefe:
             return False
@@ -83,15 +83,15 @@ class VacationService:
 
     @staticmethod
     def obtener_configuracion_activa(
-        empleado: Optional[Empleado] = None,
-    ) -> Optional[ConfiguracionVacaciones]:
+        empleado: Optional[Employee] = None,
+    ) -> Optional[VacationConfiguration]:
         fecha_ref = date.today()
         if empleado:
             return VacationCalculationService.obtener_configuracion_aplicable(
                 empleado, fecha_ref
             )
         return (
-            ConfiguracionVacaciones.objects.filter(
+            VacationConfiguration.objects.filter(
                 area__isnull=True,
                 empleado__isnull=True,
                 activo=True,
@@ -106,8 +106,8 @@ class VacationService:
 
     @staticmethod
     def _generar_periodo_para_fecha(
-        empleado: Empleado, fecha_ref: date
-    ) -> PeriodoVacacional:
+        empleado: Employee, fecha_ref: date
+    ) -> VacationPeriod:
         contrato = VacationCalculationService.obtener_contrato_para_fecha(
             empleado, fecha_ref
         )
@@ -131,7 +131,7 @@ class VacationService:
                 error_code="NO_VACATION_CONFIG",
             )
 
-        periodo, created = PeriodoVacacional.objects.get_or_create(
+        periodo, created = VacationPeriod.objects.get_or_create(
             empleado=empleado,
             ano_periodo=ano_periodo,
             contrato=contrato,
@@ -162,8 +162,8 @@ class VacationService:
 
     @staticmethod
     def obtener_o_crear_periodo(
-        empleado: Empleado, fecha_ref: Optional[date] = None
-    ) -> PeriodoVacacional:
+        empleado: Employee, fecha_ref: Optional[date] = None
+    ) -> VacationPeriod:
         """Obtiene o crea periodo por aniversario según contrato activo en fecha."""
         return VacationService._generar_periodo_para_fecha(
             empleado, fecha_ref or date.today()
@@ -172,14 +172,14 @@ class VacationService:
     @staticmethod
     def validar_solicitud_vacaciones(data: Dict[str, Any]) -> Dict[str, Any]:
         """Valida y normaliza una solicitud de vacaciones."""
-        empleado: Empleado = data.get("empleado")
+        empleado: Employee = data.get("empleado")
         fecha_inicio: date = data.get("fecha_inicio")
         fecha_fin: date = data.get("fecha_fin")
         tipo_solicitud = data.get("tipo_solicitud") or "vacaciones"
 
         if not empleado or not fecha_inicio or not fecha_fin:
             raise BusinessLogicError(
-                "Empleado, fecha de inicio y fecha de fin son obligatorios.",
+                "Employee, fecha de inicio y fecha de fin son obligatorios.",
                 error_code="MISSING_REQUIRED_DATA",
             )
 
@@ -257,12 +257,12 @@ class VacationService:
     @staticmethod
     @transaction.atomic
     def crear_solicitud_vacaciones(
-        data: Dict[str, Any], usuario_creador: Usuario
-    ) -> SolicitudVacaciones:
+        data: Dict[str, Any], usuario_creador: User
+    ) -> VacationRequest:
         """Crea solicitud en borrador."""
         datos = VacationService.validar_solicitud_vacaciones(data)
 
-        solicitud = SolicitudVacaciones.objects.create(
+        solicitud = VacationRequest.objects.create(
             empleado=datos["empleado"],
             periodo_vacacional=datos["periodo_vacacional"],
             tipo_solicitud=datos["tipo_solicitud"],
@@ -275,7 +275,7 @@ class VacationService:
             medio_dia=datos.get("medio_dia", False),
         )
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="creacion",
             descripcion_accion=f"Solicitud creada por {usuario_creador.nombre_completo}",
@@ -286,13 +286,13 @@ class VacationService:
 
     @staticmethod
     @transaction.atomic
-    def enviar_solicitud(solicitud_id: int, usuario: Usuario) -> SolicitudVacaciones:
+    def enviar_solicitud(solicitud_id: int, usuario: User) -> VacationRequest:
         """Envía solicitud a flujo de aprobación."""
         try:
-            solicitud = SolicitudVacaciones.objects.select_for_update().get(
+            solicitud = VacationRequest.objects.select_for_update().get(
                 solicitud_id=solicitud_id
             )
-        except SolicitudVacaciones.DoesNotExist as exc:
+        except VacationRequest.DoesNotExist as exc:
             raise BusinessLogicError(
                 "Solicitud no encontrada.", error_code="REQUEST_NOT_FOUND"
             ) from exc
@@ -338,7 +338,7 @@ class VacationService:
         solicitud.fecha_envio = timezone.now()
         solicitud.save()
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="envio",
             descripcion_accion=f"Solicitud enviada. Estado: {estado_anterior} -> {solicitud.estado_solicitud}",
@@ -353,7 +353,7 @@ class VacationService:
         return solicitud
 
     @staticmethod
-    def descontar_dias_periodo(periodo: PeriodoVacacional, dias: Decimal) -> None:
+    def descontar_dias_periodo(periodo: VacationPeriod, dias: Decimal) -> None:
         """Descuenta días al confirmar aprobación final."""
         if dias <= 0:
             return

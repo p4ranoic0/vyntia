@@ -2,7 +2,7 @@
 """
 Modelos de Ubicación - Gestión de historial de ubicaciones de empleados
 
-Contiene la definición del modelo HistorialUbicaciones que registra
+Contiene la definición del modelo LocationHistory que registra
 el historial de movimientos y desplazamientos de los empleados en la institución.
 Basado en la tabla historial_ubicaciones de la base de datos.
 """
@@ -12,7 +12,7 @@ from django.utils import timezone
 from datetime import date
 
 
-class HistorialUbicaciones(models.Model):
+class LocationHistory(models.Model):
     """Modelo para gestionar el historial de ubicaciones y desplazamientos de empleados."""
     
     TIPO_MOVIMIENTO_CHOICES = [
@@ -36,13 +36,13 @@ class HistorialUbicaciones(models.Model):
         help_text='ID único del registro de ubicación'
     )
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='historial_ubicaciones',
         help_text='ID del empleado'
     )
     area_origen = models.ForeignKey(
-        'Area',
+        'Department',
         on_delete=models.PROTECT,
         related_name='ubicaciones_origen',
         null=True,
@@ -50,7 +50,7 @@ class HistorialUbicaciones(models.Model):
         help_text='ID del área de origen'
     )
     area_destino = models.ForeignKey(
-        'Area',
+        'Department',
         on_delete=models.PROTECT,
         related_name='ubicaciones_destino',
         help_text='ID del área de destino'
@@ -78,7 +78,7 @@ class HistorialUbicaciones(models.Model):
     
     # Documentación del movimiento
     documento = models.ForeignKey(
-        'documents.DocumentosDigitales',
+        'documents.DigitalDocument',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -111,12 +111,12 @@ class HistorialUbicaciones(models.Model):
         help_text='Estado de la ubicación'
     )
     registrado_por_usuario = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='ubicaciones_registradas',
-        help_text='Usuario que registró el movimiento'
+        help_text='User que registró el movimiento'
     )
     fecha_registro = models.DateTimeField(
         auto_now_add=True,
@@ -248,20 +248,20 @@ class HistorialUbicaciones(models.Model):
     
     def empleados_en_area_destino(self):
         """Obtiene otros empleados activos en la misma área destino."""
-        return HistorialUbicaciones.objects.filter(
+        return LocationHistory.objects.filter(
             area_destino=self.area_destino,
             estado_ubicacion='activo'
         ).exclude(empleado=self.empleado)
     
     def historial_empleado_movimientos(self):
         """Obtiene el historial completo de movimientos del empleado."""
-        return HistorialUbicaciones.objects.filter(
+        return LocationHistory.objects.filter(
             empleado=self.empleado
         ).order_by('-fecha_inicio')
     
     def movimientos_similares(self):
         """Obtiene movimientos similares (mismo tipo y área destino)."""
-        return HistorialUbicaciones.objects.filter(
+        return LocationHistory.objects.filter(
             tipo_movimiento=self.tipo_movimiento,
             area_destino=self.area_destino,
             estado_ubicacion='activo'
@@ -282,12 +282,12 @@ class HistorialUbicaciones(models.Model):
     @classmethod
     def empleados_sin_movimiento_activo(cls):
         """Obtiene empleados que no tienen movimiento activo."""
-        from apps.employees.models import Empleado
+        from apps.employees.models import Employee
         empleados_con_movimiento = cls.objects.filter(
             estado_ubicacion='activo'
         ).values_list('empleado_id', flat=True)
         
-        return Empleado.objects.filter(
+        return Employee.objects.filter(
             estado_empleado='activo'
         ).exclude(empleado_id__in=empleados_con_movimiento)
     

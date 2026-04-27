@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for DocumentosDigitales endpoint behavior for onboarding employees.
+Tests for DigitalDocument endpoint behavior for onboarding employees.
 Covers GAP-02 (archivo_url missing from response) and GAP-05 (permission issues).
 
 All tests pass against the fixed code from plans 01.1-05 and 01.1-06.
@@ -9,17 +9,17 @@ import io
 import pytest
 from django.core.files.base import ContentFile
 
-from apps.documents.models import DocumentosDigitales
+from apps.documents.models import DigitalDocument
 
 
 def _make_doc(empleado, tipo='dni', categoria='personal', nombre='Doc Test',
               es_version_actual=True, version='1.0', estado='pendiente_revision'):
     """
-    Create a DocumentosDigitales record with a minimal in-memory file.
+    Create a DigitalDocument record with a minimal in-memory file.
     Provides all mandatory fields so save() does not raise ValidationError.
     """
     content = ContentFile(b'%PDF-1.4 fake content', name='test.pdf')
-    doc = DocumentosDigitales(
+    doc = DigitalDocument(
         empleado=empleado,
         tipo_documento=tipo,
         categoria=categoria,
@@ -83,10 +83,10 @@ class TestDocumentosDigitalesOnboardingEmployee:
 
         Creates a second employee directly (not via factory) to avoid email uniqueness clash.
         """
-        from apps.employees.models import Empleado
-        other_empleado = Empleado.objects.create(
+        from apps.employees.models import Employee
+        other_empleado = Employee.objects.create(
             nombres_empleado='Otro',
-            apellido_paterno='Empleado',
+            apellido_paterno='Employee',
             apellido_materno='Prueba',
             numero_documento='11223344',
             tipo_documento='DNI',

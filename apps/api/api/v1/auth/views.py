@@ -3,7 +3,7 @@
 from typing import Any, Dict
 
 from app_rrhh.menu_service import MenuService
-from apps.identity.models import Modulos, Permiso, Rol, Usuario
+from apps.identity.models import Module, Permission, Role, User
 from apps.core.decorators import (
     require_admin,
     require_authenticated,
@@ -177,7 +177,7 @@ class UserProfileAPIView(APIView):
     def get(self, request: Request) -> Response:
         """Get user profile information."""
         try:
-            usuario = Usuario.objects.select_related("empleado").get(pk=request.user.pk)
+            usuario = User.objects.select_related("empleado").get(pk=request.user.pk)
             serializer = UserProfileSerializer(usuario)
 
             return APIResponse.success(
@@ -186,9 +186,9 @@ class UserProfileAPIView(APIView):
                 status_code=status.HTTP_200_OK,
             )
 
-        except Usuario.DoesNotExist:
+        except User.DoesNotExist:
             return APIResponse.error(
-                message="Usuario no encontrado",
+                message="User no encontrado",
                 errors={"detail": "No se encontró el perfil del usuario"},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
@@ -203,7 +203,7 @@ class UserProfileAPIView(APIView):
     def put(self, request: Request) -> Response:
         """Update user profile information."""
         try:
-            usuario = Usuario.objects.select_related("empleado").get(pk=request.user.pk)
+            usuario = User.objects.select_related("empleado").get(pk=request.user.pk)
             serializer = UserUpdateSerializer(usuario, data=request.data, partial=True)
 
             if serializer.is_valid():
@@ -235,7 +235,7 @@ class UserProfileAPIView(APIView):
     def get_user_permissions(self, request: Request) -> Response:
         """Get user permissions and roles."""
         try:
-            usuario = Usuario.objects.select_related("empleado").get(pk=request.user.pk)
+            usuario = User.objects.select_related("empleado").get(pk=request.user.pk)
 
             # Obtener roles activos
             roles_activos = usuario.roles_activos()
@@ -275,9 +275,9 @@ class UserProfileAPIView(APIView):
                 status_code=status.HTTP_200_OK,
             )
 
-        except Usuario.DoesNotExist:
+        except User.DoesNotExist:
             return APIResponse.error(
-                message="Usuario no encontrado", status_code=status.HTTP_404_NOT_FOUND
+                message="User no encontrado", status_code=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             return APIResponse.error(
@@ -532,7 +532,7 @@ class MenuStructureAPIView(APIView):
         """
         try:
             # Obtener módulos activos desde la base de datos
-            modulos_activos = Modulos.objects.filter(estado_modulo="activo").order_by(
+            modulos_activos = Module.objects.filter(estado_modulo="activo").order_by(
                 "orden_visualizacion"
             )
 
@@ -586,7 +586,7 @@ class MenuStructureAPIView(APIView):
                             "name": "Módulos",
                             "icon": "layout",
                             "path": "/admin/modulos",
-                            "permissions": ["Gestionar Modulos"],
+                            "permissions": ["Gestionar Module"],
                             "roles": [],
                         },
                         {
@@ -640,12 +640,12 @@ class PermissionsStructureAPIView(APIView):
         """
         try:
             # Obtener todos los módulos
-            modulos = Modulos.objects.all().order_by("nombre_modulo")
+            modulos = Module.objects.all().order_by("nombre_modulo")
 
             # Obtener todos los permisos agrupados por módulo
             permisos_por_modulo = {}
             for modulo in modulos:
-                permisos = Permiso.objects.filter(modulo=modulo).order_by(
+                permisos = Permission.objects.filter(modulo=modulo).order_by(
                     "nombre_permiso"
                 )
                 permisos_por_modulo[modulo.nombre_modulo] = [
@@ -658,7 +658,7 @@ class PermissionsStructureAPIView(APIView):
                 ]
 
             # Obtener todos los roles con sus permisos
-            roles = Rol.objects.all().order_by("nombre_rol")
+            roles = Role.objects.all().order_by("nombre_rol")
             roles_data = []
 
             for rol in roles:

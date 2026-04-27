@@ -1,12 +1,12 @@
 """AppConfig for the `apps.time_off` Django app — VYNTIA vacations & leave management.
 
 Owns the time-off and vacation entities of the HR system:
-- ConfiguracionVacaciones (per-area/employee/cargo vacation rules: days/year, accrual,
+- VacationConfiguration (per-area/employee/cargo vacation rules: days/year, accrual,
   approval levels, fragmentation policy)
-- PeriodoVacacional (annual vacation period per employee with corresponding/used/pending days)
-- SolicitudVacaciones (vacation request workflow: borrador -> enviada -> aprobada -> en_goce -> finalizada)
-- GoceVacaciones (actual vacation enjoyment record with start/end dates and interruptions)
-- HistorialSolicitudVacaciones (audit trail of all state transitions on requests)
+- VacationPeriod (annual vacation period per employee with corresponding/used/pending days)
+- VacationRequest (vacation request workflow: borrador -> enviada -> aprobada -> en_goce -> finalizada)
+- VacationGrant (actual vacation enjoyment record with start/end dates and interruptions)
+- VacationRequestHistory (audit trail of all state transitions on requests)
 
 Owned services (vacation workflow engines):
 - vacation_service.py — main vacation request orchestration
@@ -25,14 +25,14 @@ and enjoyment tracking. Personal data lives in `apps.employees`, contract data i
 (deferred legacy module).
 
 Future split (deferred to L3.10):
-- SolicitudVacaciones -> VacationRequest + VacationBalance (model split + data migration)
+- VacationRequest -> VacationRequest + VacationBalance (model split + data migration)
 
 Future rename (deferred to L3.10):
-- ConfiguracionVacaciones -> VacationPolicy
-- PeriodoVacacional -> VacationPeriod
-- SolicitudVacaciones -> VacationRequest
-- GoceVacaciones -> VacationLeave
-- HistorialSolicitudVacaciones -> VacationRequestHistory
+- VacationConfiguration -> VacationPolicy
+- VacationPeriod -> VacationPeriod
+- VacationRequest -> VacationRequest
+- VacationGrant -> VacationLeave
+- VacationRequestHistory -> VacationRequestHistory
 """
 
 from django.apps import AppConfig

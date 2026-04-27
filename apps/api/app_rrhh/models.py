@@ -12,19 +12,19 @@ from .models import *
 
 # Todos los modelos han sido migrados a la estructura modular
 # Ver directorio models/ para las definiciones individuales:
-# - area.py: Modelo Area
-# - empleado.py: Modelo Empleado
-# - datos_laborales.py: Modelo DatosLaborales
-# - ubicacion.py: Modelo HistorialUbicaciones
-# - usuario.py: Modelo Usuario
-# - datos_familiares.py: Modelo DatosFamiliares
-# - datos_academicos.py: Modelo DatosAcademicos
-# - documentos_digitales.py: Modelo DocumentosDigitales
+# - area.py: Modelo Department
+# - empleado.py: Modelo Employee
+# - datos_laborales.py: Modelo EmploymentData
+# - ubicacion.py: Modelo LocationHistory
+# - usuario.py: Modelo User
+# - datos_familiares.py: Modelo FamilyMember
+# - datos_academicos.py: Modelo AcademicRecord
+# - documentos_digitales.py: Modelo DigitalDocument
 # - vacaciones.py: Modelos de vacaciones
 # - permisos.py: Modelos de permisos
 # - contratos.py: Modelos de contratos
-# - roles.py: Modelos Rol y Permiso
-# - sistema.py: Modelos Modulos, RolPermisos, UsuarioRoles
+# - roles.py: Modelos Role y Permission
+# - sistema.py: Modelos Module, RolePermission, UserRole
 
 # Mantener compatibilidad con importaciones existentes
 # Los modelos están disponibles a través de models/__init__.py

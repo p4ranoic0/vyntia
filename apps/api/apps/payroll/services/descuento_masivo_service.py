@@ -16,12 +16,12 @@ except ImportError:
     OPENPYXL_AVAILABLE = False
 
 from apps.payroll.models import (
-    ConceptoPlanilla,
-    ConfiguracionRemuneracion,
-    DescuentoMasivo,
-    DetallePlanilla,
+    PayrollConcept,
+    CompensationConfiguration,
+    MassDeduction,
+    PayrollDetail,
 )
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 
 
 class DescuentoMasivoService:
@@ -47,7 +47,7 @@ class DescuentoMasivoService:
         Returns:
             Diccionario con resultados del procesamiento
         """
-        descuento = DescuentoMasivo.objects.select_related(
+        descuento = MassDeduction.objects.select_related(
             "configuracion_concepto"
         ).get(descuento_masivo_id=descuento_masivo_id)
 
@@ -216,13 +216,13 @@ class DescuentoMasivoService:
         return registros, errores
 
     def _aplicar_descuentos(
-        self, descuento_masivo: DescuentoMasivo, registros: List[Dict[str, Any]]
+        self, descuento_masivo: MassDeduction, registros: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
         Aplica los descuentos a los detalles de planilla correspondientes.
 
         Args:
-            descuento_masivo: Instancia de DescuentoMasivo
+            descuento_masivo: Instancia de MassDeduction
             registros: Lista de registros leídos del Excel
 
         Returns:
@@ -245,13 +245,13 @@ class DescuentoMasivoService:
 
                 # Buscar empleado por DNI
                 try:
-                    empleado = Empleado.objects.get(numero_documento=dni)
-                except Empleado.DoesNotExist:
-                    errores.append(f"Fila {fila}: Empleado con DNI {dni} no encontrado")
+                    empleado = Employee.objects.get(numero_documento=dni)
+                except Employee.DoesNotExist:
+                    errores.append(f"Fila {fila}: Employee con DNI {dni} no encontrado")
                     continue
 
                 # Buscar detalle de planilla del empleado para el periodo
-                detalles = DetallePlanilla.objects.filter(
+                detalles = PayrollDetail.objects.filter(
                     planilla__periodo=periodo, empleado=empleado
                 )
 
@@ -264,9 +264,9 @@ class DescuentoMasivoService:
                 # Si hay múltiples planillas (por modalidad), tomar la primera activa
                 detalle = detalles.first()
 
-                # Crear ConceptoPlanilla para el descuento
+                # Crear PayrollConcept para el descuento
                 with transaction.atomic():
-                    concepto = ConceptoPlanilla.objects.create(
+                    concepto = PayrollConcept.objects.create(
                         detalle_planilla=detalle,
                         configuracion_concepto=descuento_masivo.configuracion_concepto,
                         tipo="descuento",
@@ -310,7 +310,7 @@ class DescuentoMasivoService:
         Returns:
             Diccionario con resultado de la anulación
         """
-        descuento = DescuentoMasivo.objects.get(descuento_masivo_id=descuento_masivo_id)
+        descuento = MassDeduction.objects.get(descuento_masivo_id=descuento_masivo_id)
 
         if descuento.estado == "anulado":
             raise ValueError("El descuento masivo ya está anulado")
@@ -318,7 +318,7 @@ class DescuentoMasivoService:
         try:
             with transaction.atomic():
                 # Obtener conceptos asociados por observaciones (incluye ID del descuento)
-                conceptos = ConceptoPlanilla.objects.filter(
+                conceptos = PayrollConcept.objects.filter(
                     observaciones__contains=f"[Descuento masivo ID: {descuento.descuento_masivo_id}]"
                 ).select_related("detalle_planilla")
 

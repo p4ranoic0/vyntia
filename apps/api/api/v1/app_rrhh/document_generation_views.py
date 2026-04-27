@@ -7,14 +7,14 @@ certificados y reportes desde plantillas HTML y convertirlos a PDF.
 """
 
 from apps.contracts.models import (
-    ContratosAdendas,
-    DatosLaborales,
+    Contract,
+    EmploymentData,
 )
 from apps.documents.models import (
-    DocumentosDigitales,
-    PlantillaDocumento,
+    DigitalDocument,
+    DocumentTemplate,
 )
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 from apps.documents.services import TemplateService, WordTemplateService
 from apps.core.decorators import (
     require_admin,
@@ -106,7 +106,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener el contrato
-            contrato = get_object_or_404(ContratosAdendas, contrato_id=contrato_id)
+            contrato = get_object_or_404(Contract, contrato_id=contrato_id)
 
             if formato == "html":
                 html_content = self.template_service.generar_contrato(
@@ -127,7 +127,7 @@ class DocumentGenerationViewSet(ViewSet):
                         f"Contrato {contrato.numero_contrato or contrato.contrato_id}"
                     )
                     nombre_archivo = f"contrato_{contrato.contrato_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                    documento = DocumentosDigitales.objects.create(
+                    documento = DigitalDocument.objects.create(
                         empleado=contrato.empleado,
                         tipo_documento="contrato_trabajo",
                         categoria="laboral",
@@ -165,7 +165,7 @@ class DocumentGenerationViewSet(ViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        except ContratosAdendas.DoesNotExist:
+        except Contract.DoesNotExist:
             return APIResponse.error(
                 message="Contrato no encontrado", status_code=status.HTTP_404_NOT_FOUND
             )
@@ -207,7 +207,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener la adenda
-            adenda = get_object_or_404(ContratosAdendas, contrato_id=adenda_id)
+            adenda = get_object_or_404(Contract, contrato_id=adenda_id)
 
             if formato == "html":
                 html_content = self.template_service.generar_adenda(
@@ -226,7 +226,7 @@ class DocumentGenerationViewSet(ViewSet):
                 if guardar_documento:
                     nombre_doc = f"Adenda {adenda.numero_adenda or adenda.contrato_id}"
                     nombre_archivo = f"adenda_{adenda.contrato_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                    documento = DocumentosDigitales.objects.create(
+                    documento = DigitalDocument.objects.create(
                         empleado=adenda.empleado,
                         tipo_documento="adenda_contrato",
                         categoria="laboral",
@@ -262,7 +262,7 @@ class DocumentGenerationViewSet(ViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        except ContratosAdendas.DoesNotExist:
+        except Contract.DoesNotExist:
             return APIResponse.error(
                 message="Adenda no encontrada", status_code=status.HTTP_404_NOT_FOUND
             )
@@ -314,7 +314,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener el empleado
-            empleado = get_object_or_404(Empleado, empleado_id=empleado_id)
+            empleado = get_object_or_404(Employee, empleado_id=empleado_id)
 
             # Crear datos del certificado
             certificado_data = {
@@ -348,7 +348,7 @@ class DocumentGenerationViewSet(ViewSet):
                 if guardar_documento:
                     num_cert = certificado_data["numero_certificado"]
                     nombre_archivo = f"certificado_{empleado.empleado_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                    documento = DocumentosDigitales.objects.create(
+                    documento = DigitalDocument.objects.create(
                         empleado=empleado,
                         tipo_documento="certificado_trabajo",
                         categoria="laboral",
@@ -385,9 +385,9 @@ class DocumentGenerationViewSet(ViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        except Empleado.DoesNotExist:
+        except Employee.DoesNotExist:
             return APIResponse.error(
-                message="Empleado no encontrado", status_code=status.HTTP_404_NOT_FOUND
+                message="Employee no encontrado", status_code=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             return APIResponse.error(
@@ -532,7 +532,7 @@ class DocumentGenerationViewSet(ViewSet):
         """Listar todas las plantillas Word disponibles."""
         try:
             tipo = request.query_params.get("tipo")
-            qs = PlantillaDocumento.objects.filter(activa=True)
+            qs = DocumentTemplate.objects.filter(activa=True)
             if tipo:
                 qs = qs.filter(tipo=tipo)
             qs = qs.order_by("-fecha_creacion")
@@ -575,7 +575,7 @@ class DocumentGenerationViewSet(ViewSet):
             if not tipo:
                 return APIResponse.error(message="El tipo es requerido", status_code=status.HTTP_400_BAD_REQUEST)
 
-            tipos_validos = [c[0] for c in PlantillaDocumento.TIPO_CHOICES]
+            tipos_validos = [c[0] for c in DocumentTemplate.TIPO_CHOICES]
             if tipo not in tipos_validos:
                 return APIResponse.error(
                     message=f"Tipo inválido. Valores permitidos: {', '.join(tipos_validos)}",
@@ -585,7 +585,7 @@ class DocumentGenerationViewSet(ViewSet):
             if not archivo.name.lower().endswith('.docx'):
                 return APIResponse.error(message="Solo se permiten archivos .docx", status_code=status.HTTP_400_BAD_REQUEST)
 
-            plantilla = PlantillaDocumento.objects.create(
+            plantilla = DocumentTemplate.objects.create(
                 tipo=tipo,
                 nombre=nombre,
                 descripcion=descripcion,
@@ -616,7 +616,7 @@ class DocumentGenerationViewSet(ViewSet):
     def eliminar_plantilla_word(self, request, plantilla_id=None):
         """Eliminar (desactivar) una plantilla Word."""
         try:
-            plantilla = get_object_or_404(PlantillaDocumento, plantilla_id=plantilla_id)
+            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id)
             plantilla.activa = False
             plantilla.save(update_fields=["activa"])
             return APIResponse.success(message="Plantilla eliminada exitosamente")
@@ -631,7 +631,7 @@ class DocumentGenerationViewSet(ViewSet):
     def descargar_plantilla_word(self, request, plantilla_id=None):
         """Descargar el archivo .docx de una plantilla."""
         try:
-            plantilla = get_object_or_404(PlantillaDocumento, plantilla_id=plantilla_id, activa=True)
+            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id, activa=True)
             with open(plantilla.archivo.path, 'rb') as f:
                 docx_bytes = f.read()
             response = HttpResponse(docx_bytes, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
@@ -671,13 +671,13 @@ class DocumentGenerationViewSet(ViewSet):
             if not plantilla_id:
                 return APIResponse.error(message="plantilla_id es requerido", status_code=status.HTTP_400_BAD_REQUEST)
 
-            plantilla = get_object_or_404(PlantillaDocumento, plantilla_id=plantilla_id, activa=True)
+            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id, activa=True)
 
             # Construir variables según el tipo de plantilla
             if plantilla.tipo in ('certificado_trabajo', 'constancia_laboral'):
                 if not empleado_id:
                     return APIResponse.error(message="empleado_id es requerido para este tipo de plantilla", status_code=status.HTTP_400_BAD_REQUEST)
-                empleado = get_object_or_404(Empleado, empleado_id=empleado_id)
+                empleado = get_object_or_404(Employee, empleado_id=empleado_id)
                 numero_cert = request.data.get("numero_certificado") or f"CERT-{empleado.empleado_id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
                 variables = self.word_service.construir_variables_certificado(
                     empleado=empleado,
@@ -691,7 +691,7 @@ class DocumentGenerationViewSet(ViewSet):
             elif plantilla.tipo in ('contrato', 'adenda'):
                 if not contrato_id:
                     return APIResponse.error(message="contrato_id es requerido para este tipo de plantilla", status_code=status.HTTP_400_BAD_REQUEST)
-                contrato = get_object_or_404(ContratosAdendas, contrato_id=contrato_id)
+                contrato = get_object_or_404(Contract, contrato_id=contrato_id)
                 variables = self.word_service.construir_variables_contrato(contrato)
                 nombre_base = f"{plantilla.tipo}_{contrato.contrato_id}"
                 asociado_empleado = contrato.empleado
@@ -721,7 +721,7 @@ class DocumentGenerationViewSet(ViewSet):
             if guardar:
                 nombre_archivo = f"{nombre_base}_{timezone.now().strftime('%Y%m%d%H%M%S')}.{ext}"
                 tipo_doc = plantilla.tipo if plantilla.tipo in ['certificado_trabajo', 'constancia_laboral', 'contrato', 'adenda'] else 'otros'
-                documento = DocumentosDigitales.objects.create(
+                documento = DigitalDocument.objects.create(
                     empleado=asociado_empleado,
                     tipo_documento=tipo_doc,
                     categoria='laboral',

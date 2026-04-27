@@ -1,15 +1,15 @@
 """AppConfig for the `apps.payroll` Django app — VYNTIA payroll & compensation.
 
 Owns the payroll-processing entities of the HR system:
-- ConfiguracionAfp (AFP rates per period for pension contribution calculation)
-- ConfiguracionRemuneracion (catalog of payroll concepts: incomes + deductions)
-- ConfiguracionUit (annual UIT value for SUNAT/legal calculations — renta 4ta tope, ESSALUD CAS)
-- PlanillaMensual (monthly payroll header per period and modality)
-- DetallePlanilla (per-employee payroll detail with AFP/ONP/EsSalud/renta calculations)
-- ConceptoPlanilla (variable income/deduction concepts applied per detail)
-- DescuentoMasivo (bulk Excel-loaded deduction batches)
-- BoletaPago (generated payroll receipts as PDF)
-- CalendarioPago (scheduled payment calendars)
+- AfpConfiguration (AFP rates per period for pension contribution calculation)
+- CompensationConfiguration (catalog of payroll concepts: incomes + deductions)
+- TaxParameter (annual UIT value for SUNAT/legal calculations — renta 4ta tope, ESSALUD CAS)
+- MonthlyPayroll (monthly payroll header per period and modality)
+- PayrollDetail (per-employee payroll detail with AFP/ONP/EsSalud/renta calculations)
+- PayrollConcept (variable income/deduction concepts applied per detail)
+- MassDeduction (bulk Excel-loaded deduction batches)
+- PaySlip (generated payroll receipts as PDF)
+- PaymentSchedule (scheduled payment calendars)
 
 Owned services (payroll calculation engines):
 - planilla_calculo_service.py — full monthly payroll calculation per Peruvian regimens
@@ -23,9 +23,9 @@ NOTE: This app does NOT include the multi-régimen calculation engine (CAS/728/2
 detailed routing). That's the scope of sub-project D (Vyntia Pay).
 
 Future rename (deferred to L3.10):
-- ConfiguracionUit → TaxParameter
+- TaxParameter → TaxParameter
 - Remuneracion-prefixed → Compensation-prefixed
-- PlanillaMensual → MonthlyPayroll
+- MonthlyPayroll → MonthlyPayroll
 """
 
 from django.apps import AppConfig

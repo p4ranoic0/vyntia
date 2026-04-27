@@ -8,7 +8,7 @@ from django.utils import timezone
 
 
 class UsuarioManager(models.Manager):
-    """Custom manager for Usuario model."""
+    """Custom manager for User model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""

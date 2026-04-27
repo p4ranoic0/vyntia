@@ -4,9 +4,9 @@ import logging
 from typing import List
 
 from app_rrhh.constants import Roles
-from apps.employees.models import Empleado
-from apps.identity.models import Usuario
-from ..models import HistorialSolicitudVacaciones, SolicitudVacaciones
+from apps.employees.models import Employee
+from apps.identity.models import User
+from ..models import VacationRequestHistory, VacationRequest
 from app_rrhh.permission_service import PermissionService
 from apps.core.exceptions import BusinessLogicError
 from django.db import transaction
@@ -22,11 +22,11 @@ class VacationApprovalService:
     """Flujo de aprobaciones por jefe y RRHH."""
 
     @staticmethod
-    def _usuario_es_rrhh_admin(usuario: Usuario) -> bool:
+    def _usuario_es_rrhh_admin(usuario: User) -> bool:
         return PermissionService.has_any_role(usuario, Roles.HR_ROLES)
 
     @staticmethod
-    def _usuario_es_jefe_del_empleado(usuario: Usuario, empleado: Empleado) -> bool:
+    def _usuario_es_jefe_del_empleado(usuario: User, empleado: Employee) -> bool:
         if not hasattr(usuario, "empleado") or not usuario.empleado:
             return False
         return empleado.datos_laborales.filter(
@@ -36,7 +36,7 @@ class VacationApprovalService:
 
     @staticmethod
     def validar_permisos_aprobacion(
-        solicitud: SolicitudVacaciones, usuario: Usuario, tipo_aprobacion: str
+        solicitud: VacationRequest, usuario: User, tipo_aprobacion: str
     ) -> bool:
         if tipo_aprobacion == "jefe":
             if not (
@@ -76,9 +76,9 @@ class VacationApprovalService:
     @staticmethod
     @transaction.atomic
     def aprobar_por_jefe(
-        solicitud_id: int, usuario_jefe: Usuario, observaciones: str = ""
-    ) -> SolicitudVacaciones:
-        solicitud = SolicitudVacaciones.objects.select_for_update().get(
+        solicitud_id: int, usuario_jefe: User, observaciones: str = ""
+    ) -> VacationRequest:
+        solicitud = VacationRequest.objects.select_for_update().get(
             solicitud_id=solicitud_id
         )
         VacationApprovalService.validar_permisos_aprobacion(
@@ -109,7 +109,7 @@ class VacationApprovalService:
 
         solicitud.save()
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="aprobacion_jefe",
             descripcion_accion=f"Aprobada por jefe: {usuario_jefe.nombre_completo}",
@@ -123,9 +123,9 @@ class VacationApprovalService:
     @staticmethod
     @transaction.atomic
     def aprobar_por_rrhh(
-        solicitud_id: int, usuario_rrhh: Usuario, observaciones: str = ""
-    ) -> SolicitudVacaciones:
-        solicitud = SolicitudVacaciones.objects.select_for_update().get(
+        solicitud_id: int, usuario_rrhh: User, observaciones: str = ""
+    ) -> VacationRequest:
+        solicitud = VacationRequest.objects.select_for_update().get(
             solicitud_id=solicitud_id
         )
         VacationApprovalService.validar_permisos_aprobacion(
@@ -144,7 +144,7 @@ class VacationApprovalService:
             solicitud.periodo_vacacional, solicitud.dias_solicitados
         )
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="aprobacion_rrhh",
             descripcion_accion=f"Aprobada por RRHH: {usuario_rrhh.nombre_completo}",
@@ -159,17 +159,17 @@ class VacationApprovalService:
     @transaction.atomic
     def rechazar_solicitud(
         solicitud_id: int,
-        usuario: Usuario,
+        usuario: User,
         motivo_rechazo: str,
         tipo_rechazo: str = "jefe",
-    ) -> SolicitudVacaciones:
+    ) -> VacationRequest:
         if not motivo_rechazo:
             raise BusinessLogicError(
                 "Debe registrar motivo de rechazo.",
                 error_code="MISSING_REJECTION_REASON",
             )
 
-        solicitud = SolicitudVacaciones.objects.select_for_update().get(
+        solicitud = VacationRequest.objects.select_for_update().get(
             solicitud_id=solicitud_id
         )
         VacationApprovalService.validar_permisos_aprobacion(
@@ -186,7 +186,7 @@ class VacationApprovalService:
             solicitud.observaciones_rrhh = motivo_rechazo
         solicitud.save()
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="rechazo",
             descripcion_accion=f"Solicitud rechazada por {tipo_rechazo}.",
@@ -200,9 +200,9 @@ class VacationApprovalService:
     @staticmethod
     @transaction.atomic
     def cancelar_solicitud(
-        solicitud_id: int, usuario: Usuario, motivo_cancelacion: str
-    ) -> SolicitudVacaciones:
-        solicitud = SolicitudVacaciones.objects.select_for_update().get(
+        solicitud_id: int, usuario: User, motivo_cancelacion: str
+    ) -> VacationRequest:
+        solicitud = VacationRequest.objects.select_for_update().get(
             solicitud_id=solicitud_id
         )
         if solicitud.estado_solicitud in ["finalizada", "cancelada", "rechazada"]:
@@ -227,7 +227,7 @@ class VacationApprovalService:
         solicitud.cancelado_por = usuario
         solicitud.save()
 
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion="cancelacion",
             descripcion_accion=f"Solicitud cancelada por {usuario.nombre_completo}.",
@@ -240,11 +240,11 @@ class VacationApprovalService:
 
     @staticmethod
     def obtener_solicitudes_pendientes_jefe(
-        usuario_jefe: Usuario,
-    ) -> List[SolicitudVacaciones]:
+        usuario_jefe: User,
+    ) -> List[VacationRequest]:
         if VacationApprovalService._usuario_es_rrhh_admin(usuario_jefe):
             return list(
-                SolicitudVacaciones.objects.filter(estado_solicitud="en_revision")
+                VacationRequest.objects.filter(estado_solicitud="en_revision")
                 .select_related("empleado", "periodo_vacacional")
                 .order_by("-fecha_envio", "-fecha_creacion")
             )
@@ -252,12 +252,12 @@ class VacationApprovalService:
         if not getattr(usuario_jefe, "empleado", None):
             return []
 
-        subordinados = Empleado.objects.filter(
+        subordinados = Employee.objects.filter(
             datos_laborales__jefe_directo=usuario_jefe.empleado,
             datos_laborales__estado_datos="activo",
         ).distinct()
         return list(
-            SolicitudVacaciones.objects.filter(
+            VacationRequest.objects.filter(
                 estado_solicitud="en_revision",
                 empleado__in=subordinados,
             )
@@ -267,15 +267,15 @@ class VacationApprovalService:
 
     @staticmethod
     def obtener_solicitudes_pendientes_rrhh(
-        usuario_rrhh: Usuario,
-    ) -> List[SolicitudVacaciones]:
+        usuario_rrhh: User,
+    ) -> List[VacationRequest]:
         if not VacationApprovalService._usuario_es_rrhh_admin(usuario_rrhh):
             raise BusinessLogicError(
                 "No tiene permisos para ver pendientes RRHH.",
                 error_code="PERMISSION_DENIED",
             )
         return list(
-            SolicitudVacaciones.objects.filter(estado_solicitud="aprobada_jefe")
+            VacationRequest.objects.filter(estado_solicitud="aprobada_jefe")
             .select_related("empleado", "periodo_vacacional")
             .order_by("-fecha_envio", "-fecha_creacion")
         )

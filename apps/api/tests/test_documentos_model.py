@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests para el modelo DocumentosDigitales
+Tests para el modelo DigitalDocument
 
 Pruebas unitarias para verificar el comportamiento correcto de la propiedad
 tamano_archivo_legible, en particular que no mute el valor del campo
@@ -8,12 +8,12 @@ tamano_archivo al ser leida.
 """
 
 import pytest
-from apps.documents.models import DocumentosDigitales
+from apps.documents.models import DigitalDocument
 
 
 def make_doc(tamano):
-    """Crea una instancia de DocumentosDigitales en memoria sin guardar en DB."""
-    obj = DocumentosDigitales.__new__(DocumentosDigitales)
+    """Crea una instancia de DigitalDocument en memoria sin guardar en DB."""
+    obj = DigitalDocument.__new__(DigitalDocument)
     obj.tamano_archivo = tamano
     return obj
 

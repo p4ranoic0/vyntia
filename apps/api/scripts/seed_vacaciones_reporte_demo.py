@@ -6,15 +6,15 @@ Run with:
 
 from datetime import date, timedelta
 
-from apps.employees.models import Empleado
-from apps.organization.models import Area
-from apps.identity.models import Usuario
-from apps.contracts.models import ContratosAdendas, DatosLaborales
-from apps.time_off.models import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones, GoceVacaciones
+from apps.employees.models import Employee
+from apps.organization.models import Department
+from apps.identity.models import User
+from apps.contracts.models import Contract, EmploymentData
+from apps.time_off.models import VacationConfiguration, VacationPeriod, VacationRequest, VacationGrant
 
 
 def seed():
-    area, _ = Area.objects.get_or_create(
+    area, _ = Department.objects.get_or_create(
         siglas_area="TI",
         defaults={
             "nombre_organo": "Gerencia",
@@ -24,7 +24,7 @@ def seed():
         },
     )
 
-    empleado, _ = Empleado.objects.get_or_create(
+    empleado, _ = Employee.objects.get_or_create(
         numero_documento="99999999",
         defaults={
             "tipo_documento": "DNI",
@@ -47,7 +47,7 @@ def seed():
         },
     )
 
-    jefe, _ = Empleado.objects.get_or_create(
+    jefe, _ = Employee.objects.get_or_create(
         numero_documento="88888888",
         defaults={
             "tipo_documento": "DNI",
@@ -70,7 +70,7 @@ def seed():
         },
     )
 
-    DatosLaborales.objects.get_or_create(
+    EmploymentData.objects.get_or_create(
         empleado=empleado,
         fecha_inicio_contrato=date(2025, 1, 10),
         defaults={
@@ -89,7 +89,7 @@ def seed():
         },
     )
 
-    DatosLaborales.objects.get_or_create(
+    EmploymentData.objects.get_or_create(
         empleado=jefe,
         fecha_inicio_contrato=date(2020, 1, 5),
         defaults={
@@ -107,7 +107,7 @@ def seed():
         },
     )
 
-    usuario_jefe, created = Usuario.objects.get_or_create(
+    usuario_jefe, created = User.objects.get_or_create(
         username="jefe.demo",
         defaults={
             "email": "jefe.demo@empresa.com",
@@ -123,7 +123,7 @@ def seed():
         usuario_jefe.set_password("Demo12345")
         usuario_jefe.save(update_fields=["password"])
 
-    usuario_empleado, created = Usuario.objects.get_or_create(
+    usuario_empleado, created = User.objects.get_or_create(
         username="maria.demo",
         defaults={
             "email": "maria.demo@empresa.com",
@@ -139,7 +139,7 @@ def seed():
         usuario_empleado.set_password("Demo12345")
         usuario_empleado.save(update_fields=["password"])
 
-    config, _ = ConfiguracionVacaciones.objects.get_or_create(
+    config, _ = VacationConfiguration.objects.get_or_create(
         tipo_configuracion="general",
         area=None,
         empleado=None,
@@ -160,7 +160,7 @@ def seed():
         },
     )
 
-    contrato_old, _ = ContratosAdendas.objects.get_or_create(
+    contrato_old, _ = Contract.objects.get_or_create(
         empleado=empleado,
         numero_contrato="CON-2023-0001",
         defaults={
@@ -174,7 +174,7 @@ def seed():
         },
     )
 
-    contrato_activo, _ = ContratosAdendas.objects.get_or_create(
+    contrato_activo, _ = Contract.objects.get_or_create(
         empleado=empleado,
         numero_contrato="CON-2025-0001",
         defaults={
@@ -188,7 +188,7 @@ def seed():
         },
     )
 
-    periodo_old, _ = PeriodoVacacional.objects.get_or_create(
+    periodo_old, _ = VacationPeriod.objects.get_or_create(
         empleado=empleado,
         contrato=contrato_old,
         ano_periodo=2023,
@@ -207,7 +207,7 @@ def seed():
         },
     )
 
-    periodo_activo, _ = PeriodoVacacional.objects.get_or_create(
+    periodo_activo, _ = VacationPeriod.objects.get_or_create(
         empleado=empleado,
         contrato=contrato_activo,
         ano_periodo=2025,
@@ -226,7 +226,7 @@ def seed():
         },
     )
 
-    solicitud, _ = SolicitudVacaciones.objects.get_or_create(
+    solicitud, _ = VacationRequest.objects.get_or_create(
         empleado=empleado,
         periodo_vacacional=periodo_activo,
         fecha_inicio=date(2025, 6, 20),  # Viernes
@@ -242,7 +242,7 @@ def seed():
         },
     )
 
-    GoceVacaciones.objects.get_or_create(
+    VacationGrant.objects.get_or_create(
         solicitud_vacaciones=solicitud,
         empleado=empleado,
         periodo_vacacional=periodo_activo,

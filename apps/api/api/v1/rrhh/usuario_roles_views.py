@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
 
-from apps.identity.models import UsuarioRoles, Usuario, Rol
+from apps.identity.models import UserRole, User, Role
 from apps.core.responses import APIResponse
 from apps.core.permissions import IsAuthenticated
 from apps.core.decorators import (
@@ -22,7 +22,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestionar las asignaciones de roles a usuarios
     """
-    queryset = UsuarioRoles.objects.all()
+    queryset = UserRole.objects.all()
     serializer_class = UsuarioRolesSerializer
     permission_classes = [IsAuthenticated, RRHHPermission]
     
@@ -60,7 +60,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
         """
         Filtra el queryset según los parámetros de consulta
         """
-        queryset = UsuarioRoles.objects.select_related('usuario', 'rol', 'asignado_por_usuario')
+        queryset = UserRole.objects.select_related('usuario', 'rol', 'asignado_por_usuario')
         
         # Filtrar por usuario
         usuario_id = self.request.query_params.get('usuario_id')
@@ -92,7 +92,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
                 usuario_id = serializer.validated_data['usuario'].usuario_id
                 rol_id = serializer.validated_data['rol'].rol_id
                 
-                asignacion_existente = UsuarioRoles.objects.filter(
+                asignacion_existente = UserRole.objects.filter(
                     usuario_id=usuario_id,
                     rol_id=rol_id,
                     estado_asignacion='activo'
@@ -114,7 +114,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
                 response_serializer = UsuarioRolesSerializer(usuario_rol)
                 return APIResponse.success(
                     data=response_serializer.data,
-                    message="Rol asignado exitosamente al usuario"
+                    message="Role asignado exitosamente al usuario"
                 )
             else:
                 return APIResponse.error(
@@ -261,17 +261,17 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
             for usuario_id in usuario_ids:
                 for rol_id in rol_ids:
                     # Verificar si ya existe
-                    if UsuarioRoles.objects.filter(
+                    if UserRole.objects.filter(
                         usuario_id=usuario_id,
                         rol_id=rol_id,
                         estado_asignacion='activo'
                     ).exists():
-                        errores.append(f"Usuario {usuario_id} ya tiene el rol {rol_id}")
+                        errores.append(f"User {usuario_id} ya tiene el rol {rol_id}")
                         continue
                     
                     # Crear asignación
                     try:
-                        usuario_rol = UsuarioRoles.objects.create(
+                        usuario_rol = UserRole.objects.create(
                             usuario_id=usuario_id,
                             rol_id=rol_id,
                             fecha_asignacion=timezone.now(),
@@ -339,7 +339,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
                 )
             
             # Construir consulta base
-            queryset = Usuario.objects.select_related('empleado').prefetch_related(
+            queryset = User.objects.select_related('empleado').prefetch_related(
                 'roles_asignados__rol'
             )
             
@@ -354,14 +354,14 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
             
             # Filtrar por roles asignados
             if operador == 'AND':
-                # Usuario debe tener TODOS los roles especificados
+                # User debe tener TODOS los roles especificados
                 for rol_id in rol_ids:
                     queryset = queryset.filter(
                         roles_asignados__rol_id=rol_id,
                         roles_asignados__estado_asignacion=estado_asignacion
                     )
             else:
-                # Usuario debe tener AL MENOS UNO de los roles especificados
+                # User debe tener AL MENOS UNO de los roles especificados
                 queryset = queryset.filter(
                     roles_asignados__rol_id__in=rol_ids,
                     roles_asignados__estado_asignacion=estado_asignacion
@@ -371,7 +371,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
             usuarios_data = []
             for usuario in queryset:
                 # Obtener roles activos del usuario
-                roles_activos = UsuarioRoles.objects.filter(
+                roles_activos = UserRole.objects.filter(
                     usuario=usuario,
                     estado_asignacion=estado_asignacion
                 ).select_related('rol')
@@ -401,7 +401,7 @@ class UsuarioRolesViewSet(viewsets.ModelViewSet):
             
             # Información adicional
             total_usuarios = len(usuarios_data)
-            roles_info = Rol.objects.filter(rol_id__in=rol_ids).values('rol_id', 'nombre_rol')
+            roles_info = Role.objects.filter(rol_id__in=rol_ids).values('rol_id', 'nombre_rol')
             
             response_data = {
                 'usuarios': usuarios_data,

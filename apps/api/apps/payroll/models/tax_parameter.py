@@ -8,7 +8,7 @@ from decimal import Decimal
 from django.db import models
 
 
-class ConfiguracionUit(models.Model):
+class TaxParameter(models.Model):
     """Configuración de la UIT vigente por periodo."""
 
     ESTADO_CHOICES = [
@@ -41,7 +41,7 @@ class ConfiguracionUit(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        "identity.Usuario",
+        "identity.User",
         on_delete=models.PROTECT,
         related_name="configuraciones_uit_creadas",
         null=True,

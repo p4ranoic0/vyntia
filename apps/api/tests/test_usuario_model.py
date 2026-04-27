@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Tests para el modelo Usuario
+Tests para el modelo User
 
-Pruebas unitarias para verificar el funcionamiento correcto del modelo Usuario,
+Pruebas unitarias para verificar el funcionamiento correcto del modelo User,
 incluyendo creación, validación, propiedades y métodos.
 """
 
@@ -14,11 +14,11 @@ from django.utils import timezone
 from datetime import timedelta
 import uuid
 
-Usuario = get_user_model()
+User = get_user_model()
 
 
 class UsuarioModelTest(TestCase):
-    """Tests para el modelo Usuario."""
+    """Tests para el modelo User."""
     
     def setUp(self):
         """Configuración inicial para cada test."""
@@ -33,7 +33,7 @@ class UsuarioModelTest(TestCase):
     
     def test_crear_usuario_basico(self):
         """Test para crear un usuario básico."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username=self.usuario_data['username'],
             email=self.usuario_data['email'],
             nombres_usuario=self.usuario_data['nombres_usuario'],
@@ -53,7 +53,7 @@ class UsuarioModelTest(TestCase):
     
     def test_crear_superusuario(self):
         """Test para crear un superusuario."""
-        superuser = Usuario.objects.create_superuser(
+        superuser = User.objects.create_superuser(
             username='admin',
             email='admin@example.com',
             nombres_usuario='Admin',
@@ -67,20 +67,20 @@ class UsuarioModelTest(TestCase):
     
     def test_username_unico(self):
         """Test para verificar que el username sea único."""
-        usuario1 = Usuario(
+        usuario1 = User(
             username='unique_user',
             email='user1@example.com',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Uno'
         )
         usuario1.set_password('password123')
         usuario1.save()
         
         with self.assertRaises(IntegrityError):
-            usuario2 = Usuario(
+            usuario2 = User(
                 username='unique_user',  # Username duplicado
                 email='user2@example.com',
-                nombres_usuario='Usuario',
+                nombres_usuario='User',
                 apellidos_usuario='Dos'
             )
             usuario2.set_password('password123')
@@ -88,20 +88,20 @@ class UsuarioModelTest(TestCase):
     
     def test_email_unico(self):
         """Test para verificar que el email sea único."""
-        usuario1 = Usuario(
+        usuario1 = User(
             username='user1',
             email='unique@example.com',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Uno'
         )
         usuario1.set_password('password123')
         usuario1.save()
         
         with self.assertRaises(IntegrityError):
-            usuario2 = Usuario(
+            usuario2 = User(
                 username='user2',
                 email='unique@example.com',  # Email duplicado
-                nombres_usuario='Usuario',
+                nombres_usuario='User',
                 apellidos_usuario='Dos'
             )
             usuario2.set_password('password123')
@@ -109,7 +109,7 @@ class UsuarioModelTest(TestCase):
     
     def test_propiedades_usuario(self):
         """Test para verificar las propiedades del usuario."""
-        usuario = Usuario(
+        usuario = User(
             username='test_props',
             email='props@example.com',
             nombres_usuario='Test',
@@ -135,7 +135,7 @@ class UsuarioModelTest(TestCase):
         tipos_validos = ['administrador', 'rrhh', 'jefe', 'empleado', 'consulta', 'invitado']
         
         for tipo in tipos_validos:
-            usuario = Usuario(
+            usuario = User(
                 username=f'user_{tipo}',
                 email=f'{tipo}@example.com',
                 nombres_usuario='Test',
@@ -152,7 +152,7 @@ class UsuarioModelTest(TestCase):
         niveles_validos = ['total', 'departamental', 'personal', 'limitado', 'lectura']
         
         for nivel in niveles_validos:
-            usuario = Usuario(
+            usuario = User(
                 username=f'user_{nivel}',
                 email=f'{nivel}@example.com',
                 nombres_usuario='Test',
@@ -169,7 +169,7 @@ class UsuarioModelTest(TestCase):
         estados_validos = ['activo', 'inactivo', 'suspendido', 'bloqueado', 'pendiente']
         
         for estado in estados_validos:
-            usuario = Usuario(
+            usuario = User(
                 username=f'user_{estado}',
                 email=f'{estado}@example.com',
                 nombres_usuario='Test',
@@ -183,7 +183,7 @@ class UsuarioModelTest(TestCase):
     
     def test_intentos_fallidos(self):
         """Test para el manejo de intentos fallidos de login."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_fails',
             email='fails@example.com',
             nombres_usuario='Test',
@@ -205,7 +205,7 @@ class UsuarioModelTest(TestCase):
     
     def test_token_recuperacion(self):
         """Test para el token de recuperación de contraseña."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_token',
             email='token@example.com',
             nombres_usuario='Test',
@@ -225,7 +225,7 @@ class UsuarioModelTest(TestCase):
     
     def test_cambio_password(self):
         """Test para el cambio de contraseña."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_password',
             email='password@example.com',
             nombres_usuario='Test',
@@ -243,7 +243,7 @@ class UsuarioModelTest(TestCase):
     
     def test_activar_desactivar_usuario(self):
         """Test para activar y desactivar usuarios."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_activate',
             email='activate@example.com',
             nombres_usuario='Test',
@@ -251,7 +251,7 @@ class UsuarioModelTest(TestCase):
             password='password123'
         )
         
-        # Usuario activo por defecto
+        # User activo por defecto
         self.assertTrue(usuario.is_active)
         self.assertEqual(usuario.estado_usuario, 'activo')
         
@@ -267,7 +267,7 @@ class UsuarioModelTest(TestCase):
     
     def test_suspender_bloquear_usuario(self):
         """Test para suspender y bloquear usuarios."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_suspend',
             email='suspend@example.com',
             nombres_usuario='Test',
@@ -286,7 +286,7 @@ class UsuarioModelTest(TestCase):
     
     def test_registrar_acceso(self):
         """Test para registrar acceso del usuario."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_access',
             email='access@example.com',
             nombres_usuario='Test',
@@ -307,7 +307,7 @@ class UsuarioModelTest(TestCase):
     def test_metodos_clase(self):
         """Test para los métodos de clase."""
         # Crear usuarios de prueba
-        Usuario.objects.create_user(
+        User.objects.create_user(
             username='activo1',
             email='activo1@example.com',
             nombres_usuario='Activo',
@@ -316,7 +316,7 @@ class UsuarioModelTest(TestCase):
             password='password123'
         )
         
-        Usuario.objects.create_user(
+        User.objects.create_user(
             username='admin1',
             email='admin1@example.com',
             nombres_usuario='Admin',
@@ -326,19 +326,19 @@ class UsuarioModelTest(TestCase):
         )
         
         # Test usuarios activos
-        usuarios_activos = Usuario.usuarios_activos()
+        usuarios_activos = User.usuarios_activos()
         self.assertGreaterEqual(usuarios_activos.count(), 2)
         
         # Test usuarios por tipo
-        empleados = Usuario.usuarios_por_tipo('empleado')
+        empleados = User.usuarios_por_tipo('empleado')
         self.assertGreaterEqual(empleados.count(), 1)
         
-        administradores = Usuario.usuarios_por_tipo('administrador')
+        administradores = User.usuarios_por_tipo('administrador')
         self.assertGreaterEqual(administradores.count(), 1)
     
     def test_str_representation(self):
         """Test para la representación string del usuario."""
-        usuario = Usuario.objects.create_user(
+        usuario = User.objects.create_user(
             username='test_str',
             email='str@example.com',
             nombres_usuario='Test',
@@ -352,17 +352,17 @@ class UsuarioModelTest(TestCase):
     def test_meta_configuracion(self):
         """Test para verificar la configuración Meta del modelo."""
         # Verificar nombre de tabla
-        self.assertEqual(Usuario._meta.db_table, 'usuarios')
+        self.assertEqual(User._meta.db_table, 'usuarios')
         
         # Verificar campos requeridos
-        self.assertEqual(Usuario.USERNAME_FIELD, 'username')
-        self.assertEqual(Usuario.EMAIL_FIELD, 'email')
-        self.assertIn('email', Usuario.REQUIRED_FIELDS)
-        self.assertIn('nombres_usuario', Usuario.REQUIRED_FIELDS)
-        self.assertIn('apellidos_usuario', Usuario.REQUIRED_FIELDS)
+        self.assertEqual(User.USERNAME_FIELD, 'username')
+        self.assertEqual(User.EMAIL_FIELD, 'email')
+        self.assertIn('email', User.REQUIRED_FIELDS)
+        self.assertIn('nombres_usuario', User.REQUIRED_FIELDS)
+        self.assertIn('apellidos_usuario', User.REQUIRED_FIELDS)
         
         # Verificar índices
-        index_fields = [index.fields for index in Usuario._meta.indexes]
+        index_fields = [index.fields for index in User._meta.indexes]
         expected_indexes = [
             ['username'], ['email'], ['empleado'], ['tipo_usuario'],
             ['estado_usuario'], ['nivel_acceso'], ['is_active'],

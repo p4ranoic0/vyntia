@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Rol(models.Model):
+class Role(models.Model):
     """Modelo para gestionar roles del sistema."""
 
     ESTADO_ROL_CHOICES = [
@@ -88,7 +88,7 @@ class Rol(models.Model):
         return cls.objects.filter(es_rol_sistema=True)
 
 
-class Permiso(models.Model):
+class Permission(models.Model):
     """Modelo para gestionar permisos del sistema."""
 
     TIPO_PERMISO_CHOICES = [

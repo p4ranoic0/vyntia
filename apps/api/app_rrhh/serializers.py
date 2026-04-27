@@ -1,53 +1,53 @@
 from rest_framework import serializers
 
-from apps.contracts.models import DatosLaborales
+from apps.contracts.models import EmploymentData
 from apps.employees.models import (
-    DatosAcademicos,
-    DatosFamiliares,
-    Empleado,
+    AcademicRecord,
+    FamilyMember,
+    Employee,
 )
-from apps.organization.models import Area, HistorialUbicaciones
+from apps.organization.models import Department, LocationHistory
 from apps.identity.models import (
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
+    Permission,
+    Role,
+    RolePermission,
+    User,
 )
 
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Area
+        model = Department
         fields = "__all__"
 
 
 class DatosFamiliaresSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DatosFamiliares
+        model = FamilyMember
         fields = "__all__"
 
 
 class DatosAcademicosSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DatosAcademicos
+        model = AcademicRecord
         fields = "__all__"
 
 
 class DatosLaboralesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DatosLaborales
+        model = EmploymentData
         fields = "__all__"
 
 
 class HistorialUbicacionesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HistorialUbicaciones
+        model = LocationHistory
         fields = "__all__"
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Usuario
+        model = User
         fields = [
             "usuario_id",
             "nombres_usuario",
@@ -60,13 +60,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rol
+        model = Role
         fields = "__all__"
 
 
 class PermisoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Permiso
+        model = Permission
         fields = "__all__"
 
 
@@ -80,7 +80,7 @@ class RolPermisosSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = RolPermisos
+        model = RolePermission
         fields = "__all__"
 
 
@@ -93,7 +93,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     ubicaciones = HistorialUbicacionesSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = "__all__"
         depth = 1  # Opcional: muestra relaciones anidadas
 

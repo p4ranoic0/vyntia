@@ -9,13 +9,13 @@ Uso:
 """
 
 from apps.identity.models import (
-    ModuloPermiso,
-    Modulos,
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
-    UsuarioRoles,
+    ModulePermission,
+    Module,
+    Permission,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
 )
 from django.core.management.base import BaseCommand
 from django.db.models import Count, Q
@@ -84,27 +84,27 @@ class Command(BaseCommand):
 
     def _show_summary(self):
         """Muestra contadores generales del sistema."""
-        total_modulos = Modulos.objects.count()
-        total_modulos_activos = Modulos.objects.filter(estado_modulo="activo").count()
-        total_permisos = Permiso.objects.count()
-        total_modulo_permisos = ModuloPermiso.objects.count()
-        total_roles = Rol.objects.count()
-        total_roles_activos = Rol.objects.filter(estado_rol="activo").count()
-        total_usuarios = Usuario.objects.filter(estado_usuario="activo").count()
+        total_modulos = Module.objects.count()
+        total_modulos_activos = Module.objects.filter(estado_modulo="activo").count()
+        total_permisos = Permission.objects.count()
+        total_modulo_permisos = ModulePermission.objects.count()
+        total_roles = Role.objects.count()
+        total_roles_activos = Role.objects.filter(estado_rol="activo").count()
+        total_usuarios = User.objects.filter(estado_usuario="activo").count()
 
         self.stdout.write(self.style.SUCCESS("[*] Resumen General"))
         self.stdout.write(
-            f"   Modulos: {total_modulos_activos}/{total_modulos} activos"
+            f"   Module: {total_modulos_activos}/{total_modulos} activos"
         )
         self.stdout.write(f"   Permisos: {total_permisos}")
-        self.stdout.write(f"   Relaciones Modulo-Permiso: {total_modulo_permisos}")
+        self.stdout.write(f"   Relaciones Modulo-Permission: {total_modulo_permisos}")
         self.stdout.write(f"   Roles: {total_roles_activos}/{total_roles} activos")
         self.stdout.write(f"   Usuarios: {total_usuarios}")
         self.stdout.write("")
 
     def _check_orphan_permissions(self, verbose, fix_orphans):
         """Detecta permisos no vinculados a ningún módulo."""
-        orphan_perms = Permiso.objects.annotate(
+        orphan_perms = Permission.objects.annotate(
             num_modulos=Count("modulos_relacionados")
         ).filter(num_modulos=0)
         count = orphan_perms.count()
@@ -133,7 +133,7 @@ class Command(BaseCommand):
     def _check_modules_without_permissions(self, verbose):
         """Detecta módulos activos sin permisos asignados."""
         modules_no_perms = (
-            Modulos.objects.filter(estado_modulo="activo")
+            Module.objects.filter(estado_modulo="activo")
             .annotate(num_permisos=Count("modulo_permisos"))
             .filter(num_permisos=0)
         )
@@ -141,7 +141,7 @@ class Command(BaseCommand):
 
         if count > 0:
             self.stdout.write(
-                self.style.WARNING(f"[!] Modulos activos sin permisos: {count}")
+                self.style.WARNING(f"[!] Module activos sin permisos: {count}")
             )
             if verbose:
                 for mod in modules_no_perms:
@@ -159,7 +159,7 @@ class Command(BaseCommand):
     def _check_csv_not_synced(self, verbose):
         """Detecta módulos con permisos_requeridos CSV pero sin pivot."""
         modules_csv = (
-            Modulos.objects.filter(
+            Module.objects.filter(
                 ~Q(permisos_requeridos="") & ~Q(permisos_requeridos__isnull=True)
             )
             .annotate(num_pivot=Count("modulo_permisos"))
@@ -169,7 +169,7 @@ class Command(BaseCommand):
 
         if count > 0:
             self.stdout.write(
-                self.style.WARNING(f"[!] Modulos con CSV no sincronizado: {count}")
+                self.style.WARNING(f"[!] Module con CSV no sincronizado: {count}")
             )
             if verbose:
                 for mod in modules_csv:
@@ -192,7 +192,7 @@ class Command(BaseCommand):
     def _check_roles_without_permissions(self, verbose):
         """Detecta roles activos sin permisos asignados."""
         roles_no_perms = (
-            Rol.objects.filter(estado_rol="activo")
+            Role.objects.filter(estado_rol="activo")
             .annotate(num_permisos=Count("permisos_asignados"))
             .filter(num_permisos=0)
         )
@@ -218,7 +218,7 @@ class Command(BaseCommand):
     def _check_users_without_roles(self, verbose):
         """Detecta usuarios activos sin roles asignados."""
         users_no_roles = (
-            Usuario.objects.filter(estado_usuario="activo", tipo_usuario="empleado")
+            User.objects.filter(estado_usuario="activo", tipo_usuario="empleado")
             .annotate(num_roles=Count("roles_asignados"))
             .filter(num_roles=0)
         )
@@ -244,7 +244,7 @@ class Command(BaseCommand):
     def _check_users_with_inactive_roles(self, verbose):
         """Detecta usuarios con todos sus roles inactivos."""
         users_inactive = (
-            Usuario.objects.filter(estado_usuario="activo", tipo_usuario="empleado")
+            User.objects.filter(estado_usuario="activo", tipo_usuario="empleado")
             .annotate(
                 total_roles=Count("roles_asignados"),
                 active_roles=Count(
@@ -276,7 +276,7 @@ class Command(BaseCommand):
     def _check_duplicate_permissions(self, verbose):
         """Detecta permisos con nombres duplicados."""
         duplicates = (
-            Permiso.objects.values("nombre_permiso")
+            Permission.objects.values("nombre_permiso")
             .annotate(count=Count("permiso_id"))
             .filter(count__gt=1)
         )
@@ -286,7 +286,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"[X] Permisos duplicados: {count}"))
             if verbose:
                 for dup in duplicates:
-                    perms = Permiso.objects.filter(nombre_permiso=dup["nombre_permiso"])
+                    perms = Permission.objects.filter(nombre_permiso=dup["nombre_permiso"])
                     ids = ", ".join(str(p.permiso_id) for p in perms)
                     self.stdout.write(f"   - {dup['nombre_permiso']}: IDs {ids}")
         else:

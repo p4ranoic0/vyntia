@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from app_rrhh.constants import Roles
 from app_rrhh.permission_service import PermissionService
-from apps.identity.models import Permiso, Rol, Usuario
+from apps.identity.models import Permission, Role, User
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions
 from rest_framework.request import Request
@@ -118,7 +118,7 @@ class HasRolePermission(BasePermission):
             return True
 
         try:
-            # request.user IS already the Usuario instance (custom user model)
+            # request.user IS already the User instance (custom user model)
             usuario = request.user
             return PermissionService.has_any_role(usuario, self.required_roles)
         except Exception:
@@ -147,7 +147,7 @@ class HasSpecificPermission(BasePermission):
             return True
 
         try:
-            # request.user IS already the Usuario instance
+            # request.user IS already the User instance
             usuario = request.user
             # Mantener semántica existente: requiere todos los permisos configurados.
             if PermissionService.is_super_admin(usuario):
@@ -266,7 +266,7 @@ class DynamicPermission(BasePermission):
             return True
 
         try:
-            # request.user IS already the Usuario instance
+            # request.user IS already the User instance
             usuario = request.user
             user_roles = [rol.nombre_rol for rol in usuario.roles_activos()]
 
@@ -315,7 +315,7 @@ class OwnershipPermission(BasePermission):
         """
         # Admin users can access everything
         try:
-            # request.user IS already the Usuario instance
+            # request.user IS already the User instance
             usuario = request.user
             admin_roles = ["Administrador", "Super Administrador"]
             user_roles = [rol.nombre_rol for rol in usuario.roles_activos()]
@@ -326,7 +326,7 @@ class OwnershipPermission(BasePermission):
             pass
 
         # Check ownership based on object type
-        # request.user IS the Usuario instance (no .user sub-field)
+        # request.user IS the User instance (no .user sub-field)
         if hasattr(obj, "usuario"):
             return obj.usuario == request.user
         elif hasattr(obj, "empleado") and hasattr(obj.empleado, "usuario"):

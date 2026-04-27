@@ -1,7 +1,7 @@
 """Onboarding models — re-exports for backward-compatible imports."""
 
-from .onboarding import OnboardingEmpleado
+from .onboarding_process import OnboardingProcess
 
 __all__ = [
-    "OnboardingEmpleado",
+    "OnboardingProcess",
 ]

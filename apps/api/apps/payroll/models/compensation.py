@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.db import models
 
 
-class ConfiguracionAfp(models.Model):
+class AfpConfiguration(models.Model):
     """Parámetros de AFP para cálculo de descuentos por planilla."""
 
     ESTADO_CHOICES = [
@@ -57,7 +57,7 @@ class ConfiguracionAfp(models.Model):
         return self.estado == "activo"
 
 
-class ConfiguracionRemuneracion(models.Model):
+class CompensationConfiguration(models.Model):
     """Catálogo de conceptos para planilla: ingresos y descuentos."""
 
     TIPO_CHOICES = [
@@ -111,7 +111,7 @@ class ConfiguracionRemuneracion(models.Model):
         return self.estado == "activo"
 
 
-class PlanillaMensual(models.Model):
+class MonthlyPayroll(models.Model):
     """Cabecera de planilla mensual por período y modalidad."""
 
     MODALIDAD_CHOICES = [
@@ -166,14 +166,14 @@ class PlanillaMensual(models.Model):
 
     # Auditoría
     usuario_generacion = models.ForeignKey(
-        "identity.Usuario",
+        "identity.User",
         on_delete=models.PROTECT,
         related_name="planillas_generadas",
         null=True,
         blank=True,
     )
     usuario_aprobacion = models.ForeignKey(
-        "identity.Usuario",
+        "identity.User",
         on_delete=models.PROTECT,
         related_name="planillas_aprobadas",
         null=True,
@@ -213,22 +213,22 @@ class PlanillaMensual(models.Model):
         return self.estado in ["borrador", "procesando"]
 
 
-class DetallePlanilla(models.Model):
+class PayrollDetail(models.Model):
     """Detalle de planilla mensual por empleado."""
 
     detalle_id = models.AutoField(primary_key=True)
     planilla = models.ForeignKey(
-        PlanillaMensual,
+        MonthlyPayroll,
         on_delete=models.CASCADE,
         related_name="detalles",
     )
     empleado = models.ForeignKey(
-        "employees.Empleado",
+        "employees.Employee",
         on_delete=models.PROTECT,
         related_name="detalles_planilla",
     )
     datos_laborales = models.ForeignKey(
-        "contracts.DatosLaborales",
+        "contracts.EmploymentData",
         on_delete=models.PROTECT,
         related_name="detalles_planilla",
         null=True,
@@ -361,7 +361,7 @@ class DetallePlanilla(models.Model):
         return f"{self.planilla.periodo} - {self.empleado}"
 
 
-class ConceptoPlanilla(models.Model):
+class PayrollConcept(models.Model):
     """Conceptos adicionales aplicados a empleados en planilla (haberes/descuentos variables)."""
 
     TIPO_CHOICES = [
@@ -371,12 +371,12 @@ class ConceptoPlanilla(models.Model):
 
     concepto_planilla_id = models.AutoField(primary_key=True)
     detalle_planilla = models.ForeignKey(
-        DetallePlanilla,
+        PayrollDetail,
         on_delete=models.CASCADE,
         related_name="conceptos",
     )
     configuracion_concepto = models.ForeignKey(
-        ConfiguracionRemuneracion,
+        CompensationConfiguration,
         on_delete=models.PROTECT,
         related_name="aplicaciones_planilla",
     )
@@ -400,7 +400,7 @@ class ConceptoPlanilla(models.Model):
         return f"{self.nombre} - {self.monto}"
 
 
-class DescuentoMasivo(models.Model):
+class MassDeduction(models.Model):
     """Registro de descuentos masivos cargados para aplicar en planilla."""
 
     ESTADO_CHOICES = [
@@ -413,7 +413,7 @@ class DescuentoMasivo(models.Model):
     descuento_masivo_id = models.AutoField(primary_key=True)
     periodo = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     configuracion_concepto = models.ForeignKey(
-        ConfiguracionRemuneracion,
+        CompensationConfiguration,
         on_delete=models.PROTECT,
         related_name="descuentos_masivos",
         limit_choices_to={"tipo": "descuento"},
@@ -435,7 +435,7 @@ class DescuentoMasivo(models.Model):
 
     # Auditoría
     usuario_carga = models.ForeignKey(
-        "identity.Usuario",
+        "identity.User",
         on_delete=models.PROTECT,
         related_name="descuentos_masivos_cargados",
     )
@@ -456,7 +456,7 @@ class DescuentoMasivo(models.Model):
         return f"Descuento Masivo {self.configuracion_concepto.nombre} - {self.periodo}"
 
 
-class BoletaPago(models.Model):
+class PaySlip(models.Model):
     """Boletas de pago generadas para empleados."""
 
     ESTADO_CHOICES = [
@@ -467,7 +467,7 @@ class BoletaPago(models.Model):
 
     boleta_id = models.AutoField(primary_key=True)
     detalle_planilla = models.OneToOneField(
-        DetallePlanilla,
+        PayrollDetail,
         on_delete=models.CASCADE,
         related_name="boleta",
     )
@@ -498,7 +498,7 @@ class BoletaPago(models.Model):
         return f"Boleta {self.detalle_planilla.empleado} - {self.detalle_planilla.planilla.periodo}"
 
 
-class CalendarioPago(models.Model):
+class PaymentSchedule(models.Model):
     """Calendarios de pago programados para liquidaciones automáticas."""
 
     TIPO_PAGO_CHOICES = [
@@ -516,7 +516,7 @@ class CalendarioPago(models.Model):
 
     calendario_id = models.AutoField(primary_key=True)
     planilla = models.ForeignKey(
-        PlanillaMensual,
+        MonthlyPayroll,
         on_delete=models.CASCADE,
         related_name="calendarios_pago",
     )
@@ -528,7 +528,7 @@ class CalendarioPago(models.Model):
 
     # Auditoría
     usuario_programacion = models.ForeignKey(
-        "identity.Usuario",
+        "identity.User",
         on_delete=models.PROTECT,
         related_name="calendarios_programados",
     )

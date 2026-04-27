@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class RUTValidator:
-    """Validator for Chilean RUT (Rol Único Tributario)."""
+    """Validator for Chilean RUT (Role Único Tributario)."""
     
     def __init__(self, message: Optional[str] = None):
         self.message = message or "RUT inválido"

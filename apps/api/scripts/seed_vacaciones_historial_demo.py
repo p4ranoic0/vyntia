@@ -21,21 +21,21 @@ django.setup()
 
 from django.utils import timezone
 
-from apps.organization.models import Area
-from apps.identity.models import Usuario
-from apps.contracts.models import ContratosAdendas
+from apps.organization.models import Department
+from apps.identity.models import User
+from apps.contracts.models import Contract
 from apps.time_off.models import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationGrant,
+    VacationRequestHistory,
+    VacationRequest,
 )
 from apps.time_off.services import VacationService
 
 
 def _get_configuracion(usuario):
     hoy = date.today()
-    config = ConfiguracionVacaciones.objects.filter(
+    config = VacationConfiguration.objects.filter(
         tipo_configuracion='general',
         area__isnull=True,
         empleado__isnull=True,
@@ -48,7 +48,7 @@ def _get_configuracion(usuario):
     if config:
         return config
 
-    return ConfiguracionVacaciones.objects.create(
+    return VacationConfiguration.objects.create(
         tipo_configuracion='general',
         dias_por_ano=30,
         activo=True,
@@ -60,7 +60,7 @@ def _get_configuracion(usuario):
 def _get_or_create_contrato(empleado, usuario):
     hoy = date.today()
     contrato = (
-        ContratosAdendas.objects.filter(
+        Contract.objects.filter(
             empleado=empleado,
             estado='ACTIVO',
             fecha_inicio__lte=hoy,
@@ -73,12 +73,12 @@ def _get_or_create_contrato(empleado, usuario):
         return contrato
 
     datos_laborales = getattr(empleado, 'datos_laborales_actuales', lambda: None)()
-    area = datos_laborales.area if datos_laborales else Area.objects.first()
+    area = datos_laborales.area if datos_laborales else Department.objects.first()
     if not area:
         raise RuntimeError("No se encontró un área para crear el contrato demo.")
 
     numero_contrato = f"DEMO-CON-{hoy.year}-{empleado.empleado_id}"
-    return ContratosAdendas.objects.create(
+    return Contract.objects.create(
         empleado=empleado,
         area=area,
         numero_contrato=numero_contrato,
@@ -94,7 +94,7 @@ def _get_or_create_contrato(empleado, usuario):
 
 def _registrar_historial(solicitud, usuario, acciones):
     for accion in acciones:
-        HistorialSolicitudVacaciones.objects.create(
+        VacationRequestHistory.objects.create(
             solicitud_vacaciones=solicitud,
             tipo_accion=accion['tipo'],
             descripcion_accion=accion['descripcion'],
@@ -105,13 +105,13 @@ def _registrar_historial(solicitud, usuario, acciones):
 
 
 def main():
-    usuario = Usuario.objects.filter(username='jgarcia').first()
+    usuario = User.objects.filter(username='jgarcia').first()
     if not usuario or not usuario.empleado:
         raise RuntimeError("No se encontró el usuario jgarcia con empleado asociado.")
 
     empleado = usuario.empleado
-    jefe_usuario = Usuario.objects.filter(tipo_usuario='jefe').exclude(pk=usuario.pk).first()
-    rrhh_usuario = Usuario.objects.filter(tipo_usuario__in=['rrhh', 'administrador']).first()
+    jefe_usuario = User.objects.filter(tipo_usuario='jefe').exclude(pk=usuario.pk).first()
+    rrhh_usuario = User.objects.filter(tipo_usuario__in=['rrhh', 'administrador']).first()
 
     _get_configuracion(usuario)
     contrato = _get_or_create_contrato(empleado, usuario)
@@ -121,7 +121,7 @@ def main():
     periodo_anterior = VacationService.obtener_o_crear_periodo(empleado, date.today() - timedelta(days=370))
 
     # Limpiar datos demo previos
-    SolicitudVacaciones.objects.filter(
+    VacationRequest.objects.filter(
         empleado=empleado,
         motivo_solicitud__icontains='[DEMO]'
     ).delete()
@@ -129,7 +129,7 @@ def main():
     # Solicitud finalizada (periodo anterior)
     inicio_1 = periodo_anterior.fecha_inicio_periodo + timedelta(days=30)
     fin_1 = inicio_1 + timedelta(days=4)
-    s1 = SolicitudVacaciones.objects.create(
+    s1 = VacationRequest.objects.create(
         empleado=empleado,
         periodo_vacacional=periodo_anterior,
         tipo_solicitud='vacaciones',
@@ -148,7 +148,7 @@ def main():
         rrhh_aprobador=rrhh_usuario,
         fecha_aprobacion_rrhh=timezone.now(),
     )
-    GoceVacaciones.objects.create(
+    VacationGrant.objects.create(
         solicitud_vacaciones=s1,
         empleado=empleado,
         periodo_vacacional=periodo_anterior,
@@ -175,7 +175,7 @@ def main():
     # Solicitud en revisión (periodo actual)
     inicio_2 = date.today() + timedelta(days=15)
     fin_2 = inicio_2 + timedelta(days=2)
-    s2 = SolicitudVacaciones.objects.create(
+    s2 = VacationRequest.objects.create(
         empleado=empleado,
         periodo_vacacional=periodo_actual,
         tipo_solicitud='vacaciones',
@@ -200,7 +200,7 @@ def main():
 
     # Solicitud borrador con medio día
     inicio_3 = date.today() + timedelta(days=45)
-    s3 = SolicitudVacaciones.objects.create(
+    s3 = VacationRequest.objects.create(
         empleado=empleado,
         periodo_vacacional=periodo_actual,
         tipo_solicitud='vacaciones',
@@ -222,7 +222,7 @@ def main():
 
     print("Demo de vacaciones creado para jgarcia.")
     print(f"Contrato usado: {contrato.numero_contrato}")
-    print(f"Solicitudes: {SolicitudVacaciones.objects.filter(empleado=empleado, motivo_solicitud__icontains='[DEMO]').count()}")
+    print(f"Solicitudes: {VacationRequest.objects.filter(empleado=empleado, motivo_solicitud__icontains='[DEMO]').count()}")
 
 
 if __name__ == '__main__':

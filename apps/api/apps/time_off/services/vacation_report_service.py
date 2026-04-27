@@ -8,8 +8,8 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from apps.employees.models import Empleado
-from ..models import GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
+from apps.employees.models import Employee
+from ..models import VacationGrant, VacationPeriod, VacationRequest
 
 
 @dataclass
@@ -51,17 +51,17 @@ class VacationReportService:
         empleado_id: int,
         contrato_id: Optional[int] = None,
     ) -> Tuple[bytes, str]:
-        empleado = Empleado.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(empleado_id=empleado_id)
         context = self._obtener_contexto_reporte(empleado, contrato_id)
         html_content = render_to_string('reportes/reporte_vacaciones_empleado.html', context)
         pdf_content = self.pdf_generator._html_to_pdf(html_content)
         nombre_archivo = f"reporte_vacaciones_{empleado.numero_documento}_{timezone.now():%Y%m%d}.pdf"
         return pdf_content, nombre_archivo
 
-    def _obtener_contexto_reporte(self, empleado: Empleado, contrato_id: Optional[int]) -> Dict[str, Any]:
+    def _obtener_contexto_reporte(self, empleado: Employee, contrato_id: Optional[int]) -> Dict[str, Any]:
         datos_laborales = empleado.datos_laborales_actuales()
 
-        periodos_qs = PeriodoVacacional.objects.filter(empleado=empleado).select_related('contrato')
+        periodos_qs = VacationPeriod.objects.filter(empleado=empleado).select_related('contrato')
         if contrato_id:
             periodos_qs = periodos_qs.filter(contrato__contrato_id=contrato_id)
         periodos = list(periodos_qs.order_by('-fecha_inicio_periodo'))
@@ -84,7 +84,7 @@ class VacationReportService:
         total_pendientes = sum(p.dias_pendientes for p in periodos)
         total_gozados = sum(p.dias_gozados for p in periodos)
 
-        goces_qs = GoceVacaciones.objects.filter(empleado=empleado).select_related('solicitud_vacaciones')
+        goces_qs = VacationGrant.objects.filter(empleado=empleado).select_related('solicitud_vacaciones')
         if periodos:
             goces_qs = goces_qs.filter(periodo_vacacional__in=periodos)
         goces = list(goces_qs.order_by('-fecha_inicio_real'))
@@ -102,7 +102,7 @@ class VacationReportService:
             )
 
         if not detalle_goces:
-            solicitudes = SolicitudVacaciones.objects.filter(
+            solicitudes = VacationRequest.objects.filter(
                 empleado=empleado,
                 estado_solicitud__in=['aprobada', 'en_goce', 'finalizada'],
             )

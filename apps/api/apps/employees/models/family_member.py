@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo DatosFamiliares - Gestión de información familiar de empleados
+Modelo FamilyMember - Gestión de información familiar de empleados
 
-Contiene la definición del modelo DatosFamiliares que almacena la información
+Contiene la definición del modelo FamilyMember que almacena la información
 de los familiares de los empleados para efectos de beneficios y contactos de emergencia.
 """
 
@@ -12,7 +12,7 @@ from datetime import date
 # from ..managers import DatosFamiliaresManager  # Comentado temporalmente para migraciones
 
 
-class DatosFamiliares(models.Model):
+class FamilyMember(models.Model):
     """Modelo para gestionar la información familiar de los empleados."""
     
     PARENTESCO_CHOICES = [
@@ -76,7 +76,7 @@ class DatosFamiliares(models.Model):
     # Campos principales
     familiar_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'Employee',
         on_delete=models.CASCADE,
         related_name='familiares'
     )

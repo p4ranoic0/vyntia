@@ -5,7 +5,7 @@ from datetime import timedelta
 
 class ContratosAdendasManager(models.Manager):
     """
-    Manager personalizado para el modelo ContratosAdendas.
+    Manager personalizado para el modelo Contract.
     
     Proporciona métodos de consulta optimizados y funcionalidades
     específicas para la gestión de contratos y adendas.
@@ -170,7 +170,7 @@ class ContratosAdendasManager(models.Manager):
             empleado_id (int): ID del empleado
             
         Returns:
-            ContratosAdendas: Último contrato del empleado o None
+            Contract: Último contrato del empleado o None
         """
         return self.contratos().filter(
             empleado_id=empleado_id

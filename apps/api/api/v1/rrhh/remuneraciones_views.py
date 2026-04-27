@@ -10,16 +10,16 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from apps.payroll.models import (
-    BoletaPago,
-    CalendarioPago,
-    ConfiguracionAfp,
-    ConfiguracionRemuneracion,
-    ConfiguracionUit,
-    DescuentoMasivo,
-    DetallePlanilla,
-    PlanillaMensual,
+    PaySlip,
+    PaymentSchedule,
+    AfpConfiguration,
+    CompensationConfiguration,
+    TaxParameter,
+    MassDeduction,
+    PayrollDetail,
+    MonthlyPayroll,
 )
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 from apps.payroll.services import DescuentoMasivoService, PlanillaCalculoService
 from apps.core.decorators import require_admin, require_authenticated, require_hr
 from apps.core.pagination import StandardResultsSetPagination
@@ -55,7 +55,7 @@ from .remuneraciones_serializers import (
 class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de configuración de AFP."""
 
-    queryset = ConfiguracionAfp.objects.all()
+    queryset = AfpConfiguration.objects.all()
     serializer_class = ConfiguracionAfpSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
@@ -82,7 +82,7 @@ class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = ConfiguracionAfp.objects.order_by("-vigencia_mes", "afp_nombre")
+        queryset = AfpConfiguration.objects.order_by("-vigencia_mes", "afp_nombre")
 
         # Filtros
         afp_nombre = self.request.query_params.get("afp_nombre")
@@ -102,7 +102,7 @@ class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
 class ConfiguracionUitViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de configuración de UIT (Unidad Impositiva Tributaria)."""
 
-    queryset = ConfiguracionUit.objects.all()
+    queryset = TaxParameter.objects.all()
     serializer_class = ConfiguracionUitSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
@@ -146,7 +146,7 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
 
         try:
             # Desactivar todas las configuraciones del mismo año
-            ConfiguracionUit.objects.filter(anio=uit.anio).update(estado="inactivo")
+            TaxParameter.objects.filter(anio=uit.anio).update(estado="inactivo")
 
             # Activar la seleccionada
             uit.estado = "activo"
@@ -164,7 +164,7 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = ConfiguracionUit.objects.select_related("creado_por").order_by(
+        queryset = TaxParameter.objects.select_related("creado_por").order_by(
             "-anio"
         )
 
@@ -188,7 +188,7 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
 class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de configuración de conceptos de remuneración."""
 
-    queryset = ConfiguracionRemuneracion.objects.all()
+    queryset = CompensationConfiguration.objects.all()
     serializer_class = ConfiguracionRemuneracionSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
@@ -215,7 +215,7 @@ class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = ConfiguracionRemuneracion.objects.order_by("tipo", "orden", "nombre")
+        queryset = CompensationConfiguration.objects.order_by("tipo", "orden", "nombre")
 
         # Filtros
         tipo = self.request.query_params.get("tipo")
@@ -240,7 +240,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
     generación de planillas, cálculo automático y reportes.
     """
 
-    queryset = PlanillaMensual.objects.all()
+    queryset = MonthlyPayroll.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -299,7 +299,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = PlanillaMensual.objects.select_related(
+        queryset = MonthlyPayroll.objects.select_related(
             "usuario_generacion", "usuario_aprobacion"
         ).order_by("-periodo", "modalidad")
 
@@ -336,7 +336,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            # Mapeo de modalidad de planilla a tipo_contrato de DatosLaborales
+            # Mapeo de modalidad de planilla a tipo_contrato de EmploymentData
             # Los datos reales en BD usan: CAS, CAP, locacion, consultoria
             MODALIDAD_A_TIPO_CONTRATO = {
                 "plazo_indeterminado": ["CAP"],
@@ -348,7 +348,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
             # Obtener empleados activos con datos laborales
             empleados_qs = (
-                Empleado.objects.filter(
+                Employee.objects.filter(
                     estado_empleado="activo",
                     datos_laborales__estado_datos="activo",
                 )
@@ -383,13 +383,13 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                     continue
 
                 # Verificar si ya existe el detalle
-                if DetallePlanilla.objects.filter(
+                if PayrollDetail.objects.filter(
                     planilla=planilla, empleado=empleado
                 ).exists():
                     continue
 
                 # Crear detalle de planilla
-                DetallePlanilla.objects.create(
+                PayrollDetail.objects.create(
                     planilla=planilla,
                     empleado=empleado,
                     datos_laborales=datos_laborales,
@@ -418,7 +418,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             # Actualizar estado de planilla
             planilla.estado = "generada"
             planilla.fecha_generacion = timezone.now()
-            planilla.total_trabajadores = DetallePlanilla.objects.filter(
+            planilla.total_trabajadores = PayrollDetail.objects.filter(
                 planilla=planilla
             ).count()
             planilla.save()
@@ -492,7 +492,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
         try:
             # Obtener detalles de la planilla
-            detalles = DetallePlanilla.objects.filter(planilla=planilla).select_related(
+            detalles = PayrollDetail.objects.filter(planilla=planilla).select_related(
                 "empleado", "datos_laborales"
             )
 
@@ -577,7 +577,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                 status_code=400,
             )
 
-        detalles = DetallePlanilla.objects.filter(planilla=planilla).select_related(
+        detalles = PayrollDetail.objects.filter(planilla=planilla).select_related(
             "empleado"
         )
 
@@ -589,7 +589,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         creadas = 0
         existentes = 0
         for detalle in detalles:
-            _, created = BoletaPago.objects.get_or_create(
+            _, created = PaySlip.objects.get_or_create(
                 detalle_planilla=detalle,
                 defaults={"estado": "generada"},
             )
@@ -622,7 +622,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             )
 
         # Eliminar detalles existentes
-        eliminados = DetallePlanilla.objects.filter(planilla=planilla).delete()[0]
+        eliminados = PayrollDetail.objects.filter(planilla=planilla).delete()[0]
 
         # Resetear estado
         planilla.estado = "borrador"
@@ -645,16 +645,16 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def diagnostico(self, request):
         """Endpoint temporal de diagnóstico para verificar datos de empleados."""
-        from apps.contracts.models import DatosLaborales
+        from apps.contracts.models import EmploymentData
 
-        total_empleados = Empleado.objects.count()
-        empleados_activos = Empleado.objects.filter(estado_empleado="activo").count()
-        dl_total = DatosLaborales.objects.count()
-        dl_activos = DatosLaborales.objects.filter(estado_datos="activo").count()
+        total_empleados = Employee.objects.count()
+        empleados_activos = Employee.objects.filter(estado_empleado="activo").count()
+        dl_total = EmploymentData.objects.count()
+        dl_activos = EmploymentData.objects.filter(estado_datos="activo").count()
 
         # Empleados activos con DL activos
         activos_con_dl = (
-            Empleado.objects.filter(
+            Employee.objects.filter(
                 estado_empleado="activo",
                 datos_laborales__estado_datos="activo",
             )
@@ -664,15 +664,15 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
         # Estados únicos
         estados_emp = list(
-            Empleado.objects.values_list("estado_empleado", flat=True).distinct()
+            Employee.objects.values_list("estado_empleado", flat=True).distinct()
         )
         estados_dl = list(
-            DatosLaborales.objects.values_list("estado_datos", flat=True).distinct()
+            EmploymentData.objects.values_list("estado_datos", flat=True).distinct()
         )
 
         # Tipos de contrato con count
         tipos_contrato = list(
-            DatosLaborales.objects.filter(estado_datos="activo")
+            EmploymentData.objects.filter(estado_datos="activo")
             .values("tipo_contrato")
             .annotate(cantidad=Count("dato_laboral_id"))
             .order_by("tipo_contrato")
@@ -680,7 +680,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
         # Muestra de empleados activos
         muestra = list(
-            Empleado.objects.filter(estado_empleado="activo")[:5].values(
+            Employee.objects.filter(estado_empleado="activo")[:5].values(
                 "empleado_id",
                 "numero_documento",
                 "nombres_empleado",
@@ -691,7 +691,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
         # Planillas existentes
         planillas = list(
-            PlanillaMensual.objects.all()
+            MonthlyPayroll.objects.all()
             .values(
                 "planilla_id",
                 "periodo",
@@ -703,9 +703,9 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             .order_by("-periodo")
         )
 
-        # DatosLaborales detalle con sueldo
+        # EmploymentData detalle con sueldo
         dl_detalle = list(
-            DatosLaborales.objects.filter(estado_datos="activo").values(
+            EmploymentData.objects.filter(estado_datos="activo").values(
                 "dato_laboral_id",
                 "empleado_id",
                 "tipo_contrato",
@@ -736,7 +736,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         """Obtiene estadísticas de la planilla."""
         planilla = self.get_object()
 
-        detalles = DetallePlanilla.objects.filter(planilla=planilla)
+        detalles = PayrollDetail.objects.filter(planilla=planilla)
 
         estadisticas = {
             "total_empleados": detalles.count(),
@@ -769,7 +769,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 class DetallePlanillaViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de detalles de planilla por empleado."""
 
-    queryset = DetallePlanilla.objects.all()
+    queryset = PayrollDetail.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -819,7 +819,7 @@ class DetallePlanillaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = DetallePlanilla.objects.select_related(
+        queryset = PayrollDetail.objects.select_related(
             "planilla", "empleado", "datos_laborales"
         ).order_by("area_nombre", "empleado__apellido_paterno")
 
@@ -848,7 +848,7 @@ class DetallePlanillaViewSet(viewsets.ModelViewSet):
 class DescuentoMasivoViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de descuentos masivos."""
 
-    queryset = DescuentoMasivo.objects.all()
+    queryset = MassDeduction.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -894,7 +894,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = DescuentoMasivo.objects.select_related(
+        queryset = MassDeduction.objects.select_related(
             "configuracion_concepto", "usuario_carga"
         ).order_by("-fecha_carga")
 
@@ -914,7 +914,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
     def procesar(self, request, pk=None):
         """
         Procesa el archivo Excel de descuento masivo.
-        Lee el archivo, valida los datos y crea los ConceptoPlanilla correspondientes.
+        Lee el archivo, valida los datos y crea los PayrollConcept correspondientes.
         """
         descuento = self.get_object()
 
@@ -989,7 +989,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
 class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para consulta de boletas de pago."""
 
-    queryset = BoletaPago.objects.all()
+    queryset = PaySlip.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -1020,7 +1020,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
             content = (
                 f"BOLETA DE PAGO\n"
                 f"{'=' * 40}\n"
-                f"Empleado: {empleado.nombre_completo}\n"
+                f"Employee: {empleado.nombre_completo}\n"
                 f"DNI: {empleado.numero_documento}\n"
                 f"Periodo: {planilla.periodo}\n"
                 f"{'=' * 40}\n"
@@ -1071,7 +1071,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                 message="Se requiere el parámetro planilla_id", status_code=400
             )
 
-        boletas = BoletaPago.objects.filter(
+        boletas = PaySlip.objects.filter(
             detalle_planilla__planilla_id=planilla_id
         ).select_related("detalle_planilla__empleado", "detalle_planilla__planilla")
 
@@ -1098,7 +1098,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                     content = (
                         f"BOLETA DE PAGO\n"
                         f"{'=' * 50}\n"
-                        f"Empleado: {empleado.nombre_completo}\n"
+                        f"Employee: {empleado.nombre_completo}\n"
                         f"DNI: {empleado.numero_documento}\n"
                         f"Periodo: {planilla.periodo}\n"
                         f"Modalidad: {planilla.get_modalidad_display()}\n"
@@ -1130,7 +1130,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                 boleta.estado = "descargada"
                 boleta.fecha_descarga = timezone.now()
 
-            BoletaPago.objects.filter(detalle_planilla__planilla_id=planilla_id).update(
+            PaySlip.objects.filter(detalle_planilla__planilla_id=planilla_id).update(
                 estado="descargada", fecha_descarga=timezone.now()
             )
 
@@ -1150,7 +1150,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = BoletaPago.objects.select_related(
+        queryset = PaySlip.objects.select_related(
             "detalle_planilla__planilla", "detalle_planilla__empleado"
         ).order_by("-fecha_generacion")
 
@@ -1177,7 +1177,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
 class CalendarioPagoViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de calendarios de pago."""
 
-    queryset = CalendarioPago.objects.all()
+    queryset = PaymentSchedule.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -1223,7 +1223,7 @@ class CalendarioPagoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = CalendarioPago.objects.select_related(
+        queryset = PaymentSchedule.objects.select_related(
             "planilla", "usuario_programacion"
         ).order_by("fecha_pago_programada")
 

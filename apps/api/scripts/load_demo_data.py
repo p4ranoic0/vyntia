@@ -53,16 +53,16 @@ import django
 
 django.setup()
 
-from apps.contracts.models import DatosLaborales
-from apps.employees.models import Empleado
-from apps.organization.models import Area
+from apps.contracts.models import EmploymentData
+from apps.employees.models import Employee
+from apps.organization.models import Department
 from apps.identity.models import (
-    Modulos,
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
-    UsuarioRoles,
+    Module,
+    Permission,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
 )
 from django.db import transaction
 
@@ -108,13 +108,13 @@ def crear_modulos():
     ]
     creados = 0
     for data in modulos_data:
-        _, created = Modulos.objects.get_or_create(
+        _, created = Module.objects.get_or_create(
             nombre_modulo=data["nombre_modulo"], defaults=data
         )
         if created:
             creados += 1
     print(f"  Módulos: {creados} creados, {len(modulos_data) - creados} ya existían")
-    return Modulos.objects.all()
+    return Module.objects.all()
 
 
 def crear_roles():
@@ -145,7 +145,7 @@ def crear_roles():
             "es_rol_sistema": False,
         },
         {
-            "nombre_rol": "Empleado",
+            "nombre_rol": "Employee",
             "descripcion_rol": "Acceso básico para consultar información personal",
             "nivel_jerarquico": 5,
             "es_rol_sistema": False,
@@ -153,13 +153,13 @@ def crear_roles():
     ]
     creados = 0
     for data in roles_data:
-        _, created = Rol.objects.get_or_create(
+        _, created = Role.objects.get_or_create(
             nombre_rol=data["nombre_rol"], defaults=data
         )
         if created:
             creados += 1
     print(f"  Roles: {creados} creados, {len(roles_data) - creados} ya existían")
-    return Rol.objects.all()
+    return Role.objects.all()
 
 
 def crear_permisos():
@@ -300,26 +300,26 @@ def crear_permisos():
     ]
     creados = 0
     for data in permisos_data:
-        _, created = Permiso.objects.get_or_create(
+        _, created = Permission.objects.get_or_create(
             nombre_permiso=data["nombre_permiso"], defaults=data
         )
         if created:
             creados += 1
     print(f"  Permisos: {creados} creados, {len(permisos_data) - creados} ya existían")
-    return Permiso.objects.all()
+    return Permission.objects.all()
 
 
 def asignar_permisos_a_roles():
     """Asignar permisos a cada rol."""
-    todos_permisos = list(Permiso.objects.values_list("permiso_id", flat=True))
+    todos_permisos = list(Permission.objects.values_list("permiso_id", flat=True))
 
-    rol_super = Rol.objects.get(nombre_rol="Super Administrador")
-    rol_admin_rrhh = Rol.objects.get(nombre_rol="Administrador RRHH")
-    rol_jefe = Rol.objects.get(nombre_rol="Jefe de Área")
-    rol_analista = Rol.objects.get(nombre_rol="Analista RRHH")
-    rol_empleado = Rol.objects.get(nombre_rol="Empleado")
+    rol_super = Role.objects.get(nombre_rol="Super Administrador")
+    rol_admin_rrhh = Role.objects.get(nombre_rol="Administrador RRHH")
+    rol_jefe = Role.objects.get(nombre_rol="Jefe de Área")
+    rol_analista = Role.objects.get(nombre_rol="Analista RRHH")
+    rol_empleado = Role.objects.get(nombre_rol="Employee")
 
-    permisos_por_nombre = {p.nombre_permiso: p for p in Permiso.objects.all()}
+    permisos_por_nombre = {p.nombre_permiso: p for p in Permission.objects.all()}
 
     asignaciones = {
         rol_super: todos_permisos,  # Todos los permisos
@@ -396,10 +396,10 @@ def asignar_permisos_a_roles():
     creados = 0
     for rol, permiso_ids in asignaciones.items():
         for pid in permiso_ids:
-            _, created = RolPermisos.objects.get_or_create(rol=rol, permiso_id=pid)
+            _, created = RolePermission.objects.get_or_create(rol=rol, permiso_id=pid)
             if created:
                 creados += 1
-    print(f"  Rol-Permisos: {creados} asignaciones creadas")
+    print(f"  Role-Permisos: {creados} asignaciones creadas")
 
 
 def crear_areas():
@@ -444,7 +444,7 @@ def crear_areas():
     ]
     creados = 0
     for data in areas_data:
-        _, created = Area.objects.get_or_create(
+        _, created = Department.objects.get_or_create(
             siglas_area=data["siglas_area"], defaults=data
         )
         if created:
@@ -635,7 +635,7 @@ def crear_empleados():
     ]
     creados = 0
     for data in empleados_data:
-        _, created = Empleado.objects.get_or_create(
+        _, created = Employee.objects.get_or_create(
             numero_documento=data["numero_documento"], defaults=data
         )
         if created:
@@ -650,7 +650,7 @@ def crear_usuarios():
     DEFAULT_PASSWORD = "Demo123!"
     ADMIN_PASSWORD = "Admin123!"
 
-    empleados = {e.numero_documento: e for e in Empleado.objects.all()}
+    empleados = {e.numero_documento: e for e in Employee.objects.all()}
 
     usuarios_data = [
         {
@@ -753,14 +753,14 @@ def crear_usuarios():
     actualizados = 0
     for data in usuarios_data:
         password = data.pop("password")
-        existing = Usuario.objects.filter(username=data["username"]).first()
+        existing = User.objects.filter(username=data["username"]).first()
         if existing:
             # Siempre actualizar la contrasena para que sea valida
             existing.set_password(password)
             existing.save(update_fields=["password"])
             actualizados += 1
         else:
-            user = Usuario(**data)
+            user = User(**data)
             user.set_password(password)  # Hashea la contrasena correctamente
             user.save()
             creados += 1
@@ -773,34 +773,34 @@ def asignar_roles_a_usuarios():
     """Asignar roles a usuarios."""
     asignaciones = [
         ("admin", "Super Administrador"),
-        ("jgarcia", "Empleado"),
+        ("jgarcia", "Employee"),
         ("mrodriguez", "Analista RRHH"),
         ("cmendoza", "Jefe de Área"),
         ("atorres", "Analista RRHH"),
         ("rflores", "Administrador RRHH"),
-        ("lvargas", "Empleado"),
+        ("lvargas", "Employee"),
         ("cjimenez", "Analista RRHH"),
-        ("psalinas", "Empleado"),
+        ("psalinas", "Employee"),
     ]
     creados = 0
     for username, nombre_rol in asignaciones:
         try:
-            usuario = Usuario.objects.get(username=username)
-            rol = Rol.objects.get(nombre_rol=nombre_rol)
-            _, created = UsuarioRoles.objects.get_or_create(
+            usuario = User.objects.get(username=username)
+            rol = Role.objects.get(nombre_rol=nombre_rol)
+            _, created = UserRole.objects.get_or_create(
                 usuario=usuario, rol=rol, defaults={"estado_asignacion": "activo"}
             )
             if created:
                 creados += 1
-        except (Usuario.DoesNotExist, Rol.DoesNotExist) as e:
+        except (User.DoesNotExist, Role.DoesNotExist) as e:
             print(f"    WARNING: No se pudo asignar {nombre_rol} a {username}: {e}")
-    print(f"  Usuario-Roles: {creados} asignaciones creadas")
+    print(f"  User-Roles: {creados} asignaciones creadas")
 
 
 def crear_datos_laborales():
     """Crear datos laborales de ejemplo."""
-    areas = {a.siglas_area: a for a in Area.objects.all()}
-    empleados = {e.numero_documento: e for e in Empleado.objects.all()}
+    areas = {a.siglas_area: a for a in Department.objects.all()}
+    empleados = {e.numero_documento: e for e in Employee.objects.all()}
 
     datos = [
         {
@@ -944,8 +944,8 @@ def crear_datos_laborales():
     creados = 0
     for data in datos:
         emp = data.get("empleado")
-        if emp and not DatosLaborales.objects.filter(empleado=emp).exists():
-            DatosLaborales.objects.create(**data)
+        if emp and not EmploymentData.objects.filter(empleado=emp).exists():
+            EmploymentData.objects.create(**data)
             creados += 1
     print(f"  Datos laborales: {creados} creados, {len(datos) - creados} ya existían")
 
@@ -988,17 +988,17 @@ def main():
     print()
     print("  Credenciales de acceso:")
     print("  +--------------+------------+-------------------------+")
-    print("  | Usuario      | Password   | Rol                     |")
+    print("  | User      | Password   | Role                     |")
     print("  +--------------+------------+-------------------------+")
     print("  | admin        | Admin123!  | Super Administrador     |")
     print("  | rflores      | Demo123!   | Administrador RRHH      |")
-    print("  | cmendoza     | Demo123!   | Jefe de Area            |")
+    print("  | cmendoza     | Demo123!   | Jefe de Department            |")
     print("  | mrodriguez   | Demo123!   | Analista RRHH           |")
     print("  | atorres      | Demo123!   | Analista RRHH           |")
     print("  | cjimenez     | Demo123!   | Analista RRHH           |")
-    print("  | jgarcia      | Demo123!   | Empleado                |")
-    print("  | lvargas      | Demo123!   | Empleado                |")
-    print("  | psalinas     | Demo123!   | Empleado (inactivo)     |")
+    print("  | jgarcia      | Demo123!   | Employee                |")
+    print("  | lvargas      | Demo123!   | Employee                |")
+    print("  | psalinas     | Demo123!   | Employee (inactivo)     |")
     print("  +--------------+------------+-------------------------+")
     print()
 

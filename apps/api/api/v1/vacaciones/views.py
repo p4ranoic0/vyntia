@@ -3,13 +3,13 @@
 import logging
 from datetime import date
 
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 from apps.time_off.models import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationGrant,
+    VacationRequestHistory,
+    VacationPeriod,
+    VacationRequest,
 )
 from apps.time_off.services import (
     VacationAdminService,
@@ -64,8 +64,8 @@ logger = logging.getLogger(__name__)
 
 def _subordinados_del_usuario(user):
     if not getattr(user, "empleado", None):
-        return Empleado.objects.none()
-    return Empleado.objects.filter(
+        return Employee.objects.none()
+    return Employee.objects.filter(
         datos_laborales__jefe_directo=user.empleado,
         datos_laborales__estado_datos="activo",
     ).distinct()
@@ -97,7 +97,7 @@ def _subordinados_del_usuario(user):
     destroy=extend_schema(summary="Desactivar configuración de vacaciones"),
 )
 class ConfiguracionVacacionesViewSet(viewsets.ModelViewSet):
-    queryset = ConfiguracionVacaciones.objects.select_related(
+    queryset = VacationConfiguration.objects.select_related(
         "area", "empleado", "creado_por"
     ).all()
     serializer_class = ConfiguracionVacacionesSerializer
@@ -161,7 +161,7 @@ class ConfiguracionVacacionesViewSet(viewsets.ModelViewSet):
     retrieve=extend_schema(summary="Obtener período vacacional"),
 )
 class PeriodoVacacionalViewSet(viewsets.ModelViewSet):
-    queryset = PeriodoVacacional.objects.select_related(
+    queryset = VacationPeriod.objects.select_related(
         "empleado", "configuracion", "contrato"
     ).all()
     serializer_class = PeriodoVacacionalSerializer
@@ -252,7 +252,7 @@ class PeriodoVacacionalViewSet(viewsets.ModelViewSet):
     retrieve=extend_schema(summary="Obtener solicitud de vacaciones"),
 )
 class SolicitudVacacionesViewSet(viewsets.ModelViewSet):
-    queryset = SolicitudVacaciones.objects.select_related(
+    queryset = VacationRequest.objects.select_related(
         "empleado",
         "periodo_vacacional",
         "jefe_aprobador",
@@ -446,7 +446,7 @@ class SolicitudVacacionesViewSet(viewsets.ModelViewSet):
     def mis_solicitudes(self, request):
         if not getattr(request.user, "empleado", None):
             return APIResponse.error(
-                "Usuario no tiene empleado asociado.",
+                "User no tiene empleado asociado.",
                 status_code=status.HTTP_403_FORBIDDEN,
             )
         qs = self.get_queryset().filter(empleado=request.user.empleado)
@@ -465,7 +465,7 @@ class SolicitudVacacionesViewSet(viewsets.ModelViewSet):
     retrieve=extend_schema(summary="Obtener goce de vacaciones"),
 )
 class GoceVacacionesViewSet(viewsets.ModelViewSet):
-    queryset = GoceVacaciones.objects.select_related(
+    queryset = VacationGrant.objects.select_related(
         "empleado", "solicitud_vacaciones", "periodo_vacacional"
     ).all()
     serializer_class = GoceVacacionesSerializer
@@ -527,7 +527,7 @@ class GoceVacacionesViewSet(viewsets.ModelViewSet):
 
 
 class HistorialSolicitudVacacionesViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = HistorialSolicitudVacaciones.objects.select_related(
+    queryset = VacationRequestHistory.objects.select_related(
         "solicitud_vacaciones", "usuario_accion"
     ).all()
     serializer_class = HistorialSolicitudVacacionesSerializer
@@ -662,7 +662,7 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
         summary="Generar reporte de vacaciones por empleado (PDF)",
         parameters=[
             OpenApiParameter(
-                "empleado_id", OpenApiTypes.INT, description="Empleado ID"
+                "empleado_id", OpenApiTypes.INT, description="Employee ID"
             ),
             OpenApiParameter(
                 "contrato_id", OpenApiTypes.INT, description="Contrato ID (opcional)"

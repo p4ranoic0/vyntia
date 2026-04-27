@@ -9,17 +9,17 @@ boletas de pago, descuentos masivos y reportes de remuneraciones.
 from decimal import Decimal
 
 from apps.payroll.models import (
-    BoletaPago,
-    CalendarioPago,
-    ConceptoPlanilla,
-    ConfiguracionAfp,
-    ConfiguracionRemuneracion,
-    ConfiguracionUit,
-    DescuentoMasivo,
-    DetallePlanilla,
-    PlanillaMensual,
+    PaySlip,
+    PaymentSchedule,
+    PayrollConcept,
+    AfpConfiguration,
+    CompensationConfiguration,
+    TaxParameter,
+    MassDeduction,
+    PayrollDetail,
+    MonthlyPayroll,
 )
-from apps.identity.models import Usuario
+from apps.identity.models import User
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -37,7 +37,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
     estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
 
     class Meta:
-        model = ConfiguracionAfp
+        model = AfpConfiguration
         fields = [
             "afp_config_id",
             "afp_nombre",
@@ -72,7 +72,7 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = ConfiguracionUit
+        model = TaxParameter
         fields = [
             "configuracion_uit_id",
             "anio",
@@ -120,7 +120,7 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
             instance = self.instance
 
             # Verificar si ya existe otra UIT activa para ese año
-            existing = ConfiguracionUit.objects.filter(
+            existing = TaxParameter.objects.filter(
                 anio=anio, estado="activo"
             ).exclude(
                 configuracion_uit_id=instance.configuracion_uit_id if instance else None
@@ -142,7 +142,7 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
     estado_texto = serializers.CharField(source="get_estado_display", read_only=True)
 
     class Meta:
-        model = ConfiguracionRemuneracion
+        model = CompensationConfiguration
         fields = [
             "configuracion_id",
             "tipo",
@@ -185,7 +185,7 @@ class PlanillaMensualListSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = PlanillaMensual
+        model = MonthlyPayroll
         fields = [
             "planilla_id",
             "periodo",
@@ -236,7 +236,7 @@ class PlanillaMensualDetailSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = PlanillaMensual
+        model = MonthlyPayroll
         fields = [
             "planilla_id",
             "periodo",
@@ -276,7 +276,7 @@ class PlanillaMensualCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear planillas mensuales."""
 
     class Meta:
-        model = PlanillaMensual
+        model = MonthlyPayroll
         fields = [
             "periodo",
             "modalidad",
@@ -308,7 +308,7 @@ class PlanillaMensualCreateSerializer(serializers.ModelSerializer):
             return modalidad_mapping[value]
 
         # Si ya es un valor válido del modelo, devolverlo
-        valid_choices = [choice[0] for choice in PlanillaMensual.MODALIDAD_CHOICES]
+        valid_choices = [choice[0] for choice in MonthlyPayroll.MODALIDAD_CHOICES]
         if value in valid_choices:
             return value
 
@@ -322,7 +322,7 @@ class PlanillaMensualUpdateSerializer(serializers.ModelSerializer):
     """Serializer para actualizar planillas mensuales."""
 
     class Meta:
-        model = PlanillaMensual
+        model = MonthlyPayroll
         fields = [
             "descripcion",
             "meta_presupuestal",
@@ -340,7 +340,7 @@ class ConceptoPlanillaSerializer(serializers.ModelSerializer):
     tipo_texto = serializers.CharField(source="get_tipo_display", read_only=True)
 
     class Meta:
-        model = ConceptoPlanilla
+        model = PayrollConcept
         fields = [
             "concepto_planilla_id",
             "detalle_planilla",
@@ -367,7 +367,7 @@ class DetallePlanillaListSerializer(serializers.ModelSerializer):
     estado_texto = serializers.SerializerMethodField()
 
     class Meta:
-        model = DetallePlanilla
+        model = PayrollDetail
         fields = [
             "detalle_id",
             "planilla",
@@ -422,7 +422,7 @@ class DetallePlanillaDetailSerializer(serializers.ModelSerializer):
     tiene_boleta = serializers.SerializerMethodField()
 
     class Meta:
-        model = DetallePlanilla
+        model = PayrollDetail
         fields = [
             "detalle_id",
             "planilla",
@@ -473,7 +473,7 @@ class DetallePlanillaCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear detalles de planilla."""
 
     class Meta:
-        model = DetallePlanilla
+        model = PayrollDetail
         fields = [
             "planilla",
             "empleado",
@@ -521,7 +521,7 @@ class DescuentoMasivoListSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = DescuentoMasivo
+        model = MassDeduction
         fields = [
             "descuento_masivo_id",
             "periodo",
@@ -555,7 +555,7 @@ class DescuentoMasivoDetailSerializer(serializers.ModelSerializer):
     usuario_detalle = UsuarioSerializer(source="usuario_carga", read_only=True)
 
     class Meta:
-        model = DescuentoMasivo
+        model = MassDeduction
         fields = [
             "descuento_masivo_id",
             "periodo",
@@ -587,7 +587,7 @@ class DescuentoMasivoCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear carga de descuentos masivos."""
 
     class Meta:
-        model = DescuentoMasivo
+        model = MassDeduction
         fields = [
             "periodo",
             "configuracion_concepto",
@@ -641,7 +641,7 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = BoletaPago
+        model = PaySlip
         fields = [
             "boleta_id",
             "detalle_planilla",
@@ -675,7 +675,7 @@ class BoletaPagoDetailSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = BoletaPago
+        model = PaySlip
         fields = [
             "boleta_id",
             "detalle_planilla",
@@ -715,7 +715,7 @@ class CalendarioPagoListSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = CalendarioPago
+        model = PaymentSchedule
         fields = [
             "calendario_id",
             "planilla",
@@ -747,7 +747,7 @@ class CalendarioPagoDetailSerializer(serializers.ModelSerializer):
     usuario_detalle = UsuarioSerializer(source="usuario_programacion", read_only=True)
 
     class Meta:
-        model = CalendarioPago
+        model = PaymentSchedule
         fields = [
             "calendario_id",
             "planilla",
@@ -775,7 +775,7 @@ class CalendarioPagoCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear calendarios de pago."""
 
     class Meta:
-        model = CalendarioPago
+        model = PaymentSchedule
         fields = [
             "planilla",
             "tipo_pago",
