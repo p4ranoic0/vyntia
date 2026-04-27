@@ -325,7 +325,7 @@ def cache_response(
 
             # Agregar usuario si se requiere
             if vary_on_user and request.user.is_authenticated:
-                user_id = getattr(request.user, "usuario_id", request.user.pk)
+                user_id = getattr(request.user, "id", request.user.pk)
                 cache_key_parts.append(f"user_{user_id}")
 
             # Generar hash de la clave para mantenerla corta

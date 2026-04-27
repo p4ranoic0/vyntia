@@ -3,6 +3,7 @@ Modelo para configuración de la UIT (Unidad Impositiva Tributaria).
 Usadopara cálculos de ESSALUD CAS y topes de renta de 4ta categoría.
 """
 
+import uuid
 from decimal import Decimal
 
 from django.db import models
@@ -16,7 +17,7 @@ class TaxParameter(models.Model):
         ("inactivo", "Inactivo"),
     ]
 
-    configuracion_uit_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     anio = models.PositiveIntegerField(help_text="Año fiscal (YYYY)")
     valor_uit = models.DecimalField(
         max_digits=10,
@@ -35,24 +36,25 @@ class TaxParameter(models.Model):
         default=Decimal("8.00"),
         help_text="Porcentaje de retención de renta de 4ta categoría",
     )
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="activo")
+    status = models.CharField(max_length=20, choices=ESTADO_CHOICES, default="activo", db_column="estado")
 
     # Auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-    creado_por = models.ForeignKey(
+    created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
+    created_by = models.ForeignKey(
         "identity.User",
         on_delete=models.PROTECT,
         related_name="configuraciones_uit_creadas",
         null=True,
         blank=True,
+        db_column="creado_por",
     )
 
     class Meta:
         db_table = "configuracion_uit"
         indexes = [
             models.Index(fields=["anio"]),
-            models.Index(fields=["estado"]),
+            models.Index(fields=["status"]),
         ]
         constraints = [
             models.UniqueConstraint(

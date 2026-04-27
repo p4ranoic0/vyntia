@@ -51,7 +51,7 @@ class VacationReportService:
         empleado_id: int,
         contrato_id: Optional[int] = None,
     ) -> Tuple[bytes, str]:
-        empleado = Employee.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(pk=empleado_id)
         context = self._obtener_contexto_reporte(empleado, contrato_id)
         html_content = render_to_string('reportes/reporte_vacaciones_empleado.html', context)
         pdf_content = self.pdf_generator._html_to_pdf(html_content)

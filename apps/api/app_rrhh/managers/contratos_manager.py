@@ -14,7 +14,7 @@ class ContratosAdendasManager(models.Manager):
     def get_queryset(self):
         """Optimiza las consultas por defecto con select_related."""
         return super().get_queryset().select_related(
-            'empleado', 'empleado__area', 'creado_por', 'modificado_por'
+            'empleado', 'empleado__area', 'created_by', 'updated_by'
         )
     
     def activos(self):

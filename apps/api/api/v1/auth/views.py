@@ -241,7 +241,7 @@ class UserProfileAPIView(APIView):
             roles_activos = usuario.roles_activos()
             roles_data = [
                 {
-                    "id": rol.rol_id,
+                    "id": rol.pk,
                     "nombre": rol.nombre_rol,
                     "descripcion": rol.descripcion_rol,
                 }
@@ -255,7 +255,7 @@ class UserProfileAPIView(APIView):
             elif hasattr(permisos, "values"):
                 permisos_data = [
                     {
-                        "id": p.permiso_id,
+                        "id": p.pk,
                         "nombre": p.nombre_permiso,
                         "descripcion": p.descripcion_permiso,
                     }
@@ -464,7 +464,7 @@ class ResetPasswordAPIView(APIView):
 
                 return APIResponse.success(
                     message="Contraseña restablecida exitosamente",
-                    data={"password_reset": True, "user_id": user.usuario_id},
+                    data={"password_reset": True, "user_id": user.pk},
                     status_code=status.HTTP_200_OK,
                 )
 
@@ -541,7 +541,7 @@ class MenuStructureAPIView(APIView):
 
             for modulo in modulos_activos:
                 menu_item = {
-                    "id": f"modulo-{modulo.modulo_id}",
+                    "id": f"modulo-{modulo.pk}",
                     "name": modulo.nombre_modulo,
                     "icon": modulo.icono_modulo or "dashboard",
                     "path": modulo.ruta_modulo or f"/{modulo.nombre_modulo.lower()}",
@@ -650,7 +650,7 @@ class PermissionsStructureAPIView(APIView):
                 )
                 permisos_por_modulo[modulo.nombre_modulo] = [
                     {
-                        "id": permiso.permiso_id,
+                        "id": permiso.pk,
                         "name": permiso.nombre_permiso,
                         "description": permiso.descripcion_permiso,
                     }
@@ -665,12 +665,12 @@ class PermissionsStructureAPIView(APIView):
                 permisos_rol = rol.permisos_asignados.all()
                 roles_data.append(
                     {
-                        "id": rol.rol_id,
+                        "id": rol.pk,
                         "name": rol.nombre_rol,
                         "description": rol.descripcion_rol,
                         "permissions": [
                             {
-                                "id": permiso.permiso.permiso_id,
+                                "id": permiso.permiso.pk,
                                 "name": permiso.permiso.nombre_permiso,
                             }
                             for permiso in permisos_rol
@@ -682,7 +682,7 @@ class PermissionsStructureAPIView(APIView):
             response_data = {
                 "modules": [
                     {
-                        "id": modulo.modulo_id,
+                        "id": modulo.pk,
                         "name": modulo.nombre_modulo,
                         "status": modulo.estado_modulo,
                         "permissions": permisos_por_modulo.get(

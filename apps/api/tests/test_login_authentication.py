@@ -45,7 +45,7 @@ class LoginAuthenticationTest(TestCase):
         self.permiso_login = Permission.objects.create(
             nombre_permiso='login_sistema',
             descripcion_permiso='Permission para acceder al sistema',
-            modulo_id=1,  # ID del módulo de autenticación
+            modulo='auth',  # ID del módulo de autenticación
             tipo_permiso='leer',
             estado_permiso='activo'
         )

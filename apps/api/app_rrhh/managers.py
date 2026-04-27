@@ -1057,7 +1057,7 @@ class SolicitudVacacionesManager(models.Manager):
         """
         return (
             self.values("estado_solicitud")
-            .annotate(total=Count("solicitud_id"))
+            .annotate(total=Count("id"))
             .order_by("estado_solicitud")
         )
 
@@ -1166,7 +1166,7 @@ class GoceVacacionesManager(models.Manager):
         """
         return (
             self.values("tipo_goce")
-            .annotate(total=Count("goce_id"), total_dias=Sum("dias_gozados"))
+            .annotate(total=Count("id"), total_dias=Sum("dias_gozados"))
             .order_by("tipo_goce")
         )
 
@@ -1237,7 +1237,7 @@ class HistorialSolicitudVacacionesManager(models.Manager):
         """
         return (
             self.values("estado_nuevo")
-            .annotate(total=Count("historial_id"))
+            .annotate(total=Count("id"))
             .order_by("estado_nuevo")
         )
 

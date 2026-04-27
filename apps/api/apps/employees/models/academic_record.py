@@ -6,6 +6,8 @@ Contiene la definición del modelo AcademicRecord que almacena la información
 educativa y de formación profesional de los empleados.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from datetime import date
@@ -62,7 +64,7 @@ class AcademicRecord(models.Model):
     ]
     
     # Campos principales
-    academico_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'Employee',
         on_delete=models.CASCADE,
@@ -129,8 +131,8 @@ class AcademicRecord(models.Model):
     # Campos de control
     estado_registro = models.CharField(max_length=25, choices=ESTADO_REGISTRO_CHOICES, default='activo')
     observaciones = models.TextField(null=True, blank=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_registro')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     
     # Manager personalizado
     # objects = DatosAcademicosManager()  # Comentado temporalmente para migraciones
@@ -422,5 +424,5 @@ class AcademicRecord(models.Model):
         ).values(
             'nivel_educativo'
         ).annotate(
-            total=Count('academico_id')
+            total=Count('id')
         ).order_by('nivel_educativo')

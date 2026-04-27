@@ -136,7 +136,7 @@ class AreaPermission(RRHHPermission):
             logger.warning(
                 f"Acceso denegado para modificar áreas",
                 extra={
-                    "user_id": request.user.usuario_id,
+                    "user_id": request.user.pk,
                     "username": request.user.nombres_usuario,
                     "method": request.method,
                     "view": view.__class__.__name__,
@@ -308,7 +308,7 @@ class UsuarioPermission(RRHHPermission):
             logger.warning(
                 f"Acceso denegado para gestión de usuarios",
                 extra={
-                    "user_id": request.user.usuario_id,
+                    "user_id": request.user.pk,
                     "username": request.user.nombres_usuario,
                     "method": request.method,
                     "view": view.__class__.__name__,
@@ -452,7 +452,7 @@ class ReportesPermission(RRHHPermission):
             logger.warning(
                 f"Acceso denegado a reportes",
                 extra={
-                    "user_id": request.user.usuario_id,
+                    "user_id": request.user.pk,
                     "username": request.user.nombres_usuario,
                     "view": view.__class__.__name__,
                     "action": getattr(view, "action", "unknown"),
@@ -480,7 +480,7 @@ class AuditoriaPermission(RRHHPermission):
             logger.warning(
                 f"Acceso denegado a auditoría",
                 extra={
-                    "user_id": request.user.usuario_id,
+                    "user_id": request.user.pk,
                     "username": request.user.nombres_usuario,
                     "view": view.__class__.__name__,
                     "ip_address": self.get_client_ip(request),

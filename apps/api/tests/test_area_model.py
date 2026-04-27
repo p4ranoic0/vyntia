@@ -61,8 +61,8 @@ class AreaModelTest(TestCase):
         self.assertEqual(area.estado_area, "activo")  # Valor por defecto
         self.assertEqual(area.nivel_jerarquico, 1)  # Valor por defecto
         self.assertEqual(area.total_empleados, 0)  # Valor por defecto
-        self.assertIsNotNone(area.fecha_creacion)
-        self.assertIsNotNone(area.fecha_actualizacion)
+        self.assertIsNotNone(area.created_at)
+        self.assertIsNotNone(area.updated_at)
 
     def test_campos_obligatorios(self):
         """Test de validación de campos obligatorios."""
@@ -128,7 +128,7 @@ class AreaModelTest(TestCase):
         self.assertFalse(self.area_test.es_activa)
 
         # Verificar que se guardó en la base de datos
-        area_db = Department.objects.get(area_id=self.area_test.area_id)
+        area_db = Department.objects.get(pk=self.area_test.pk)
         self.assertEqual(area_db.estado_area, "inactivo")
 
     def test_metodo_activar(self):
@@ -144,7 +144,7 @@ class AreaModelTest(TestCase):
         self.assertTrue(self.area_test.es_activa)
 
         # Verificar que se guardó en la base de datos
-        area_db = Department.objects.get(area_id=self.area_test.area_id)
+        area_db = Department.objects.get(pk=self.area_test.pk)
         self.assertEqual(area_db.estado_area, "activo")
 
     def test_relacion_jerarquica_padre_hijo(self):
@@ -270,8 +270,8 @@ class AreaModelTest(TestCase):
         self.assertIsNone(area.codigo_presupuestal)
 
     def test_actualizacion_fecha_modificacion(self):
-        """Test de actualización automática de fecha_actualizacion."""
-        fecha_inicial = self.area_test.fecha_actualizacion
+        """Test de actualización automática de updated_at."""
+        fecha_inicial = self.area_test.updated_at
 
         # Esperar un momento para asegurar diferencia en timestamp
         import time
@@ -282,7 +282,7 @@ class AreaModelTest(TestCase):
         self.area_test.descripcion_area = "Descripción actualizada"
         self.area_test.save()
 
-        self.assertGreater(self.area_test.fecha_actualizacion, fecha_inicial)
+        self.assertGreater(self.area_test.updated_at, fecha_inicial)
 
     def test_indices_base_datos(self):
         """Test de que los índices están configurados correctamente."""

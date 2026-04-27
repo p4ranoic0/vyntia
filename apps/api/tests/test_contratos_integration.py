@@ -89,13 +89,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-001',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         self.assertEqual(contrato.numero_contrato, 'CON-2024-001')
@@ -112,13 +112,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-002',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('4022.99'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Crear adenda salarial
@@ -132,8 +132,8 @@ class TestContratosIntegration(TestCase):
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto  # Aumento salarial
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         self.assertEqual(adenda.numero_contrato, 'CON-2024-002')
@@ -155,12 +155,12 @@ class TestContratosIntegration(TestCase):
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-003',
-                tipo_documento='CONTRATO_FIJO',
+                tipo_documento='LEY_728_FIJO',
                 fecha_inicio=date.today(),
                 fecha_fin=date.today() - timedelta(days=1),  # Fecha inválida
                 salario_bruto=Decimal('4022.99'),  # Resulta en salario_neto exacto
                 cargo='Analista',
-                creado_por=self.usuario
+                created_by=self.usuario
             )
             contrato.full_clean()
         
@@ -170,12 +170,12 @@ class TestContratosIntegration(TestCase):
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-004',
-                tipo_documento='CONTRATO_INDEFINIDO',
+                tipo_documento='LEY_728_INDETERMINADO',
                 fecha_inicio=date.today(),
                 fecha_fin=date.today() + timedelta(days=365),  # No debe tener fecha fin
                 salario_bruto=Decimal('4022.99'),  # Resulta en salario_neto exacto
                 cargo='Analista',
-                creado_por=self.usuario
+                created_by=self.usuario
             )
             contrato.full_clean()
         
@@ -185,12 +185,12 @@ class TestContratosIntegration(TestCase):
                 empleado=self.empleado,
                 area=self.area,
                 numero_contrato='CON-2024-005',
-                tipo_documento='CONTRATO_FIJO',
+                tipo_documento='LEY_728_FIJO',
                 fecha_inicio=date.today(),
                 fecha_fin=None,  # Debe tener fecha fin
                 salario_bruto=Decimal('3500.00'),
                 cargo='Analista',
-                creado_por=self.usuario
+                created_by=self.usuario
             )
             contrato.full_clean()
     
@@ -200,13 +200,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-006',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=30),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Test días hasta vencimiento (puede variar por la hora del día)
@@ -231,13 +231,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-007',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today() - timedelta(days=60),
             fecha_fin=date.today() - timedelta(days=1),  # Vencido ayer
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         self.assertTrue(contrato.esta_vencido)
@@ -249,13 +249,13 @@ class TestContratosIntegration(TestCase):
         contrato = Contract(
             empleado=self.empleado,
             area=self.area,
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Generar número de contrato
@@ -277,8 +277,8 @@ class TestContratosIntegration(TestCase):
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         numero_adenda = adenda.generar_numero_adenda()
@@ -292,13 +292,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-008',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Verificar que se calculó el salario neto automáticamente
@@ -314,26 +314,26 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-009',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today() - timedelta(days=365),
             fecha_fin=date.today() - timedelta(days=1),
             salario_bruto=Decimal('2873.56'),  # Resulta en salario_neto exacto
             cargo='Analista Junior',
-            estado='TERMINADO',
-            creado_por=self.usuario
+            status='TERMINADO',
+            created_by=self.usuario
         )
         
         contrato2 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-010',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Verificar relación inversa
@@ -343,7 +343,7 @@ class TestContratosIntegration(TestCase):
         self.assertIn(contrato2, contratos_empleado)
         
         # Verificar contrato activo
-        contrato_activo = self.empleado.contratos_adendas.filter(estado='ACTIVO').first()
+        contrato_activo = self.empleado.contratos_adendas.filter(status='ACTIVO').first()
         self.assertEqual(contrato_activo, contrato2)
     
     def test_integracion_area_contratos(self):
@@ -361,26 +361,26 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,  # RRHH
             numero_contrato='CON-2024-011',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista RRHH',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         Contract.objects.create(
             empleado=self.empleado,
             area=area2,  # Tecnología
             numero_contrato='CON-2024-012',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto
             cargo='Desarrollador',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # Verificar contratos por área
@@ -409,26 +409,26 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-013',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         contrato2 = Contract.objects.create(
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-014',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=365),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista',
-            estado='ACTIVO',
-            creado_por=usuario2
+            status='ACTIVO',
+            created_by=usuario2
         )
         
         # Verificar contratos creados por cada usuario
@@ -447,13 +447,13 @@ class TestContratosIntegration(TestCase):
             empleado=self.empleado,
             area=self.area,
             numero_contrato='CON-2024-015',
-            tipo_documento='CONTRATO_FIJO',
+            tipo_documento='LEY_728_FIJO',
             fecha_inicio=date.today(),
             fecha_fin=date.today() + timedelta(days=180),
             salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
             cargo='Analista de Sistemas',
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # 2. Verificar que puede generar adenda
@@ -470,8 +470,8 @@ class TestContratosIntegration(TestCase):
             fecha_fin=contrato.fecha_fin + timedelta(days=180),
             salario_bruto=contrato.salario_bruto,
             cargo=contrato.cargo,
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # 4. Crear adenda salarial
@@ -485,8 +485,8 @@ class TestContratosIntegration(TestCase):
             fecha_fin=adenda_extension.fecha_fin,
             salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto - Aumento
             cargo=contrato.cargo,
-            estado='ACTIVO',
-            creado_por=self.usuario
+            status='ACTIVO',
+            created_by=self.usuario
         )
         
         # 5. Verificar el historial completo
@@ -494,7 +494,7 @@ class TestContratosIntegration(TestCase):
         self.assertEqual(adendas.count(), 2)
         
         # 6. Verificar orden cronológico
-        adendas_ordenadas = list(adendas.order_by('fecha_creacion'))
+        adendas_ordenadas = list(adendas.order_by('created_at'))
         self.assertEqual(adendas_ordenadas[0], adenda_extension)
         self.assertEqual(adendas_ordenadas[1], adenda_salarial)
         

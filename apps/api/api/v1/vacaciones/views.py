@@ -98,7 +98,7 @@ def _subordinados_del_usuario(user):
 )
 class ConfiguracionVacacionesViewSet(viewsets.ModelViewSet):
     queryset = VacationConfiguration.objects.select_related(
-        "area", "empleado", "creado_por"
+        "area", "empleado", "created_by"
     ).all()
     serializer_class = ConfiguracionVacacionesSerializer
     permission_classes = [permissions.IsAuthenticated, VacationPermissions]
@@ -106,8 +106,8 @@ class ConfiguracionVacacionesViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ConfiguracionVacacionesFilter
     search_fields = ["observaciones"]
-    ordering_fields = ["fecha_creacion", "fecha_inicio_vigencia", "tipo_configuracion"]
-    ordering = ["-fecha_creacion"]
+    ordering_fields = ["created_at", "fecha_inicio_vigencia", "tipo_configuracion"]
+    ordering = ["-created_at"]
 
     @cache_response(timeout=600, key_prefix="vac_config")
     @require_hr()
@@ -153,7 +153,7 @@ class ConfiguracionVacacionesViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         instance.activo = False
-        instance.save(update_fields=["activo", "fecha_actualizacion"])
+        instance.save(update_fields=["activo", "updated_at"])
 
 
 @extend_schema_view(
@@ -174,7 +174,7 @@ class PeriodoVacacionalViewSet(viewsets.ModelViewSet):
         "empleado__apellido_paterno",
         "empleado__numero_documento",
     ]
-    ordering_fields = ["ano_periodo", "fecha_creacion", "dias_pendientes"]
+    ordering_fields = ["ano_periodo", "created_at", "dias_pendientes"]
     ordering = ["-ano_periodo"]
 
     @cache_response(timeout=300, key_prefix="vac_periodos")
@@ -274,9 +274,9 @@ class SolicitudVacacionesViewSet(viewsets.ModelViewSet):
         "fecha_envio",
         "fecha_inicio",
         "estado_solicitud",
-        "fecha_creacion",
+        "created_at",
     ]
-    ordering = ["-fecha_creacion"]
+    ordering = ["-created_at"]
 
     @cache_response(timeout=180, key_prefix="vac_solicitudes")
     @require_authenticated()
@@ -478,8 +478,8 @@ class GoceVacacionesViewSet(viewsets.ModelViewSet):
         "empleado__apellido_paterno",
         "empleado__numero_documento",
     ]
-    ordering_fields = ["fecha_inicio_real", "fecha_creacion"]
-    ordering = ["-fecha_inicio_real", "-fecha_creacion"]
+    ordering_fields = ["fecha_inicio_real", "created_at"]
+    ordering = ["-fecha_inicio_real", "-created_at"]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -581,7 +581,7 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
                 "ano", OpenApiTypes.INT, description="Año para estadísticas"
             ),
             OpenApiParameter(
-                "area_id", OpenApiTypes.INT, description="Área (opcional)"
+                "id", OpenApiTypes.INT, description="Área (opcional)"
             ),
         ],
     )
@@ -590,7 +590,7 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
     def estadisticas(self, request):
         try:
             ano = request.query_params.get("ano")
-            area_id = request.query_params.get("area_id")
+            area_id = request.query_params.get("id")
             result = VacationAdminService.obtener_estadisticas_vacaciones(
                 int(ano) if ano else None,
                 int(area_id) if area_id else None,
@@ -629,9 +629,9 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
             OpenApiParameter("fecha_inicio", OpenApiTypes.DATE),
             OpenApiParameter("fecha_fin", OpenApiTypes.DATE),
             OpenApiParameter("estado", OpenApiTypes.STR),
-            OpenApiParameter("area_id", OpenApiTypes.INT),
-            OpenApiParameter("empleado_id", OpenApiTypes.INT),
-            OpenApiParameter("contrato_id", OpenApiTypes.INT),
+            OpenApiParameter("id", OpenApiTypes.INT),
+            OpenApiParameter("id", OpenApiTypes.INT),
+            OpenApiParameter("id", OpenApiTypes.INT),
         ],
     )
     @require_hr()
@@ -641,9 +641,9 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
             fecha_inicio = request.query_params.get("fecha_inicio")
             fecha_fin = request.query_params.get("fecha_fin")
             estado = request.query_params.get("estado")
-            area_id = request.query_params.get("area_id")
-            empleado_id = request.query_params.get("empleado_id")
-            contrato_id = request.query_params.get("contrato_id")
+            area_id = request.query_params.get("id")
+            empleado_id = request.query_params.get("id")
+            contrato_id = request.query_params.get("id")
 
             result = VacationAdminService.obtener_reporte_solicitudes(
                 date.fromisoformat(fecha_inicio) if fecha_inicio else None,
@@ -662,10 +662,10 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
         summary="Generar reporte de vacaciones por empleado (PDF)",
         parameters=[
             OpenApiParameter(
-                "empleado_id", OpenApiTypes.INT, description="Employee ID"
+                "id", OpenApiTypes.INT, description="Employee ID"
             ),
             OpenApiParameter(
-                "contrato_id", OpenApiTypes.INT, description="Contrato ID (opcional)"
+                "id", OpenApiTypes.INT, description="Contrato ID (opcional)"
             ),
         ],
     )
@@ -673,8 +673,8 @@ class VacacionesReportesViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["get"], url_path="reporte-empleado")
     def reporte_empleado(self, request):
         try:
-            empleado_id = request.query_params.get("empleado_id")
-            contrato_id = request.query_params.get("contrato_id")
+            empleado_id = request.query_params.get("id")
+            contrato_id = request.query_params.get("id")
             if not empleado_id:
                 return APIResponse.error(
                     "empleado_id es obligatorio.",

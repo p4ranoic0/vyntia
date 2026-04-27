@@ -222,8 +222,8 @@ class AreaViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Área creada: {area.siglas_area}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "area_id": area.area_id,
+                "user_id": self.request.user.pk,
+                "id": area.pk,
                 "action": "create_area",
             },
         )
@@ -234,8 +234,8 @@ class AreaViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Área actualizada: {area.siglas_area}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "area_id": area.area_id,
+                "user_id": self.request.user.pk,
+                "id": area.pk,
                 "action": "update_area",
             },
         )
@@ -248,7 +248,7 @@ class AreaViewSet(viewsets.ModelViewSet):
             f"Área desactivada: {instance.siglas_area}",
             extra={
                 "user_id": self.request.user.id,
-                "area_id": instance.area_id,
+                "id": instance.pk,
                 "action": "soft_delete_area",
             },
         )
@@ -281,8 +281,8 @@ class AreaViewSet(viewsets.ModelViewSet):
             logger.error(
                 f"Error obteniendo empleados del área: {str(e)}",
                 extra={
-                    "user_id": request.user.usuario_id,
-                    "area_id": pk,
+                    "user_id": request.user.pk,
+                    "id": pk,
                     "error": str(e),
                 },
             )
@@ -302,7 +302,7 @@ class AreaViewSet(viewsets.ModelViewSet):
         """Get area statistics."""
         try:
             area = self.get_object()
-            stats = services.AreaService.get_area_statistics(area.area_id)
+            stats = services.AreaService.get_area_statistics(area.pk)
 
             return APIResponse.success(
                 data=stats, message="Estadísticas del área obtenidas exitosamente"
@@ -311,8 +311,8 @@ class AreaViewSet(viewsets.ModelViewSet):
             logger.error(
                 f"Error obteniendo estadísticas del área: {str(e)}",
                 extra={
-                    "user_id": request.user.usuario_id,
-                    "area_id": pk,
+                    "user_id": request.user.pk,
+                    "id": pk,
                     "error": str(e),
                 },
             )
@@ -339,7 +339,7 @@ class AreaViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(
                 f"Error obteniendo resumen de áreas: {str(e)}",
-                extra={"user_id": request.user.usuario_id, "error": str(e)},
+                extra={"user_id": request.user.pk, "error": str(e)},
             )
             return APIResponse.error(
                 message="Error al obtener resumen de áreas",
@@ -539,12 +539,12 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         # Filtrar por rol si se especifica
-        rol_id = self.request.query_params.get("rol_id")
+        rol_id = self.request.query_params.get("id")
         if rol_id:
             queryset = queryset.filter(rol_id=rol_id)
 
         # Filtrar por permiso si se especifica
-        permiso_id = self.request.query_params.get("permiso_id")
+        permiso_id = self.request.query_params.get("id")
         if permiso_id:
             queryset = queryset.filter(permiso_id=permiso_id)
 
@@ -574,7 +574,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
     @require_admin()
     def por_rol(self, request):
         """Obtiene todos los permisos asignados a un rol específico."""
-        rol_id = request.query_params.get("rol_id")
+        rol_id = request.query_params.get("id")
         if not rol_id:
             return APIResponse.error(
                 message="Se requiere el parámetro rol_id",
@@ -591,7 +591,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
     @require_admin()
     def por_permiso(self, request):
         """Obtiene todos los roles que tienen un permiso específico."""
-        permiso_id = request.query_params.get("permiso_id")
+        permiso_id = request.query_params.get("id")
         if not permiso_id:
             return APIResponse.error(
                 message="Se requiere el parámetro permiso_id",
@@ -827,8 +827,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Employee creado: {empleado.nombre_completo}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "empleado_id": empleado.empleado_id,
+                "user_id": self.request.user.pk,
+                "id": empleado.pk,
                 "action": "create_empleado",
             },
         )
@@ -839,8 +839,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Employee actualizado: {empleado.nombre_completo}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "empleado_id": empleado.empleado_id,
+                "user_id": self.request.user.pk,
+                "id": empleado.pk,
                 "action": "update_empleado",
             },
         )
@@ -853,7 +853,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             f"Employee desactivado: {instance.nombre_completo}",
             extra={
                 "user_id": self.request.user.id,
-                "empleado_id": instance.empleado_id,
+                "id": instance.pk,
                 "action": "soft_delete_empleado",
             },
         )
@@ -865,7 +865,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         try:
             empleado = self.get_object()
             complete_data = services.EmpleadoService.get_complete_employee_data(
-                empleado.empleado_id
+                empleado.pk
             )
 
             return APIResponse.success(
@@ -876,8 +876,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             logger.error(
                 f"Error obteniendo datos completos: {str(e)}",
                 extra={
-                    "user_id": request.user.usuario_id,
-                    "empleado_id": pk,
+                    "user_id": request.user.pk,
+                    "id": pk,
                     "error": str(e),
                 },
             )
@@ -903,14 +903,14 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
 
             # Use service to handle transfer
             services.EmpleadoService.transferir_empleado(
-                empleado.empleado_id, area_destino_id, fecha_inicio
+                empleado.pk, area_destino_id, fecha_inicio
             )
 
             logger.info(
                 f"Employee transferido: {empleado.nombre_completo}",
                 extra={
-                    "user_id": request.user.usuario_id,
-                    "empleado_id": empleado.empleado_id,
+                    "user_id": request.user.pk,
+                    "id": empleado.pk,
                     "area_destino_id": area_destino_id,
                     "action": "transfer_empleado",
                 },
@@ -928,8 +928,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             logger.error(
                 f"Error transfiriendo empleado: {str(e)}",
                 extra={
-                    "user_id": request.user.usuario_id,
-                    "empleado_id": pk,
+                    "user_id": request.user.pk,
+                    "id": pk,
                     "error": str(e),
                 },
             )
@@ -952,7 +952,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(
                 f"Error obteniendo estadísticas de empleados: {str(e)}",
-                extra={"user_id": request.user.usuario_id, "error": str(e)},
+                extra={"user_id": request.user.pk, "error": str(e)},
             )
             return APIResponse.error(
                 message="Error al obtener estadísticas",
@@ -1065,7 +1065,7 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
         empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
-            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+            if not user.empleado or str(user.empleado.pk) != str(empleado_id or ""):
                 return APIResponse.error(
                     message="Solo puede registrar familiares para su propio legajo",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -1166,7 +1166,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
         empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
-            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+            if not user.empleado or str(user.empleado.pk) != str(empleado_id or ""):
                 return APIResponse.error(
                     message="Solo puede registrar datos academicos para su propio legajo",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -1265,7 +1265,7 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         empleado_id = request.data.get("empleado")
         user = request.user
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
-            if not user.empleado or user.empleado.empleado_id != int(empleado_id or 0):
+            if not user.empleado or str(user.empleado.pk) != str(empleado_id or ""):
                 return APIResponse.error(
                     message="Solo puede registrar cursos para su propio legajo",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -1342,7 +1342,7 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
             queryset = self.get_queryset().filter(estado_laboral="activo")
             stats = queryset.aggregate(
                 promedio=Avg("remuneracion_mensual"),
-                total_empleados=Count("dato_laboral_id"),
+                total_empleados=Count("id"),
             )
 
             # Group by salary ranges
@@ -1365,7 +1365,7 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(
                 f"Error obteniendo estadísticas de remuneración: {str(e)}",
-                extra={"user_id": request.user.usuario_id, "error": str(e)},
+                extra={"user_id": request.user.pk, "error": str(e)},
             )
             return APIResponse.error(
                 message="Error al obtener estadísticas",
@@ -1512,7 +1512,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         "empleado__nombres_empleado",
         "empleado__apellido_paterno",
     ]
-    ordering_fields = ["nombres_usuario", "fecha_creacion", "ultimo_acceso"]
+    ordering_fields = ["nombres_usuario", "created_at", "ultimo_acceso"]
     ordering = ["nombres_usuario"]
 
     @require_admin()
@@ -1576,8 +1576,8 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         logger.info(
             f"User creado: {usuario.nombres_usuario}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "new_user_id": usuario.usuario_id,
+                "user_id": self.request.user.pk,
+                "new_user_id": usuario.pk,
                 "action": "create_usuario",
             },
         )
@@ -1588,8 +1588,8 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         logger.info(
             f"User actualizado: {usuario.nombres_usuario}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "updated_user_id": usuario.usuario_id,
+                "user_id": self.request.user.pk,
+                "updated_user_id": usuario.pk,
                 "action": "update_usuario",
             },
         )
@@ -1601,8 +1601,8 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         logger.info(
             f"User desactivado: {instance.nombres_usuario}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "deactivated_user_id": instance.usuario_id,
+                "user_id": self.request.user.pk,
+                "deactivated_user_id": instance.pk,
                 "action": "soft_delete_usuario",
             },
         )
@@ -1623,7 +1623,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(
                 f"Error obteniendo usuarios sin login reciente: {str(e)}",
-                extra={"user_id": request.user.usuario_id, "error": str(e)},
+                extra={"user_id": request.user.pk, "error": str(e)},
             )
             return APIResponse.error(
                 message="Error al obtener usuarios",
@@ -1728,12 +1728,12 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         """
         try:
             usuario = self.get_object()
-            rol_id = request.data.get("rol_id")
+            rol_id = request.data.get("id")
 
             if not rol_id:
                 return APIResponse.error(
                     message="ID del rol es requerido",
-                    errors={"rol_id": ["Este campo es requerido"]},
+                    errors={"id": ["Este campo es requerido"]},
                 )
 
             # Buscar asignación activa
@@ -1833,8 +1833,8 @@ class RolViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Role desactivado: {instance.nombre_rol}",
             extra={
-                "user_id": self.request.user.usuario_id,
-                "rol_id": instance.rol_id,
+                "user_id": self.request.user.pk,
+                "id": instance.pk,
                 "action": "soft_delete_rol",
             },
         )
@@ -1919,11 +1919,11 @@ class PermisoViewSet(viewsets.ModelViewSet):
             instance.estado_permiso = "inactivo"
             instance.save(update_fields=["estado_permiso"])
             logger.info(
-                f"Permission {instance.permiso_id} soft deleted by changing estado_permiso to 'inactivo'"
+                f"Permission {instance.pk} soft deleted by changing estado_permiso to 'inactivo'"
             )
         except Exception as e:
             logger.error(
-                f"Error performing soft delete on Permission {instance.permiso_id}: {str(e)}"
+                f"Error performing soft delete on Permission {instance.pk}: {str(e)}"
             )
             raise BusinessLogicError(f"Error al desactivar el permiso: {str(e)}")
 
@@ -2007,7 +2007,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         user = request.user
         # Non-HR users can only upload for themselves
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
-            if not user.empleado or user.empleado.empleado_id != int(empleado_id):
+            if not user.empleado or user.empleado.pk != int(empleado_id):
                 return APIResponse.error(
                     message="Solo puede subir documentos para su propio legajo",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -2398,7 +2398,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         user = request.user
         # Non-HR users can only see their own onboarding
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
-            if onboarding.usuario_id != user.usuario_id:
+            if onboarding.usuario_id != user.pk:
                 return APIResponse.error(
                     message="No tiene permisos para ver este onboarding",
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -2461,7 +2461,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
 
         if accion == "aprobar":
             result = OnboardingService.validar_onboarding(
-                onboarding.onboarding_id, request.user, observaciones
+                onboarding.pk, request.user, observaciones
             )
             if not result:
                 return APIResponse.error(
@@ -2514,7 +2514,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return APIResponse.success(
             message=f"Documento '{doc.nombre_documento}' aprobado",
             data={
-                "documento_id": doc.documento_id,
+                "id": doc.documento_id,
                 "estado_documento": doc.estado_documento,
             },
         )
@@ -2559,7 +2559,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return APIResponse.success(
             message=f"Documento '{doc.nombre_documento}' rechazado",
             data={
-                "documento_id": doc.documento_id,
+                "id": doc.documento_id,
                 "estado_documento": doc.estado_documento,
             },
         )
@@ -2571,7 +2571,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         from apps.onboarding.services import OnboardingService
 
         onboarding = self.get_object()
-        result = OnboardingService.reenviar_email_bienvenida(onboarding.onboarding_id)
+        result = OnboardingService.reenviar_email_bienvenida(onboarding.pk)
 
         if not result:
             return APIResponse.error(
@@ -2603,7 +2603,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             onboarding.usuario.email = nuevo_correo
             onboarding.usuario.save(update_fields=["email"])
             result = OnboardingService.reenviar_email_bienvenida(
-                onboarding.onboarding_id
+                onboarding.pk
             )
             if result and result.get("email_enviado"):
                 return APIResponse.success(
@@ -2693,7 +2693,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return APIResponse.success(
             message="Foto subida exitosamente",
             data={
-                "documento_id": doc.pk,
+                "id": doc.pk,
                 "archivo_url": (
                     request.build_absolute_uri(doc.archivo.url) if doc.archivo else None
                 ),
@@ -2785,10 +2785,10 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         # Note: FamilyMember does not have a documento FK — familiar_id param is accepted
         # but only used to tag the doc's category context (no DB link on familiar itself)
         familiar_id = request.data.get(
-            "familiar_id"
+            "id"
         )  # accepted, reserved for future use
 
-        academico_id = request.data.get("academico_id")
+        academico_id = request.data.get("id")
         if academico_id:
             try:
                 from apps.employees.models import AcademicRecord
@@ -2801,7 +2801,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             except (AcademicRecord.DoesNotExist, ValueError, AttributeError):
                 pass
 
-        curso_id = request.data.get("curso_id")
+        curso_id = request.data.get("id")
         if curso_id:
             try:
                 from apps.employees.models import Certification
@@ -2818,7 +2818,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return APIResponse.success(
             message="Documento subido exitosamente",
             data={
-                "documento_id": doc.pk,
+                "id": doc.pk,
                 "tipo_documento": doc.tipo_documento,
                 "estado_documento": doc.estado_documento,
                 "fecha_subida": (

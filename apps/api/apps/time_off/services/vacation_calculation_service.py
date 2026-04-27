@@ -264,10 +264,10 @@ class VacationCalculationService:
                 errores.append('El rango solicitado incluye feriados.')
 
         # Validación de descanso médico desde settings (lista de dicts)
-        # Ejemplo: VACATION_MEDICAL_LEAVES = [{"empleado_id": 1, "inicio": "2025-06-01", "fin": "2025-06-10"}]
+        # Ejemplo: VACATION_MEDICAL_LEAVES = [{"id": 1, "inicio": "2025-06-01", "fin": "2025-06-10"}]
         medical_leaves = getattr(settings, 'VACATION_MEDICAL_LEAVES', [])
         for leave in medical_leaves:
-            if leave.get('empleado_id') != getattr(empleado, 'empleado_id', None):
+            if leave.get('id') != getattr(empleado, 'id', None):
                 continue
             try:
                 leave_inicio = date.fromisoformat(leave.get('inicio'))

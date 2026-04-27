@@ -6,6 +6,8 @@ Contiene la definición del modelo FamilyMember que almacena la información
 de los familiares de los empleados para efectos de beneficios y contactos de emergencia.
 """
 
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from datetime import date
@@ -74,7 +76,7 @@ class FamilyMember(models.Model):
     ]
     
     # Campos principales
-    familiar_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'Employee',
         on_delete=models.CASCADE,
@@ -129,8 +131,8 @@ class FamilyMember(models.Model):
     # Campos de control
     estado_familiar = models.CharField(max_length=15, choices=ESTADO_FAMILIAR_CHOICES, default='activo')
     observaciones = models.TextField(null=True, blank=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_registro')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     
     # Manager personalizado
     # objects = DatosFamiliaresManager()  # Comentado temporalmente para migraciones

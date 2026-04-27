@@ -85,12 +85,12 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Optimiza las consultas con select_related y prefetch_related."""
         queryset = Contract.objects.select_related(
-            "empleado", "area", "creado_por", "modificado_por"
-        ).order_by("-fecha_creacion")
+            "empleado", "area", "created_by", "updated_by"
+        ).order_by("-created_at")
 
         # Filtros por parámetros de consulta
-        empleado_id = self.request.query_params.get("empleado_id")
-        area_id = self.request.query_params.get("area_id")
+        empleado_id = self.request.query_params.get("id")
+        area_id = self.request.query_params.get("id")
         tipo_documento = self.request.query_params.get("tipo_documento")
         estado = self.request.query_params.get("estado")
         fecha_inicio = self.request.query_params.get("fecha_inicio")
@@ -128,7 +128,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
     #     description="Obtiene contratos próximos a vencer",
     #     parameters=[
     #         OpenApiParameter('dias', int, description="Días de anticipación para la alerta (default: 30)"),
-    #         OpenApiParameter('area_id', int, description="Filtrar por área específica")
+    #         OpenApiParameter('id', int, description="Filtrar por área específica")
     #     ],
     #     responses=AlertaVencimientoSerializer(many=True)
     # )
@@ -138,7 +138,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
         """Obtiene contratos próximos a vencer."""
         try:
             dias = int(request.query_params.get("dias", 30))
-            area_id = request.query_params.get("area_id")
+            area_id = request.query_params.get("id")
 
             fecha_limite = timezone.now().date() + timedelta(days=dias)
 
@@ -183,7 +183,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
     # @extend_schema(
     #     description="Genera reporte de contratos por área y período",
     #     parameters=[
-    #         OpenApiParameter('area_id', int, description="ID del área (opcional)"),
+    #         OpenApiParameter('id', int, description="ID del área (opcional)"),
     #         OpenApiParameter('fecha_inicio', str, description="Fecha de inicio del período (YYYY-MM-DD)"),
     #         OpenApiParameter('fecha_fin', str, description="Fecha de fin del período (YYYY-MM-DD)"),
     #         OpenApiParameter('tipo_documento', str, description="Tipo de documento a incluir")
@@ -194,7 +194,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
     def reporte_contratos(self, request):
         """Genera reporte estadístico de contratos."""
         try:
-            area_id = request.query_params.get("area_id")
+            area_id = request.query_params.get("id")
             fecha_inicio = request.query_params.get("fecha_inicio")
             fecha_fin = request.query_params.get("fecha_fin")
             tipo_documento = request.query_params.get("tipo_documento")
@@ -230,8 +230,8 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
 
             # Estadísticas por tipo
             stats_por_tipo = queryset.values("tipo_documento").annotate(
-                total=Count("contrato_id"),
-                activos=Count("contrato_id", filter=Q(estado="ACTIVO")),
+                total=Count("id"),
+                activos=Count("id", filter=Q(estado="ACTIVO")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -239,8 +239,8 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             stats_por_area = queryset.values(
                 "area__siglas_area", "area__nombre_unidad_organica"
             ).annotate(
-                total=Count("contrato_id"),
-                activos=Count("contrato_id", filter=Q(estado="ACTIVO")),
+                total=Count("id"),
+                activos=Count("id", filter=Q(estado="ACTIVO")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -269,7 +269,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                 "por_tipo": list(stats_por_tipo),
                 "por_area": list(stats_por_area),
                 "filtros_aplicados": {
-                    "area_id": area_id,
+                    "id": area_id,
                     "fecha_inicio": fecha_inicio.isoformat() if fecha_inicio else None,
                     "fecha_fin": fecha_fin.isoformat() if fecha_fin else None,
                     "tipo_documento": tipo_documento,
@@ -307,7 +307,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             # Distribución por tipo de documento
             distribucion_tipos = (
                 Contract.objects.values("tipo_documento")
-                .annotate(total=Count("contrato_id"))
+                .annotate(total=Count("id"))
                 .order_by("-total")
             )
 
@@ -324,7 +324,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                 Contract.objects.values(
                     "area__siglas_area", "area__nombre_unidad_organica"
                 )
-                .annotate(total=Count("contrato_id"))
+                .annotate(total=Count("id"))
                 .order_by("-total")[:5]
             )
 
@@ -389,7 +389,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                 "horario_trabajo": contrato_original.horario_trabajo,
                 "observaciones": request.data.get(
                     "observaciones",
-                    f"Renovación del contrato {contrato_original.contrato_id}",
+                    f"Renovación del contrato {contrato_original.pk}",
                 ),
             }
 
@@ -399,7 +399,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             )
 
             if serializer.is_valid():
-                nuevo_contrato = serializer.save(creado_por=request.user)
+                nuevo_contrato = serializer.save(created_by=request.user)
 
                 # Activar el nuevo contrato
                 nuevo_contrato.estado = "ACTIVO"
@@ -408,7 +408,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                 # Marcar el contrato original como terminado
                 contrato_original.estado = "TERMINADO"
                 obs_anterior = contrato_original.observaciones or ""
-                contrato_original.observaciones = f"{obs_anterior} - Renovado con contrato {nuevo_contrato.contrato_id}".strip(
+                contrato_original.observaciones = f"{obs_anterior} - Renovado con contrato {nuevo_contrato.pk}".strip(
                     " -"
                 )
                 contrato_original.save(update_fields=["estado", "observaciones"])

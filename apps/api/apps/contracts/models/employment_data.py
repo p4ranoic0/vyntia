@@ -6,6 +6,7 @@ Contiene la definición del modelo EmploymentData que almacena toda la informaci
 laboral, contractual y de puesto de los empleados.
 """
 
+import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -66,7 +67,7 @@ class EmploymentData(models.Model):
     ]
     
     # Campos principales
-    dato_laboral_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -119,8 +120,8 @@ class EmploymentData(models.Model):
     # Campos de control
     estado_datos = models.CharField(max_length=15, choices=ESTADO_DATOS_CHOICES, default='activo')
     observaciones = models.TextField(null=True, blank=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_registro')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
     
     # Manager personalizado
     # objects = DatosLaboralesManager()  # Comentado temporalmente para migraciones

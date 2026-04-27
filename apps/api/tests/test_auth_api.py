@@ -119,7 +119,7 @@ class LoginAPITest(AuthAPITestCase):
         self.assertTrue(response.data['success'])
         self.assertIn('access', response.data['data'])
         self.assertIn('refresh', response.data['data'])
-        self.assertEqual(response.data['message'], 'Inicio de sesión exitoso')
+        self.assertEqual(response.data['message'], 'Inicio de sesion exitoso')
         
     def test_login_credenciales_invalidas(self):
         """Test de login con credenciales inválidas."""

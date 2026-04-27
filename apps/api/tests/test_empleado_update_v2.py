@@ -34,7 +34,7 @@ class TestEmpleadoUpdateV2:
         """PATCH with sistema_pensiones+codigo_cuspp+tipo_comision saves all three fields."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = self._empleado_url(empleado.empleado_id)
+        url = self._empleado_url(empleado.pk)
 
         patch_data = {
             "sistema_pensiones": "AFP PRIMA",
@@ -56,7 +56,7 @@ class TestEmpleadoUpdateV2:
         """PATCH with numero_cci saves the field; GET confirms saved value."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = self._empleado_url(empleado.empleado_id)
+        url = self._empleado_url(empleado.pk)
 
         patch_data = {"numero_cci": "00219300060156893091"}
         response = hr_client.patch(url, patch_data, format="json")
@@ -71,7 +71,7 @@ class TestEmpleadoUpdateV2:
         """PATCH with sistema_pensiones='SIN PENSION' returns 200 (not 400 validation error)."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = self._empleado_url(empleado.empleado_id)
+        url = self._empleado_url(empleado.pk)
 
         patch_data = {"sistema_pensiones": "SIN PENSION"}
         response = hr_client.patch(url, patch_data, format="json")
@@ -83,7 +83,7 @@ class TestEmpleadoUpdateV2:
         """PATCH with provincia_domicilio+departamento_domicilio saves both; GET confirms."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = self._empleado_url(empleado.empleado_id)
+        url = self._empleado_url(empleado.pk)
 
         patch_data = {
             "provincia_domicilio": "Arequipa",
@@ -102,7 +102,7 @@ class TestEmpleadoUpdateV2:
         """GET /api/v1/rrhh/empleados/{id}/ response keys include sistema_pensiones, numero_cci, codigo_cuspp."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = self._empleado_url(empleado.empleado_id)
+        url = self._empleado_url(empleado.pk)
 
         get_response = hr_client.get(url)
         assert get_response.status_code == 200

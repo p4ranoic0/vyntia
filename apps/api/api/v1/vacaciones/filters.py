@@ -16,7 +16,7 @@ class ConfiguracionVacacionesFilter(filters.FilterSet):
 
     class Meta:
         model = VacationConfiguration
-        fields = ['tipo_configuracion', 'activo', 'area', 'empleado']
+        fields = ['tipo_configuracion', 'is_active', 'area', 'empleado']
 
 
 class PeriodoVacacionalFilter(filters.FilterSet):
@@ -47,7 +47,7 @@ class PeriodoVacacionalFilter(filters.FilterSet):
 
     class Meta:
         model = VacationPeriod
-        fields = ['ano_periodo', 'empleado', 'estado_periodo', 'contrato_id']
+        fields = ['ano_periodo', 'empleado', 'estado_periodo', 'id']
 
 
 class SolicitudVacacionesFilter(filters.FilterSet):
@@ -82,7 +82,7 @@ class SolicitudVacacionesFilter(filters.FilterSet):
 
     class Meta:
         model = VacationRequest
-        fields = ['empleado', 'estado_solicitud', 'tipo_solicitud', 'ano_periodo', 'contrato_id']
+        fields = ['empleado', 'estado_solicitud', 'tipo_solicitud', 'ano_periodo', 'id']
 
 
 class GoceVacacionesFilter(filters.FilterSet):
@@ -112,4 +112,4 @@ class GoceVacacionesFilter(filters.FilterSet):
 
     class Meta:
         model = VacationGrant
-        fields = ['empleado', 'estado_goce', 'ano_periodo', 'contrato_id']
+        fields = ['empleado', 'estado_goce', 'ano_periodo', 'id']

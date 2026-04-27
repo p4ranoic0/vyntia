@@ -3,6 +3,8 @@
 Modelo DocumentTemplate - Plantillas Word para generación de documentos.
 """
 
+import uuid
+
 from django.db import models
 
 
@@ -22,7 +24,7 @@ class DocumentTemplate(models.Model):
         ('adenda', 'Adenda'),
     ]
 
-    plantilla_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tipo = models.CharField(
         max_length=30,
         choices=TIPO_CHOICES,
@@ -35,18 +37,19 @@ class DocumentTemplate(models.Model):
         help_text='Archivo .docx de la plantilla',
     )
     activa = models.BooleanField(default=True, help_text='Si esta plantilla esta disponible para uso')
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    creada_por = models.ForeignKey(
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    created_by = models.ForeignKey(
         'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='plantillas_creadas',
+        db_column='creada_por_id',
     )
 
     class Meta:
         db_table = 'app_rrhh_plantilla_documento'
-        ordering = ['-fecha_creacion']
+        ordering = ['-created_at']
         verbose_name = 'Plantilla de Documento'
         verbose_name_plural = 'Plantillas de Documentos'
 

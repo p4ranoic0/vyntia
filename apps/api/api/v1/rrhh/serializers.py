@@ -43,7 +43,7 @@ class AreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = [
-            "area_id",
+            "id",
             "nombre_organo",
             "nombre_unidad_organica",
             "siglas_area",
@@ -53,7 +53,7 @@ class AreaSerializer(serializers.ModelSerializer):
             "es_activa",
             "empleados_activos_count",
         ]
-        read_only_fields = ["area_id"]
+        read_only_fields = ["id"]
 
     @extend_schema_field(serializers.CharField())
     def get_nombre_completo(self, obj) -> str:
@@ -89,7 +89,7 @@ class AreaListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = [
-            "area_id",
+            "id",
             "nombre_organo",
             "nombre_unidad_organica",
             "siglas_area",
@@ -118,7 +118,7 @@ class DatosFamiliaresSerializer(serializers.ModelSerializer):
     class Meta:
         model = FamilyMember
         fields = [
-            "familiar_id",
+            "id",
             "empleado",
             "parentesco",
             "nombres_familiar",
@@ -135,7 +135,7 @@ class DatosFamiliaresSerializer(serializers.ModelSerializer):
             "es_dependiente",
             "estado_familiar",
         ]
-        read_only_fields = ["familiar_id"]
+        read_only_fields = ["id"]
         extra_kwargs = {
             "fecha_nacimiento": {"required": False, "allow_null": True},
             "genero_familiar": {"required": False, "allow_blank": True, "default": ""},
@@ -173,7 +173,7 @@ class DatosAcademicosSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicRecord
         fields = [
-            "academico_id",
+            "id",
             "empleado",
             "nivel_educativo",
             "nombre_institucion",
@@ -200,7 +200,7 @@ class DatosAcademicosSerializer(serializers.ModelSerializer):
             "tesis_titulo",
             "verificado_sunedu",
         ]
-        read_only_fields = ["academico_id"]
+        read_only_fields = ["id"]
 
     def validate(self, data):
         """Validate academic data."""
@@ -231,7 +231,7 @@ class CursosCertificacionesSerializer(serializers.ModelSerializer):
 
         model = Certification
         fields = [
-            "curso_id",
+            "id",
             "empleado",
             "nombre_curso",
             "institucion",
@@ -241,10 +241,10 @@ class CursosCertificacionesSerializer(serializers.ModelSerializer):
             "descripcion",
             "documento",
             "estado_registro",
-            "fecha_registro",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["curso_id", "fecha_registro", "fecha_actualizacion"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class DatosLaboralesSerializer(serializers.ModelSerializer):
@@ -290,7 +290,7 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmploymentData
         fields = [
-            "dato_laboral_id",
+            "id",
             "empleado",
             "area",
             "fecha_ingreso",
@@ -311,7 +311,7 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
             "ultimo_login_texto",
             "dias_sin_login",
         ]
-        read_only_fields = ["dato_laboral_id", "empleado_nombre", "area_nombre"]
+        read_only_fields = ["id", "empleado_nombre", "area_nombre"]
 
     def validate_remuneracion_mensual(self, value):
         """Validate salary amount."""
@@ -348,7 +348,7 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompensationConfiguration
         fields = [
-            "configuracion_id",
+            "id",
             "tipo",
             "codigo",
             "nombre",
@@ -359,14 +359,14 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
             "orden",
             "estado",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "configuracion_id",
+            "id",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
 
     def validate_codigo(self, value):
@@ -414,7 +414,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
     class Meta:
         model = AfpConfiguration
         fields = [
-            "afp_config_id",
+            "id",
             "afp_nombre",
             "vigencia_mes",
             "aporte_obligatorio_pct",
@@ -424,14 +424,14 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
             "remuneracion_max_asegurable",
             "estado",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "afp_config_id",
+            "id",
             "es_activo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
         ]
 
     def validate_vigencia_mes(self, value):
@@ -499,7 +499,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = [
-            "empleado_id",
+            "id",
             "nombres_empleado",
             "apellido_paterno",
             "apellido_materno",
@@ -530,7 +530,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
             "familiares",
             "formacion",
         ]
-        read_only_fields = ["empleado_id"]
+        read_only_fields = ["id"]
 
     def validate_numero_documento(self, value):
         """Validate document number uniqueness and format."""
@@ -603,7 +603,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = [
-            "empleado_id",
+            "id",
             "nombres_empleado",
             "apellido_paterno",
             "apellido_materno",
@@ -631,7 +631,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
         ubicacion = obj.ubicacion_actual()
         if ubicacion:
             return {
-                "area_id": ubicacion.area_destino.area_id,
+                "id": ubicacion.area_destino.pk,
                 "area_siglas": ubicacion.area_destino.siglas_area,
                 "area_nombre": ubicacion.area_destino.nombre_unidad_organica,
             }
@@ -639,7 +639,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
         datos_lab = obj.datos_laborales_actuales()
         if datos_lab and datos_lab.area:
             return {
-                "area_id": datos_lab.area.area_id,
+                "id": datos_lab.area.pk,
                 "area_siglas": datos_lab.area.siglas_area,
                 "area_nombre": datos_lab.area.nombre_unidad_organica,
             }
@@ -668,7 +668,7 @@ class DatosLaboralesCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmploymentData
-        exclude = ["dato_laboral_id", "empleado", "area"]
+        exclude = ["id", "empleado", "area"]
 
 
 class EmpleadoCreateSerializer(serializers.ModelSerializer):
@@ -686,7 +686,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = [
-            "empleado_id",
+            "id",
             "nombres_empleado",
             "apellido_paterno",
             "apellido_materno",
@@ -712,7 +712,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
             "datos_familiares",
             "datos_academicos",
         ]
-        read_only_fields = ["empleado_id"]
+        read_only_fields = ["id"]
 
     def validate_area_inicial(self, value):
         """Validate initial area exists and is active."""
@@ -796,7 +796,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "usuario_id",
+            "id",
             "username",
             "nombres_usuario",
             "apellidos_usuario",
@@ -813,7 +813,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "ultimo_login_texto",
             "dias_sin_login",
         ]
-        read_only_fields = ["usuario_id", "date_joined"]
+        read_only_fields = ["id", "date_joined"]
 
     def get_roles_activos(self, obj):
         """Obtener roles activos del usuario."""
@@ -822,7 +822,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             if roles.exists():
                 return [
                     {
-                        "id": rol.rol_id,
+                        "id": rol.pk,
                         "nombre": rol.nombre_rol,
                         "descripcion": rol.descripcion_rol,
                     }
@@ -922,7 +922,7 @@ class RolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = [
-            "rol_id",
+            "id",
             "nombre_rol",
             "descripcion_rol",
             "estado_rol",
@@ -931,7 +931,7 @@ class RolSerializer(serializers.ModelSerializer):
             "total_permisos",
             "permisos",
         ]
-        read_only_fields = ["rol_id"]
+        read_only_fields = ["id"]
 
     def get_total_permisos(self, obj):
         """Get total count of permissions for role."""
@@ -942,7 +942,7 @@ class RolSerializer(serializers.ModelSerializer):
         permisos_asignados = obj.permisos_asignados.select_related("permiso").all()
         return [
             {
-                "id": rol_permiso.permiso.permiso_id,
+                "id": rol_permiso.permiso.pk,
                 "nombre": rol_permiso.permiso.nombre_permiso,
                 "modulo": rol_permiso.permiso.modulo,
                 "tipo": rol_permiso.permiso.tipo_permiso,
@@ -960,7 +960,7 @@ class PermisoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = [
-            "permiso_id",
+            "id",
             "nombre_permiso",
             "descripcion_permiso",
             "modulo",
@@ -968,7 +968,7 @@ class PermisoSerializer(serializers.ModelSerializer):
             "estado_permiso",
             "es_activo",
         ]
-        read_only_fields = ["permiso_id"]
+        read_only_fields = ["id"]
 
 
 class ModulosSerializer(serializers.ModelSerializer):
@@ -980,19 +980,19 @@ class ModulosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
         fields = [
-            "modulo_id",
+            "id",
             "nombre_modulo",
             "descripcion_modulo",
             "icono_modulo",
             "ruta_modulo",
             "orden_visualizacion",
             "estado_modulo",
-            "fecha_creacion",
-            "fecha_actualizacion",
+            "created_at",
+            "updated_at",
             "es_activo",
             "permisos_count",
         ]
-        read_only_fields = ["modulo_id", "fecha_creacion", "fecha_actualizacion"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_permisos_count(self, obj):
         """Obtener el número de permisos asociados al módulo."""
@@ -1035,9 +1035,9 @@ class RolPermisosSerializer(serializers.ModelSerializer):
     class Meta:
         model = RolePermission
         fields = [
-            "rol_permiso_id",
-            "rol_id",
-            "permiso_id",
+            "id",
+            "id",
+            "id",
             "fecha_asignacion",
             "asignado_por_usuario_id",
             "rol_nombre",
@@ -1045,12 +1045,12 @@ class RolPermisosSerializer(serializers.ModelSerializer):
             "modulo_nombre",
             "asignado_por_nombre",
         ]
-        read_only_fields = ["rol_permiso_id", "fecha_asignacion"]
+        read_only_fields = ["id", "fecha_asignacion"]
 
     def validate(self, data):
         """Validar que no exista ya la asignación de permiso a rol."""
-        rol_id = data.get("rol_id")
-        permiso_id = data.get("permiso_id")
+        rol_id = data.get("id")
+        permiso_id = data.get("id")
 
         if rol_id and permiso_id:
             queryset = RolePermission.objects.filter(rol_id=rol_id, permiso_id=permiso_id)
@@ -1123,7 +1123,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
     class Meta:
         model = DigitalDocument
         fields = [
-            "documento_id",
+            "id",
             "empleado",
             "empleado_detalle",
             "tipo_documento",
@@ -1151,7 +1151,7 @@ class DocumentosDigitalesSerializer(serializers.ModelSerializer):
             "observaciones_validacion",
         ]
         read_only_fields = [
-            "documento_id",
+            "id",
             "fecha_subida",
             "nombre_archivo_original",
             "formato_archivo",
@@ -1234,7 +1234,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = OnboardingProcess
         fields = [
-            "onboarding_id",
+            "id",
             "empleado",
             "empleado_nombre",
             "empleado_documento",
@@ -1260,7 +1260,7 @@ class OnboardingEmpleadoSerializer(serializers.ModelSerializer):
             "fecha_completado",
             "last_login",
         ]
-        read_only_fields = ["onboarding_id", "fecha_inicio", "fecha_completado"]
+        read_only_fields = ["id", "fecha_inicio", "fecha_completado"]
 
     def get_documentos_pendientes(self, obj):
         from apps.onboarding.services import OnboardingService
@@ -1300,8 +1300,8 @@ class OnboardingIniciarSerializer(serializers.Serializer):
     def create(self, validated_data):
         from apps.onboarding.services import OnboardingService
 
-        creado_por = self.context["request"].user
-        result = OnboardingService.crear_onboarding_completo(validated_data, creado_por)
+        created_by = self.context["request"].user
+        result = OnboardingService.crear_onboarding_completo(validated_data, created_by)
         return result
 
 

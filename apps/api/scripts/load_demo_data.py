@@ -311,7 +311,7 @@ def crear_permisos():
 
 def asignar_permisos_a_roles():
     """Asignar permisos a cada rol."""
-    todos_permisos = list(Permission.objects.values_list("permiso_id", flat=True))
+    todos_permisos = list(Permission.objects.values_list("id", flat=True))
 
     rol_super = Role.objects.get(nombre_rol="Super Administrador")
     rol_admin_rrhh = Role.objects.get(nombre_rol="Administrador RRHH")

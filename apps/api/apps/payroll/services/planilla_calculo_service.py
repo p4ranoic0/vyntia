@@ -72,7 +72,7 @@ class PlanillaCalculoService:
             return {
                 "success": True,
                 "message": "Planilla calculada exitosamente",
-                "planilla_id": planilla_id,
+                "id": planilla_id,
                 "total_trabajadores": planilla.total_trabajadores,
                 "total_neto_pagar": float(planilla.total_neto_pagar),
             }

@@ -115,10 +115,10 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
     @require_hr()
     def create(self, request, *args, **kwargs):
         """Crear configuración de UIT - requiere rol RRHH."""
-        # Establecer creado_por automáticamente
+        # Establecer created_by automáticamente
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(creado_por=request.user)
+        serializer.save(created_by=request.user)
 
         return APIResponse.success(
             message="Configuración UIT creada exitosamente",
@@ -164,7 +164,7 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas y aplica filtros."""
-        queryset = TaxParameter.objects.select_related("creado_por").order_by(
+        queryset = TaxParameter.objects.select_related("created_by").order_by(
             "-anio"
         )
 
@@ -498,7 +498,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
 
             # Calcular totales agregados para el resumen
             resumen = {
-                "planilla_id": planilla.planilla_id,
+                "id": planilla.planilla_id,
                 "periodo": str(planilla.periodo),
                 "modalidad": planilla.modalidad,
                 "meta_presupuestal": planilla.meta_presupuestal,
@@ -521,7 +521,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                 },
                 "detalles": [
                     {
-                        "empleado_id": detalle.empleado.empleado_id,
+                        "id": detalle.empleado.pk,
                         "nombres": detalle.empleado.nombres_empleado,
                         "apellidos": f"{detalle.empleado.apellido_paterno} {detalle.empleado.apellido_materno or ''}".strip(),
                         "dni": detalle.dni,
@@ -601,7 +601,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         return APIResponse.success(
             message=f"Boletas generadas: {creadas} nuevas, {existentes} ya existían.",
             data={
-                "planilla_id": planilla.planilla_id,
+                "id": planilla.planilla_id,
                 "periodo": planilla.periodo,
                 "boletas_creadas": creadas,
                 "boletas_existentes": existentes,
@@ -674,14 +674,14 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         tipos_contrato = list(
             EmploymentData.objects.filter(estado_datos="activo")
             .values("tipo_contrato")
-            .annotate(cantidad=Count("dato_laboral_id"))
+            .annotate(cantidad=Count("id"))
             .order_by("tipo_contrato")
         )
 
         # Muestra de empleados activos
         muestra = list(
             Employee.objects.filter(estado_empleado="activo")[:5].values(
-                "empleado_id",
+                "id",
                 "numero_documento",
                 "nombres_empleado",
                 "apellido_paterno",
@@ -693,7 +693,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         planillas = list(
             MonthlyPayroll.objects.all()
             .values(
-                "planilla_id",
+                "id",
                 "periodo",
                 "modalidad",
                 "estado",
@@ -706,8 +706,8 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         # EmploymentData detalle con sueldo
         dl_detalle = list(
             EmploymentData.objects.filter(estado_datos="activo").values(
-                "dato_laboral_id",
-                "empleado_id",
+                "id",
+                "id",
                 "tipo_contrato",
                 "sueldo_basico",
                 "cargo_empleado",
@@ -758,7 +758,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
             or 0,
             "distribucion_sistema_pensiones": list(
                 detalles.values("sistema_pensiones")
-                .annotate(cantidad=Count("detalle_id"))
+                .annotate(cantidad=Count("id"))
                 .order_by("-cantidad")
             ),
         }
@@ -825,10 +825,10 @@ class DetallePlanillaViewSet(viewsets.ModelViewSet):
 
         # Filtros (acepta tanto planilla_id como planilla)
         planilla_id = self.request.query_params.get(
-            "planilla_id"
+            "id"
         ) or self.request.query_params.get("planilla")
         empleado_id = self.request.query_params.get(
-            "empleado_id"
+            "id"
         ) or self.request.query_params.get("empleado")
         dni = self.request.query_params.get("dni")
         sistema_pensiones = self.request.query_params.get("sistema_pensiones")
@@ -1065,7 +1065,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
 
         from django.http import HttpResponse
 
-        planilla_id = request.query_params.get("planilla_id")
+        planilla_id = request.query_params.get("id")
         if not planilla_id:
             return APIResponse.error(
                 message="Se requiere el parámetro planilla_id", status_code=400
@@ -1160,7 +1160,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(detalle_planilla__empleado__usuario=user)
 
         # Filtros
-        empleado_id = self.request.query_params.get("empleado_id")
+        empleado_id = self.request.query_params.get("id")
         periodo = self.request.query_params.get("periodo")
         estado = self.request.query_params.get("estado")
 
@@ -1228,7 +1228,7 @@ class CalendarioPagoViewSet(viewsets.ModelViewSet):
         ).order_by("fecha_pago_programada")
 
         # Filtros
-        planilla_id = self.request.query_params.get("planilla_id")
+        planilla_id = self.request.query_params.get("id")
         estado = self.request.query_params.get("estado")
         tipo_pago = self.request.query_params.get("tipo_pago")
 

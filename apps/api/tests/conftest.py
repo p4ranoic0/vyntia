@@ -105,7 +105,7 @@ def onboarding_factory(db):
         empleado = _make_empleado()
 
         # Crear User empleado vinculado al Employee
-        usuario = _make_usuario(empleado=empleado, tipo="empleado", suffix=f"empl_{empleado.empleado_id}")
+        usuario = _make_usuario(empleado=empleado, tipo="empleado", suffix=f"empl_{empleado.pk}")
 
         # Crear OnboardingProcess
         onboarding = OnboardingProcess.objects.create(

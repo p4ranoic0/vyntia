@@ -6,13 +6,15 @@ Almacena los cursos, capacitaciones y certificaciones completados por los emplea
 con referencia opcional al documento digital que los certifica.
 """
 
+import uuid
+
 from django.db import models
 
 
 class Certification(models.Model):
     """Modelo para gestionar cursos y certificaciones de los empleados."""
 
-    curso_id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empleado = models.ForeignKey(
         'Employee', on_delete=models.CASCADE, related_name='cursos_certificaciones'
     )
@@ -29,8 +31,8 @@ class Certification(models.Model):
         related_name='curso_certificacion',
     )
     estado_registro = models.CharField(max_length=20, default='activo')
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_registro')
+    updated_at = models.DateTimeField(auto_now=True, db_column='fecha_actualizacion')
 
     class Meta:
         db_table = 'cursos_certificaciones'

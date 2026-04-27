@@ -39,7 +39,7 @@ class TestEmpleadoSelfUpdate:
     def test_employee_can_patch_own_personal_fields(self, onboarding_client):
         onboarding = onboarding_client._onboarding
         empleado = onboarding.empleado
-        url = _empleado_url(empleado.empleado_id)
+        url = _empleado_url(empleado.pk)
 
         payload = {
             "telefono_celular": "987654321",
@@ -57,7 +57,7 @@ class TestEmpleadoSelfUpdate:
     def test_employee_can_patch_own_banking_fields(self, onboarding_client):
         onboarding = onboarding_client._onboarding
         empleado = onboarding.empleado
-        url = _empleado_url(empleado.empleado_id)
+        url = _empleado_url(empleado.pk)
 
         payload = {
             "entidad_bancaria": "BCP - Banco de Crédito del Perú",
@@ -74,7 +74,7 @@ class TestEmpleadoSelfUpdate:
     def test_employee_can_patch_own_pension_fields(self, onboarding_client):
         onboarding = onboarding_client._onboarding
         empleado = onboarding.empleado
-        url = _empleado_url(empleado.empleado_id)
+        url = _empleado_url(empleado.pk)
 
         payload = {
             "sistema_pensiones": "AFP PRIMA",
@@ -91,7 +91,7 @@ class TestEmpleadoSelfUpdate:
         """Employee sending nombres_empleado must be blocked (403)."""
         onboarding = onboarding_client._onboarding
         empleado = onboarding.empleado
-        url = _empleado_url(empleado.empleado_id)
+        url = _empleado_url(empleado.pk)
 
         payload = {"nombres_empleado": "Hacker", "apellido_paterno": "Hack"}
         response = onboarding_client.patch(url, payload, format="json")
@@ -108,7 +108,7 @@ class TestEmpleadoSelfUpdate:
             correo_personal="otro.empleado2@test.com",
             estado_empleado="activo",
         )
-        url = _empleado_url(other_empleado.empleado_id)
+        url = _empleado_url(other_empleado.pk)
 
         payload = {"telefono_celular": "111222333"}
         response = onboarding_client.patch(url, payload, format="json")
@@ -120,7 +120,7 @@ class TestEmpleadoSelfUpdate:
         """RRHH can still PATCH any field including restricted ones."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
-        url = _empleado_url(empleado.empleado_id)
+        url = _empleado_url(empleado.pk)
 
         payload = {"numero_ruc": "10123456789"}
         response = hr_client.patch(url, payload, format="json")
@@ -147,7 +147,7 @@ class TestDatosFamiliaresParentesco:
 
     def test_create_familiar_hijo_accepted(self, onboarding_client):
         onboarding = onboarding_client._onboarding
-        payload = self._base_familiar_payload(onboarding.empleado.empleado_id)
+        payload = self._base_familiar_payload(onboarding.empleado.pk)
         response = onboarding_client.post(_familiares_url(), payload, format="json")
         assert response.status_code in (200, 201), f"Expected 201, got {response.status_code}: {response.data}"
 
@@ -155,7 +155,7 @@ class TestDatosFamiliaresParentesco:
         """'hija' is NOT a valid backend choice — backend must reject it (hence frontend fix)."""
         onboarding = onboarding_client._onboarding
         payload = self._base_familiar_payload(
-            onboarding.empleado.empleado_id,
+            onboarding.empleado.pk,
             parentesco="hija",
             nombres_familiar="María",
             numero_documento="87654321",
@@ -168,7 +168,7 @@ class TestDatosFamiliaresParentesco:
     def test_create_familiar_conyuge_accepted(self, onboarding_client):
         onboarding = onboarding_client._onboarding
         payload = self._base_familiar_payload(
-            onboarding.empleado.empleado_id,
+            onboarding.empleado.pk,
             parentesco="conyuge",
             nombres_familiar="Ana",
             apellido_paterno="Torres",
@@ -198,9 +198,9 @@ class TestDatosFamiliaresDestroy:
         onboarding = onboarding_client._onboarding
         familiar = self._create_familiar(onboarding.empleado)
 
-        response = onboarding_client.delete(_familiares_url(familiar.familiar_id))
+        response = onboarding_client.delete(_familiares_url(familiar.pk))
         assert response.status_code == 204, f"Expected 204, got {response.status_code}: {response.data}"
-        assert not FamilyMember.objects.filter(pk=familiar.familiar_id).exists()
+        assert not FamilyMember.objects.filter(pk=familiar.pk).exists()
 
     def test_employee_cannot_delete_other_employees_familiar(self, onboarding_client):
         other_empleado = Employee.objects.create(
@@ -214,15 +214,15 @@ class TestDatosFamiliaresDestroy:
         )
         other_familiar = self._create_familiar(other_empleado)
 
-        response = onboarding_client.delete(_familiares_url(other_familiar.familiar_id))
+        response = onboarding_client.delete(_familiares_url(other_familiar.pk))
         assert response.status_code in (403, 404), (
             f"Expected 403 or 404, got {response.status_code}"
         )
-        assert FamilyMember.objects.filter(pk=other_familiar.familiar_id).exists()
+        assert FamilyMember.objects.filter(pk=other_familiar.pk).exists()
 
     def test_hr_can_delete_any_familiar(self, hr_client, onboarding_factory):
         onboarding = onboarding_factory()
         familiar = self._create_familiar(onboarding.empleado)
 
-        response = hr_client.delete(_familiares_url(familiar.familiar_id))
+        response = hr_client.delete(_familiares_url(familiar.pk))
         assert response.status_code == 204, f"Expected 204, got {response.status_code}: {response.data}"
