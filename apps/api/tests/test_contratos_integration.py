@@ -17,6 +17,7 @@ from django.contrib.auth import authenticate
 from apps.documents.models import DigitalDocument
 from apps.contracts.models import (
     Contract,
+    ContractAmendment,
     EmploymentData,
 )
 from apps.employees.models import Employee
@@ -99,8 +100,7 @@ class TestContratosIntegration(TestCase):
         )
         
         self.assertEqual(contrato.numero_contrato, 'CON-2024-001')
-        self.assertTrue(contrato.es_contrato_inicial)
-        self.assertFalse(contrato.es_adenda)
+        self.assertIsInstance(contrato, Contract)
         self.assertTrue(contrato.esta_vigente)
         self.assertEqual(contrato.empleado, self.empleado)
         self.assertEqual(contrato.area, self.area)
@@ -121,27 +121,24 @@ class TestContratosIntegration(TestCase):
             created_by=self.usuario
         )
         
-        # Crear adenda salarial
-        adenda = Contract.objects.create(
-            empleado=self.empleado,
-            area=self.area,
-            numero_contrato='CON-2024-002',
+        # Crear adenda salarial (ahora ContractAmendment vinculado por FK)
+        adenda = ContractAmendment.objects.create(
+            parent_contract=contrato_inicial,
             numero_adenda='AD-001',
             tipo_documento='ADENDA_SALARIAL',
             fecha_inicio=date.today() + timedelta(days=30),
             fecha_fin=date.today() + timedelta(days=365),
-            salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto  # Aumento salarial
-            cargo='Analista de Sistemas',
+            nuevo_salario=Decimal('4597.70'),  # Aumento salarial
+            motivo='Aumento de sueldo',
             status='ACTIVO',
             created_by=self.usuario
         )
-        
-        self.assertEqual(adenda.numero_contrato, 'CON-2024-002')
+
+        self.assertEqual(adenda.parent_contract.numero_contrato, 'CON-2024-002')
         self.assertEqual(adenda.numero_adenda, 'AD-001')
-        self.assertFalse(adenda.es_contrato_inicial)
-        self.assertTrue(adenda.es_adenda)
-        self.assertEqual(adenda.salario_bruto, Decimal('4597.70'))
-        
+        self.assertIsInstance(adenda, ContractAmendment)
+        self.assertEqual(adenda.nuevo_salario, Decimal('4597.70'))
+
         # Verificar que ambos documentos están relacionados
         adendas = contrato_inicial.obtener_adendas()
         self.assertEqual(adendas.count(), 1)
@@ -266,25 +263,24 @@ class TestContratosIntegration(TestCase):
         # Guardar contrato
         contrato.save()
         
-        # Crear adenda y generar número
-        adenda = Contract(
-            empleado=self.empleado,
-            area=self.area,
-            numero_contrato=contrato.numero_contrato,
-            numero_adenda='temp',  # Temporal para que no sea considerado contrato inicial
+        # Generar siguiente numero de adenda para este contrato (sin adendas previas → AD-001)
+        numero_adenda = contrato.generar_numero_adenda()
+        self.assertEqual(numero_adenda, 'AD-001')
+
+        # Crear la adenda usando el numero generado
+        adenda = ContractAmendment(
+            parent_contract=contrato,
+            numero_adenda=numero_adenda,
             tipo_documento='ADENDA_SALARIAL',
             fecha_inicio=date.today() + timedelta(days=30),
             fecha_fin=date.today() + timedelta(days=365),
-            salario_bruto=Decimal('3448.28'),  # Resulta en salario_neto exacto
-            cargo='Analista de Sistemas',
+            nuevo_salario=Decimal('3448.28'),
+            motivo='Ajuste salarial',
             status='ACTIVO',
             created_by=self.usuario
         )
-        
-        numero_adenda = adenda.generar_numero_adenda()
-        self.assertEqual(numero_adenda, 'AD-001')
-        # Asignar el número generado
-        adenda.numero_adenda = numero_adenda
+        # No persistimos para mantener el test focalizado en la generacion del numero
+        self.assertEqual(adenda.numero_adenda, 'AD-001')
     
     def test_calculo_salario_neto(self):
         """Test para cálculo automático de salario neto."""
@@ -460,49 +456,44 @@ class TestContratosIntegration(TestCase):
         self.assertTrue(contrato.puede_generar_adenda())
         
         # 3. Crear adenda de extensión
-        adenda_extension = Contract.objects.create(
-            empleado=self.empleado,
-            area=self.area,
-            numero_contrato=contrato.numero_contrato,
+        adenda_extension = ContractAmendment.objects.create(
+            parent_contract=contrato,
             numero_adenda='AD-001',
             tipo_documento='ADENDA_EXTENSION',
             fecha_inicio=contrato.fecha_fin,
             fecha_fin=contrato.fecha_fin + timedelta(days=180),
-            salario_bruto=contrato.salario_bruto,
-            cargo=contrato.cargo,
+            nueva_fecha_fin_contrato=contrato.fecha_fin + timedelta(days=180),
+            motivo='Extension del plazo del contrato',
             status='ACTIVO',
             created_by=self.usuario
         )
-        
+
         # 4. Crear adenda salarial
-        adenda_salarial = Contract.objects.create(
-            empleado=self.empleado,
-            area=self.area,
-            numero_contrato=contrato.numero_contrato,
+        adenda_salarial = ContractAmendment.objects.create(
+            parent_contract=contrato,
             numero_adenda='AD-002',
             tipo_documento='ADENDA_SALARIAL',
             fecha_inicio=date.today() + timedelta(days=90),
             fecha_fin=adenda_extension.fecha_fin,
-            salario_bruto=Decimal('4597.70'),  # Resulta en salario_neto exacto - Aumento
-            cargo=contrato.cargo,
+            nuevo_salario=Decimal('4597.70'),  # Aumento salarial
+            motivo='Aumento de sueldo',
             status='ACTIVO',
             created_by=self.usuario
         )
-        
+
         # 5. Verificar el historial completo
         adendas = contrato.obtener_adendas()
         self.assertEqual(adendas.count(), 2)
-        
+
         # 6. Verificar orden cronológico
         adendas_ordenadas = list(adendas.order_by('created_at'))
         self.assertEqual(adendas_ordenadas[0], adenda_extension)
         self.assertEqual(adendas_ordenadas[1], adenda_salarial)
-        
-        # 7. Verificar que todas las adendas tienen el mismo número de contrato
+
+        # 7. Verificar que todas las adendas apuntan al mismo contrato padre
         for adenda in adendas:
-            self.assertEqual(adenda.numero_contrato, contrato.numero_contrato)
-            self.assertEqual(adenda.empleado, contrato.empleado)
-        
-        # 8. Verificar contrato base desde adenda
-        contrato_base = adenda_salarial.obtener_contrato_base()
-        self.assertEqual(contrato_base, contrato)
+            self.assertEqual(adenda.parent_contract, contrato)
+            self.assertEqual(adenda.parent_contract.empleado, contrato.empleado)
+
+        # 8. Verificar contrato base desde adenda (FK directa tras el split)
+        self.assertEqual(adenda_salarial.parent_contract, contrato)

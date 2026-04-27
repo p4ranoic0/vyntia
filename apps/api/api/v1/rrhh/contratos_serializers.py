@@ -13,7 +13,7 @@ from decimal import Decimal
 from typing import Dict, Any
 
 from apps.documents.models import DigitalDocument
-from apps.contracts.models import Contract
+from apps.contracts.models import Contract, ContractAmendment
 from apps.employees.models import Employee
 from apps.organization.models import Department
 from .serializers import EmpleadoListSerializer, AreaSerializer
@@ -31,8 +31,6 @@ class ContratosAdendasSerializer(serializers.ModelSerializer):
     esta_vencido = serializers.ReadOnlyField()
     duracion_dias = serializers.ReadOnlyField()
     duracion_meses = serializers.ReadOnlyField()
-    es_contrato_inicial = serializers.ReadOnlyField()
-    es_adenda = serializers.ReadOnlyField()
 
     # Campos de texto para choices
     tipo_documento_texto = serializers.CharField(source='get_tipo_documento_display', read_only=True)
@@ -43,7 +41,7 @@ class ContratosAdendasSerializer(serializers.ModelSerializer):
         model = Contract
         fields = [
             'id', 'empleado', 'empleado_detalle', 'area', 'area_detalle',
-            'numero_contrato', 'numero_adenda', 'tipo_documento',
+            'numero_contrato', 'tipo_documento',
             'fecha_inicio', 'fecha_fin', 'fecha_firma',
             'salario_bruto', 'salario_neto',
             'cargo', 'jornada_laboral', 'funciones',
@@ -53,7 +51,7 @@ class ContratosAdendasSerializer(serializers.ModelSerializer):
             'created_by', 'updated_by',
             # Campos calculados
             'dias_hasta_vencimiento', 'esta_vigente', 'esta_vencido',
-            'duracion_dias', 'duracion_meses', 'es_contrato_inicial', 'es_adenda',
+            'duracion_dias', 'duracion_meses',
             # Campos de texto
             'tipo_documento_texto', 'estado_texto', 'jornada_texto',
         ]
@@ -91,7 +89,7 @@ class ContratosAdendasCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = [
-            'empleado', 'area', 'numero_contrato', 'numero_adenda',
+            'empleado', 'area', 'numero_contrato',
             'tipo_documento', 'fecha_inicio', 'fecha_fin',
             'fecha_firma', 'salario_bruto',
             'cargo', 'jornada_laboral', 'funciones',
@@ -180,7 +178,7 @@ class ContratosAdendasListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = [
-            'id', 'numero_contrato', 'numero_adenda',
+            'id', 'numero_contrato',
             'empleado', 'empleado_nombre', 'area_nombre',
             'tipo_documento', 'tipo_documento_texto',
             'fecha_inicio', 'fecha_fin',
@@ -253,3 +251,35 @@ class DocumentoGeneracionSerializer(serializers.Serializer):
         default='pdf',
         help_text="Formato del documento"
     )
+
+
+class ContractAmendmentSerializer(serializers.ModelSerializer):
+    """Serializer para adendas contractuales."""
+
+    parent_contract_numero = serializers.CharField(
+        source='parent_contract.numero_contrato', read_only=True
+    )
+    parent_contract_empleado = serializers.CharField(
+        source='parent_contract.empleado.nombre_completo', read_only=True
+    )
+    tipo_documento_texto = serializers.CharField(
+        source='get_tipo_documento_display', read_only=True
+    )
+    estado_texto = serializers.CharField(
+        source='get_status_display', read_only=True
+    )
+
+    class Meta:
+        model = ContractAmendment
+        fields = [
+            'id', 'parent_contract', 'parent_contract_numero', 'parent_contract_empleado',
+            'numero_adenda', 'tipo_documento', 'tipo_documento_texto',
+            'fecha_inicio', 'fecha_fin', 'fecha_firma',
+            'nuevo_salario', 'nuevo_cargo', 'nuevo_horario', 'nueva_jornada_laboral',
+            'nueva_fecha_fin_contrato',
+            'motivo', 'observaciones', 'status', 'estado_texto',
+            'documento_generado',
+            'created_at', 'updated_at',
+            'created_by', 'updated_by',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

@@ -37,11 +37,6 @@ class Contract(models.Model):
         ('LEY_728_INDETERMINADO', 'Ley 728 a Plazo Indeterminado'),
         # D.Leg. 276
         ('LEY_276_INDETERMINADO', 'Ley 276 a Plazo Indeterminado'),
-        # Adendas
-        ('ADENDA_SALARIAL', 'Adenda Salarial'),
-        ('ADENDA_CARGO', 'Adenda de Cambio de Cargo'),
-        ('ADENDA_HORARIO', 'Adenda de Cambio de Horario'),
-        ('ADENDA_EXTENSION', 'Adenda de Extension'),
     ]
     
     # Estados del contrato/adenda
@@ -83,16 +78,10 @@ class Contract(models.Model):
     # Información del documento
     numero_contrato = models.CharField(
         max_length=50,
+        unique=True,
         help_text='Número del contrato principal'
     )
-    
-    numero_adenda = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        help_text='Número de adenda (NULL si es contrato inicial)'
-    )
-    
+
     tipo_documento = models.CharField(
         max_length=25,
         choices=TIPO_DOCUMENTO_CHOICES,
@@ -225,7 +214,6 @@ class Contract(models.Model):
     
     class Meta:
         db_table = 'contratos_adendas'
-        unique_together = [['numero_contrato', 'numero_adenda']]
         indexes = [
             models.Index(fields=['empleado']),
             models.Index(fields=['area']),
@@ -242,8 +230,6 @@ class Contract(models.Model):
     
     def __str__(self):
         """Representación en string del modelo."""
-        if self.numero_adenda:
-            return f"{self.numero_contrato}-{self.numero_adenda} - {self.empleado.nombre_completo}"
         return f"{self.numero_contrato} - {self.empleado.nombre_completo}"
     
     def clean(self):
@@ -338,16 +324,6 @@ class Contract(models.Model):
         
         return round(self.duracion_dias / 30.44, 1)  # Promedio de días por mes
     
-    @property
-    def es_contrato_inicial(self):
-        """Indica si es un contrato inicial (no adenda)."""
-        return self.numero_adenda is None or self.numero_adenda == ''
-    
-    @property
-    def es_adenda(self):
-        """Indica si es una adenda."""
-        return not self.es_contrato_inicial
-    
     # Métodos de utilidad
     def generar_numero_contrato(self):
         """Genera un número de contrato único."""
@@ -359,47 +335,20 @@ class Contract(models.Model):
             self.numero_contrato = f'CON-{año}-{ultimo_numero + 1:04d}'
     
     def generar_numero_adenda(self):
-        """Genera un número de adenda para el contrato."""
-        if self.es_contrato_inicial:
-            return None
-        
-        ultima_adenda = Contract.objects.filter(
-            numero_contrato=self.numero_contrato,
-            numero_adenda__isnull=False
-        ).count()
-        
+        """Genera el siguiente numero secuencial de adenda para este contrato."""
+        ultima_adenda = self.amendments.count()
         return f'AD-{ultima_adenda + 1:03d}'
-    
+
     def puede_generar_adenda(self):
         """Verifica si se puede generar una adenda para este contrato."""
         return (
-            self.es_contrato_inicial and
             self.status in ['ACTIVO', 'PENDIENTE'] and
             not self.esta_vencido
         )
-    
+
     def obtener_adendas(self):
         """Obtiene todas las adendas relacionadas con este contrato."""
-        if not self.es_contrato_inicial:
-            return Contract.objects.none()
-        
-        return Contract.objects.filter(
-            numero_contrato=self.numero_contrato,
-            numero_adenda__isnull=False
-        ).order_by('created_at')
-    
-    def obtener_contrato_base(self):
-        """Si es una adenda, obtiene el contrato base."""
-        if self.es_contrato_inicial:
-            return self
-        
-        try:
-            return Contract.objects.get(
-                numero_contrato=self.numero_contrato,
-                numero_adenda__isnull=True
-            )
-        except Contract.DoesNotExist:
-            return None
+        return self.amendments.order_by('created_at')
 
 
 # Importar y asignar el manager después de la definición del modelo

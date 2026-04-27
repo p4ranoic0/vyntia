@@ -3,7 +3,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .contratos_views import ContratosAdendasViewSet
+from .contratos_views import ContractAmendmentViewSet, ContratosAdendasViewSet
 from .remuneraciones_views import (
     BoletaPagoViewSet,
     CalendarioPagoViewSet,
@@ -52,6 +52,7 @@ router.register(
 router.register(
     r"contratos-adendas", ContratosAdendasViewSet, basename="contrato-adenda"
 )
+router.register(r"adendas", ContractAmendmentViewSet, basename="contract-amendment")
 # router.register(r'historial-ubicaciones', HistorialUbicacionesViewSet, basename='historial-ubicaciones')  # Temporalmente deshabilitado
 router.register(r"usuarios", UsuarioViewSet, basename="usuario")
 router.register(r"roles", RolViewSet, basename="rol")

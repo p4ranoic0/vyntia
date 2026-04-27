@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from apps.contracts.models import Contract
+from apps.contracts.models import Contract, ContractAmendment
 from apps.employees.models import Employee
 from apps.organization.models import Department
 from apps.core.decorators import (
@@ -22,6 +22,7 @@ from rest_framework.response import Response
 
 from .contratos_serializers import (
     AlertaVencimientoSerializer,
+    ContractAmendmentSerializer,
     ContratoReporteSerializer,
     ContratosAdendasCreateSerializer,
     ContratosAdendasListSerializer,
@@ -431,3 +432,24 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             return APIResponse.error(
                 message="Error al renovar contrato", errors={"detail": str(e)}
             )
+
+
+class ContractAmendmentViewSet(viewsets.ModelViewSet):
+    """ViewSet para CRUD de adendas contractuales."""
+
+    queryset = ContractAmendment.objects.select_related(
+        'parent_contract', 'parent_contract__empleado'
+    ).all()
+    serializer_class = ContractAmendmentSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        parent_contract_id = self.request.query_params.get('parent_contract')
+        if parent_contract_id:
+            qs = qs.filter(parent_contract_id=parent_contract_id)
+        empleado_id = self.request.query_params.get('empleado')
+        if empleado_id:
+            qs = qs.filter(parent_contract__empleado_id=empleado_id)
+        return qs.order_by('-created_at')

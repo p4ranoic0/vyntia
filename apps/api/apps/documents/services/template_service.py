@@ -14,7 +14,7 @@ from django.template import Context, Template
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from apps.documents.models import DigitalDocument
-from apps.contracts.models import Contract
+from apps.contracts.models import Contract, ContractAmendment
 from apps.employees.models import Employee
 from apps.organization.models import Department
 
@@ -100,37 +100,62 @@ class TemplateService:
         except Exception as e:
             raise ValidationError(f"Error generando contrato: {str(e)}")
     
-    def generar_adenda(self, contrato_id: int, tipo_adenda: str) -> str:
+    def generar_adenda(self, adenda_id, tipo_adenda: str) -> str:
         """
         Genera el HTML de una adenda desde su plantilla.
-        
+
         Args:
-            contrato_id: ID del contrato base
+            adenda_id: ID (UUID) de la ContractAmendment a generar
             tipo_adenda: Tipo de adenda a generar
-            
+
         Returns:
             str: HTML generado de la adenda
         """
         try:
-            contrato = Contract.objects.select_related(
-                'empleado',
-                'area',
-                'created_by'
-            ).get(pk=contrato_id)
+            adenda = ContractAmendment.objects.select_related(
+                'parent_contract',
+                'parent_contract__empleado',
+                'parent_contract__area',
+                'parent_contract__created_by',
+                'created_by',
+            ).get(pk=adenda_id)
+
+            contrato = adenda.parent_contract
 
             plantilla = self.PLANTILLAS_ADENDA.get(tipo_adenda, 'adendas/adenda_base.html')
-            
+
             contexto = self._preparar_contexto_contrato(contrato)
+            # Override con datos especificos de la adenda
+            contexto['contrato']['numero_adenda'] = adenda.numero_adenda
+            contexto['adenda'] = {
+                'id': str(adenda.pk),
+                'numero_adenda': adenda.numero_adenda,
+                'tipo': adenda.get_tipo_documento_display(),
+                'tipo_adenda': adenda.tipo_documento,
+                'fecha_inicio': adenda.fecha_inicio,
+                'fecha_fin': adenda.fecha_fin,
+                'fecha_firma': adenda.fecha_firma,
+                'nuevo_salario': adenda.nuevo_salario,
+                'nuevo_cargo': adenda.nuevo_cargo,
+                'nuevo_horario': adenda.nuevo_horario,
+                'nueva_jornada_laboral': (
+                    adenda.get_nueva_jornada_laboral_display()
+                    if adenda.nueva_jornada_laboral else ''
+                ),
+                'nueva_fecha_fin_contrato': adenda.nueva_fecha_fin_contrato,
+                'motivo': adenda.motivo,
+                'observaciones': adenda.observaciones,
+            }
             contexto['tipo_adenda'] = tipo_adenda
             contexto['es_adenda'] = True
-            
+
             template = get_template(plantilla)
             html_generado = template.render(contexto)
-            
+
             return html_generado
-            
-        except Contract.DoesNotExist:
-            raise ValidationError(f"No se encontró el contrato con ID: {contrato_id}")
+
+        except ContractAmendment.DoesNotExist:
+            raise ValidationError(f"No se encontró la adenda con ID: {adenda_id}")
         except Exception as e:
             raise ValidationError(f"Error generando adenda: {str(e)}")
     
@@ -188,7 +213,7 @@ class TemplateService:
             # Datos del contrato
             'contrato': {
                 'numero': contrato.numero_contrato,
-                'numero_adenda': contrato.numero_adenda,
+                'numero_adenda': getattr(contrato, 'numero_adenda', None),
                 'tipo': contrato.get_tipo_documento_display(),
                 'tipo_contrato': contrato.tipo_documento,
                 'jornada': contrato.get_jornada_laboral_display(),
