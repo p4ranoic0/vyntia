@@ -13,10 +13,10 @@ from django.template.loader import get_template
 from django.template import Context, Template
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from apps.documents.models import DocumentosDigitales
-from apps.contracts.models import ContratosAdendas
-from apps.employees.models import Empleado
-from apps.organization.models import Area
+from apps.documents.models import DigitalDocument
+from apps.contracts.models import Contract
+from apps.employees.models import Employee
+from apps.organization.models import Department
 
 
 class TemplateService:
@@ -27,7 +27,7 @@ class TemplateService:
     desde plantillas HTML utilizando datos del sistema.
     """
     
-    # Mapeo de tipos de contrato a plantillas (keys = ContratosAdendas.TIPO_DOCUMENTO_CHOICES)
+    # Mapeo de tipos de contrato a plantillas (keys = Contract.TIPO_DOCUMENTO_CHOICES)
     PLANTILLAS_CONTRATO = {
         'CAS_INDETERMINADO': 'contratos/contrato_cas.html',
         'CAS_DETERMINADO': 'contratos/contrato_cas.html',
@@ -67,7 +67,7 @@ class TemplateService:
             ValidationError: Si el contrato no existe o faltan datos
         """
         try:
-            contrato = ContratosAdendas.objects.select_related(
+            contrato = Contract.objects.select_related(
                 'empleado',
                 'area',
                 'creado_por'
@@ -95,7 +95,7 @@ class TemplateService:
             
             return html_generado
             
-        except ContratosAdendas.DoesNotExist:
+        except Contract.DoesNotExist:
             raise ValidationError(f"No se encontró el contrato con ID: {contrato_id}")
         except Exception as e:
             raise ValidationError(f"Error generando contrato: {str(e)}")
@@ -112,7 +112,7 @@ class TemplateService:
             str: HTML generado de la adenda
         """
         try:
-            contrato = ContratosAdendas.objects.select_related(
+            contrato = Contract.objects.select_related(
                 'empleado',
                 'area',
                 'creado_por'
@@ -129,7 +129,7 @@ class TemplateService:
             
             return html_generado
             
-        except ContratosAdendas.DoesNotExist:
+        except Contract.DoesNotExist:
             raise ValidationError(f"No se encontró el contrato con ID: {contrato_id}")
         except Exception as e:
             raise ValidationError(f"Error generando adenda: {str(e)}")
@@ -148,7 +148,7 @@ class TemplateService:
             str: HTML generado del certificado
         """
         try:
-            empleado = Empleado.objects.get(empleado_id=empleado_id)
+            empleado = Employee.objects.get(empleado_id=empleado_id)
 
             # Auto-detect: active employee → CONSTANCIA, cesado → CERTIFICADO
             if tipo_certificado in ('LABORAL', None, ''):
@@ -166,12 +166,12 @@ class TemplateService:
             
             return html_generado
             
-        except Empleado.DoesNotExist:
+        except Employee.DoesNotExist:
             raise ValidationError(f"No se encontró el empleado con ID: {empleado_id}")
         except Exception as e:
             raise ValidationError(f"Error generando certificado: {str(e)}")
     
-    def _preparar_contexto_contrato(self, contrato: ContratosAdendas) -> Dict[str, Any]:
+    def _preparar_contexto_contrato(self, contrato: Contract) -> Dict[str, Any]:
         """
         Prepara el contexto de datos para plantillas de contrato.
         
@@ -233,7 +233,7 @@ class TemplateService:
 
         return contexto
     
-    def _preparar_contexto_empleado(self, empleado: Empleado) -> Dict[str, Any]:
+    def _preparar_contexto_empleado(self, empleado: Employee) -> Dict[str, Any]:
         """
         Prepara el contexto de datos para plantillas de empleado.
         
@@ -258,7 +258,7 @@ class TemplateService:
 
         return contexto
     
-    def _obtener_datos_empleado(self, empleado: Empleado) -> Dict[str, Any]:
+    def _obtener_datos_empleado(self, empleado: Employee) -> Dict[str, Any]:
         """
         Obtiene todos los datos relevantes del empleado.
         
@@ -295,8 +295,8 @@ class TemplateService:
         Returns:
             Dict: Datos de la institución
         """
-        from apps.organization.models import ConfiguracionEmpresa
-        cfg = ConfiguracionEmpresa.get_config()
+        from apps.organization.models import Company
+        cfg = Company.get_config()
         return {
             'nombre': cfg.nombre,
             'ruc': cfg.ruc,
@@ -364,7 +364,7 @@ class TemplateService:
         from django.db.models import Q
 
         # Construir queryset de contratos segun filtros
-        queryset = ContratosAdendas.objects.select_related('empleado', 'area')
+        queryset = Contract.objects.select_related('empleado', 'area')
 
         filtros = Q()
         if reporte_data.get('fecha_inicio'):
@@ -425,8 +425,8 @@ class TemplateService:
             <table border="1" cellpadding="5" cellspacing="0">
                 <thead>
                     <tr>
-                        <th>N° Contrato</th><th>Empleado</th><th>Tipo</th>
-                        <th>Area</th><th>Inicio</th><th>Fin</th><th>Estado</th>
+                        <th>N° Contrato</th><th>Employee</th><th>Tipo</th>
+                        <th>Department</th><th>Inicio</th><th>Fin</th><th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>{filas}</tbody>

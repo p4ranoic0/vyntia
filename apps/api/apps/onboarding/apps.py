@@ -1,7 +1,7 @@
 """AppConfig for the `apps.onboarding` Django app — VYNTIA new-employee onboarding.
 
 Owns the onboarding workflow:
-- OnboardingEmpleado (per-employee onboarding state machine: pendiente_datos →
+- OnboardingProcess (per-employee onboarding state machine: pendiente_datos →
   pendiente_documentos → pendiente_validacion → completado/observado)
   - Tracks completeness checklist: datos_personales, datos_laborales, dni,
     declaraciones_juradas, certificados_academicos, certificados_trabajo,
@@ -21,7 +21,7 @@ in `apps.documents`. The Celery task `send_email_html_task` lives in
 and other email-sending paths; will be relocated in L3.11 cleanup).
 
 Future rename (deferred to L3.10):
-- OnboardingEmpleado → OnboardingProcess
+- OnboardingProcess → OnboardingProcess
 - OnboardingService → OnboardingProcessService
 - OnboardingNotificationService → OnboardingNotificationService (keep — already English)
 """

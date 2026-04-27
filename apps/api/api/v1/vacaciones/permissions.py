@@ -1,19 +1,19 @@
 """Permisos personalizados para las APIs de vacaciones."""
 
 from app_rrhh.constants import Roles
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 from apps.time_off.models import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationGrant,
+    VacationRequestHistory,
+    VacationPeriod,
+    VacationRequest,
 )
 from app_rrhh.permission_service import PermissionService
 from rest_framework import permissions
 
 
-def _area_empleado(empleado: Empleado):
+def _area_empleado(empleado: Employee):
     datos = empleado.datos_laborales_actuales()
     return datos.area if datos else None
 
@@ -69,7 +69,7 @@ class VacationPermissions(permissions.BasePermission):
         if PermissionService.has_any_role(user, Roles.HR_ROLES):
             return True
 
-        if isinstance(obj, ConfiguracionVacaciones):
+        if isinstance(obj, VacationConfiguration):
             if obj.tipo_configuracion == "general":
                 return True
             if obj.tipo_configuracion == "area":
@@ -78,28 +78,28 @@ class VacationPermissions(permissions.BasePermission):
                 return obj.empleado == user.empleado
             return False
 
-        if isinstance(obj, PeriodoVacacional):
+        if isinstance(obj, VacationPeriod):
             if obj.empleado == user.empleado:
                 return True
             if user.es_jefe:
                 return _area_empleado(obj.empleado) == _area_empleado(user.empleado)
             return False
 
-        if isinstance(obj, SolicitudVacaciones):
+        if isinstance(obj, VacationRequest):
             if obj.empleado == user.empleado:
                 return True
             if user.es_jefe:
                 return _area_empleado(obj.empleado) == _area_empleado(user.empleado)
             return False
 
-        if isinstance(obj, GoceVacaciones):
+        if isinstance(obj, VacationGrant):
             if obj.empleado == user.empleado:
                 return True
             if user.es_jefe:
                 return _area_empleado(obj.empleado) == _area_empleado(user.empleado)
             return False
 
-        if isinstance(obj, HistorialSolicitudVacaciones):
+        if isinstance(obj, VacationRequestHistory):
             solicitud = obj.solicitud_vacaciones
             if solicitud.empleado == user.empleado:
                 return True

@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 
-class OnboardingEmpleado(models.Model):
+class OnboardingProcess(models.Model):
     """Modelo para rastrear el estado de incorporacion de nuevos empleados."""
 
     ESTADO_ONBOARDING_CHOICES = [
@@ -20,12 +20,12 @@ class OnboardingEmpleado(models.Model):
 
     # Relaciones principales
     empleado = models.OneToOneField(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='onboarding',
     )
     usuario = models.OneToOneField(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.CASCADE,
         related_name='onboarding',
     )
@@ -48,7 +48,7 @@ class OnboardingEmpleado(models.Model):
 
     # Validacion por RRHH
     validado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -100,13 +100,13 @@ class OnboardingEmpleado(models.Model):
         Separate from progreso_porcentaje (which tracks upload completion).
         Returns int 0-100.
         """
-        from apps.documents.models import DocumentosDigitales
-        total = DocumentosDigitales.objects.filter(
+        from apps.documents.models import DigitalDocument
+        total = DigitalDocument.objects.filter(
             empleado=self.empleado, es_version_actual=True
         ).count()
         if total == 0:
             return 0
-        aprobados = DocumentosDigitales.objects.filter(
+        aprobados = DigitalDocument.objects.filter(
             empleado=self.empleado,
             es_version_actual=True,
             estado_documento='aprobado',

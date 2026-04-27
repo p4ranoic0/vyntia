@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from apps.time_off.models import (
-    ConfiguracionVacaciones, PeriodoVacacional,
-    SolicitudVacaciones, GoceVacaciones
+    VacationConfiguration, VacationPeriod,
+    VacationRequest, VacationGrant
 )
 from app_rrhh.validators import VacacionesValidator, VacacionesBusinessRules
 

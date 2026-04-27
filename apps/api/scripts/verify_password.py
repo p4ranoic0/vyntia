@@ -9,15 +9,15 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vyntia.settings.development')
 django.setup()
 
-from apps.identity.models.usuario import Usuario
+from apps.identity.models.user import User
 from django.contrib.auth.hashers import check_password
 
 def verify_admin_password():
     """Verificar la contraseña del usuario admin."""
     try:
         # Obtener el usuario admin
-        admin_user = Usuario.objects.get(username='admin')
-        print(f"Usuario encontrado: {admin_user.username}")
+        admin_user = User.objects.get(username='admin')
+        print(f"User encontrado: {admin_user.username}")
         print(f"Email: {admin_user.email}")
         print(f"Activo: {admin_user.is_active}")
         print(f"Hash de contraseña: {admin_user.password[:50]}...")
@@ -32,8 +32,8 @@ def verify_admin_password():
         is_valid2 = check_password(password_to_test2, admin_user.password)
         print(f"¿La contraseña '{password_to_test2}' es válida?: {is_valid2}")
         
-    except Usuario.DoesNotExist:
-        print("Usuario admin no encontrado")
+    except User.DoesNotExist:
+        print("User admin no encontrado")
     except Exception as e:
         print(f"Error: {e}")
 

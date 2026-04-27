@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo DocumentosDigitales - Gestión de documentos digitales de empleados
+Modelo DigitalDocument - Gestión de documentos digitales de empleados
 
-Contiene la definición del modelo DocumentosDigitales que almacena la información
+Contiene la definición del modelo DigitalDocument que almacena la información
 de documentos digitalizados y archivos asociados a los empleados.
 """
 
@@ -20,7 +20,7 @@ def documento_upload_path(instance, filename):
     return f"documentos_empleados/{empleado_id}/{filename}"
 
 
-class DocumentosDigitales(models.Model):
+class DigitalDocument(models.Model):
     """Modelo para gestionar documentos digitales de los empleados."""
     
     TIPO_DOCUMENTO_CHOICES = [
@@ -106,7 +106,7 @@ class DocumentosDigitales(models.Model):
     # Campos principales
     documento_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='documentos_digitales'
     )
@@ -150,7 +150,7 @@ class DocumentosDigitales(models.Model):
         related_name='versiones'
     )
     familiar = models.ForeignKey(
-        'employees.DatosFamiliares',
+        'employees.FamilyMember',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='documentos',
@@ -160,7 +160,7 @@ class DocumentosDigitales(models.Model):
     # Estado y validación
     estado_documento = models.CharField(max_length=20, choices=ESTADO_DOCUMENTO_CHOICES, default='activo')
     validado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -171,7 +171,7 @@ class DocumentosDigitales(models.Model):
     
     # Información de digitalización
     digitalizado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -188,7 +188,7 @@ class DocumentosDigitales(models.Model):
     fecha_subida = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     subido_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -371,7 +371,7 @@ class DocumentosDigitales(models.Model):
         self.save()
         
         # Crear nueva versión
-        nueva_version = DocumentosDigitales.objects.create(
+        nueva_version = DigitalDocument.objects.create(
             empleado=self.empleado,
             tipo_documento=self.tipo_documento,
             categoria=self.categoria,

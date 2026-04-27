@@ -9,9 +9,9 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db.models import Q, Sum
 
-from apps.contracts.models import ContratosAdendas
-from apps.employees.models import Empleado
-from ..models import ConfiguracionVacaciones, PeriodoVacacional, SolicitudVacaciones
+from apps.contracts.models import Contract
+from apps.employees.models import Employee
+from ..models import VacationConfiguration, VacationPeriod, VacationRequest
 from apps.core.exceptions import BusinessLogicError
 
 logger = logging.getLogger(__name__)
@@ -24,10 +24,10 @@ class VacationCalculationService:
     DIAS_ADELANTO_POR_MES = 2.5
 
     @staticmethod
-    def obtener_contrato_activo(empleado: Empleado) -> Optional[ContratosAdendas]:
+    def obtener_contrato_activo(empleado: Employee) -> Optional[Contract]:
         """Retorna el contrato activo más reciente del empleado."""
         return (
-            ContratosAdendas.objects.filter(
+            Contract.objects.filter(
                 empleado=empleado,
                 tipo_documento__startswith='CONTRATO',
                 estado='ACTIVO',
@@ -37,10 +37,10 @@ class VacationCalculationService:
         )
 
     @staticmethod
-    def obtener_contrato_para_fecha(empleado: Empleado, fecha_ref: date) -> Optional[ContratosAdendas]:
+    def obtener_contrato_para_fecha(empleado: Employee, fecha_ref: date) -> Optional[Contract]:
         """Retorna el contrato que cubre una fecha dada."""
         return (
-            ContratosAdendas.objects.filter(
+            Contract.objects.filter(
                 empleado=empleado,
                 tipo_documento__startswith='CONTRATO',
                 fecha_inicio__lte=fecha_ref,
@@ -51,10 +51,10 @@ class VacationCalculationService:
         )
 
     @staticmethod
-    def obtener_configuracion_aplicable(empleado: Empleado, fecha_ref: date) -> Optional[ConfiguracionVacaciones]:
+    def obtener_configuracion_aplicable(empleado: Employee, fecha_ref: date) -> Optional[VacationConfiguration]:
         """Obtiene configuración aplicable con prioridad empleado > área > general."""
         config = (
-            ConfiguracionVacaciones.objects.filter(
+            VacationConfiguration.objects.filter(
                 empleado=empleado,
                 activo=True,
                 fecha_inicio_vigencia__lte=fecha_ref,
@@ -68,7 +68,7 @@ class VacationCalculationService:
         datos_laborales = empleado.datos_laborales_actuales()
         if datos_laborales and datos_laborales.area:
             config = (
-                ConfiguracionVacaciones.objects.filter(
+                VacationConfiguration.objects.filter(
                     area=datos_laborales.area,
                     empleado__isnull=True,
                     activo=True,
@@ -81,7 +81,7 @@ class VacationCalculationService:
                 return config
 
         return (
-            ConfiguracionVacaciones.objects.filter(
+            VacationConfiguration.objects.filter(
                 area__isnull=True,
                 empleado__isnull=True,
                 activo=True,
@@ -146,9 +146,9 @@ class VacationCalculationService:
 
     @staticmethod
     def calcular_dias_correspondientes(
-        empleado: Empleado,
+        empleado: Employee,
         fecha_ref: date,
-        configuracion: Optional[ConfiguracionVacaciones] = None,
+        configuracion: Optional[VacationConfiguration] = None,
     ) -> int:
         """Días anuales de vacaciones por periodo. Base 30, configurable."""
         if not configuracion:
@@ -158,7 +158,7 @@ class VacationCalculationService:
         return int(configuracion.dias_por_ano or VacationCalculationService.DIAS_ANUALES_DEFAULT)
 
     @staticmethod
-    def calcular_adelanto_disponible(empleado: Empleado, fecha_ref: date, contrato: Optional[ContratosAdendas] = None) -> float:
+    def calcular_adelanto_disponible(empleado: Employee, fecha_ref: date, contrato: Optional[Contract] = None) -> float:
         """
         Adelanto vacacional: 2.5 días por mes cumplido en el contrato vigente.
         Descuenta los adelantos ya aprobados.
@@ -175,7 +175,7 @@ class VacationCalculationService:
         acumulado = Decimal(str(meses_completos)) * Decimal(str(VacationCalculationService.DIAS_ADELANTO_POR_MES))
 
         usados = (
-            SolicitudVacaciones.objects.filter(
+            VacationRequest.objects.filter(
                 empleado=empleado,
                 tipo_solicitud='adelanto_vacaciones',
                 estado_solicitud__in=['aprobada_jefe', 'aprobada_rrhh', 'aprobada', 'en_goce', 'finalizada'],
@@ -186,13 +186,13 @@ class VacationCalculationService:
 
     @staticmethod
     def verificar_solapamiento(
-        empleado: Empleado,
+        empleado: Employee,
         fecha_inicio: date,
         fecha_fin: date,
         excluir_solicitud_id: Optional[int] = None,
     ) -> bool:
         """Verifica solapamiento con solicitudes no canceladas/rechazadas."""
-        qs = SolicitudVacaciones.objects.filter(
+        qs = VacationRequest.objects.filter(
             empleado=empleado,
             fecha_inicio__lte=fecha_fin,
             fecha_fin__gte=fecha_inicio,
@@ -205,8 +205,8 @@ class VacationCalculationService:
     def validar_fechas_solicitud(
         fecha_inicio: date,
         fecha_fin: date,
-        empleado: Empleado,
-        configuracion: Optional[ConfiguracionVacaciones] = None,
+        empleado: Employee,
+        configuracion: Optional[VacationConfiguration] = None,
         tipo_solicitud: str = 'vacaciones',
         medio_dia: bool = False,
     ) -> Dict[str, Any]:
@@ -293,7 +293,7 @@ class VacationCalculationService:
             contrato = VacationCalculationService.obtener_contrato_para_fecha(empleado, fecha_inicio)
             periodo = None
             if contrato:
-                periodo = PeriodoVacacional.objects.filter(
+                periodo = VacationPeriod.objects.filter(
                     empleado=empleado,
                     contrato=contrato,
                     fecha_inicio_periodo__lte=fecha_inicio,

@@ -3,10 +3,10 @@
 import logging
 import unicodedata
 
-from ..models import OnboardingEmpleado
-from apps.documents.models import DocumentosDigitales
-from apps.employees.models import Empleado
-from apps.identity.models import Rol, Usuario, UsuarioRoles
+from ..models import OnboardingProcess
+from apps.documents.models import DigitalDocument
+from apps.employees.models import Employee
+from apps.identity.models import Role, User, UserRole
 from app_rrhh.tasks import send_email_html_task
 from django.conf import settings
 from django.db import transaction
@@ -101,7 +101,7 @@ class OnboardingService:
         # Verificar colisiones
         username = base_username
         counter = 1
-        while Usuario.objects.filter(username=username).exists():
+        while User.objects.filter(username=username).exists():
             username = f"{base_username}{counter}"
             counter += 1
 
@@ -211,21 +211,21 @@ class OnboardingService:
     def crear_onboarding_completo(empleado_data, creado_por):
         """
         Crea el flujo completo de onboarding:
-        1. Crea el registro de Empleado
+        1. Crea el registro de Employee
         2. Genera username y password temporal
-        3. Crea el Usuario vinculado al Empleado
-        4. Crea el registro de OnboardingEmpleado
+        3. Crea el User vinculado al Employee
+        4. Crea el registro de OnboardingProcess
         5. Envia email de bienvenida
 
         Args:
             empleado_data: dict con datos del empleado (nombres, apellidos, DNI, email, etc.)
-            creado_por: Usuario que inicia el onboarding (RRHH)
+            creado_por: User que inicia el onboarding (RRHH)
 
         Returns:
             dict con onboarding, empleado, usuario y password_temporal
         """
-        # 1. Crear Empleado
-        empleado = Empleado.objects.create(
+        # 1. Crear Employee
+        empleado = Employee.objects.create(
             nombres_empleado=empleado_data["nombres_empleado"],
             apellido_paterno=empleado_data["apellido_paterno"],
             apellido_materno=empleado_data.get("apellido_materno", ""),
@@ -243,8 +243,8 @@ class OnboardingService:
         )
         password_temporal = OnboardingService.generar_password_temporal()
 
-        # 3. Crear Usuario
-        usuario = Usuario.objects.create_user(
+        # 3. Crear User
+        usuario = User.objects.create_user(
             username=username,
             email=empleado.correo_personal,
             password=password_temporal,
@@ -259,11 +259,11 @@ class OnboardingService:
 
         # Asignar rol de empleado
         try:
-            rol_empleado = Rol.objects.filter(
-                nombre_rol__in=["Empleado", "empleado"], estado_rol="activo"
+            rol_empleado = Role.objects.filter(
+                nombre_rol__in=["Employee", "empleado"], estado_rol="activo"
             ).first()
             if rol_empleado:
-                UsuarioRoles.objects.create(
+                UserRole.objects.create(
                     usuario=usuario,
                     rol=rol_empleado,
                     estado_asignacion="activo",
@@ -271,8 +271,8 @@ class OnboardingService:
         except Exception as e:
             logger.warning(f"No se pudo asignar rol de empleado: {e}")
 
-        # 4. Crear OnboardingEmpleado
-        onboarding = OnboardingEmpleado.objects.create(
+        # 4. Crear OnboardingProcess
+        onboarding = OnboardingProcess.objects.create(
             empleado=empleado,
             usuario=usuario,
             estado_onboarding="pendiente_datos",
@@ -306,9 +306,9 @@ class OnboardingService:
         Recalcula el estado del onboarding basado en los documentos subidos.
         Verifica cada categoria de documentos requeridos.
 
-        Acepta empleado_id (FK a Empleado) o onboarding_id (PK de OnboardingEmpleado).
+        Acepta empleado_id (FK a Employee) o onboarding_id (PK de OnboardingProcess).
         Retorna un dict con claves:
-          - onboarding: instancia actualizada de OnboardingEmpleado
+          - onboarding: instancia actualizada de OnboardingProcess
           - historial_cambio: dict con estado_anterior y estado_nuevo
           - notificacion_enviada: bool
           - estado_protegido: bool (True si el estado no retrocedió)
@@ -318,11 +318,11 @@ class OnboardingService:
         # Intentar lookup por empleado_id primero, luego por onboarding_id (PK)
         onboarding = None
         try:
-            onboarding = OnboardingEmpleado.objects.get(empleado_id=empleado_id)
-        except OnboardingEmpleado.DoesNotExist:
+            onboarding = OnboardingProcess.objects.get(empleado_id=empleado_id)
+        except OnboardingProcess.DoesNotExist:
             try:
-                onboarding = OnboardingEmpleado.objects.get(onboarding_id=empleado_id)
-            except OnboardingEmpleado.DoesNotExist:
+                onboarding = OnboardingProcess.objects.get(onboarding_id=empleado_id)
+            except OnboardingProcess.DoesNotExist:
                 return None
 
         estado_anterior = onboarding.estado_onboarding
@@ -337,7 +337,7 @@ class OnboardingService:
             }
 
         # Obtener documentos del empleado
-        documentos = DocumentosDigitales.objects.filter(
+        documentos = DigitalDocument.objects.filter(
             empleado_id=onboarding.empleado_id,
             es_version_actual=True,
         )
@@ -425,13 +425,13 @@ class OnboardingService:
         Retorna lista de tipos de documento que faltan por subir.
         """
         try:
-            onboarding = OnboardingEmpleado.objects.get(empleado_id=empleado_id)
-        except OnboardingEmpleado.DoesNotExist:
+            onboarding = OnboardingProcess.objects.get(empleado_id=empleado_id)
+        except OnboardingProcess.DoesNotExist:
             return []
 
         pendientes = []
 
-        documentos = DocumentosDigitales.objects.filter(
+        documentos = DigitalDocument.objects.filter(
             empleado_id=empleado_id,
             es_version_actual=True,
             estado_documento__in=["activo", "pendiente_revision", "aprobado"],
@@ -460,14 +460,14 @@ class OnboardingService:
         """
         Actualiza el correo personal del empleado y el email del usuario asociado.
 
-        Acepta onboarding_id (PK de OnboardingEmpleado).
+        Acepta onboarding_id (PK de OnboardingProcess).
         Retorna el onboarding actualizado, o None si no se encuentra.
         """
         try:
-            onboarding = OnboardingEmpleado.objects.select_related(
+            onboarding = OnboardingProcess.objects.select_related(
                 "empleado", "usuario"
             ).get(onboarding_id=onboarding_id)
-        except OnboardingEmpleado.DoesNotExist:
+        except OnboardingProcess.DoesNotExist:
             return None
 
         onboarding.empleado.correo_personal = nuevo_correo
@@ -483,10 +483,10 @@ class OnboardingService:
         Reenvia el email de bienvenida, opcionalmente con nueva contrasena.
         """
         try:
-            onboarding = OnboardingEmpleado.objects.select_related(
+            onboarding = OnboardingProcess.objects.select_related(
                 "usuario", "empleado"
             ).get(onboarding_id=onboarding_id)
-        except OnboardingEmpleado.DoesNotExist:
+        except OnboardingProcess.DoesNotExist:
             return None
 
         password_temporal = None
@@ -528,14 +528,14 @@ class OnboardingService:
         RRHH valida todos los documentos y marca el onboarding como completado.
         """
         try:
-            onboarding = OnboardingEmpleado.objects.select_related(
+            onboarding = OnboardingProcess.objects.select_related(
                 "empleado", "usuario"
             ).get(onboarding_id=onboarding_id)
-        except OnboardingEmpleado.DoesNotExist:
+        except OnboardingProcess.DoesNotExist:
             return None
 
         # Validar todos los documentos pendientes de revision
-        documentos = DocumentosDigitales.objects.filter(
+        documentos = DigitalDocument.objects.filter(
             empleado=onboarding.empleado,
             estado_documento="pendiente_revision",
             es_version_actual=True,

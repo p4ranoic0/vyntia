@@ -3,8 +3,8 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from apps.employees.models import Empleado
-from apps.identity.models import Usuario
+from apps.employees.models import Employee
+from apps.identity.models import User
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
@@ -19,7 +19,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer with additional user data."""
     
     # Override the username field to use nombre_usuario
-    username_field = Usuario.USERNAME_FIELD
+    username_field = User.USERNAME_FIELD
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -41,7 +41,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         
         # Add user information to response
-        # self.user is already a Usuario instance due to AUTH_USER_MODEL
+        # self.user is already a User instance due to AUTH_USER_MODEL
         usuario = self.user
         
         data.update({
@@ -70,20 +70,20 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             
         return data
     
-    def _get_user_roles(self, usuario: Usuario) -> List[Dict[str, Any]]:
+    def _get_user_roles(self, usuario: User) -> List[Dict[str, Any]]:
         """Get active roles for the user.
         
         Args:
-            usuario: Usuario instance
+            usuario: User instance
             
         Returns:
             List of role dictionaries
         """
         try:
-            from apps.identity.models import UsuarioRoles
+            from apps.identity.models import UserRole
 
             # Obtener roles activos del usuario
-            usuario_roles = UsuarioRoles.objects.filter(
+            usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
             ).select_related('rol')
@@ -102,20 +102,20 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Exception:
             return []
     
-    def _get_user_roles_simple(self, usuario: Usuario) -> List[Dict[str, Any]]:
+    def _get_user_roles_simple(self, usuario: User) -> List[Dict[str, Any]]:
         """Get active roles for the user with simplified data (only id and name).
         
         Args:
-            usuario: Usuario instance
+            usuario: User instance
             
         Returns:
             List of simplified role dictionaries
         """
         try:
-            from apps.identity.models import UsuarioRoles
+            from apps.identity.models import UserRole
 
             # Obtener roles activos del usuario
-            usuario_roles = UsuarioRoles.objects.filter(
+            usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
             ).select_related('rol')
@@ -132,26 +132,26 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Exception:
             return []
     
-    def _get_user_permissions(self, usuario: Usuario) -> List[Dict[str, Any]]:
+    def _get_user_permissions(self, usuario: User) -> List[Dict[str, Any]]:
         """Get active permissions for the user.
         
         Args:
-            usuario: Usuario instance
+            usuario: User instance
             
         Returns:
             List of permission dictionaries
         """
         try:
-            from apps.identity.models import RolPermisos, UsuarioRoles
+            from apps.identity.models import RolePermission, UserRole
 
             # Obtener roles activos del usuario
-            usuario_roles = UsuarioRoles.objects.filter(
+            usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
             ).values_list('rol_id', flat=True)
             
             # Obtener permisos de esos roles
-            roles_permisos = RolPermisos.objects.filter(
+            roles_permisos = RolePermission.objects.filter(
                 rol_id__in=usuario_roles
             ).select_related('permiso')
             
@@ -174,26 +174,26 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Exception:
             return []
     
-    def _get_user_modules(self, usuario: Usuario) -> List[Dict[str, Any]]:
+    def _get_user_modules(self, usuario: User) -> List[Dict[str, Any]]:
         """Get active modules for the user based on their permissions.
         
         Args:
-            usuario: Usuario instance
+            usuario: User instance
             
         Returns:
             List of module dictionaries with their permissions
         """
         try:
-            from apps.identity.models import Modulos, RolPermisos, UsuarioRoles
+            from apps.identity.models import Module, RolePermission, UserRole
 
             # Obtener roles activos del usuario
-            usuario_roles = UsuarioRoles.objects.filter(
+            usuario_roles = UserRole.objects.filter(
                 usuario=usuario,
                 estado_asignacion='activo'
             ).values_list('rol_id', flat=True)
             
             # Obtener permisos de esos roles
-            roles_permisos = RolPermisos.objects.filter(
+            roles_permisos = RolePermission.objects.filter(
                 rol_id__in=usuario_roles
             ).select_related('permiso', 'permiso__modulo')
             
@@ -290,7 +290,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     is_active = serializers.SerializerMethodField()
     
     class Meta:
-        model = Usuario
+        model = User
         fields = [
             'usuario_id', 'username', 'email', 
             'is_active', 'fecha_creacion', 'last_login',
@@ -301,7 +301,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'empleado', 'roles', 'permisos'
         ]
     
-    def get_empleado(self, obj: Usuario) -> Optional[Dict[str, Any]]:
+    def get_empleado(self, obj: User) -> Optional[Dict[str, Any]]:
         """Get employee information."""
         try:
             if obj.empleado:
@@ -316,11 +316,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         except Exception:
             return None
     
-    def get_roles(self, obj: Usuario) -> List[Dict[str, Any]]:
+    def get_roles(self, obj: User) -> List[Dict[str, Any]]:
         """Get user roles.
         
         Args:
-            obj: Usuario instance
+            obj: User instance
             
         Returns:
             List of user roles
@@ -348,11 +348,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         except Exception:
             return []
     
-    def get_permisos(self, obj: Usuario) -> List[Dict[str, Any]]:
+    def get_permisos(self, obj: User) -> List[Dict[str, Any]]:
         """Get user permissions.
         
         Args:
-            obj: Usuario instance
+            obj: User instance
             
         Returns:
             List of user permissions
@@ -387,11 +387,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         except Exception:
             return []
     
-    def get_is_active(self, obj: Usuario) -> bool:
+    def get_is_active(self, obj: User) -> bool:
         """Get user active status.
         
         Args:
-            obj: Usuario instance
+            obj: User instance
             
         Returns:
             User active status
@@ -542,9 +542,9 @@ class ForgotPasswordSerializer(serializers.Serializer):
             ValidationError: Si el email no existe
         """
         try:
-            user = Usuario.objects.get(email=value, is_active=True)
+            user = User.objects.get(email=value, is_active=True)
             self.context['user'] = user
-        except Usuario.DoesNotExist:
+        except User.DoesNotExist:
             raise serializers.ValidationError(
                 'No se encontró un usuario activo con este email.'
             )
@@ -627,17 +627,17 @@ class ResetPasswordSerializer(serializers.Serializer):
             ValidationError: Si el token es inválido o expirado
         """
         try:
-            user = Usuario.objects.get(
+            user = User.objects.get(
                 token_recuperacion=value,
                 fecha_expiracion_token__gt=timezone.now(),
                 is_active=True
             )
             # Validar token usando el método del modelo
             if not user.validar_token_recuperacion(value):
-                raise Usuario.DoesNotExist
+                raise User.DoesNotExist
             
             self.context['reset_user'] = user
-        except Usuario.DoesNotExist:
+        except User.DoesNotExist:
             raise serializers.ValidationError(
                 'Token inválido o expirado.'
             )
@@ -684,11 +684,11 @@ class ResetPasswordSerializer(serializers.Serializer):
         """
         return attrs
     
-    def save(self) -> Usuario:
+    def save(self) -> User:
         """Guardar nueva contraseña y limpiar token.
         
         Returns:
-            Usuario actualizado
+            User actualizado
         """
         user = self.context['reset_user']
         # Usar el método del modelo para cambiar contraseña
@@ -699,13 +699,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile."""
 
     class Meta:
-        model = Usuario
+        model = User
         fields = ['email']
 
     def validate_email(self, value: str) -> str:
         """Validate email uniqueness."""
         user = self.instance
-        if Usuario.objects.exclude(pk=user.pk).filter(email=value).exists():
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
             raise serializers.ValidationError(
                 'Este email ya está en uso por otro usuario.'
             )

@@ -44,9 +44,9 @@ try:
 except Exception:
     XHTML2PDF_AVAILABLE = False
 
-from apps.documents.models import DocumentosDigitales
-from apps.contracts.models import ContratosAdendas
-from apps.employees.models import Empleado
+from apps.documents.models import DigitalDocument
+from apps.contracts.models import Contract
+from apps.employees.models import Employee
 from .template_service import TemplateService
 
 
@@ -79,7 +79,7 @@ class PDFGenerator:
         Args:
             contrato_id: ID del contrato a generar
             tipo_plantilla: Tipo específico de plantilla (opcional)
-            guardar_automatico: Si debe guardarse automáticamente en DocumentosDigitales
+            guardar_automatico: Si debe guardarse automáticamente en DigitalDocument
             
         Returns:
             Tuple[bytes, str]: Contenido del PDF y nombre del archivo
@@ -94,7 +94,7 @@ class PDFGenerator:
             )
             
             # Obtener datos del contrato para el nombre del archivo
-            contrato = ContratosAdendas.objects.select_related(
+            contrato = Contract.objects.select_related(
                 'empleado', 'area'
             ).get(contrato_id=contrato_id)
 
@@ -139,7 +139,7 @@ class PDFGenerator:
             )
             
             # Obtener datos del contrato
-            contrato = ContratosAdendas.objects.select_related(
+            contrato = Contract.objects.select_related(
                 'empleado', 'area'
             ).get(contrato_id=contrato_id)
 
@@ -186,7 +186,7 @@ class PDFGenerator:
             )
             
             # Obtener datos del empleado
-            empleado = Empleado.objects.get(empleado_id=empleado_id)
+            empleado = Employee.objects.get(empleado_id=empleado_id)
             
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_certificado(
@@ -409,7 +409,7 @@ class PDFGenerator:
         except Exception as e:
             raise ValidationError(f"Error con ReportLab: {str(e)}")
     
-    def _generar_nombre_archivo_contrato(self, contrato: ContratosAdendas) -> str:
+    def _generar_nombre_archivo_contrato(self, contrato: Contract) -> str:
         """
         Genera un nombre de archivo para el contrato.
         
@@ -425,7 +425,7 @@ class PDFGenerator:
         nombre_base = f"contrato_{contrato.tipo_documento.lower()}_{empleado.numero_documento}_{fecha}"
         return f"{slugify(nombre_base)}.pdf"
     
-    def _generar_nombre_archivo_adenda(self, contrato: ContratosAdendas, tipo_adenda: str) -> str:
+    def _generar_nombre_archivo_adenda(self, contrato: Contract, tipo_adenda: str) -> str:
         """
         Genera un nombre de archivo para la adenda.
         
@@ -442,7 +442,7 @@ class PDFGenerator:
         nombre_base = f"adenda_{tipo_adenda.lower()}_{empleado.numero_documento}_{fecha}"
         return f"{slugify(nombre_base)}.pdf"
     
-    def _generar_nombre_archivo_certificado(self, empleado: Empleado, tipo_certificado: str) -> str:
+    def _generar_nombre_archivo_certificado(self, empleado: Employee, tipo_certificado: str) -> str:
         """
         Genera un nombre de archivo para el certificado.
         
@@ -459,27 +459,27 @@ class PDFGenerator:
         return f"{slugify(nombre_base)}.pdf"
     
     def _guardar_documento_digital(self, pdf_content: bytes, nombre_archivo: str,
-                                 empleado: Empleado, tipo_documento: str,
-                                 contrato: Optional[ContratosAdendas] = None) -> DocumentosDigitales:
+                                 empleado: Employee, tipo_documento: str,
+                                 contrato: Optional[Contract] = None) -> DigitalDocument:
         """
-        Guarda el PDF generado en DocumentosDigitales.
+        Guarda el PDF generado en DigitalDocument.
         
         Args:
             pdf_content: Contenido del PDF
             nombre_archivo: Nombre del archivo
-            empleado: Empleado asociado
+            empleado: Employee asociado
             tipo_documento: Tipo de documento
             contrato: Contrato asociado (opcional)
             
         Returns:
-            DocumentosDigitales: Documento guardado
+            DigitalDocument: Documento guardado
         """
         try:
             # Crear archivo Django
             archivo_django = ContentFile(pdf_content, name=nombre_archivo)
             
-            # Crear registro en DocumentosDigitales
-            documento = DocumentosDigitales.objects.create(
+            # Crear registro en DigitalDocument
+            documento = DigitalDocument.objects.create(
                 empleado=empleado,
                 tipo_documento=tipo_documento,
                 categoria='laboral',
@@ -512,11 +512,11 @@ class PDFGenerator:
 
         Args:
             reporte_data: Datos y filtros del reporte
-            guardar_en_bd: Si debe guardarse en DocumentosDigitales
-            usuario_creador: Usuario que genera el reporte
+            guardar_en_bd: Si debe guardarse en DigitalDocument
+            usuario_creador: User que genera el reporte
 
         Returns:
-            DocumentosDigitales si guardar_en_bd=True, bytes del PDF en caso contrario
+            DigitalDocument si guardar_en_bd=True, bytes del PDF en caso contrario
         """
         try:
             html_content = self.template_service.generar_reporte_html(reporte_data)
@@ -528,7 +528,7 @@ class PDFGenerator:
             if guardar_en_bd:
                 from django.core.files.base import ContentFile
                 archivo_django = ContentFile(pdf_content, name=nombre_archivo)
-                documento = DocumentosDigitales.objects.create(
+                documento = DigitalDocument.objects.create(
                     empleado=None if not usuario_creador or not hasattr(usuario_creador, 'empleado') else usuario_creador.empleado,
                     tipo_documento='otros',
                     categoria='administrativo',

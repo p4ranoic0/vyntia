@@ -3,9 +3,9 @@
 from django.utils import timezone
 from django_filters import rest_framework as filters
 
-from apps.employees.models import Empleado
-from apps.organization.models import Area
-from apps.time_off.models import ConfiguracionVacaciones, GoceVacaciones, PeriodoVacacional, SolicitudVacaciones
+from apps.employees.models import Employee
+from apps.organization.models import Department
+from apps.time_off.models import VacationConfiguration, VacationGrant, VacationPeriod, VacationRequest
 
 
 class ConfiguracionVacacionesFilter(filters.FilterSet):
@@ -15,7 +15,7 @@ class ConfiguracionVacacionesFilter(filters.FilterSet):
     fecha_fin_vigencia_hasta = filters.DateFilter(field_name='fecha_fin_vigencia', lookup_expr='lte')
 
     class Meta:
-        model = ConfiguracionVacaciones
+        model = VacationConfiguration
         fields = ['tipo_configuracion', 'activo', 'area', 'empleado']
 
 
@@ -29,7 +29,7 @@ class PeriodoVacacionalFilter(filters.FilterSet):
     dias_pendientes_min = filters.NumberFilter(field_name='dias_pendientes', lookup_expr='gte')
     dias_pendientes_max = filters.NumberFilter(field_name='dias_pendientes', lookup_expr='lte')
     area = filters.ModelChoiceFilter(
-        queryset=Area.objects.filter(estado_area='activo'),
+        queryset=Department.objects.filter(estado_area='activo'),
         method='filter_area',
     )
     vencido = filters.BooleanFilter(method='filter_vencido')
@@ -46,7 +46,7 @@ class PeriodoVacacionalFilter(filters.FilterSet):
         return queryset.filter(fecha_vencimiento__lt=hoy) if value else queryset.filter(fecha_vencimiento__gte=hoy)
 
     class Meta:
-        model = PeriodoVacacional
+        model = VacationPeriod
         fields = ['ano_periodo', 'empleado', 'estado_periodo', 'contrato_id']
 
 
@@ -60,7 +60,7 @@ class SolicitudVacacionesFilter(filters.FilterSet):
     dias_solicitados_min = filters.NumberFilter(field_name='dias_solicitados', lookup_expr='gte')
     dias_solicitados_max = filters.NumberFilter(field_name='dias_solicitados', lookup_expr='lte')
     area = filters.ModelChoiceFilter(
-        queryset=Area.objects.filter(estado_area='activo'),
+        queryset=Department.objects.filter(estado_area='activo'),
         method='filter_area',
     )
     ano_periodo = filters.NumberFilter(field_name='periodo_vacacional__ano_periodo')
@@ -81,7 +81,7 @@ class SolicitudVacacionesFilter(filters.FilterSet):
         return queryset.filter(estado_solicitud='aprobada_jefe') if value else queryset.exclude(estado_solicitud='aprobada_jefe')
 
     class Meta:
-        model = SolicitudVacaciones
+        model = VacationRequest
         fields = ['empleado', 'estado_solicitud', 'tipo_solicitud', 'ano_periodo', 'contrato_id']
 
 
@@ -91,7 +91,7 @@ class GoceVacacionesFilter(filters.FilterSet):
     fecha_fin_real_desde = filters.DateFilter(field_name='fecha_fin_real', lookup_expr='gte')
     fecha_fin_real_hasta = filters.DateFilter(field_name='fecha_fin_real', lookup_expr='lte')
     area = filters.ModelChoiceFilter(
-        queryset=Area.objects.filter(estado_area='activo'),
+        queryset=Department.objects.filter(estado_area='activo'),
         method='filter_area',
     )
     ano_periodo = filters.NumberFilter(field_name='periodo_vacacional__ano_periodo')
@@ -111,5 +111,5 @@ class GoceVacacionesFilter(filters.FilterSet):
         return queryset.exclude(estado_goce='en_curso', fecha_inicio_real__lte=hoy, fecha_fin_real__gte=hoy)
 
     class Meta:
-        model = GoceVacaciones
+        model = VacationGrant
         fields = ['empleado', 'estado_goce', 'ano_periodo', 'contrato_id']

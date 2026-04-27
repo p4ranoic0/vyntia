@@ -1,9 +1,9 @@
 """Contracts models — re-exports for backward-compatible imports."""
 
-from .contratos_adendas import ContratosAdendas
-from .datos_laborales import DatosLaborales
+from .contract import Contract
+from .employment_data import EmploymentData
 
 __all__ = [
-    "ContratosAdendas",
-    "DatosLaborales",
+    "Contract",
+    "EmploymentData",
 ]

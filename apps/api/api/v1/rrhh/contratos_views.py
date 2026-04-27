@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
-from apps.contracts.models import ContratosAdendas
-from apps.employees.models import Empleado
-from apps.organization.models import Area
+from apps.contracts.models import Contract
+from apps.employees.models import Employee
+from apps.organization.models import Department
 from apps.core.decorators import (
     require_admin,
     require_authenticated,
@@ -38,7 +38,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
     como alertas de vencimiento, reportes por área y estadísticas.
     """
 
-    queryset = ContratosAdendas.objects.all()
+    queryset = Contract.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
@@ -84,7 +84,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimiza las consultas con select_related y prefetch_related."""
-        queryset = ContratosAdendas.objects.select_related(
+        queryset = Contract.objects.select_related(
             "empleado", "area", "creado_por", "modificado_por"
         ).order_by("-fecha_creacion")
 
@@ -293,12 +293,12 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
         """Obtiene estadísticas generales del sistema de contratos."""
         try:
             # Estadísticas básicas
-            total_contratos = ContratosAdendas.objects.count()
-            contratos_activos = ContratosAdendas.objects.filter(estado="ACTIVO").count()
+            total_contratos = Contract.objects.count()
+            contratos_activos = Contract.objects.filter(estado="ACTIVO").count()
 
             # Contratos por vencer en los próximos 30 días
             fecha_limite = timezone.now().date() + timedelta(days=30)
-            contratos_por_vencer = ContratosAdendas.objects.filter(
+            contratos_por_vencer = Contract.objects.filter(
                 estado="ACTIVO",
                 fecha_fin__lte=fecha_limite,
                 fecha_fin__gte=timezone.now().date(),
@@ -306,14 +306,14 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
 
             # Distribución por tipo de documento
             distribucion_tipos = (
-                ContratosAdendas.objects.values("tipo_documento")
+                Contract.objects.values("tipo_documento")
                 .annotate(total=Count("contrato_id"))
                 .order_by("-total")
             )
 
             # Empleados con contratos activos
             empleados_con_contratos = (
-                ContratosAdendas.objects.filter(estado="ACTIVO")
+                Contract.objects.filter(estado="ACTIVO")
                 .values("empleado")
                 .distinct()
                 .count()
@@ -321,7 +321,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
 
             # Áreas con más contratos
             areas_top = (
-                ContratosAdendas.objects.values(
+                Contract.objects.values(
                     "area__siglas_area", "area__nombre_unidad_organica"
                 )
                 .annotate(total=Count("contrato_id"))

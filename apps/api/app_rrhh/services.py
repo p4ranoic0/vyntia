@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any, Tuple
 from decimal import Decimal
 
-from apps.contracts.models import DatosLaborales
-from apps.employees.models import DatosAcademicos, DatosFamiliares, Empleado
-from apps.organization.models import Area, HistorialUbicaciones
-from apps.identity.models import Usuario, Rol, Permiso
+from apps.contracts.models import EmploymentData
+from apps.employees.models import AcademicRecord, FamilyMember, Employee
+from apps.organization.models import Department, LocationHistory
+from apps.identity.models import User, Role, Permission
 from apps.core.exceptions import (
     BusinessLogicError, ResourceNotFoundError,
     DuplicateResourceError, InvalidOperationError
@@ -27,18 +27,18 @@ class EmpleadoService:
         area_id: int,
         datos_familiares: List[Dict[str, Any]] = None,
         datos_academicos: List[Dict[str, Any]] = None
-    ) -> Empleado:
+    ) -> Employee:
         """Create a complete employee record with all related data.
         
         Args:
             datos_personales: Personal data dictionary
             datos_laborales: Labor data dictionary
-            area_id: Area ID for initial location
+            area_id: Department ID for initial location
             datos_familiares: Optional family data list
             datos_academicos: Optional academic data list
             
         Returns:
-            Empleado: Created employee instance
+            Employee: Created employee instance
             
         Raises:
             DuplicateResourceError: If DNI already exists
@@ -47,27 +47,27 @@ class EmpleadoService:
         """
         # Validate DNI uniqueness
         dni = datos_personales.get('dni')
-        if dni and Empleado.objects.filter(dni=dni).exists():
+        if dni and Employee.objects.filter(dni=dni).exists():
             raise DuplicateResourceError(f"Ya existe un empleado con DNI {dni}")
         
         # Validate area exists
         try:
-            area = Area.objects.get(area_id=area_id, estado_area='activo')
-        except Area.DoesNotExist:
+            area = Department.objects.get(area_id=area_id, estado_area='activo')
+        except Department.DoesNotExist:
             raise ResourceNotFoundError(f"Área con ID {area_id} no encontrada o inactiva")
         
         with transaction.atomic():
             # Create employee
-            empleado = Empleado.objects.create(**datos_personales)
+            empleado = Employee.objects.create(**datos_personales)
             
             # Create labor data
-            DatosLaborales.objects.create(
+            EmploymentData.objects.create(
                 empleado=empleado,
                 **datos_laborales
             )
             
             # Create initial location
-            HistorialUbicaciones.objects.create(
+            LocationHistory.objects.create(
                 empleado=empleado,
                 area=area,
                 fecha_inicio=datos_laborales.get('fecha_ingreso', timezone.now().date()),
@@ -77,7 +77,7 @@ class EmpleadoService:
             # Create family data if provided
             if datos_familiares:
                 for familiar in datos_familiares:
-                    DatosFamiliares.objects.create(
+                    FamilyMember.objects.create(
                         empleado=empleado,
                         **familiar
                     )
@@ -85,7 +85,7 @@ class EmpleadoService:
             # Create academic data if provided
             if datos_academicos:
                 for academico in datos_academicos:
-                    DatosAcademicos.objects.create(
+                    AcademicRecord.objects.create(
                         empleado=empleado,
                         **academico
                     )
@@ -93,7 +93,7 @@ class EmpleadoService:
         return empleado
     
     @staticmethod
-    def transferir_empleado(empleado_id: int, nueva_area_id: int, fecha_inicio: datetime.date = None) -> HistorialUbicaciones:
+    def transferir_empleado(empleado_id: int, nueva_area_id: int, fecha_inicio: datetime.date = None) -> LocationHistory:
         """Transfer employee to new area.
         
         Args:
@@ -102,23 +102,23 @@ class EmpleadoService:
             fecha_inicio: Transfer start date
             
         Returns:
-            HistorialUbicaciones: New location record
+            LocationHistory: New location record
             
         Raises:
             ResourceNotFoundError: If employee or area not found
             InvalidOperationError: If employee is inactive
         """
         try:
-            empleado = Empleado.objects.get(id=empleado_id)
-        except Empleado.DoesNotExist:
-            raise ResourceNotFoundError(f"Empleado con ID {empleado_id} no encontrado")
+            empleado = Employee.objects.get(id=empleado_id)
+        except Employee.DoesNotExist:
+            raise ResourceNotFoundError(f"Employee con ID {empleado_id} no encontrado")
         
         if not empleado.es_activo:
             raise InvalidOperationError("No se puede transferir un empleado inactivo")
         
         try:
-            nueva_area = Area.objects.get(area_id=nueva_area_id, estado_area='activo')
-        except Area.DoesNotExist:
+            nueva_area = Department.objects.get(area_id=nueva_area_id, estado_area='activo')
+        except Department.DoesNotExist:
             raise ResourceNotFoundError(f"Área con ID {nueva_area_id} no encontrada o inactiva")
         
         fecha_inicio = fecha_inicio or timezone.now().date()
@@ -132,7 +132,7 @@ class EmpleadoService:
                 ubicacion_actual.save()
             
             # Create new location
-            nueva_ubicacion = HistorialUbicaciones.objects.create(
+            nueva_ubicacion = LocationHistory.objects.create(
                 empleado=empleado,
                 area=nueva_area,
                 fecha_inicio=fecha_inicio,
@@ -150,7 +150,7 @@ class EmpleadoService:
         edad_max: int = None,
         regimen_laboral: str = None,
         busqueda: str = None
-    ) -> List[Empleado]:
+    ) -> List[Employee]:
         """Get employees by multiple criteria.
         
         Args:
@@ -163,9 +163,9 @@ class EmpleadoService:
             busqueda: Search term
             
         Returns:
-            List[Empleado]: Filtered employees
+            List[Employee]: Filtered employees
         """
-        queryset = Empleado.objects.con_datos_completos()
+        queryset = Employee.objects.con_datos_completos()
         
         if estado is not None:
             queryset = queryset.filter(estado=estado)
@@ -201,7 +201,7 @@ class EmpleadoService:
         Returns:
             Dict[str, Any]: Statistics dictionary
         """
-        empleados_activos = Empleado.objects.activos()
+        empleados_activos = Employee.objects.activos()
         
         # Basic demographics
         demograficas = empleados_activos.estadisticas_demograficas()
@@ -227,7 +227,7 @@ class EmpleadoService:
         ).order_by('-total')
         
         # Salary statistics
-        estadisticas_salariales = DatosLaborales.objects.vigentes().estadisticas_salariales()
+        estadisticas_salariales = EmploymentData.objects.vigentes().estadisticas_salariales()
         
         return {
             'demograficas': demograficas,
@@ -235,7 +235,7 @@ class EmpleadoService:
             'por_regimen': list(por_regimen),
             'salariales': estadisticas_salariales,
             'total_activos': empleados_activos.count(),
-            'total_inactivos': Empleado.objects.inactivos().count()
+            'total_inactivos': Employee.objects.inactivos().count()
         }
 
 
@@ -249,7 +249,7 @@ class AreaService:
         Returns:
             List[Dict[str, Any]]: Areas with statistics
         """
-        areas = Area.objects.activas().con_estadisticas()
+        areas = Department.objects.activas().con_estadisticas()
         
         resultado = []
         for area in areas:
@@ -283,9 +283,9 @@ class AreaService:
             raise InvalidOperationError("Las áreas de origen y destino no pueden ser iguales")
         
         try:
-            area_origen = Area.objects.get(area_id=area_origen_id)
-            area_destino = Area.objects.get(area_id=area_destino_id, estado_area='activo')
-        except Area.DoesNotExist:
+            area_origen = Department.objects.get(area_id=area_origen_id)
+            area_destino = Department.objects.get(area_id=area_destino_id, estado_area='activo')
+        except Department.DoesNotExist:
             raise ResourceNotFoundError("Una o ambas áreas no fueron encontradas")
         
         empleados_activos = area_origen.empleados_activos()
@@ -293,7 +293,7 @@ class AreaService:
         
         with transaction.atomic():
             # Close current locations
-            HistorialUbicaciones.objects.filter(
+            LocationHistory.objects.filter(
                 area=area_origen,
                 estado=True,
                 fecha_termino__isnull=True
@@ -304,7 +304,7 @@ class AreaService:
             
             # Create new locations
             nuevas_ubicaciones = [
-                HistorialUbicaciones(
+                LocationHistory(
                     empleado_id=ubicacion.empleado_id,
                     area=area_destino,
                     fecha_inicio=fecha_transferencia,
@@ -313,7 +313,7 @@ class AreaService:
                 for ubicacion in empleados_activos
             ]
             
-            HistorialUbicaciones.objects.bulk_create(nuevas_ubicaciones)
+            LocationHistory.objects.bulk_create(nuevas_ubicaciones)
         
         return len(nuevas_ubicaciones)
 
@@ -330,7 +330,7 @@ class UsuarioService:
         username: str,
         password: str,
         roles: List[str] = None
-    ) -> Usuario:
+    ) -> User:
         """Create user account for employee.
         
         Args:
@@ -340,22 +340,22 @@ class UsuarioService:
             roles: List of role names
             
         Returns:
-            Usuario: Created user
+            User: Created user
             
         Raises:
             ResourceNotFoundError: If employee not found
             DuplicateResourceError: If username exists
         """
         try:
-            empleado = Empleado.objects.get(id=empleado_id, estado=True)
-        except Empleado.DoesNotExist:
-            raise ResourceNotFoundError(f"Empleado con ID {empleado_id} no encontrado")
+            empleado = Employee.objects.get(id=empleado_id, estado=True)
+        except Employee.DoesNotExist:
+            raise ResourceNotFoundError(f"Employee con ID {empleado_id} no encontrado")
         
-        if Usuario.objects.filter(username=username).exists():
+        if User.objects.filter(username=username).exists():
             raise DuplicateResourceError(f"El username {username} ya existe")
         
         with transaction.atomic():
-            usuario = Usuario.objects.create_user(
+            usuario = User.objects.create_user(
                 username=username,
                 password=password,
                 empleado=empleado,
@@ -366,7 +366,7 @@ class UsuarioService:
             
             # Assign roles if provided
             if roles:
-                roles_obj = Rol.objects.filter(nombre__in=roles, estado=True)
+                roles_obj = Role.objects.filter(nombre__in=roles, estado=True)
                 usuario.rol_set.set(roles_obj)
         
         return usuario
@@ -383,26 +383,26 @@ class UsuarioService:
             bool: True if user has permission
         """
         try:
-            usuario = Usuario.objects.get(id=usuario_id, estado=True)
+            usuario = User.objects.get(id=usuario_id, estado=True)
             return usuario.permisos_usuario().filter(
                 nombre__icontains=permiso_nombre
             ).exists()
-        except Usuario.DoesNotExist:
+        except User.DoesNotExist:
             return False
     
     @staticmethod
-    def obtener_usuarios_sin_login_reciente(dias: int = 90) -> List[Usuario]:
+    def obtener_usuarios_sin_login_reciente(dias: int = 90) -> List[User]:
         """Get users without recent login.
         
         Args:
             dias: Number of days
             
         Returns:
-            List[Usuario]: Users without recent login
+            List[User]: Users without recent login
         """
         fecha_limite = timezone.now() - timedelta(days=dias)
         
-        return Usuario.objects.filter(
+        return User.objects.filter(
             Q(fecha_ult_login__lt=fecha_limite) | Q(fecha_ult_login__isnull=True),
             estado=True
         ).select_related('empleado')

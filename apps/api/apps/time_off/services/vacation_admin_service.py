@@ -8,13 +8,13 @@ from django.db import transaction
 from django.db.models import Avg, Case, Count, F, FloatField, Q, Sum, Value, When
 from django.utils import timezone
 
-from apps.employees.models import Empleado
-from apps.identity.models import Usuario
+from apps.employees.models import Employee
+from apps.identity.models import User
 from ..models import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationGrant,
+    VacationPeriod,
+    VacationRequest,
 )
 from apps.core.exceptions import BusinessLogicError
 
@@ -29,14 +29,14 @@ class VacationAdminService:
 
     @staticmethod
     @transaction.atomic
-    def crear_configuracion_vacaciones(data: Dict[str, Any], usuario_creador: Usuario) -> ConfiguracionVacaciones:
+    def crear_configuracion_vacaciones(data: Dict[str, Any], usuario_creador: User) -> VacationConfiguration:
         if not usuario_creador.es_admin_rrhh:
             raise BusinessLogicError("No tiene permisos para crear configuraciones.", error_code="PERMISSION_DENIED")
 
         if not data.get('tipo_configuracion'):
             raise BusinessLogicError("tipo_configuracion es obligatorio.", error_code="MISSING_REQUIRED_FIELD")
 
-        return ConfiguracionVacaciones.objects.create(
+        return VacationConfiguration.objects.create(
             tipo_configuracion=data['tipo_configuracion'],
             area=data.get('area'),
             empleado=data.get('empleado'),
@@ -69,11 +69,11 @@ class VacationAdminService:
     def actualizar_configuracion_vacaciones(
         configuracion_id: int,
         data: Dict[str, Any],
-        usuario: Usuario,
-    ) -> ConfiguracionVacaciones:
+        usuario: User,
+    ) -> VacationConfiguration:
         if not usuario.es_admin_rrhh:
             raise BusinessLogicError("No tiene permisos para actualizar configuraciones.", error_code="PERMISSION_DENIED")
-        config = ConfiguracionVacaciones.objects.get(configuracion_id=configuracion_id)
+        config = VacationConfiguration.objects.get(configuracion_id=configuracion_id)
 
         campos = [
             'dias_por_ano',
@@ -105,7 +105,7 @@ class VacationAdminService:
 
     @staticmethod
     @transaction.atomic
-    def generar_periodos_masivos(ano: int, empleados_ids: List[int], usuario: Usuario) -> Dict[str, Any]:
+    def generar_periodos_masivos(ano: int, empleados_ids: List[int], usuario: User) -> Dict[str, Any]:
         if not usuario.es_admin_rrhh:
             raise BusinessLogicError("No tiene permisos para generar periodos masivos.", error_code="PERMISSION_DENIED")
 
@@ -118,7 +118,7 @@ class VacationAdminService:
         }
 
         fecha_ref = date(ano, 1, 1)
-        for empleado in Empleado.objects.filter(empleado_id__in=empleados_ids, estado_empleado='activo'):
+        for empleado in Employee.objects.filter(empleado_id__in=empleados_ids, estado_empleado='activo'):
             resultados['total_procesados'] += 1
             try:
                 periodo = VacationService.obtener_o_crear_periodo(empleado, fecha_ref)
@@ -151,9 +151,9 @@ class VacationAdminService:
             filtros['empleado__datos_laborales__area_id'] = area_id
             filtros['empleado__datos_laborales__estado_datos'] = 'activo'
 
-        periodos = PeriodoVacacional.objects.filter(**filtros).distinct()
-        solicitudes = SolicitudVacaciones.objects.filter(periodo_vacacional__in=periodos)
-        goces = GoceVacaciones.objects.filter(periodo_vacacional__in=periodos)
+        periodos = VacationPeriod.objects.filter(**filtros).distinct()
+        solicitudes = VacationRequest.objects.filter(periodo_vacacional__in=periodos)
+        goces = VacationGrant.objects.filter(periodo_vacacional__in=periodos)
 
         resumen_periodos = periodos.aggregate(
             total_empleados=Count('empleado', distinct=True),
@@ -204,7 +204,7 @@ class VacationAdminService:
         hoy = date.today()
 
         periodos = (
-            PeriodoVacacional.objects.filter(ano_periodo=ano_ref)
+            VacationPeriod.objects.filter(ano_periodo=ano_ref)
             .filter(Q(fecha_vencimiento__lt=hoy) | Q(dias_vencidos__gt=0) | Q(dias_pendientes__gt=0))
             .select_related('empleado')
             .order_by('-dias_pendientes', '-dias_vencidos')
@@ -232,10 +232,10 @@ class VacationAdminService:
 
     @staticmethod
     @transaction.atomic
-    def ajustar_dias_periodo(periodo_id: int, nuevos_dias: Decimal, motivo: str, usuario: Usuario) -> PeriodoVacacional:
+    def ajustar_dias_periodo(periodo_id: int, nuevos_dias: Decimal, motivo: str, usuario: User) -> VacationPeriod:
         if not usuario.es_admin_rrhh:
             raise BusinessLogicError("No tiene permisos para ajustar periodos.", error_code="PERMISSION_DENIED")
-        periodo = PeriodoVacacional.objects.select_for_update().get(periodo_id=periodo_id)
+        periodo = VacationPeriod.objects.select_for_update().get(periodo_id=periodo_id)
         if nuevos_dias < periodo.dias_gozados:
             raise BusinessLogicError(
                 f"Los días no pueden ser menores a los ya gozados ({periodo.dias_gozados}).",
@@ -259,7 +259,7 @@ class VacationAdminService:
         empleado_id: Optional[int] = None,
         contrato_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        qs = SolicitudVacaciones.objects.select_related('empleado', 'periodo_vacacional', 'jefe_aprobador', 'rrhh_aprobador')
+        qs = VacationRequest.objects.select_related('empleado', 'periodo_vacacional', 'jefe_aprobador', 'rrhh_aprobador')
 
         if fecha_inicio:
             qs = qs.filter(fecha_envio__date__gte=fecha_inicio)

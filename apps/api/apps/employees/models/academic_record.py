@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo DatosAcademicos - Gestión de formación académica de empleados
+Modelo AcademicRecord - Gestión de formación académica de empleados
 
-Contiene la definición del modelo DatosAcademicos que almacena la información
+Contiene la definición del modelo AcademicRecord que almacena la información
 educativa y de formación profesional de los empleados.
 """
 
@@ -12,7 +12,7 @@ from datetime import date
 # from ..managers import DatosAcademicosManager  # Comentado temporalmente para migraciones
 
 
-class DatosAcademicos(models.Model):
+class AcademicRecord(models.Model):
     """Modelo para gestionar la formación académica de los empleados."""
     
     NIVEL_EDUCATIVO_CHOICES = [
@@ -64,7 +64,7 @@ class DatosAcademicos(models.Model):
     # Campos principales
     academico_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'Empleado',
+        'Employee',
         on_delete=models.CASCADE,
         related_name='formacion_academica'
     )
@@ -115,7 +115,7 @@ class DatosAcademicos(models.Model):
     ruta_titulo = models.CharField(max_length=255, null=True, blank=True)
     ruta_diploma = models.CharField(max_length=255, null=True, blank=True)
     documento = models.ForeignKey(
-        'documents.DocumentosDigitales',
+        'documents.DigitalDocument',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='dato_academico',

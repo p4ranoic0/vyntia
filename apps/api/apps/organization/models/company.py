@@ -2,7 +2,7 @@
 from django.db import models
 
 
-class ConfiguracionEmpresa(models.Model):
+class Company(models.Model):
     """Configuración de datos institucionales (singleton: solo una fila)."""
 
     nombre = models.CharField(max_length=300, default='Institución Pública', help_text='Nombre de la institución')

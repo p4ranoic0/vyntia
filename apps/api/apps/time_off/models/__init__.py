@@ -1,17 +1,17 @@
 """Time off models — re-exports for backward-compatible imports."""
 
-from .vacaciones import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+from .vacation import (
+    VacationConfiguration,
+    VacationGrant,
+    VacationPeriod,
+    VacationRequest,
+    VacationRequestHistory,
 )
 
 __all__ = [
-    "ConfiguracionVacaciones",
-    "GoceVacaciones",
-    "HistorialSolicitudVacaciones",
-    "PeriodoVacacional",
-    "SolicitudVacaciones",
+    "VacationConfiguration",
+    "VacationGrant",
+    "VacationPeriod",
+    "VacationRequest",
+    "VacationRequestHistory",
 ]

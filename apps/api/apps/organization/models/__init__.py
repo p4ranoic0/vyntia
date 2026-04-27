@@ -1,11 +1,11 @@
 """Organization models — re-exports for backward-compatible imports."""
 
-from .area import Area
-from .configuracion_empresa import ConfiguracionEmpresa
-from .ubicacion import HistorialUbicaciones
+from .company import Company
+from .department import Department
+from .location_history import LocationHistory
 
 __all__ = [
-    "Area",
-    "ConfiguracionEmpresa",
-    "HistorialUbicaciones",
+    "Company",
+    "Department",
+    "LocationHistory",
 ]

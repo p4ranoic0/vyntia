@@ -10,7 +10,7 @@ Cubre: ONBD-01 (corregir correo), ONBD-04 (notificar progreso),
 
 import pytest
 
-from apps.onboarding.models import OnboardingEmpleado
+from apps.onboarding.models import OnboardingProcess
 from apps.onboarding.services import OnboardingService
 
 
@@ -25,7 +25,7 @@ class TestActualizarEstado:
     def test_dni_subido_retorna_historial_de_cambio(self, onboarding_factory):
         """ONBD-05: actualizar_estado_onboarding debe retornar dict con 'historial_cambio'.
 
-        El servicio actualmente devuelve solo el OnboardingEmpleado.
+        El servicio actualmente devuelve solo el OnboardingProcess.
         Wave 1 debe enriquecer el retorno con historial.
         DEBE FALLAR en RED hasta que se implemente el historial.
         """
@@ -34,7 +34,7 @@ class TestActualizarEstado:
         resultado = OnboardingService.actualizar_estado_onboarding(onboarding.onboarding_id)
 
         # Wave 1 debe cambiar la firma para devolver dict con historial
-        # Actualmente devuelve OnboardingEmpleado directamente — esto falla RED
+        # Actualmente devuelve OnboardingProcess directamente — esto falla RED
         assert isinstance(resultado, dict), (
             f"Se esperaba dict con 'historial_cambio', pero se obtuvo {type(resultado).__name__}. "
             "Wave 1 debe cambiar la firma de actualizar_estado_onboarding."
@@ -114,7 +114,7 @@ class TestCorregirCorreoService:
     """Tests para la lógica de corrección de correo en el servicio (ONBD-01)."""
 
     def test_corregir_correo_cambia_email_en_empleado(self, onboarding_factory):
-        """ONBD-01: corregir_correo_personal actualiza Empleado.correo_personal.
+        """ONBD-01: corregir_correo_personal actualiza Employee.correo_personal.
 
         Este test DEBE FALLAR en RED porque el método corregir_correo_personal
         no existe todavía en OnboardingService.
@@ -136,18 +136,18 @@ class TestCorregirCorreoService:
         assert resultado is not None
 
 
-# --- Wave 5 stubs: CursosCertificaciones model ---
+# --- Wave 5 stubs: Certification model ---
 
 @pytest.mark.django_db
 class TestCursosCertificacionesModel:
-    """Stubs for CursosCertificaciones model — implemented in Wave 5."""
+    """Stubs for Certification model — implemented in Wave 5."""
 
     def test_cursos_certificaciones_model_stub(self):
         """Placeholder — full tests added when ViewSet is wired (plan 01-09)."""
-        from apps.employees.models import CursosCertificaciones
-        assert hasattr(CursosCertificaciones, 'nombre_curso')
-        assert hasattr(CursosCertificaciones, 'empleado_id')
-        assert hasattr(CursosCertificaciones, 'documento_id')
+        from apps.employees.models import Certification
+        assert hasattr(Certification, 'nombre_curso')
+        assert hasattr(Certification, 'empleado_id')
+        assert hasattr(Certification, 'documento_id')
 
     def test_progreso_aprobado_property_exists(self, onboarding_factory):
         """progreso_aprobado property is accessible without error."""

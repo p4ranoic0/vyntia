@@ -1,9 +1,9 @@
 """AppConfig for the `apps.organization` Django app — VYNTIA organizational structure.
 
 Owns the structural entities of a tenant organization:
-- Area (departments / org units)
-- HistorialUbicaciones (employee location/area movement history)
-- ConfiguracionEmpresa (company-level configuration / branding)
+- Department (departments / org units)
+- LocationHistory (employee location/area movement history)
+- Company (company-level configuration / branding)
 
 Bounded context boundary: organization defines WHERE work happens (which
 department, which physical location). It does not define employees themselves

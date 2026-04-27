@@ -3,7 +3,7 @@
 Fixtures compartidas para los tests de la Phase 1: Onboarding Self-Service.
 
 Provee:
-- onboarding_factory: crea Empleado + Usuario + OnboardingEmpleado en test DB.
+- onboarding_factory: crea Employee + User + OnboardingProcess en test DB.
 - hr_client: APIClient autenticado como usuario RRHH.
 - onboarding_client: APIClient autenticado como el empleado de onboarding.
 """
@@ -12,16 +12,16 @@ import pytest
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.onboarding.models import OnboardingEmpleado
-from apps.employees.models import Empleado
-from apps.identity.models import Rol, Usuario, UsuarioRoles
+from apps.onboarding.models import OnboardingProcess
+from apps.employees.models import Employee
+from apps.identity.models import Role, User, UserRole
 
 
 def _make_empleado(**kwargs):
-    """Crea un Empleado con valores por defecto, acepta overrides."""
+    """Crea un Employee con valores por defecto, acepta overrides."""
     defaults = dict(
         nombres_empleado="Nuevo",
-        apellido_paterno="Empleado",
+        apellido_paterno="Employee",
         apellido_materno="Test",
         numero_documento="99887766",
         tipo_documento="DNI",
@@ -37,11 +37,11 @@ def _make_empleado(**kwargs):
         estado_empleado="activo",
     )
     defaults.update(kwargs)
-    return Empleado.objects.create(**defaults)
+    return Employee.objects.create(**defaults)
 
 
 def _make_usuario(empleado=None, tipo="empleado", suffix="onb", **kwargs):
-    """Crea un Usuario con valores por defecto."""
+    """Crea un User con valores por defecto."""
     defaults = dict(
         username=f"usuario_{suffix}",
         email=f"{suffix}@test.com",
@@ -53,7 +53,7 @@ def _make_usuario(empleado=None, tipo="empleado", suffix="onb", **kwargs):
         empleado=empleado,
     )
     defaults.update(kwargs)
-    return Usuario.objects.create_user(**defaults)
+    return User.objects.create_user(**defaults)
 
 
 def _get_jwt_client(usuario):
@@ -73,7 +73,7 @@ def onboarding_factory(db):
         onboarding = onboarding_factory()
         onboarding = onboarding_factory(estado_onboarding='completado')
 
-    Devuelve: OnboardingEmpleado instance.
+    Devuelve: OnboardingProcess instance.
     """
     created = []
 
@@ -101,14 +101,14 @@ def onboarding_factory(db):
             else:
                 empleado_kwargs[k] = k
 
-        # Crear Empleado
+        # Crear Employee
         empleado = _make_empleado()
 
-        # Crear Usuario empleado vinculado al Empleado
+        # Crear User empleado vinculado al Employee
         usuario = _make_usuario(empleado=empleado, tipo="empleado", suffix=f"empl_{empleado.empleado_id}")
 
-        # Crear OnboardingEmpleado
-        onboarding = OnboardingEmpleado.objects.create(
+        # Crear OnboardingProcess
+        onboarding = OnboardingProcess.objects.create(
             empleado=empleado,
             usuario=usuario,
             **onboarding_kwargs,
@@ -121,11 +121,11 @@ def onboarding_factory(db):
 
 def _assign_rrhh_role(usuario):
     """Asigna el rol 'Administrador RRHH' al usuario dado (crea el rol si no existe)."""
-    rol, _ = Rol.objects.get_or_create(
+    rol, _ = Role.objects.get_or_create(
         nombre_rol="Administrador RRHH",
         defaults={"estado_rol": "activo", "nivel_jerarquico": 2, "es_rol_sistema": True},
     )
-    UsuarioRoles.objects.get_or_create(
+    UserRole.objects.get_or_create(
         usuario=usuario,
         rol=rol,
         defaults={"estado_asignacion": "activo"},
@@ -135,7 +135,7 @@ def _assign_rrhh_role(usuario):
 
 @pytest.fixture
 def hr_usuario(db):
-    """Usuario de tipo RRHH para tests de API."""
+    """User de tipo RRHH para tests de API."""
     usuario = _make_usuario(
         tipo="rrhh",
         suffix="rrhh",

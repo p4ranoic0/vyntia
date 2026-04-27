@@ -7,7 +7,7 @@ Comando para cargar configuración base de remuneraciones:
 
 from decimal import Decimal
 
-from apps.payroll.models import ConfiguracionAfp, ConfiguracionUit
+from apps.payroll.models import AfpConfiguration, TaxParameter
 from django.core.management.base import BaseCommand
 
 
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         )
 
     def _seed_uit(self, anio, valor_uit):
-        obj, created = ConfiguracionUit.objects.update_or_create(
+        obj, created = TaxParameter.objects.update_or_create(
             anio=anio,
             defaults={
                 "valor_uit": valor_uit,
@@ -98,7 +98,7 @@ class Command(BaseCommand):
 
         for afp_data in afps:
             nombre = afp_data.pop("afp_nombre")
-            obj, created = ConfiguracionAfp.objects.update_or_create(
+            obj, created = AfpConfiguration.objects.update_or_create(
                 afp_nombre=nombre,
                 vigencia_mes=vigencia,
                 defaults={**afp_data, "estado": "activo"},

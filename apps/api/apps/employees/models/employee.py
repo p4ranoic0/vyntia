@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo Empleado - Gestión de información personal de empleados
+Modelo Employee - Gestión de información personal de empleados
 
-Contiene la definición del modelo Empleado que almacena toda la información
+Contiene la definición del modelo Employee que almacena toda la información
 personal, de contacto y básica de los empleados de la institución.
 """
 
@@ -14,7 +14,7 @@ from django.utils import timezone
 # from ..managers import EmpleadoManager  # Comentado temporalmente para evitar error de importación
 
 
-class Empleado(models.Model):
+class Employee(models.Model):
     """Modelo para gestionar la información personal de los empleados."""
 
     TIPO_DOCUMENTO_CHOICES = [
@@ -252,39 +252,39 @@ class Empleado(models.Model):
 
     def ubicacion_actual(self):
         """Obtiene la ubicación actual del empleado."""
-        from apps.organization.models import HistorialUbicaciones
+        from apps.organization.models import LocationHistory
 
-        return HistorialUbicaciones.objects.filter(
+        return LocationHistory.objects.filter(
             empleado=self, estado_ubicacion="activo"
         ).first()
 
     def datos_laborales_actuales(self):
         """Obtiene los datos laborales actuales del empleado."""
-        from apps.contracts.models import DatosLaborales
+        from apps.contracts.models import EmploymentData
 
-        return DatosLaborales.objects.filter(
+        return EmploymentData.objects.filter(
             empleado=self, estado_datos="activo"
         ).first()
 
     def historial_ubicaciones(self):
         """Obtiene el historial de ubicaciones del empleado."""
-        from apps.organization.models import HistorialUbicaciones
+        from apps.organization.models import LocationHistory
 
-        return HistorialUbicaciones.objects.filter(empleado=self).order_by(
+        return LocationHistory.objects.filter(empleado=self).order_by(
             "-fecha_inicio"
         )
 
     def familiares_activos(self):
         """Obtiene los familiares activos del empleado."""
-        from .datos_familiares import DatosFamiliares
+        from .family_member import FamilyMember
 
-        return DatosFamiliares.objects.filter(empleado=self, estado_familiar="activo")
+        return FamilyMember.objects.filter(empleado=self, estado_familiar="activo")
 
     def formacion_academica(self):
         """Obtiene la formación académica del empleado."""
-        from .datos_academicos import DatosAcademicos
+        from .academic_record import AcademicRecord
 
-        return DatosAcademicos.objects.filter(empleado=self).order_by(
+        return AcademicRecord.objects.filter(empleado=self).order_by(
             "-fecha_graduacion"
         )
 
@@ -294,7 +294,7 @@ class Empleado(models.Model):
 
         fecha_limite = timezone.now().date() - timedelta(days=meses * 30)
         # Aquí se implementaría la lógica para obtener boletas
-        # return BoletaPago.objects.filter(
+        # return PaySlip.objects.filter(
         #     empleado=self,
         #     fecha_pago__gte=fecha_limite
         # ).order_by('-fecha_pago')

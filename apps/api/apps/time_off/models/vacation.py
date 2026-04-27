@@ -20,13 +20,13 @@ from ..managers import (
 )
 
 
-class ConfiguracionVacaciones(models.Model):
+class VacationConfiguration(models.Model):
     """Modelo para configurar las reglas de vacaciones por área o empleado."""
     
     TIPO_CONFIGURACION_CHOICES = [
         ('general', 'General'),
         ('area', 'Por Área'),
-        ('empleado', 'Por Empleado'),
+        ('empleado', 'Por Employee'),
         ('cargo', 'Por Cargo'),
     ]
     
@@ -42,14 +42,14 @@ class ConfiguracionVacaciones(models.Model):
     
     # Relaciones opcionales
     area = models.ForeignKey(
-        'organization.Area',
+        'organization.Department',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='configuraciones_vacaciones'
     )
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -125,7 +125,7 @@ class ConfiguracionVacaciones(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -156,7 +156,7 @@ class ConfiguracionVacaciones(models.Model):
             return f"Configuración {self.tipo_configuracion} - {self.dias_por_ano} días"
 
 
-class PeriodoVacacional(models.Model):
+class VacationPeriod(models.Model):
     """Modelo para gestionar los períodos vacacionales de los empleados."""
     
     ESTADO_PERIODO_CHOICES = [
@@ -169,12 +169,12 @@ class PeriodoVacacional(models.Model):
     # Campos principales
     periodo_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='periodos_vacacionales'
     )
     contrato = models.ForeignKey(
-        'contracts.ContratosAdendas',
+        'contracts.Contract',
         on_delete=models.PROTECT,
         related_name='periodos_vacacionales',
         null=True,
@@ -227,7 +227,7 @@ class PeriodoVacacional(models.Model):
     # Estado y configuración
     estado_periodo = models.CharField(max_length=15, choices=ESTADO_PERIODO_CHOICES, default='activo')
     configuracion = models.ForeignKey(
-        ConfiguracionVacaciones,
+        VacationConfiguration,
         on_delete=models.PROTECT,
         related_name='periodos'
     )
@@ -240,7 +240,7 @@ class PeriodoVacacional(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -287,7 +287,7 @@ class PeriodoVacacional(models.Model):
         return None
 
 
-class SolicitudVacaciones(models.Model):
+class VacationRequest(models.Model):
     """Modelo para gestionar las solicitudes de vacaciones."""
     
     ESTADO_SOLICITUD_CHOICES = [
@@ -313,12 +313,12 @@ class SolicitudVacaciones(models.Model):
     # Campos principales
     solicitud_id = models.AutoField(primary_key=True)
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='solicitudes_vacaciones'
     )
     periodo_vacacional = models.ForeignKey(
-        PeriodoVacacional,
+        VacationPeriod,
         on_delete=models.CASCADE,
         related_name='solicitudes'
     )
@@ -345,7 +345,7 @@ class SolicitudVacaciones(models.Model):
     # Aprobación del jefe
     aprobado_por_jefe = models.BooleanField(default=False)
     jefe_aprobador = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -357,7 +357,7 @@ class SolicitudVacaciones(models.Model):
     # Aprobación de RRHH
     aprobado_por_rrhh = models.BooleanField(default=False)
     rrhh_aprobador = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -369,7 +369,7 @@ class SolicitudVacaciones(models.Model):
     # Información de rechazo
     motivo_rechazo = models.TextField(null=True, blank=True)
     rechazado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -380,7 +380,7 @@ class SolicitudVacaciones(models.Model):
     # Información de cancelación
     motivo_cancelacion = models.TextField(null=True, blank=True)
     cancelado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -428,7 +428,7 @@ class SolicitudVacaciones(models.Model):
         return self.estado_solicitud not in ['finalizada', 'cancelada', 'rechazada']
 
 
-class GoceVacaciones(models.Model):
+class VacationGrant(models.Model):
     """Modelo para registrar el goce efectivo de vacaciones."""
     
     ESTADO_GOCE_CHOICES = [
@@ -450,17 +450,17 @@ class GoceVacaciones(models.Model):
     # Campos principales
     goce_id = models.AutoField(primary_key=True)
     solicitud_vacaciones = models.OneToOneField(
-        SolicitudVacaciones,
+        VacationRequest,
         on_delete=models.CASCADE,
         related_name='goce'
     )
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='goces_vacaciones'
     )
     periodo_vacacional = models.ForeignKey(
-        PeriodoVacacional,
+        VacationPeriod,
         on_delete=models.CASCADE,
         related_name='goces'
     )
@@ -506,7 +506,7 @@ class GoceVacaciones(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     registrado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -553,7 +553,7 @@ class GoceVacaciones(models.Model):
         return 0
 
 
-class HistorialSolicitudVacaciones(models.Model):
+class VacationRequestHistory(models.Model):
     """Modelo para registrar el historial de cambios en las solicitudes."""
     
     TIPO_ACCION_CHOICES = [
@@ -573,7 +573,7 @@ class HistorialSolicitudVacaciones(models.Model):
     # Campos principales
     historial_id = models.AutoField(primary_key=True)
     solicitud_vacaciones = models.ForeignKey(
-        SolicitudVacaciones,
+        VacationRequest,
         on_delete=models.CASCADE,
         related_name='historial'
     )
@@ -584,9 +584,9 @@ class HistorialSolicitudVacaciones(models.Model):
     estado_anterior = models.CharField(max_length=20, null=True, blank=True)
     estado_nuevo = models.CharField(max_length=20, null=True, blank=True)
     
-    # Usuario que realizó la acción
+    # User que realizó la acción
     usuario_accion = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

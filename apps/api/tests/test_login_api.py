@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import json
 from datetime import timedelta
 
-Usuario = get_user_model()
+User = get_user_model()
 
 
 class LoginFunctionalityTest(TestCase):
@@ -25,7 +25,7 @@ class LoginFunctionalityTest(TestCase):
     def setUp(self):
         """Configuración inicial para cada test."""
         self.client = Client()
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             nombres_usuario='Test',
@@ -126,7 +126,7 @@ class LoginAPITest(APITestCase):
     def setUp(self):
         """Configuración inicial para cada test."""
         self.client = APIClient()
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='apiuser',
             email='api@example.com',
             nombres_usuario='API',
@@ -254,7 +254,7 @@ class SeguridadLoginTest(TestCase):
     
     def setUp(self):
         """Configuración inicial para cada test."""
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='secureuser',
             email='secure@example.com',
             nombres_usuario='Secure',
@@ -313,7 +313,7 @@ class SeguridadLoginTest(TestCase):
         token1 = self.usuario.generar_token_recuperacion()
         
         # Crear otro usuario y generar token
-        usuario2 = Usuario.objects.create_user(
+        usuario2 = User.objects.create_user(
             username='user2',
             email='user2@example.com',
             nombres_usuario='User',
@@ -353,7 +353,7 @@ class SessionManagementTest(TestCase):
     def setUp(self):
         """Configuración inicial para cada test."""
         self.client = Client()
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='sessionuser',
             email='session@example.com',
             nombres_usuario='Session',

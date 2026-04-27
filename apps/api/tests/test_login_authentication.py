@@ -19,9 +19,9 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from apps.organization.models import Area
+from apps.organization.models import Department
 from apps.identity.models import (
-    Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
+    User, Role, Permission, RolePermission, UserRole
 )
 
 
@@ -33,7 +33,7 @@ class LoginAuthenticationTest(TestCase):
         self.client = Client()
         
         # Crear área de prueba
-        self.area_rrhh = Area.objects.create(
+        self.area_rrhh = Department.objects.create(
             nombre_organo='Recursos Humanos',
             nombre_unidad_organica='Gestión de Personal',
             siglas_area='RRHH',
@@ -42,42 +42,42 @@ class LoginAuthenticationTest(TestCase):
         )
         
         # Crear permisos de prueba
-        self.permiso_login = Permiso.objects.create(
+        self.permiso_login = Permission.objects.create(
             nombre_permiso='login_sistema',
-            descripcion_permiso='Permiso para acceder al sistema',
+            descripcion_permiso='Permission para acceder al sistema',
             modulo_id=1,  # ID del módulo de autenticación
             tipo_permiso='leer',
             estado_permiso='activo'
         )
         
         # Crear rol de prueba
-        self.rol_usuario = Rol.objects.create(
-            nombre_rol='Usuario Básico',
-            descripcion_rol='Rol básico para usuarios del sistema',
+        self.rol_usuario = Role.objects.create(
+            nombre_rol='User Básico',
+            descripcion_rol='Role básico para usuarios del sistema',
             nivel_jerarquico=1,
             estado_rol='activo'
         )
         
         # Asignar permiso al rol
-        RolPermisos.objects.create(
+        RolePermission.objects.create(
             rol=self.rol_usuario,
             permiso=self.permiso_login,
             fecha_asignacion=timezone.now()
         )
         
         # Crear usuario de prueba
-        self.usuario_activo = Usuario.objects.create_user(
+        self.usuario_activo = User.objects.create_user(
             username='usuario.test',
             email='usuario@test.com',
             password='password123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='de Prueba',
             tipo_usuario='empleado',
             estado_usuario='activo'
         )
         
         # Asignar rol al usuario
-        UsuarioRoles.objects.create(
+        UserRole.objects.create(
             usuario=self.usuario_activo,
             rol=self.rol_usuario,
             estado_asignacion='activo',
@@ -86,22 +86,22 @@ class LoginAuthenticationTest(TestCase):
         )
         
         # Crear usuario inactivo para tests
-        self.usuario_inactivo = Usuario.objects.create_user(
+        self.usuario_inactivo = User.objects.create_user(
             username='usuario.inactivo',
             email='inactivo@test.com',
             password='password123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Inactivo',
             tipo_usuario='empleado',
             estado_usuario='inactivo'
         )
         
         # Crear usuario bloqueado para tests
-        self.usuario_bloqueado = Usuario.objects.create_user(
+        self.usuario_bloqueado = User.objects.create_user(
             username='usuario.bloqueado',
             email='bloqueado@test.com',
             password='password123',
-            nombres_usuario='Usuario',
+            nombres_usuario='User',
             apellidos_usuario='Bloqueado',
             tipo_usuario='empleado',
             estado_usuario='bloqueado'
@@ -349,10 +349,10 @@ class LoginAuthenticationTest(TestCase):
     
     def test_verificacion_usuario_bloqueado(self):
         """Test de verificación de estado de bloqueo."""
-        # Usuario normal no debe estar bloqueado
+        # User normal no debe estar bloqueado
         self.assertFalse(self.usuario_activo.esta_bloqueado)
         
-        # Usuario con estado bloqueado debe estar bloqueado
+        # User con estado bloqueado debe estar bloqueado
         self.assertTrue(self.usuario_bloqueado.esta_bloqueado)
         
         # Simular bloqueo por intentos fallidos

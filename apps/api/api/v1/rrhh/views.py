@@ -6,23 +6,23 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from app_rrhh import services
-from apps.onboarding.models import OnboardingEmpleado
-from apps.payroll.models import ConfiguracionAfp, ConfiguracionRemuneracion
-from apps.contracts.models import DatosLaborales
-from apps.documents.models import DocumentosDigitales
+from apps.onboarding.models import OnboardingProcess
+from apps.payroll.models import AfpConfiguration, CompensationConfiguration
+from apps.contracts.models import EmploymentData
+from apps.documents.models import DigitalDocument
 from apps.employees.models import (
-    DatosAcademicos,
-    DatosFamiliares,
-    Empleado,
+    AcademicRecord,
+    FamilyMember,
+    Employee,
 )
-from apps.organization.models import Area
+from apps.organization.models import Department
 from apps.identity.models import (
-    Modulos,
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
-    UsuarioRoles,
+    Module,
+    Permission,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
 )
 
 # Importar decoradores de permisos y cache
@@ -123,9 +123,9 @@ logger = logging.getLogger(__name__)
     ),
 )
 class AreaViewSet(viewsets.ModelViewSet):
-    """ViewSet for Area management."""
+    """ViewSet for Department management."""
 
-    queryset = Area.objects.select_related("area_padre").prefetch_related(
+    queryset = Department.objects.select_related("area_padre").prefetch_related(
         "ubicaciones_destino__empleado",
         "empleados_laborales__empleado",
     )
@@ -390,7 +390,7 @@ class AreaViewSet(viewsets.ModelViewSet):
 class ModulosViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de módulos del sistema."""
 
-    queryset = Modulos.objects.prefetch_related("permiso_set")
+    queryset = Module.objects.prefetch_related("permiso_set")
     serializer_class = ModulosSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -473,22 +473,22 @@ class ModulosViewSet(viewsets.ModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(
-        tags=["Rol-Permisos"],
+        tags=["Role-Permisos"],
         summary="Listar asignaciones rol-permiso",
         description="Obtiene una lista paginada de todas las asignaciones de permisos a roles.",
     ),
     create=extend_schema(
-        tags=["Rol-Permisos"],
+        tags=["Role-Permisos"],
         summary="Asignar permiso a rol",
         description="Asigna un permiso específico a un rol.",
     ),
     retrieve=extend_schema(
-        tags=["Rol-Permisos"],
+        tags=["Role-Permisos"],
         summary="Obtener asignación rol-permiso",
         description="Obtiene los detalles de una asignación específica por su ID.",
     ),
     destroy=extend_schema(
-        tags=["Rol-Permisos"],
+        tags=["Role-Permisos"],
         summary="Remover permiso de rol",
         description="Remueve un permiso específico de un rol.",
     ),
@@ -496,7 +496,7 @@ class ModulosViewSet(viewsets.ModelViewSet):
 class RolPermisosViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de asignaciones de permisos a roles."""
 
-    queryset = RolPermisos.objects.select_related(
+    queryset = RolePermission.objects.select_related(
         "rol", "permiso", "asignado_por_usuario"
     )
     serializer_class = RolPermisosSerializer
@@ -556,7 +556,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
         serializer.save(asignado_por_usuario=self.request.user)
 
         logger.info(
-            f"Permiso {serializer.instance.permiso.nombre_permiso} "
+            f"Permission {serializer.instance.permiso.nombre_permiso} "
             f"asignado al rol {serializer.instance.rol.nombre_rol} "
             f"por {self.request.user.nombres_usuario}"
         )
@@ -638,9 +638,9 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
     ),
 )
 class EmpleadoViewSet(viewsets.ModelViewSet):
-    """ViewSet for Empleado management."""
+    """ViewSet for Employee management."""
 
-    queryset = Empleado.objects.prefetch_related(
+    queryset = Employee.objects.prefetch_related(
         "datos_laborales__area",
         "datos_laborales__jefe_directo",
         "familiares",
@@ -825,7 +825,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         """Create employee with logging."""
         empleado = serializer.save()
         logger.info(
-            f"Empleado creado: {empleado.nombre_completo}",
+            f"Employee creado: {empleado.nombre_completo}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "empleado_id": empleado.empleado_id,
@@ -837,7 +837,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         """Update employee with logging."""
         empleado = serializer.save()
         logger.info(
-            f"Empleado actualizado: {empleado.nombre_completo}",
+            f"Employee actualizado: {empleado.nombre_completo}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "empleado_id": empleado.empleado_id,
@@ -850,7 +850,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         instance.estado_empleado = "inactivo"
         instance.save()
         logger.info(
-            f"Empleado desactivado: {instance.nombre_completo}",
+            f"Employee desactivado: {instance.nombre_completo}",
             extra={
                 "user_id": self.request.user.id,
                 "empleado_id": instance.empleado_id,
@@ -907,7 +907,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             )
 
             logger.info(
-                f"Empleado transferido: {empleado.nombre_completo}",
+                f"Employee transferido: {empleado.nombre_completo}",
                 extra={
                     "user_id": request.user.usuario_id,
                     "empleado_id": empleado.empleado_id,
@@ -917,7 +917,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             )
 
             return APIResponse.success(
-                message=f"Empleado {empleado.nombre_completo} transferido exitosamente"
+                message=f"Employee {empleado.nombre_completo} transferido exitosamente"
             )
 
         except BusinessLogicError as e:
@@ -938,7 +938,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    # Historial de ubicaciones removido - usar HistorialUbicaciones model
+    # Historial de ubicaciones removido - usar LocationHistory model
 
     @action(detail=False, methods=["get"])
     @require_hr()
@@ -984,8 +984,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             service = EmpleadoReportService()
             pdf_content, nombre_archivo = service.generar_reporte_integral(pk)
             return service.crear_http_response(pdf_content, nombre_archivo)
-        except Empleado.DoesNotExist:
-            return APIResponse.error(message="Empleado no encontrado", status_code=404)
+        except Employee.DoesNotExist:
+            return APIResponse.error(message="Employee no encontrado", status_code=404)
         except Exception as e:
             logger.error(f"Error generando reporte integral: {e}")
             return APIResponse.error(
@@ -1005,8 +1005,8 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
             service = EmpleadoReportService()
             pdf_content, nombre_archivo = service.generar_reporte_seccion(pk, seccion)
             return service.crear_http_response(pdf_content, nombre_archivo)
-        except Empleado.DoesNotExist:
-            return APIResponse.error(message="Empleado no encontrado", status_code=404)
+        except Employee.DoesNotExist:
+            return APIResponse.error(message="Employee no encontrado", status_code=404)
         except Exception as e:
             logger.error(f"Error generando reporte seccion: {e}")
             return APIResponse.error(
@@ -1015,9 +1015,9 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
 
 
 class DatosFamiliaresViewSet(viewsets.ModelViewSet):
-    """ViewSet for DatosFamiliares management. Employees can manage their own records."""
+    """ViewSet for FamilyMember management. Employees can manage their own records."""
 
-    queryset = DatosFamiliares.objects.select_related("empleado")
+    queryset = FamilyMember.objects.select_related("empleado")
     serializer_class = DatosFamiliaresSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1116,9 +1116,9 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
 
 
 class DatosAcademicosViewSet(viewsets.ModelViewSet):
-    """ViewSet for DatosAcademicos management. Employees can manage their own records."""
+    """ViewSet for AcademicRecord management. Employees can manage their own records."""
 
-    queryset = DatosAcademicos.objects.select_related("empleado")
+    queryset = AcademicRecord.objects.select_related("empleado")
     serializer_class = DatosAcademicosSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1219,7 +1219,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
 class CursosCertificacionesViewSet(viewsets.ModelViewSet):
     """CRUD for employee courses and certifications. Employees manage own records."""
 
-    from apps.employees.models import CursosCertificaciones as _CursosCertificaciones
+    from apps.employees.models import Certification as _CursosCertificaciones
 
     queryset = _CursosCertificaciones.objects.select_related(
         "empleado", "documento"
@@ -1244,9 +1244,9 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        from apps.employees.models import CursosCertificaciones
+        from apps.employees.models import Certification
 
-        queryset = CursosCertificaciones.objects.select_related(
+        queryset = Certification.objects.select_related(
             "empleado", "documento"
         ).all()
         user = self.request.user
@@ -1274,15 +1274,15 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
 
 
 class DatosLaboralesViewSet(viewsets.ModelViewSet):
-    """ViewSet for DatosLaborales management with optimized queries."""
+    """ViewSet for EmploymentData management with optimized queries."""
 
-    queryset = DatosLaborales.objects.select_related(
+    queryset = EmploymentData.objects.select_related(
         "empleado",
         "area",
         "jefe_directo",
     ).all()
 
-    queryset = DatosLaborales.objects.select_related("empleado")
+    queryset = EmploymentData.objects.select_related("empleado")
     serializer_class = DatosLaboralesSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1376,7 +1376,7 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
 class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
     """ViewSet para catálogo maestro de conceptos de remuneración."""
 
-    queryset = ConfiguracionRemuneracion.objects.all()
+    queryset = CompensationConfiguration.objects.all()
     serializer_class = ConfiguracionRemuneracionSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1436,7 +1436,7 @@ class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
 class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
     """ViewSet para parámetros AFP de planilla."""
 
-    queryset = ConfiguracionAfp.objects.all()
+    queryset = AfpConfiguration.objects.all()
     serializer_class = ConfiguracionAfpSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1491,13 +1491,13 @@ class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-# RegUbicacionViewSet removido - usar HistorialUbicaciones model
+# RegUbicacionViewSet removido - usar LocationHistory model
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    """ViewSet for Usuario management."""
+    """ViewSet for User management."""
 
-    queryset = Usuario.objects.select_related("empleado")
+    queryset = User.objects.select_related("empleado")
     permission_classes = [UsuarioPermission]
     pagination_class = StandardResultsSetPagination
     filter_backends = [
@@ -1574,7 +1574,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         """Create user with logging."""
         usuario = serializer.save()
         logger.info(
-            f"Usuario creado: {usuario.nombres_usuario}",
+            f"User creado: {usuario.nombres_usuario}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "new_user_id": usuario.usuario_id,
@@ -1586,7 +1586,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         """Update user with logging."""
         usuario = serializer.save()
         logger.info(
-            f"Usuario actualizado: {usuario.nombres_usuario}",
+            f"User actualizado: {usuario.nombres_usuario}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "updated_user_id": usuario.usuario_id,
@@ -1599,7 +1599,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         instance.estado_usuario = "inactivo"
         instance.save()
         logger.info(
-            f"Usuario desactivado: {instance.nombres_usuario}",
+            f"User desactivado: {instance.nombres_usuario}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "deactivated_user_id": instance.usuario_id,
@@ -1638,7 +1638,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         """
         try:
             usuario = self.get_object()
-            roles_asignados = UsuarioRoles.objects.activos().por_usuario(usuario)
+            roles_asignados = UserRole.objects.activos().por_usuario(usuario)
 
             serializer = UsuarioRolesListSerializer(roles_asignados, many=True)
             return APIResponse.success(
@@ -1669,7 +1669,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
                 for rol_id in roles_ids:
                     # Verificar si ya existe una asignación activa
-                    asignacion_existente = UsuarioRoles.objects.filter(
+                    asignacion_existente = UserRole.objects.filter(
                         usuario=usuario, rol_id=rol_id, estado_asignacion="activo"
                     ).first()
 
@@ -1681,7 +1681,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
                     # Crear nueva asignación
                     try:
-                        usuario_rol = UsuarioRoles.objects.create(
+                        usuario_rol = UserRole.objects.create(
                             usuario=usuario,
                             rol_id=rol_id,
                             fecha_asignacion=timezone.now(),
@@ -1737,7 +1737,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 )
 
             # Buscar asignación activa
-            asignacion = UsuarioRoles.objects.filter(
+            asignacion = UserRole.objects.filter(
                 usuario=usuario, rol_id=rol_id, estado_asignacion="activo"
             ).first()
 
@@ -1752,7 +1752,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             asignacion.fecha_expiracion = timezone.now()
             asignacion.save()
 
-            return APIResponse.success(message="Rol removido exitosamente del usuario")
+            return APIResponse.success(message="Role removido exitosamente del usuario")
         except Exception as e:
             return APIResponse.error(
                 message="Error al remover rol del usuario", errors={"detail": str(e)}
@@ -1760,9 +1760,9 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 class RolViewSet(viewsets.ModelViewSet):
-    """ViewSet for Rol management."""
+    """ViewSet for Role management."""
 
-    queryset = Rol.objects.prefetch_related(
+    queryset = Role.objects.prefetch_related(
         "usuarios_asignados__usuario", "permisos_asignados__permiso"
     )
     serializer_class = RolSerializer
@@ -1831,7 +1831,7 @@ class RolViewSet(viewsets.ModelViewSet):
         instance.estado_rol = "inactivo"
         instance.save()
         logger.info(
-            f"Rol desactivado: {instance.nombre_rol}",
+            f"Role desactivado: {instance.nombre_rol}",
             extra={
                 "user_id": self.request.user.usuario_id,
                 "rol_id": instance.rol_id,
@@ -1849,9 +1849,9 @@ class RolViewSet(viewsets.ModelViewSet):
 
 
 class PermisoViewSet(viewsets.ModelViewSet):
-    """ViewSet for Permiso management."""
+    """ViewSet for Permission management."""
 
-    queryset = Permiso.objects.all()
+    queryset = Permission.objects.all()
     serializer_class = PermisoSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1919,11 +1919,11 @@ class PermisoViewSet(viewsets.ModelViewSet):
             instance.estado_permiso = "inactivo"
             instance.save(update_fields=["estado_permiso"])
             logger.info(
-                f"Permiso {instance.permiso_id} soft deleted by changing estado_permiso to 'inactivo'"
+                f"Permission {instance.permiso_id} soft deleted by changing estado_permiso to 'inactivo'"
             )
         except Exception as e:
             logger.error(
-                f"Error performing soft delete on Permiso {instance.permiso_id}: {str(e)}"
+                f"Error performing soft delete on Permission {instance.permiso_id}: {str(e)}"
             )
             raise BusinessLogicError(f"Error al desactivar el permiso: {str(e)}")
 
@@ -1964,9 +1964,9 @@ class PermisoViewSet(viewsets.ModelViewSet):
     ),
 )
 class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
-    """ViewSet for DocumentosDigitales management."""
+    """ViewSet for DigitalDocument management."""
 
-    queryset = DocumentosDigitales.objects.select_related(
+    queryset = DigitalDocument.objects.select_related(
         "empleado", "subido_por", "validado_por"
     )
     permission_classes = [DocumentosDigitalesPermission]
@@ -2265,7 +2265,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                     else f"{nombre} ({i+1}) - {periodo}"
                 )
 
-            doc = DocumentosDigitales.objects.create(
+            doc = DigitalDocument.objects.create(
                 empleado_id=empleado_id,
                 tipo_documento=tipo_documento,
                 categoria=categoria,
@@ -2320,7 +2320,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
 class OnboardingViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar el proceso de onboarding de nuevos empleados."""
 
-    queryset = OnboardingEmpleado.objects.select_related(
+    queryset = OnboardingProcess.objects.select_related(
         "empleado", "usuario", "validado_por"
     )
     serializer_class = OnboardingEmpleadoSerializer
@@ -2421,7 +2421,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         from apps.onboarding.services import OnboardingService
 
         try:
-            onboarding = OnboardingEmpleado.objects.select_related(
+            onboarding = OnboardingProcess.objects.select_related(
                 "empleado", "usuario", "validado_por"
             ).get(usuario=request.user)
             # Recalcular estado en cada consulta para reflejar datos actualizados
@@ -2436,7 +2436,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 ) or onboarding
             serializer = self.get_serializer(onboarding)
             return APIResponse.success(data=serializer.data)
-        except OnboardingEmpleado.DoesNotExist:
+        except OnboardingProcess.DoesNotExist:
             return APIResponse.error(
                 message="No tiene un proceso de onboarding activo",
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -2500,12 +2500,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
 
         onboarding = self.get_object()
         try:
-            doc = DocumentosDigitales.objects.get(
+            doc = DigitalDocument.objects.get(
                 documento_id=doc_id,
                 empleado=onboarding.empleado,
                 es_version_actual=True,
             )
-        except DocumentosDigitales.DoesNotExist:
+        except DigitalDocument.DoesNotExist:
             return APIResponse.error(
                 message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND
             )
@@ -2539,12 +2539,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             )
         onboarding = self.get_object()
         try:
-            doc = DocumentosDigitales.objects.get(
+            doc = DigitalDocument.objects.get(
                 documento_id=doc_id,
                 empleado=onboarding.empleado,
                 es_version_actual=True,
             )
-        except DocumentosDigitales.DoesNotExist:
+        except DigitalDocument.DoesNotExist:
             return APIResponse.error(
                 message="Documento no encontrado", status_code=status.HTTP_404_NOT_FOUND
             )
@@ -2655,12 +2655,12 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         if archivo.content_type not in ("image/jpeg", "image/png"):
             return APIResponse.error(message="Solo se permiten imágenes JPG o PNG")
         try:
-            onboarding = OnboardingEmpleado.objects.get(usuario=request.user)
-        except OnboardingEmpleado.DoesNotExist:
+            onboarding = OnboardingProcess.objects.get(usuario=request.user)
+        except OnboardingProcess.DoesNotExist:
             return APIResponse.error(message="No tiene un proceso de onboarding activo")
         empleado = onboarding.empleado
         # Usar crear_nueva_version si ya existe una foto, o crear nueva
-        doc_existente = DocumentosDigitales.objects.filter(
+        doc_existente = DigitalDocument.objects.filter(
             empleado=empleado,
             tipo_documento="foto",
             es_version_actual=True,
@@ -2670,7 +2670,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 archivo=archivo, usuario=request.user
             )
         else:
-            doc = DocumentosDigitales.objects.create(
+            doc = DigitalDocument.objects.create(
                 empleado=empleado,
                 tipo_documento="foto",
                 categoria="personal",
@@ -2745,8 +2745,8 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 message=f"Tipo de documento no válido. Opciones: {', '.join(_TIPO_CATEGORIA_MAP.keys())}"
             )
         try:
-            onboarding = OnboardingEmpleado.objects.get(usuario=request.user)
-        except OnboardingEmpleado.DoesNotExist:
+            onboarding = OnboardingProcess.objects.get(usuario=request.user)
+        except OnboardingProcess.DoesNotExist:
             return APIResponse.error(message="No tiene un proceso de onboarding activo")
         empleado = onboarding.empleado
         categoria = _TIPO_CATEGORIA_MAP[tipo_documento]
@@ -2754,7 +2754,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
             "nombre_documento", tipo_documento.replace("_", " ").title()
         )
         # Usar crear_nueva_version si ya existe el mismo tipo_documento
-        doc_existente = DocumentosDigitales.objects.filter(
+        doc_existente = DigitalDocument.objects.filter(
             empleado=empleado,
             tipo_documento=tipo_documento,
             es_version_actual=True,
@@ -2764,7 +2764,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 archivo=archivo, usuario=request.user
             )
         else:
-            doc = DocumentosDigitales.objects.create(
+            doc = DigitalDocument.objects.create(
                 empleado=empleado,
                 tipo_documento=tipo_documento,
                 categoria=categoria,
@@ -2782,7 +2782,7 @@ class OnboardingViewSet(viewsets.ModelViewSet):
                 subido_por=request.user,
             )
         # Optional FK linking: attach document to academico/curso record
-        # Note: DatosFamiliares does not have a documento FK — familiar_id param is accepted
+        # Note: FamilyMember does not have a documento FK — familiar_id param is accepted
         # but only used to tag the doc's category context (no DB link on familiar itself)
         familiar_id = request.data.get(
             "familiar_id"
@@ -2791,27 +2791,27 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         academico_id = request.data.get("academico_id")
         if academico_id:
             try:
-                from apps.employees.models import DatosAcademicos
+                from apps.employees.models import AcademicRecord
 
-                academico = DatosAcademicos.objects.get(
+                academico = AcademicRecord.objects.get(
                     academico_id=int(academico_id), empleado=onboarding.empleado
                 )
                 academico.documento = doc
                 academico.save(update_fields=["documento"])
-            except (DatosAcademicos.DoesNotExist, ValueError, AttributeError):
+            except (AcademicRecord.DoesNotExist, ValueError, AttributeError):
                 pass
 
         curso_id = request.data.get("curso_id")
         if curso_id:
             try:
-                from apps.employees.models import CursosCertificaciones
+                from apps.employees.models import Certification
 
-                curso = CursosCertificaciones.objects.get(
+                curso = Certification.objects.get(
                     curso_id=int(curso_id), empleado=onboarding.empleado
                 )
                 curso.documento = doc
                 curso.save(update_fields=["documento"])
-            except (CursosCertificaciones.DoesNotExist, ValueError):
+            except (Certification.DoesNotExist, ValueError):
                 pass
 
         OnboardingService.actualizar_estado_onboarding(onboarding.empleado_id)
@@ -2839,9 +2839,9 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
     def list(self, request):
         """Obtener configuración actual de la empresa."""
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
-        from apps.organization.models import ConfiguracionEmpresa
+        from apps.organization.models import Company
 
-        cfg = ConfiguracionEmpresa.get_config()
+        cfg = Company.get_config()
         serializer = ConfiguracionEmpresaSerializer(cfg, context={"request": request})
         return APIResponse.success(data=serializer.data)
 
@@ -2849,9 +2849,9 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
     def create(self, request):
         """Actualizar configuración de la empresa (upsert)."""
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
-        from apps.organization.models import ConfiguracionEmpresa
+        from apps.organization.models import Company
 
-        cfg = ConfiguracionEmpresa.get_config()
+        cfg = Company.get_config()
         serializer = ConfiguracionEmpresaSerializer(
             cfg, data=request.data, partial=True, context={"request": request}
         )

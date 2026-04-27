@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Modelo ContratosAdendas - Sistema unificado de gestión de contratos y adendas
+Modelo Contract - Sistema unificado de gestión de contratos y adendas
 
 Este modelo maneja tanto contratos iniciales como adendas en una estructura
 unificada, facilitando la gestión, reportes y alertas de vencimiento.
@@ -14,7 +14,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 
 
-class ContratosAdendas(models.Model):
+class Contract(models.Model):
     """
     Modelo unificado para gestión de contratos laborales y adendas.
     
@@ -65,14 +65,14 @@ class ContratosAdendas(models.Model):
     
     # Relaciones
     empleado = models.ForeignKey(
-        'employees.Empleado',
+        'employees.Employee',
         on_delete=models.CASCADE,
         related_name='contratos_adendas',
-        help_text='Empleado asociado al contrato/adenda'
+        help_text='Employee asociado al contrato/adenda'
     )
     
     area = models.ForeignKey(
-        'organization.Area',
+        'organization.Department',
         on_delete=models.PROTECT,
         related_name='contratos_adendas_area',
         help_text='Área donde se ejecuta el contrato'
@@ -196,21 +196,21 @@ class ContratosAdendas(models.Model):
     )
     
     creado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.PROTECT,
         related_name='contratos_creados',
         null=True,
         blank=True,
-        help_text='Usuario que creó el registro'
+        help_text='User que creó el registro'
     )
 
     modificado_por = models.ForeignKey(
-        'identity.Usuario',
+        'identity.User',
         on_delete=models.PROTECT,
         related_name='contratos_modificados',
         null=True,
         blank=True,
-        help_text='Usuario que modificó el registro'
+        help_text='User que modificó el registro'
     )
     
     # Manager personalizado se define al final del archivo
@@ -346,7 +346,7 @@ class ContratosAdendas(models.Model):
         """Genera un número de contrato único."""
         if not self.numero_contrato:
             año = timezone.now().year
-            ultimo_numero = ContratosAdendas.objects.filter(
+            ultimo_numero = Contract.objects.filter(
                 numero_contrato__startswith=f'CON-{año}'
             ).count()
             self.numero_contrato = f'CON-{año}-{ultimo_numero + 1:04d}'
@@ -356,7 +356,7 @@ class ContratosAdendas(models.Model):
         if self.es_contrato_inicial:
             return None
         
-        ultima_adenda = ContratosAdendas.objects.filter(
+        ultima_adenda = Contract.objects.filter(
             numero_contrato=self.numero_contrato,
             numero_adenda__isnull=False
         ).count()
@@ -374,9 +374,9 @@ class ContratosAdendas(models.Model):
     def obtener_adendas(self):
         """Obtiene todas las adendas relacionadas con este contrato."""
         if not self.es_contrato_inicial:
-            return ContratosAdendas.objects.none()
+            return Contract.objects.none()
         
-        return ContratosAdendas.objects.filter(
+        return Contract.objects.filter(
             numero_contrato=self.numero_contrato,
             numero_adenda__isnull=False
         ).order_by('fecha_creacion')
@@ -387,14 +387,14 @@ class ContratosAdendas(models.Model):
             return self
         
         try:
-            return ContratosAdendas.objects.get(
+            return Contract.objects.get(
                 numero_contrato=self.numero_contrato,
                 numero_adenda__isnull=True
             )
-        except ContratosAdendas.DoesNotExist:
+        except Contract.DoesNotExist:
             return None
 
 
 # Importar y asignar el manager después de la definición del modelo
 # from ..managers.contratos_manager import ContratosAdendasManager
-# ContratosAdendas.add_to_class('objects', ContratosAdendasManager())
+# Contract.add_to_class('objects', ContratosAdendasManager())

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Modelo Area - Gestión de áreas organizacionales
+Modelo Department - Gestión de áreas organizacionales
 
-Contiene la definición del modelo Area que representa las unidades organizacionales
+Contiene la definición del modelo Department que representa las unidades organizacionales
 de la institución, incluyendo su jerarquía y estructura.
 """
 
@@ -11,7 +11,7 @@ from django.utils import timezone
 # from ..managers import AreaManager  # Comentado temporalmente para migraciones
 
 
-class Area(models.Model):
+class Department(models.Model):
     """Modelo para gestionar las áreas organizacionales de la institución."""
     
     ESTADO_AREA_CHOICES = [
@@ -89,7 +89,7 @@ class Area(models.Model):
     @property
     def tiene_subareas(self):
         """Verifica si tiene sub-áreas."""
-        return self.area_set.exists()
+        return self.department_set.exists()
     
     @property
     def ruta_jerarquica(self):
@@ -103,16 +103,16 @@ class Area(models.Model):
     
     def empleados_activos_count(self):
         """Cuenta empleados activos en el área."""
-        from apps.contracts.models import DatosLaborales
-        return DatosLaborales.objects.filter(
+        from apps.contracts.models import EmploymentData
+        return EmploymentData.objects.filter(
             area=self,
             estado_datos='activo'
         ).count()
 
     def empleados_activos(self):
         """Obtiene empleados activos en el área."""
-        from apps.employees.models import Empleado
-        return Empleado.objects.filter(
+        from apps.employees.models import Employee
+        return Employee.objects.filter(
             datos_laborales__area=self,
             datos_laborales__estado_datos='activo',
             estado_empleado='activo'
@@ -120,12 +120,12 @@ class Area(models.Model):
     
     def subareas_activas(self):
         """Obtiene sub-áreas activas."""
-        return self.area_set.filter(estado_area='activo')
-    
+        return self.department_set.filter(estado_area='activo')
+
     def todas_las_subareas(self):
         """Obtiene todas las sub-áreas recursivamente."""
-        subareas = list(self.area_set.all())
-        for subarea in self.area_set.all():
+        subareas = list(self.department_set.all())
+        for subarea in self.department_set.all():
             subareas.extend(subarea.todas_las_subareas())
         return subareas
     

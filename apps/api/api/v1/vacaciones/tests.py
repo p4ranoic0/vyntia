@@ -8,11 +8,11 @@ from rest_framework import status
 from datetime import date, timedelta
 
 from apps.time_off.models import (
-    ConfiguracionVacaciones, PeriodoVacacional,
-    SolicitudVacaciones, GoceVacaciones
+    VacationConfiguration, VacationPeriod,
+    VacationRequest, VacationGrant
 )
-from apps.employees.models import Empleado
-from apps.organization.models import Area
+from apps.employees.models import Employee
+from apps.organization.models import Department
 from .validators import (
     VacacionesAPIValidator, VacacionesPermissionValidator,
     VacacionesStateValidator
@@ -31,7 +31,7 @@ class VacacionesAPIValidatorTest(TestCase):
     def setUp(self):
         """Configuración inicial para los tests."""
         # Crear área
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre='Tecnología',
             descripcion='Área de tecnología'
         )
@@ -44,7 +44,7 @@ class VacacionesAPIValidatorTest(TestCase):
         )
         
         # Crear empleado
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             usuario=self.user,
             numero_documento='12345678',
             nombres='Juan',
@@ -54,14 +54,14 @@ class VacacionesAPIValidatorTest(TestCase):
         )
         
         # Crear configuración
-        self.configuracion = ConfiguracionVacaciones.objects.create(
+        self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
             creado_por=self.user
         )
         
         # Crear período vacacional
-        self.periodo = PeriodoVacacional.objects.create(
+        self.periodo = VacationPeriod.objects.create(
             empleado=self.empleado,
             ano_periodo=2024,
             fecha_inicio_periodo=date(2024, 1, 1),
@@ -105,7 +105,7 @@ class VacacionesAPIValidatorTest(TestCase):
     def test_validate_goce_data_valid(self):
         """Test validación exitosa de datos de goce."""
         # Crear solicitud
-        solicitud = SolicitudVacaciones.objects.create(
+        solicitud = VacationRequest.objects.create(
             empleado=self.empleado,
             periodo_vacacional=self.periodo,
             tipo_solicitud='completa',
@@ -150,7 +150,7 @@ class VacacionesPermissionValidatorTest(TestCase):
     def setUp(self):
         """Configuración inicial para los tests."""
         # Crear área
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre='Tecnología',
             descripcion='Área de tecnología'
         )
@@ -175,7 +175,7 @@ class VacacionesPermissionValidatorTest(TestCase):
         )
         
         # Crear empleados
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             usuario=self.empleado_user,
             numero_documento='12345678',
             nombres='Juan',
@@ -184,7 +184,7 @@ class VacacionesPermissionValidatorTest(TestCase):
             fecha_ingreso=date.today() - timedelta(days=365)
         )
         
-        self.jefe = Empleado.objects.create(
+        self.jefe = Employee.objects.create(
             usuario=self.jefe_user,
             numero_documento='87654321',
             nombres='María',
@@ -203,13 +203,13 @@ class VacacionesPermissionValidatorTest(TestCase):
         self.rrhh_user.groups.add(rrhh_group)
         
         # Crear solicitud
-        self.configuracion = ConfiguracionVacaciones.objects.create(
+        self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
             creado_por=self.empleado_user
         )
         
-        self.periodo = PeriodoVacacional.objects.create(
+        self.periodo = VacationPeriod.objects.create(
             empleado=self.empleado,
             ano_periodo=2024,
             fecha_inicio_periodo=date(2024, 1, 1),
@@ -219,7 +219,7 @@ class VacacionesPermissionValidatorTest(TestCase):
             configuracion=self.configuracion
         )
         
-        self.solicitud = SolicitudVacaciones.objects.create(
+        self.solicitud = VacationRequest.objects.create(
             empleado=self.empleado,
             periodo_vacacional=self.periodo,
             tipo_solicitud='completa',
@@ -279,7 +279,7 @@ class VacacionesStateValidatorTest(TestCase):
     def setUp(self):
         """Configuración inicial para los tests."""
         # Crear datos básicos
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre='Tecnología',
             descripcion='Área de tecnología'
         )
@@ -290,7 +290,7 @@ class VacacionesStateValidatorTest(TestCase):
             password='testpass123'
         )
         
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             usuario=self.user,
             numero_documento='12345678',
             nombres='Juan',
@@ -299,13 +299,13 @@ class VacacionesStateValidatorTest(TestCase):
             fecha_ingreso=date.today() - timedelta(days=365)
         )
         
-        self.configuracion = ConfiguracionVacaciones.objects.create(
+        self.configuracion = VacationConfiguration.objects.create(
             tipo_configuracion='general',
             dias_por_ano=30,
             creado_por=self.user
         )
         
-        self.periodo = PeriodoVacacional.objects.create(
+        self.periodo = VacationPeriod.objects.create(
             empleado=self.empleado,
             ano_periodo=2024,
             fecha_inicio_periodo=date(2024, 1, 1),
@@ -315,7 +315,7 @@ class VacacionesStateValidatorTest(TestCase):
             configuracion=self.configuracion
         )
         
-        self.solicitud = SolicitudVacaciones.objects.create(
+        self.solicitud = VacationRequest.objects.create(
             empleado=self.empleado,
             periodo_vacacional=self.periodo,
             tipo_solicitud='completa',
@@ -354,7 +354,7 @@ class VacacionesSerializerTest(TestCase):
     
     def setUp(self):
         """Configuración inicial para los tests."""
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre='Tecnología',
             descripcion='Área de tecnología'
         )
@@ -365,7 +365,7 @@ class VacacionesSerializerTest(TestCase):
             password='testpass123'
         )
         
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             usuario=self.user,
             numero_documento='12345678',
             nombres='Juan',

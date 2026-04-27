@@ -1,25 +1,25 @@
 """Payroll models — re-exports for backward-compatible imports."""
 
-from .configuracion_uit import ConfiguracionUit
-from .remuneracion import (
-    BoletaPago,
-    CalendarioPago,
-    ConceptoPlanilla,
-    ConfiguracionAfp,
-    ConfiguracionRemuneracion,
-    DescuentoMasivo,
-    DetallePlanilla,
-    PlanillaMensual,
+from .compensation import (
+    AfpConfiguration,
+    CompensationConfiguration,
+    MassDeduction,
+    MonthlyPayroll,
+    PaymentSchedule,
+    PayrollConcept,
+    PayrollDetail,
+    PaySlip,
 )
+from .tax_parameter import TaxParameter
 
 __all__ = [
-    "BoletaPago",
-    "CalendarioPago",
-    "ConceptoPlanilla",
-    "ConfiguracionAfp",
-    "ConfiguracionRemuneracion",
-    "ConfiguracionUit",
-    "DescuentoMasivo",
-    "DetallePlanilla",
-    "PlanillaMensual",
+    "AfpConfiguration",
+    "CompensationConfiguration",
+    "MassDeduction",
+    "MonthlyPayroll",
+    "PaymentSchedule",
+    "PayrollConcept",
+    "PayrollDetail",
+    "PaySlip",
+    "TaxParameter",
 ]

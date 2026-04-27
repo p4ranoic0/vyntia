@@ -15,7 +15,7 @@ from django.utils import timezone
 
 
 class ConfiguracionVacacionesManager(models.Manager):
-    """Manager personalizado para ConfiguracionVacaciones."""
+    """Manager personalizado para VacationConfiguration."""
 
     def activas(self):
         """Retorna configuraciones activas."""
@@ -70,7 +70,7 @@ class ConfiguracionVacacionesManager(models.Manager):
 
 
 class PeriodoVacacionalManager(models.Manager):
-    """Manager personalizado para PeriodoVacacional."""
+    """Manager personalizado para VacationPeriod."""
 
     def activos(self):
         """Retorna períodos activos."""
@@ -124,7 +124,7 @@ class PeriodoVacacionalManager(models.Manager):
 
 
 class SolicitudVacacionesManager(models.Manager):
-    """Manager personalizado para SolicitudVacaciones."""
+    """Manager personalizado para VacationRequest."""
 
     def pendientes(self):
         """Retorna solicitudes pendientes de aprobación."""
@@ -191,7 +191,7 @@ class SolicitudVacacionesManager(models.Manager):
 
 
 class GoceVacacionesManager(models.Manager):
-    """Manager personalizado para GoceVacaciones."""
+    """Manager personalizado para VacationGrant."""
 
     def en_curso(self):
         """Retorna goces en curso actualmente."""
@@ -250,7 +250,7 @@ class GoceVacacionesManager(models.Manager):
 
 
 class HistorialSolicitudVacacionesManager(models.Manager):
-    """Manager personalizado para HistorialSolicitudVacaciones."""
+    """Manager personalizado para VacationRequestHistory."""
 
     def para_solicitud(self, solicitud):
         """Retorna historial de una solicitud específica."""

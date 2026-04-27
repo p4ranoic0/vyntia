@@ -3,11 +3,11 @@
 from rest_framework import serializers
 
 from apps.time_off.models import (
-    ConfiguracionVacaciones,
-    GoceVacaciones,
-    HistorialSolicitudVacaciones,
-    PeriodoVacacional,
-    SolicitudVacaciones,
+    VacationConfiguration,
+    VacationGrant,
+    VacationRequestHistory,
+    VacationPeriod,
+    VacationRequest,
 )
 from apps.time_off.services import VacationService
 
@@ -48,7 +48,7 @@ class ConfiguracionVacacionesSerializer(serializers.ModelSerializer):
         return None
 
     class Meta:
-        model = ConfiguracionVacaciones
+        model = VacationConfiguration
         fields = [
             'configuracion_id',
             'tipo_configuracion',
@@ -112,7 +112,7 @@ class PeriodoVacacionalSerializer(serializers.ModelSerializer):
         return f"{obj.fecha_inicio_periodo.year}-{obj.fecha_fin_periodo.year}"
 
     class Meta:
-        model = PeriodoVacacional
+        model = VacationPeriod
         fields = [
             'periodo_id',
             'empleado',
@@ -186,7 +186,7 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
         return getattr(obj.periodo_vacacional.contrato, 'numero_contrato', None)
 
     class Meta:
-        model = SolicitudVacaciones
+        model = VacationRequest
         fields = [
             'solicitud_id',
             'empleado',
@@ -250,7 +250,7 @@ class SolicitudVacacionesSerializer(serializers.ModelSerializer):
 
 class SolicitudVacacionesCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SolicitudVacaciones
+        model = VacationRequest
         fields = [
             'empleado',
             'periodo_vacacional',
@@ -303,7 +303,7 @@ class GoceVacacionesSerializer(serializers.ModelSerializer):
     contrato_numero = serializers.CharField(source='periodo_vacacional.contrato.numero_contrato', read_only=True)
 
     class Meta:
-        model = GoceVacaciones
+        model = VacationGrant
         fields = [
             'goce_id',
             'empleado',
@@ -339,7 +339,7 @@ class HistorialSolicitudVacacionesSerializer(serializers.ModelSerializer):
     tipo_accion_display = serializers.CharField(source='get_tipo_accion_display', read_only=True)
 
     class Meta:
-        model = HistorialSolicitudVacaciones
+        model = VacationRequestHistory
         fields = [
             'historial_id',
             'solicitud_vacaciones',

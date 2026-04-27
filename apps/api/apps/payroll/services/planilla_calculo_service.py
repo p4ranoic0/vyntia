@@ -7,12 +7,12 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 from apps.payroll.models import (
-    ConfiguracionAfp,
-    ConfiguracionUit,
-    DetallePlanilla,
-    PlanillaMensual,
+    AfpConfiguration,
+    TaxParameter,
+    PayrollDetail,
+    MonthlyPayroll,
 )
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
@@ -36,7 +36,7 @@ class PlanillaCalculoService:
         7. Actualizar totales de planilla
         """
         try:
-            planilla = PlanillaMensual.objects.get(planilla_id=planilla_id)
+            planilla = MonthlyPayroll.objects.get(planilla_id=planilla_id)
 
             if planilla.estado not in ["borrador", "generada", "procesando"]:
                 raise ValueError(
@@ -50,13 +50,13 @@ class PlanillaCalculoService:
             # Obtener configuración UIT del año
             anio_planilla = int(planilla.periodo[:4])
             try:
-                config_uit = ConfiguracionUit.objects.get(
+                config_uit = TaxParameter.objects.get(
                     anio=anio_planilla, estado="activo"
                 )
-            except ConfiguracionUit.DoesNotExist:
+            except TaxParameter.DoesNotExist:
                 config_uit = None
 
-            detalles = DetallePlanilla.objects.filter(planilla=planilla)
+            detalles = PayrollDetail.objects.filter(planilla=planilla)
 
             for detalle in detalles:
                 self._calcular_detalle_planilla(detalle, planilla, config_uit)
@@ -77,7 +77,7 @@ class PlanillaCalculoService:
                 "total_neto_pagar": float(planilla.total_neto_pagar),
             }
 
-        except PlanillaMensual.DoesNotExist as exc:
+        except MonthlyPayroll.DoesNotExist as exc:
             raise ValueError(f"Planilla {planilla_id} no encontrada") from exc
         except Exception as exc:
             # Revertir estado si hay error
@@ -88,9 +88,9 @@ class PlanillaCalculoService:
 
     def _calcular_detalle_planilla(
         self,
-        detalle: DetallePlanilla,
-        planilla: PlanillaMensual,
-        config_uit: Optional[ConfiguracionUit] = None,
+        detalle: PayrollDetail,
+        planilla: MonthlyPayroll,
+        config_uit: Optional[TaxParameter] = None,
     ):
         """Calcula un detalle individual de planilla."""
 
@@ -148,7 +148,7 @@ class PlanillaCalculoService:
 
         detalle.save()
 
-    def _calcular_sistema_pensiones(self, detalle: DetallePlanilla, periodo: str):
+    def _calcular_sistema_pensiones(self, detalle: PayrollDetail, periodo: str):
         """Calcula descuentos del sistema de pensiones (AFP/ONP)."""
 
         if (
@@ -159,7 +159,7 @@ class PlanillaCalculoService:
             afp_nombre = detalle.sistema_pensiones.replace("AFP ", "").strip()
 
             try:
-                config_afp = ConfiguracionAfp.objects.get(
+                config_afp = AfpConfiguration.objects.get(
                     afp_nombre__icontains=afp_nombre,
                     vigencia_mes=periodo,
                     estado="activo",
@@ -201,7 +201,7 @@ class PlanillaCalculoService:
                 # ONP en cero
                 detalle.aporte_onp = Decimal("0.00")
 
-            except ConfiguracionAfp.DoesNotExist:
+            except AfpConfiguration.DoesNotExist:
                 # Usar tasas por defecto si no hay configuración
                 detalle.aporte_afp_obligatorio = (
                     detalle.total_haberes * Decimal("10.00") / Decimal("100")
@@ -239,9 +239,9 @@ class PlanillaCalculoService:
 
     def _calcular_essalud(
         self,
-        detalle: DetallePlanilla,
+        detalle: PayrollDetail,
         modalidad: str,
-        config_uit: Optional[ConfiguracionUit] = None,
+        config_uit: Optional[TaxParameter] = None,
     ):
         """
         Calcula ESSALUD según modalidad de contrato.
@@ -270,9 +270,9 @@ class PlanillaCalculoService:
 
     def _calcular_renta_cuarta(
         self,
-        detalle: DetallePlanilla,
-        empleado: Empleado,
-        config_uit: Optional[ConfiguracionUit] = None,
+        detalle: PayrollDetail,
+        empleado: Employee,
+        config_uit: Optional[TaxParameter] = None,
     ):
         """
         Calcula retención de renta de 4ta categoría.
@@ -316,10 +316,10 @@ class PlanillaCalculoService:
                 detalle.total_haberes * porcentaje / Decimal("100")
             )
 
-    def _actualizar_totales_planilla(self, planilla: PlanillaMensual):
+    def _actualizar_totales_planilla(self, planilla: MonthlyPayroll):
         """Actualiza los totales consolidados de la planilla."""
 
-        detalles = DetallePlanilla.objects.filter(planilla=planilla)
+        detalles = PayrollDetail.objects.filter(planilla=planilla)
 
         totales = detalles.aggregate(
             total_remuneracion_bruta=Sum("total_haberes"),

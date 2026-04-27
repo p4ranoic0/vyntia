@@ -9,7 +9,7 @@ from django.utils import timezone
 
 
 class AreaManager(models.Manager):
-    """Custom manager for Area model."""
+    """Custom manager for Department model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -77,7 +77,7 @@ class AreaManager(models.Manager):
 
 
 class EmpleadoManager(models.Manager):
-    """Custom manager for Empleado model."""
+    """Custom manager for Employee model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -176,12 +176,12 @@ class EmpleadoManager(models.Manager):
 
     def con_ubicacion_actual(self):
         """Get employees with their current location."""
-        from apps.organization.models import HistorialUbicaciones
+        from apps.organization.models import LocationHistory
 
         return self.prefetch_related(
             Prefetch(
                 "ubicaciones",
-                queryset=HistorialUbicaciones.objects.filter(
+                queryset=LocationHistory.objects.filter(
                     estado_ubicacion="activo", fecha_termino__isnull=True
                 ),
                 to_attr="ubicacion_actual",
@@ -205,7 +205,7 @@ class EmpleadoManager(models.Manager):
 
 
 class DatosLaboralesManager(models.Manager):
-    """Custom manager for DatosLaborales model."""
+    """Custom manager for EmploymentData model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -313,7 +313,7 @@ class DatosLaboralesManager(models.Manager):
 
 
 class HistorialUbicacionesManager(models.Manager):
-    """Custom manager for HistorialUbicaciones model."""
+    """Custom manager for LocationHistory model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -335,7 +335,7 @@ class HistorialUbicacionesManager(models.Manager):
         """Filter by area.
 
         Args:
-            area_id: Area ID
+            area_id: Department ID
 
         Returns:
             QuerySet: Filtered location records
@@ -360,7 +360,7 @@ class HistorialUbicacionesManager(models.Manager):
             empleado_id: Employee ID
 
         Returns:
-            HistorialUbicaciones: Current location or None
+            LocationHistory: Current location or None
         """
         return self.filter(
             empleado_id=empleado_id, estado=True, fecha_termino__isnull=True
@@ -368,7 +368,7 @@ class HistorialUbicacionesManager(models.Manager):
 
 
 class DatosFamiliaresManager(models.Manager):
-    """Custom manager for DatosFamiliares model."""
+    """Custom manager for FamilyMember model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -439,7 +439,7 @@ class DatosFamiliaresManager(models.Manager):
 
 
 class DatosAcademicosManager(models.Manager):
-    """Custom manager for DatosAcademicos model."""
+    """Custom manager for AcademicRecord model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -535,7 +535,7 @@ class DatosAcademicosManager(models.Manager):
 
 
 class DocumentosDigitalesManager(models.Manager):
-    """Custom manager for DocumentosDigitales model."""
+    """Custom manager for DigitalDocument model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -614,7 +614,7 @@ class DocumentosDigitalesManager(models.Manager):
 
 
 class ModulosManager(models.Manager):
-    """Custom manager for Modulos model."""
+    """Custom manager for Module model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -652,7 +652,7 @@ class ModulosManager(models.Manager):
 
 
 class RolPermisosManager(models.Manager):
-    """Custom manager for RolPermisos model."""
+    """Custom manager for RolePermission model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -709,7 +709,7 @@ class RolPermisosManager(models.Manager):
 
 
 class UsuarioRolesManager(models.Manager):
-    """Custom manager for UsuarioRoles model."""
+    """Custom manager for UserRole model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -807,7 +807,7 @@ class UsuarioRolesManager(models.Manager):
 
 
 class ConfiguracionVacacionesManager(models.Manager):
-    """Custom manager for ConfiguracionVacaciones model."""
+    """Custom manager for VacationConfiguration model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -860,7 +860,7 @@ class ConfiguracionVacacionesManager(models.Manager):
             tipo_dato: Data type
 
         Returns:
-            ConfiguracionVacaciones: Configuration instance
+            VacationConfiguration: Configuration instance
         """
         config, created = self.update_or_create(
             parametro_config=parametro,
@@ -874,7 +874,7 @@ class ConfiguracionVacacionesManager(models.Manager):
 
 
 class PeriodoVacacionalManager(models.Manager):
-    """Custom manager for PeriodoVacacional model."""
+    """Custom manager for VacationPeriod model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -952,7 +952,7 @@ class PeriodoVacacionalManager(models.Manager):
 
 
 class SolicitudVacacionesManager(models.Manager):
-    """Custom manager for SolicitudVacaciones model."""
+    """Custom manager for VacationRequest model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -1063,7 +1063,7 @@ class SolicitudVacacionesManager(models.Manager):
 
 
 class GoceVacacionesManager(models.Manager):
-    """Custom manager for GoceVacaciones model."""
+    """Custom manager for VacationGrant model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -1172,7 +1172,7 @@ class GoceVacacionesManager(models.Manager):
 
 
 class HistorialSolicitudVacacionesManager(models.Manager):
-    """Custom manager for HistorialSolicitudVacaciones model."""
+    """Custom manager for VacationRequestHistory model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -1243,7 +1243,7 @@ class HistorialSolicitudVacacionesManager(models.Manager):
 
 
 class RolManager(models.Manager):
-    """Custom manager for Rol model."""
+    """Custom manager for Role model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""
@@ -1291,7 +1291,7 @@ class RolManager(models.Manager):
 
 
 class PermisoManager(models.Manager):
-    """Custom manager for Permiso model."""
+    """Custom manager for Permission model."""
 
     def get_queryset(self):
         """Override queryset to optimize default queries."""

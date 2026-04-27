@@ -16,9 +16,9 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from unittest.mock import patch
 
-from apps.employees.models import Empleado
-from apps.organization.models import Area
-from apps.identity.models import Usuario, Rol, Permiso, RolPermisos, UsuarioRoles
+from apps.employees.models import Employee
+from apps.organization.models import Department
+from apps.identity.models import User, Role, Permission, RolePermission, UserRole
 
 
 class AuthAPITestCase(APITestCase):
@@ -29,7 +29,7 @@ class AuthAPITestCase(APITestCase):
         self.client = APIClient()
         
         # Crear área de prueba
-        self.area = Area.objects.create(
+        self.area = Department.objects.create(
             nombre_organo='Tecnología',
             nombre_unidad_organica='Desarrollo de Software',
             siglas_area='TECH',
@@ -38,7 +38,7 @@ class AuthAPITestCase(APITestCase):
         )
         
         # Crear empleado de prueba
-        self.empleado = Empleado.objects.create(
+        self.empleado = Employee.objects.create(
             nombres_empleado='Juan Carlos',
             apellido_paterno='Pérez',
             apellido_materno='González',
@@ -59,7 +59,7 @@ class AuthAPITestCase(APITestCase):
         )
         
         # Crear usuario de prueba
-        self.usuario = Usuario.objects.create_user(
+        self.usuario = User.objects.create_user(
             username='testuser',
             email='test@empresa.com',
             nombres_usuario='Test',
@@ -71,7 +71,7 @@ class AuthAPITestCase(APITestCase):
         )
         
         # Crear usuario administrador
-        self.admin_usuario = Usuario.objects.create_user(
+        self.admin_usuario = User.objects.create_user(
             username='admin',
             email='admin@empresa.com',
             nombres_usuario='Admin',

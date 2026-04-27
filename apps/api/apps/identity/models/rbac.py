@@ -4,7 +4,7 @@ from django.utils import timezone
 # from ..managers import ModulosManager, RolPermisosManager, UsuarioRolesManager  # Comentado temporalmente para migraciones
 
 
-class Modulos(models.Model):
+class Module(models.Model):
     """Modelo para gestionar módulos del sistema."""
 
     ESTADO_MODULO_CHOICES = [
@@ -161,20 +161,20 @@ class Modulos(models.Model):
         return cls.objects.all().order_by("orden_visualizacion")
 
 
-class RolPermisos(models.Model):
+class RolePermission(models.Model):
     """Modelo para gestionar la relación entre roles y permisos."""
 
     # Campos principales
     rol_permiso_id = models.AutoField(primary_key=True)
     rol = models.ForeignKey(
-        "Rol", on_delete=models.CASCADE, related_name="permisos_asignados"
+        "Role", on_delete=models.CASCADE, related_name="permisos_asignados"
     )
     permiso = models.ForeignKey(
-        "Permiso", on_delete=models.CASCADE, related_name="roles_asignados"
+        "Permission", on_delete=models.CASCADE, related_name="roles_asignados"
     )
     fecha_asignacion = models.DateTimeField(auto_now_add=True)
     asignado_por_usuario = models.ForeignKey(
-        "Usuario",
+        "User",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -235,18 +235,18 @@ class RolPermisos(models.Model):
         return cls.objects.filter(rol_id=rol_id, permiso_id=permiso_id).delete()
 
 
-class ModuloPermiso(models.Model):
+class ModulePermission(models.Model):
     """Relación explícita entre módulos y permisos requeridos para visibilidad."""
 
     modulo_permiso_id = models.AutoField(primary_key=True)
     modulo = models.ForeignKey(
-        "Modulos",
+        "Module",
         on_delete=models.CASCADE,
         related_name="modulo_permisos",
         db_column="modulo_id",
     )
     permiso = models.ForeignKey(
-        "Permiso",
+        "Permission",
         on_delete=models.CASCADE,
         related_name="modulos_relacionados",
         db_column="permiso_id",
@@ -265,7 +265,7 @@ class ModuloPermiso(models.Model):
         return f"{self.modulo.nombre_modulo} - {self.permiso.nombre_permiso}"
 
 
-class UsuarioRoles(models.Model):
+class UserRole(models.Model):
     """Modelo para gestionar la relación entre usuarios y roles."""
 
     ESTADO_ASIGNACION_CHOICES = [
@@ -278,15 +278,15 @@ class UsuarioRoles(models.Model):
     # Campos principales
     usuario_rol_id = models.AutoField(primary_key=True)
     usuario = models.ForeignKey(
-        "Usuario", on_delete=models.CASCADE, related_name="roles_asignados"
+        "User", on_delete=models.CASCADE, related_name="roles_asignados"
     )
     rol = models.ForeignKey(
-        "Rol", on_delete=models.CASCADE, related_name="usuarios_asignados"
+        "Role", on_delete=models.CASCADE, related_name="usuarios_asignados"
     )
     fecha_asignacion = models.DateTimeField(auto_now_add=True)
     fecha_expiracion = models.DateTimeField(null=True, blank=True)
     asignado_por_usuario = models.ForeignKey(
-        "Usuario",
+        "User",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

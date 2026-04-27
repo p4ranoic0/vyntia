@@ -17,18 +17,18 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .filters import EmpleadoFilter
-from apps.contracts.models import DatosLaborales
+from apps.contracts.models import EmploymentData
 from apps.employees.models import (
-    DatosAcademicos,
-    DatosFamiliares,
-    Empleado,
+    AcademicRecord,
+    FamilyMember,
+    Employee,
 )
-from apps.organization.models import Area, HistorialUbicaciones
+from apps.organization.models import Department, LocationHistory
 from apps.identity.models import (
-    Permiso,
-    Rol,
-    RolPermisos,
-    Usuario,
+    Permission,
+    Role,
+    RolePermission,
+    User,
 )
 from .serializers import (
     AreaSerializer,
@@ -71,7 +71,7 @@ class AreaViewSet(viewsets.ModelViewSet):
     Incluye filtros por órgano y siglas.
     """
 
-    queryset = Area.objects.all()
+    queryset = Department.objects.all()
     serializer_class = AreaSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -84,7 +84,7 @@ class AreaViewSet(viewsets.ModelViewSet):
             return AreaListSerializer
         elif self.action in ["retrieve", "create", "update", "partial_update"]:
             return AreaDetailSerializer
-        return AreaSerializer  # Ajusta esto según los campos que tenga tu modelo Area
+        return AreaSerializer  # Ajusta esto según los campos que tenga tu modelo Department
 
     @require_authenticated()
     def list(self, request, *args, **kwargs):
@@ -123,7 +123,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     Soporta filtros avanzados y búsqueda por nombre/documento.
     """
 
-    queryset = Empleado.objects.all()
+    queryset = Employee.objects.all()
     serializer_class = EmpleadoSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -144,7 +144,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         a menos que se especifique explícitamente el parámetro estado=false.
         Optimizado con select_related y prefetch_related para reducir queries.
         """
-        queryset = Empleado.objects.all()
+        queryset = Employee.objects.all()
 
         # Si no se especifica el parámetro estado, mostrar solo activos
         estado_param = self.request.query_params.get("estado", None)
@@ -196,7 +196,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
 class DatosFamiliaresViewSet(viewsets.ModelViewSet):
     """Datos Familiares de Empleados."""
 
-    queryset = DatosFamiliares.objects.all()
+    queryset = FamilyMember.objects.all()
     serializer_class = DatosFamiliaresSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -243,7 +243,7 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
 class DatosAcademicosViewSet(viewsets.ModelViewSet):
     """Datos Académicos de Empleados."""
 
-    queryset = DatosAcademicos.objects.all()
+    queryset = AcademicRecord.objects.all()
     serializer_class = DatosAcademicosSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -290,7 +290,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
 class DatosLaboralesViewSet(viewsets.ModelViewSet):
     """Datos Laborales de Empleados."""
 
-    queryset = DatosLaborales.objects.all()
+    queryset = EmploymentData.objects.all()
     serializer_class = DatosLaboralesSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -337,7 +337,7 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
 class HistorialUbicacionesViewSet(viewsets.ModelViewSet):
     """Historial de Ubicaciones (Departamentos/Cargos) de Empleados."""
 
-    queryset = HistorialUbicaciones.objects.all()
+    queryset = LocationHistory.objects.all()
     serializer_class = HistorialUbicacionesSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -375,7 +375,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     Cada usuario se asocia a un empleado y puede tener múltiples roles.
     """
 
-    queryset = Usuario.objects.all()
+    queryset = User.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -432,7 +432,7 @@ class RolViewSet(viewsets.ModelViewSet):
     Cada rol contiene múltiples permisos.
     """
 
-    queryset = Rol.objects.all()
+    queryset = Role.objects.all()
     serializer_class = RolSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -487,7 +487,7 @@ class PermisoViewSet(viewsets.ModelViewSet):
     Utiliza módulos estáticos configurados en config.modules_config.
     """
 
-    queryset = Permiso.objects.all()
+    queryset = Permission.objects.all()
     serializer_class = PermisoSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -533,7 +533,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
     Permite filtrar por rol específico.
     """
 
-    queryset = RolPermisos.objects.all().select_related(
+    queryset = RolePermission.objects.all().select_related(
         "rol", "permiso", "asignado_por_usuario"
     )
     serializer_class = RolPermisosSerializer
@@ -602,7 +602,7 @@ def login_view(request):
     if serializer.is_valid():
         username = serializer.validated_data["username"]
         password = serializer.validated_data["password"]
-        print(f"Usuario: {username}")
+        print(f"User: {username}")
         print(f"Contraseña: {password}")
         print(f"Intentando autenticar usuario: {username}")
 

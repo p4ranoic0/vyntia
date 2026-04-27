@@ -3,7 +3,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.identity.models import Permiso, Rol, RolPermisos, Usuario, UsuarioRoles
+from apps.identity.models import Permission, Role, RolePermission, User, UserRole
 
 
 ROLES_DATA = [
@@ -20,7 +20,7 @@ ROLES_DATA = [
         "es_rol_sistema": True,
     },
     {
-        "nombre_rol": "Jefe de Area",
+        "nombre_rol": "Jefe de Department",
         "descripcion_rol": "Jefe o supervisor de area",
         "nivel_jerarquico": 3,
         "es_rol_sistema": False,
@@ -32,8 +32,8 @@ ROLES_DATA = [
         "es_rol_sistema": False,
     },
     {
-        "nombre_rol": "Empleado",
-        "descripcion_rol": "Empleado con acceso basico al sistema",
+        "nombre_rol": "Employee",
+        "descripcion_rol": "Employee con acceso basico al sistema",
         "nivel_jerarquico": 5,
         "es_rol_sistema": False,
     },
@@ -79,7 +79,7 @@ ROL_PERMISOS_MAP = {
         "gestionar_usuarios",
         "ver_reportes", "exportar_reportes",
     ],
-    "Jefe de Area": [
+    "Jefe de Department": [
         "ver_dashboard", "ver_estadisticas_dashboard",
         "ver_empleados", "ver_datos_propios", "editar_datos_propios",
         "ver_solicitudes_vacaciones", "crear_solicitud_vacaciones", "aprobar_solicitud_vacaciones",
@@ -94,7 +94,7 @@ ROL_PERMISOS_MAP = {
         "administrar_periodos_vacaciones",
         "ver_reportes",
     ],
-    "Empleado": [
+    "Employee": [
         "ver_dashboard",
         "ver_datos_propios", "editar_datos_propios",
         "ver_solicitudes_vacaciones", "crear_solicitud_vacaciones",
@@ -120,30 +120,30 @@ class Command(BaseCommand):
         self.stdout.write(self.style.MIGRATE_HEADING("Creando roles..."))
         roles_created = 0
         for data in ROLES_DATA:
-            rol, created = Rol.objects.get_or_create(
+            rol, created = Role.objects.get_or_create(
                 nombre_rol=data["nombre_rol"],
                 defaults=data,
             )
             if created:
                 roles_created += 1
-                self.stdout.write(f"  + Rol: {rol.nombre_rol}")
+                self.stdout.write(f"  + Role: {rol.nombre_rol}")
             else:
-                self.stdout.write(f"  = Rol ya existe: {rol.nombre_rol}")
+                self.stdout.write(f"  = Role ya existe: {rol.nombre_rol}")
         self.stdout.write(self.style.SUCCESS(f"  Roles: {roles_created} creados"))
 
         # 2. Crear permisos
         self.stdout.write(self.style.MIGRATE_HEADING("Creando permisos..."))
         permisos_created = 0
         for data in PERMISOS_DATA:
-            permiso, created = Permiso.objects.get_or_create(
+            permiso, created = Permission.objects.get_or_create(
                 nombre_permiso=data["nombre_permiso"],
                 defaults=data,
             )
             if created:
                 permisos_created += 1
-                self.stdout.write(f"  + Permiso: {permiso.nombre_permiso}")
+                self.stdout.write(f"  + Permission: {permiso.nombre_permiso}")
             else:
-                self.stdout.write(f"  = Permiso ya existe: {permiso.nombre_permiso}")
+                self.stdout.write(f"  = Permission ya existe: {permiso.nombre_permiso}")
         self.stdout.write(self.style.SUCCESS(f"  Permisos: {permisos_created} creados"))
 
         # 3. Asignar permisos a roles
@@ -151,37 +151,37 @@ class Command(BaseCommand):
         asignaciones_created = 0
         for nombre_rol, permisos_nombres in ROL_PERMISOS_MAP.items():
             try:
-                rol = Rol.objects.get(nombre_rol=nombre_rol)
-            except Rol.DoesNotExist:
-                self.stdout.write(self.style.WARNING(f"  ! Rol no encontrado: {nombre_rol}"))
+                rol = Role.objects.get(nombre_rol=nombre_rol)
+            except Role.DoesNotExist:
+                self.stdout.write(self.style.WARNING(f"  ! Role no encontrado: {nombre_rol}"))
                 continue
 
             if force:
-                deleted, _ = RolPermisos.objects.filter(rol=rol).delete()
+                deleted, _ = RolePermission.objects.filter(rol=rol).delete()
                 if deleted:
                     self.stdout.write(f"  - Eliminadas {deleted} asignaciones de {nombre_rol}")
 
             for nombre_permiso in permisos_nombres:
                 try:
-                    permiso = Permiso.objects.get(nombre_permiso=nombre_permiso)
-                except Permiso.DoesNotExist:
-                    self.stdout.write(self.style.WARNING(f"  ! Permiso no encontrado: {nombre_permiso}"))
+                    permiso = Permission.objects.get(nombre_permiso=nombre_permiso)
+                except Permission.DoesNotExist:
+                    self.stdout.write(self.style.WARNING(f"  ! Permission no encontrado: {nombre_permiso}"))
                     continue
 
-                _, created = RolPermisos.objects.get_or_create(
+                _, created = RolePermission.objects.get_or_create(
                     rol=rol, permiso=permiso
                 )
                 if created:
                     asignaciones_created += 1
 
-            count = RolPermisos.objects.filter(rol=rol).count()
+            count = RolePermission.objects.filter(rol=rol).count()
             self.stdout.write(f"  {nombre_rol}: {count} permisos")
 
         self.stdout.write(self.style.SUCCESS(f"  Asignaciones: {asignaciones_created} creadas"))
 
         # 4. Crear usuario admin si no existe
         self.stdout.write(self.style.MIGRATE_HEADING("Verificando usuario admin..."))
-        admin_user, created = Usuario.objects.get_or_create(
+        admin_user, created = User.objects.get_or_create(
             username="admin",
             defaults={
                 "email": "admin@intranet.local",
@@ -194,23 +194,23 @@ class Command(BaseCommand):
         if created:
             admin_user.set_password("Admin123!")
             admin_user.save()
-            self.stdout.write(self.style.SUCCESS("  + Usuario admin creado (password: Admin123!)"))
+            self.stdout.write(self.style.SUCCESS("  + User admin creado (password: Admin123!)"))
         else:
-            self.stdout.write("  = Usuario admin ya existe")
+            self.stdout.write("  = User admin ya existe")
 
         # Asignar rol Super Administrador al admin
         try:
-            rol_admin = Rol.objects.get(nombre_rol="Super Administrador")
-            _, created = UsuarioRoles.objects.get_or_create(
+            rol_admin = Role.objects.get(nombre_rol="Super Administrador")
+            _, created = UserRole.objects.get_or_create(
                 usuario=admin_user,
                 rol=rol_admin,
                 defaults={"estado_asignacion": "activo"},
             )
             if created:
-                self.stdout.write(self.style.SUCCESS("  + Rol Super Administrador asignado a admin"))
+                self.stdout.write(self.style.SUCCESS("  + Role Super Administrador asignado a admin"))
             else:
-                self.stdout.write("  = Rol Super Administrador ya asignado a admin")
-        except Rol.DoesNotExist:
-            self.stdout.write(self.style.WARNING("  ! Rol Super Administrador no encontrado"))
+                self.stdout.write("  = Role Super Administrador ya asignado a admin")
+        except Role.DoesNotExist:
+            self.stdout.write(self.style.WARNING("  ! Role Super Administrador no encontrado"))
 
         self.stdout.write(self.style.SUCCESS("\nSetup completado exitosamente."))

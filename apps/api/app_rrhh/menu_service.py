@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional, Set
 
 from app_rrhh.permission_service import PermissionService
-from apps.identity.models import Modulos
+from apps.identity.models import Module
 from django.db.models import Prefetch
 
 
@@ -23,14 +23,14 @@ class MenuService:
         submodulos_prefetch = Prefetch(
             "submodulos",
             queryset=(
-                Modulos.objects.filter(estado_modulo="activo")
+                Module.objects.filter(estado_modulo="activo")
                 .order_by("orden_visualizacion")
                 .prefetch_related("modulo_permisos__permiso")
             ),
         )
 
         modulos_raiz = (
-            Modulos.objects.filter(estado_modulo="activo", modulo_padre__isnull=True)
+            Module.objects.filter(estado_modulo="activo", modulo_padre__isnull=True)
             .order_by("orden_visualizacion")
             .prefetch_related(
                 "modulo_permisos__permiso",
@@ -45,7 +45,7 @@ class MenuService:
         ]
 
     @staticmethod
-    def _is_visible(modulo: Modulos, user_permissions: Optional[Set[str]]) -> bool:
+    def _is_visible(modulo: Module, user_permissions: Optional[Set[str]]) -> bool:
         """
         Valida visibilidad del modulo para el conjunto de permisos recibido.
 
@@ -67,12 +67,12 @@ class MenuService:
         if user_permissions is None:
             return True
 
-        # Usuario regular: validar interseccion de permisos
+        # User regular: validar interseccion de permisos
         return bool(required_permissions & user_permissions)
 
     @staticmethod
     def _build_item(
-        modulo: Modulos, user_permissions: Optional[Set[str]]
+        modulo: Module, user_permissions: Optional[Set[str]]
     ) -> Dict[str, Any]:
         """Construye el nodo de menu recursivamente."""
         item = {

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Tests para el modelo Area
+Tests para el modelo Department
 
-Tests completos para validar la funcionalidad del modelo Area,
+Tests completos para validar la funcionalidad del modelo Department,
 incluyendo campos, métodos, propiedades y relaciones jerárquicas.
 """
 
 from datetime import datetime, timedelta
 
 import pytest
-from apps.contracts.models import DatosLaborales
-from apps.employees.models import Empleado
-from apps.organization.models import Area
+from apps.contracts.models import EmploymentData
+from apps.employees.models import Employee
+from apps.organization.models import Department
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
@@ -19,12 +19,12 @@ from django.utils import timezone
 
 
 class AreaModelTest(TestCase):
-    """Tests para el modelo Area."""
+    """Tests para el modelo Department."""
 
     def setUp(self):
         """Configuración inicial para los tests."""
         # Crear área padre para tests de jerarquía
-        self.area_padre = Area.objects.create(
+        self.area_padre = Department.objects.create(
             nombre_organo="Dirección General",
             nombre_unidad_organica="Dirección Ejecutiva",
             siglas_area="DG",
@@ -34,7 +34,7 @@ class AreaModelTest(TestCase):
         )
 
         # Crear área de prueba
-        self.area_test = Area.objects.create(
+        self.area_test = Department.objects.create(
             nombre_organo="Recursos Humanos",
             nombre_unidad_organica="Gestión de Personal",
             siglas_area="RRHH",
@@ -49,7 +49,7 @@ class AreaModelTest(TestCase):
 
     def test_creacion_area_basica(self):
         """Test de creación básica de área."""
-        area = Area.objects.create(
+        area = Department.objects.create(
             nombre_organo="Finanzas",
             nombre_unidad_organica="Contabilidad",
             siglas_area="FIN",
@@ -68,7 +68,7 @@ class AreaModelTest(TestCase):
         """Test de validación de campos obligatorios."""
         # Test con siglas_area duplicadas (unique=True)
         with self.assertRaises(IntegrityError):
-            Area.objects.create(
+            Department.objects.create(
                 nombre_organo="Test",
                 nombre_unidad_organica="Test",
                 siglas_area="RRHH",  # Ya existe
@@ -76,7 +76,7 @@ class AreaModelTest(TestCase):
 
     def test_valores_por_defecto(self):
         """Test de valores por defecto de los campos."""
-        area = Area.objects.create(siglas_area="TEST")
+        area = Department.objects.create(siglas_area="TEST")
 
         self.assertEqual(area.nombre_organo, "SIN ESPECIFICAR")
         self.assertEqual(area.nombre_unidad_organica, "SIN ESPECIFICAR")
@@ -90,7 +90,7 @@ class AreaModelTest(TestCase):
         siglas_cortas = ["ACT", "INA", "REE"]
 
         for i, estado in enumerate(estados_validos):
-            area = Area.objects.create(siglas_area=siglas_cortas[i], estado_area=estado)
+            area = Department.objects.create(siglas_area=siglas_cortas[i], estado_area=estado)
             self.assertEqual(area.estado_area, estado)
 
     def test_str_representation(self):
@@ -128,7 +128,7 @@ class AreaModelTest(TestCase):
         self.assertFalse(self.area_test.es_activa)
 
         # Verificar que se guardó en la base de datos
-        area_db = Area.objects.get(area_id=self.area_test.area_id)
+        area_db = Department.objects.get(area_id=self.area_test.area_id)
         self.assertEqual(area_db.estado_area, "inactivo")
 
     def test_metodo_activar(self):
@@ -144,7 +144,7 @@ class AreaModelTest(TestCase):
         self.assertTrue(self.area_test.es_activa)
 
         # Verificar que se guardó en la base de datos
-        area_db = Area.objects.get(area_id=self.area_test.area_id)
+        area_db = Department.objects.get(area_id=self.area_test.area_id)
         self.assertEqual(area_db.estado_area, "activo")
 
     def test_relacion_jerarquica_padre_hijo(self):
@@ -154,13 +154,13 @@ class AreaModelTest(TestCase):
         self.assertEqual(self.area_test.nivel_jerarquico, 2)
 
         # Verificar que el padre puede acceder a sus hijos
-        areas_hijas = self.area_padre.area_set.all()
+        areas_hijas = self.area_padre.department_set.all()
         self.assertIn(self.area_test, areas_hijas)
 
     def test_subareas_activas(self):
         """Test del método subareas_activas."""
         # Crear sub-área activa
-        subarea_activa = Area.objects.create(
+        subarea_activa = Department.objects.create(
             nombre_organo="Sub-RRHH",
             nombre_unidad_organica="Nóminas",
             siglas_area="NOM",
@@ -170,7 +170,7 @@ class AreaModelTest(TestCase):
         )
 
         # Crear sub-área inactiva
-        subarea_inactiva = Area.objects.create(
+        subarea_inactiva = Department.objects.create(
             nombre_organo="Sub-RRHH",
             nombre_unidad_organica="Archivo",
             siglas_area="ARC",
@@ -188,11 +188,11 @@ class AreaModelTest(TestCase):
     def test_todas_las_subareas_recursivo(self):
         """Test del método todas_las_subareas (recursivo)."""
         # Crear estructura jerárquica
-        subarea_nivel2 = Area.objects.create(
+        subarea_nivel2 = Department.objects.create(
             siglas_area="SUB2", area_padre=self.area_test, nivel_jerarquico=3
         )
 
-        subarea_nivel3 = Area.objects.create(
+        subarea_nivel3 = Department.objects.create(
             siglas_area="SUB3", area_padre=subarea_nivel2, nivel_jerarquico=4
         )
 
@@ -211,7 +211,7 @@ class AreaModelTest(TestCase):
         """Test de longitud máxima de campos de texto."""
         # Test nombre_organo (max_length=150)
         nombre_largo = "A" * 50  # Usar 50 caracteres ASCII simples
-        area = Area.objects.create(
+        area = Department.objects.create(
             nombre_organo=nombre_largo,
             nombre_unidad_organica="Unidad Test",
             siglas_area="T1",
@@ -222,7 +222,7 @@ class AreaModelTest(TestCase):
         self.assertEqual(len(area.nombre_organo), 50)
 
         # Test siglas_area - usar cadenas muy cortas ASCII
-        area2 = Area.objects.create(
+        area2 = Department.objects.create(
             nombre_organo="Test Organo 2",
             nombre_unidad_organica="Unidad Test 2",
             siglas_area="T2",  # 2 caracteres ASCII
@@ -233,7 +233,7 @@ class AreaModelTest(TestCase):
         self.assertEqual(len(area2.siglas_area), 2)
 
         # Test con siglas de 3 caracteres
-        area3 = Area.objects.create(
+        area3 = Department.objects.create(
             nombre_organo="Test Organo 3",
             nombre_unidad_organica="Unidad Test 3",
             siglas_area="T3A",  # 3 caracteres ASCII
@@ -245,7 +245,7 @@ class AreaModelTest(TestCase):
 
         # Test descripcion_area (TextField)
         descripcion_corta = "Descripcion de prueba"  # Texto simple
-        area4 = Area.objects.create(
+        area4 = Department.objects.create(
             nombre_organo="Test Organo 4",
             nombre_unidad_organica="Unidad Test 4",
             siglas_area="T4B",
@@ -258,7 +258,7 @@ class AreaModelTest(TestCase):
 
     def test_campos_opcionales(self):
         """Test de campos opcionales (null=True, blank=True)."""
-        area = Area.objects.create(
+        area = Department.objects.create(
             siglas_area="OPC",
             descripcion_area=None,
             jefe_area=None,
@@ -288,7 +288,7 @@ class AreaModelTest(TestCase):
         """Test de que los índices están configurados correctamente."""
         # Este test verifica que el modelo tiene los índices definidos
         # Los índices reales se verifican en las migraciones
-        meta = Area._meta
+        meta = Department._meta
         indices = [index.fields for index in meta.indexes]
 
         # Verificar que existen índices para los campos importantes
@@ -307,11 +307,11 @@ class AreaModelTest(TestCase):
 
     def test_tabla_base_datos(self):
         """Test de configuración de tabla en base de datos."""
-        self.assertEqual(Area._meta.db_table, "area")
+        self.assertEqual(Department._meta.db_table, "area")
 
     def test_area_sin_padre(self):
         """Test de área sin padre (área raíz)."""
-        area_raiz = Area.objects.create(siglas_area="RAIZ", nivel_jerarquico=1)
+        area_raiz = Department.objects.create(siglas_area="RAIZ", nivel_jerarquico=1)
 
         self.assertIsNone(area_raiz.area_padre)
         self.assertEqual(area_raiz.nivel_jerarquico, 1)
@@ -319,15 +319,15 @@ class AreaModelTest(TestCase):
     def test_multiples_niveles_jerarquia(self):
         """Test de múltiples niveles de jerarquía."""
         # Nivel 1 (raíz)
-        nivel1 = Area.objects.create(siglas_area="N1", nivel_jerarquico=1)
+        nivel1 = Department.objects.create(siglas_area="N1", nivel_jerarquico=1)
 
         # Nivel 2
-        nivel2 = Area.objects.create(
+        nivel2 = Department.objects.create(
             siglas_area="N2", area_padre=nivel1, nivel_jerarquico=2
         )
 
         # Nivel 3
-        nivel3 = Area.objects.create(
+        nivel3 = Department.objects.create(
             siglas_area="N3", area_padre=nivel2, nivel_jerarquico=3
         )
 
@@ -344,17 +344,17 @@ class AreaModelTest(TestCase):
     def test_codigo_presupuestal_unico_opcional(self):
         """Test de código presupuestal único pero opcional."""
         # Crear área con código presupuestal
-        area1 = Area.objects.create(siglas_area="PR1", codigo_presupuestal="001-TEST")
+        area1 = Department.objects.create(siglas_area="PR1", codigo_presupuestal="001-TEST")
 
         # Crear área sin código presupuestal
-        area2 = Area.objects.create(siglas_area="PR2", codigo_presupuestal=None)
+        area2 = Department.objects.create(siglas_area="PR2", codigo_presupuestal=None)
 
         self.assertEqual(area1.codigo_presupuestal, "001-TEST")
         self.assertIsNone(area2.codigo_presupuestal)
 
     def test_total_empleados_numerico(self):
         """Test de campo total_empleados como entero."""
-        area = Area.objects.create(siglas_area="EMP", total_empleados=25)
+        area = Department.objects.create(siglas_area="EMP", total_empleados=25)
 
         self.assertEqual(area.total_empleados, 25)
         self.assertIsInstance(area.total_empleados, int)

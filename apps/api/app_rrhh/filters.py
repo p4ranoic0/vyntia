@@ -1,6 +1,6 @@
 import django_filters
 from django.db import models
-from apps.employees.models import Empleado
+from apps.employees.models import Employee
 
 class EmpleadoFilter(django_filters.FilterSet):
     # Filtro para buscar por nombre (nombres, apellido paterno o materno)
@@ -25,5 +25,5 @@ class EmpleadoFilter(django_filters.FilterSet):
         return queryset
     
     class Meta:
-        model = Empleado
+        model = Employee
         fields = ['search', 'dni', 'estado']

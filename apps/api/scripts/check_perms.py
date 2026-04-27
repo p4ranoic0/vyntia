@@ -26,9 +26,9 @@ load_env_file()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vyntia.settings.development")
 django.setup()
 
-from apps.identity.models import Permiso
+from apps.identity.models import Permission
 
-perms = list(Permiso.objects.values("nombre_permiso", "modulo")[:5])
+perms = list(Permission.objects.values("nombre_permiso", "modulo")[:5])
 for p in perms:
     print(f"{p['nombre_permiso']}: {p['modulo']}")
     print(f"{p['nombre_permiso']}: {p['modulo']}")

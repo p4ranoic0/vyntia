@@ -3,16 +3,16 @@
 from datetime import timedelta
 
 import django_filters
-from apps.contracts.models import DatosLaborales
-from apps.employees.models import Empleado
-from apps.organization.models import Area
-from apps.identity.models import Usuario
+from apps.contracts.models import EmploymentData
+from apps.employees.models import Employee
+from apps.organization.models import Department
+from apps.identity.models import User
 from django.db.models import Count, Q
 from django.utils import timezone
 
 
 class AreaFilter(django_filters.FilterSet):
-    """Filter for Area model."""
+    """Filter for Department model."""
 
     siglas = django_filters.CharFilter(
         field_name="siglas_area", lookup_expr="icontains"
@@ -33,7 +33,7 @@ class AreaFilter(django_filters.FilterSet):
     max_empleados = django_filters.NumberFilter(method="filter_max_empleados")
 
     class Meta:
-        model = Area
+        model = Department
         fields = ["siglas", "unidad_organica", "organo", "estado_area"]
 
     def filter_min_empleados(self, queryset, name, value):
@@ -66,7 +66,7 @@ class AreaFilter(django_filters.FilterSet):
 
 
 class EmpleadoFilter(django_filters.FilterSet):
-    """Filter for Empleado model."""
+    """Filter for Employee model."""
 
     nombres = django_filters.CharFilter(
         field_name="nombres_empleado", lookup_expr="icontains"
@@ -114,7 +114,7 @@ class EmpleadoFilter(django_filters.FilterSet):
     edad_min = django_filters.NumberFilter(method="filter_edad_min")
     edad_max = django_filters.NumberFilter(method="filter_edad_max")
 
-    # Area filter
+    # Department filter
     area = django_filters.NumberFilter(method="filter_area")
     area_siglas = django_filters.CharFilter(method="filter_area_siglas")
 
@@ -132,7 +132,7 @@ class EmpleadoFilter(django_filters.FilterSet):
     tiene_conyuge = django_filters.BooleanFilter(method="filter_tiene_conyuge")
 
     class Meta:
-        model = Empleado
+        model = Employee
         fields = [
             "nombres",
             "ape_paterno",
@@ -249,7 +249,7 @@ class EmpleadoFilter(django_filters.FilterSet):
 
 
 class DatosLaboralesFilter(django_filters.FilterSet):
-    """Filter for DatosLaborales model."""
+    """Filter for EmploymentData model."""
 
     reg_laboral = django_filters.CharFilter(lookup_expr="icontains")
     condicion = django_filters.CharFilter(lookup_expr="icontains")
@@ -285,7 +285,7 @@ class DatosLaboralesFilter(django_filters.FilterSet):
     antiguedad_max_años = django_filters.NumberFilter(method="filter_antiguedad_max")
 
     class Meta:
-        model = DatosLaborales
+        model = EmploymentData
         fields = [
             "reg_laboral",
             "condicion",
@@ -314,7 +314,7 @@ class DatosLaboralesFilter(django_filters.FilterSet):
 
 
 class UsuarioFilter(django_filters.FilterSet):
-    """Filter for Usuario model."""
+    """Filter for User model."""
 
     username = django_filters.CharFilter(lookup_expr="icontains")
     email = django_filters.CharFilter(lookup_expr="icontains")
@@ -354,7 +354,7 @@ class UsuarioFilter(django_filters.FilterSet):
     )
 
     class Meta:
-        model = Usuario
+        model = User
         fields = ["username", "email", "is_active", "estado"]
 
     def filter_empleado_area(self, queryset, name, value):
