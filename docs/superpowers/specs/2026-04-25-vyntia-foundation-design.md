@@ -223,6 +223,18 @@ vyntia/                                   ← repo nuevo
 | `creado_por`, `actualizado_por` | `created_by`, `updated_by` |
 | PK específicas (`empleado_id`, `contrato_id`) | `id` UUID |
 
+### 3.6.1 Scope decision (L3.10.2 Option B)
+
+L3.10.2 aplica § 3.6 SOLO a fields **genéricos de plataforma**:
+- Audit timestamps (`fecha_creacion`, `fecha_actualizacion`, `fecha_registro`, `fecha_modificacion`)
+- Audit FKs (`creado_por`, `modificado_por`)
+- State literales (`estado`, `activo`)
+- PKs (`<modelo>_id` → `id` UUID)
+
+**Domain vocabulary HR peruano se PRESERVA en español** (`nombres_empleado`, `apellido_paterno`, `tipo_documento`, `numero_cuspp`, `estado_empleado`, `estado_civil`, `vigencia_estado_seguro`, etc.). Esta es una extensión natural de la regla 7 ("términos legales peruanos preservados") aplicada al vocabulario de dominio HR. Domain audit-like fields (`validado_por`, `digitalizado_por`, `subido_por`) también quedan en español.
+
+Frontend rename de los fields renombrados se hace en L3.10.4. Entre L3.10.2 merge y L3.10.4 merge, el frontend romperá en uses de `empleado_id`, `fecha_creacion`, etc. — accepted tradeoff (solo dev, no production users).
+
 ---
 
 ## 4. Plan de capas (L0 → L5)
