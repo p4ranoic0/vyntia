@@ -21,7 +21,7 @@ export interface ConfiguracionEmpresa {
 
 export const empresaService = {
   async get(): Promise<ConfiguracionEmpresa> {
-    const response = await apiClient.get('/api/v1/rrhh/configuracion-empresa/')
+    const response = await apiClient.get('/api/v1/organization/companies/')
     const raw = response.data
     // ViewSet list returns paginated or direct — handle both
     const data = raw?.data ?? raw
@@ -37,11 +37,11 @@ export const empresaService = {
         if (v != null) formData.append(k, String(v))
       })
       formData.append('logo', logo)
-      const response = await apiClient.post('/api/v1/rrhh/configuracion-empresa/', formData)
+      const response = await apiClient.post('/api/v1/organization/companies/', formData)
       const raw = response.data
       return raw?.data ?? raw
     }
-    const response = await apiClient.post('/api/v1/rrhh/configuracion-empresa/', data)
+    const response = await apiClient.post('/api/v1/organization/companies/', data)
     const raw = response.data
     return raw?.data ?? raw
   },

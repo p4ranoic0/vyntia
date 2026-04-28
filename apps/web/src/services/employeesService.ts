@@ -113,7 +113,7 @@ export const employeesService = {
    */
   async getAll(params?: Record<string, any>) {
     try {
-      const response = await apiClient.get<any>("/api/v1/rrhh/empleados/", {
+      const response = await apiClient.get<any>("/api/v1/employees/", {
         params,
       });
 
@@ -130,7 +130,7 @@ export const employeesService = {
    */
   async getById(id: number) {
     try {
-      const response = await apiClient.get(`/api/v1/rrhh/empleados/${id}/`);
+      const response = await apiClient.get(`/api/v1/employees/${id}/`);
       return response.data;
     } catch (error) {
       console.error("Error fetching employee:", error);
@@ -144,7 +144,7 @@ export const employeesService = {
   async create(employeeData: Partial<Employee>) {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/empleados/",
+        "/api/v1/employees/",
         employeeData,
       );
       return response.data;
@@ -160,7 +160,7 @@ export const employeesService = {
   async update(id: number, employeeData: Partial<Employee>) {
     try {
       const response = await apiClient.patch(
-        `/api/v1/rrhh/empleados/${id}/`,
+        `/api/v1/employees/${id}/`,
         employeeData,
       );
       return response.data;
@@ -175,7 +175,7 @@ export const employeesService = {
    */
   async delete(id: number) {
     try {
-      const response = await apiClient.delete(`/api/v1/rrhh/empleados/${id}/`);
+      const response = await apiClient.delete(`/api/v1/employees/${id}/`);
       return response.data;
     } catch (error) {
       console.error("Error deleting employee:", error);
@@ -188,7 +188,7 @@ export const employeesService = {
     async get(empleadoId: number) {
       try {
         const response = await apiClient.get(
-          `/api/v1/rrhh/empleados/${empleadoId}/`,
+          `/api/v1/employees/${empleadoId}/`,
         );
         return response.data;
       } catch (error) {
@@ -200,7 +200,7 @@ export const employeesService = {
     async update(empleadoId: number, data: Partial<DatosPersonales>) {
       try {
         const response = await apiClient.patch(
-          `/api/v1/rrhh/empleados/${empleadoId}/`,
+          `/api/v1/employees/${empleadoId}/`,
           data,
         );
         return response.data;
@@ -215,7 +215,7 @@ export const employeesService = {
   datosLaborales: {
     async get(empleadoId: number) {
       try {
-        const response = await apiClient.get(`/api/v1/rrhh/datos-laborales/`, {
+        const response = await apiClient.get(`/api/v1/employment-data/`, {
           params: { empleado: empleadoId },
         });
         return response.data;
@@ -228,7 +228,7 @@ export const employeesService = {
     async update(recordId: number, data: Partial<DatosLaborales>) {
       try {
         const response = await apiClient.patch(
-          `/api/v1/rrhh/datos-laborales/${recordId}/`,
+          `/api/v1/employment-data/${recordId}/`,
           data,
         );
         return response.data;
@@ -243,7 +243,7 @@ export const employeesService = {
   datosFamiliares: {
     async getAll(empleadoId: number) {
       try {
-        const response = await apiClient.get(`/api/v1/rrhh/datos-familiares/`, {
+        const response = await apiClient.get(`/api/v1/family-members/`, {
           params: { empleado: empleadoId },
         });
         return response.data;
@@ -256,7 +256,7 @@ export const employeesService = {
     async create(empleadoId: number, data: Partial<DatosFamiliares>) {
       try {
         const response = await apiClient.post(
-          `/api/v1/rrhh/datos-familiares/`,
+          `/api/v1/family-members/`,
           {
             ...data,
             empleado: empleadoId,
@@ -276,7 +276,7 @@ export const employeesService = {
     ) {
       try {
         const response = await apiClient.patch(
-          `/api/v1/rrhh/datos-familiares/${id}/`,
+          `/api/v1/family-members/${id}/`,
           data,
         );
         return response.data;
@@ -289,7 +289,7 @@ export const employeesService = {
     async delete(_empleadoId: number, id: number) {
       try {
         const response = await apiClient.delete(
-          `/api/v1/rrhh/datos-familiares/${id}/`,
+          `/api/v1/family-members/${id}/`,
         );
         return response.data;
       } catch (error) {
@@ -303,7 +303,7 @@ export const employeesService = {
   datosAcademicos: {
     async getAll(empleadoId: number) {
       try {
-        const response = await apiClient.get(`/api/v1/rrhh/datos-academicos/`, {
+        const response = await apiClient.get(`/api/v1/academic-records/`, {
           params: { empleado: empleadoId },
         });
         return response.data;
@@ -316,7 +316,7 @@ export const employeesService = {
     async create(empleadoId: number, data: Partial<DatosAcademicos>) {
       try {
         const response = await apiClient.post(
-          `/api/v1/rrhh/datos-academicos/`,
+          `/api/v1/academic-records/`,
           {
             ...data,
             empleado: empleadoId,
@@ -336,7 +336,7 @@ export const employeesService = {
     ) {
       try {
         const response = await apiClient.patch(
-          `/api/v1/rrhh/datos-academicos/${id}/`,
+          `/api/v1/academic-records/${id}/`,
           data,
         );
         return response.data;
@@ -349,7 +349,7 @@ export const employeesService = {
     async delete(_empleadoId: number, id: number) {
       try {
         const response = await apiClient.delete(
-          `/api/v1/rrhh/datos-academicos/${id}/`,
+          `/api/v1/academic-records/${id}/`,
         );
         return response.data;
       } catch (error) {
@@ -364,7 +364,7 @@ export const employeesService = {
     async descargarReporteIntegral(empleadoId: number): Promise<void> {
       try {
         const response = await apiClient.getBlob(
-          `/api/v1/rrhh/empleados/${empleadoId}/reporte_integral/`,
+          `/api/v1/employees/${empleadoId}/reporte_integral/`,
         );
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = globalThis.URL.createObjectURL(blob);
@@ -387,7 +387,7 @@ export const employeesService = {
     ): Promise<void> {
       try {
         const response = await apiClient.getBlob(
-          `/api/v1/rrhh/empleados/${empleadoId}/reporte_seccion/`,
+          `/api/v1/employees/${empleadoId}/reporte_seccion/`,
           { seccion },
         );
         const blob = new Blob([response.data], { type: "application/pdf" });

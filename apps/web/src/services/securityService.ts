@@ -99,7 +99,7 @@ export const roleService = {
   },
 
   async getById(id: number) {
-    const response = await apiClient.get<any>(`/api/v1/rrhh/roles/${id}/`);
+    const response = await apiClient.get<any>(`/api/v1/identity/roles/${id}/`);
     const role = normalizeSecurityRole(response.data);
 
     return {
@@ -194,7 +194,7 @@ export const permissionService = {
 
   async getById(id: number) {
     const response = await apiClient.get<Permission>(
-      `/api/v1/rrhh/permisos/${id}/`,
+      `/api/v1/identity/permissions/${id}/`,
     );
     return response.data;
   },
@@ -219,20 +219,20 @@ export const permissionService = {
 export const moduleService = {
   async getAll(params?: Record<string, any>) {
     const response = await apiClient.get<Module[]>(
-      "/api/v1/rrhh/modules/",
+      "/api/v1/identity/modules/",
       params,
     );
     return response.data.results || response.data;
   },
 
   async getById(id: number) {
-    const response = await apiClient.get<Module>(`/api/v1/rrhh/modules/${id}/`);
+    const response = await apiClient.get<Module>(`/api/v1/identity/modules/${id}/`);
     return response.data;
   },
 
   async create(data: ModuleFormData) {
     const response = await apiClient.post<Module>(
-      "/api/v1/rrhh/modules/",
+      "/api/v1/identity/modules/",
       data,
     );
     return response.data;
@@ -240,14 +240,14 @@ export const moduleService = {
 
   async update(id: number, data: Partial<ModuleFormData>) {
     const response = await apiClient.patch<Module>(
-      `/api/v1/rrhh/modules/${id}/`,
+      `/api/v1/identity/modules/${id}/`,
       data,
     );
     return response.data;
   },
 
   async delete(id: number) {
-    const response = await apiClient.delete(`/api/v1/rrhh/modules/${id}/`);
+    const response = await apiClient.delete(`/api/v1/identity/modules/${id}/`);
     return response.data;
   },
 };
@@ -256,7 +256,7 @@ export const moduleService = {
 export const rolePermissionService = {
   async getAll(params?: Record<string, any>) {
     const response = await apiClient.get<RolePermission[]>(
-      "/api/v1/rrhh/role-permissions/",
+      "/api/v1/identity/role-permissions/",
       params,
     );
     return response.data.results || response.data;
@@ -264,7 +264,7 @@ export const rolePermissionService = {
 
   async getByRoleId(roleId: number) {
     const response = await apiClient.get<any>(
-      `/api/v1/rrhh/rol-permisos/por_rol/?rol_id=${roleId}`,
+      `/api/v1/identity/role-permissions/por_rol/?rol_id=${roleId}`,
     );
     // El backend devuelve los datos en response.data.data cuando usa APIResponse.success
     return response.data.data || response.data;
@@ -281,7 +281,7 @@ export const rolePermissionService = {
     // Crear nueva asignación de permiso a rol
 
     const response = await apiClient.post<RolePermission>(
-      "/api/v1/rrhh/rol-permisos/",
+      "/api/v1/identity/role-permissions/",
       backendData,
     );
     return response.data;
@@ -294,14 +294,14 @@ export const rolePermissionService = {
     if (data.role !== undefined) backendData.rol_id = data.role;
     if (data.permission !== undefined) backendData.permiso_id = data.permission;
     const response = await apiClient.patch<RolePermission>(
-      `/api/v1/rrhh/rol-permisos/${id}/`,
+      `/api/v1/identity/role-permissions/${id}/`,
       backendData,
     );
     return response.data;
   },
 
   async delete(id: number) {
-    const response = await apiClient.delete(`/api/v1/rrhh/rol-permisos/${id}/`);
+    const response = await apiClient.delete(`/api/v1/identity/role-permissions/${id}/`);
     return response.data;
   },
 

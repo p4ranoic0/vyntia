@@ -34,7 +34,7 @@ describe('subirDocumento', () => {
     const result = await subirDocumento(42, 'dni', 'personal', 'DNI del empleado', file)
 
     expect(apiClient.post).toHaveBeenCalledWith(
-      '/api/v1/rrhh/onboarding/subir-documento/',
+      '/api/v1/onboarding/processes/subir-documento/',
       expect.any(FormData)
     )
     expect(result.tipo_documento).toBe('dni')

@@ -93,7 +93,7 @@ export const usersService = {
    */
   async getAll(params?: Record<string, any>) {
     try {
-      const response = await apiClient.get("/api/v1/rrhh/usuarios/", {
+      const response = await apiClient.get("/api/v1/identity/users/", {
         params,
       });
       const users = extractCollection(response.data);
@@ -109,7 +109,7 @@ export const usersService = {
    */
   async getById(id: number) {
     try {
-      const response = await apiClient.get(`/api/v1/rrhh/usuarios/${id}/`);
+      const response = await apiClient.get(`/api/v1/identity/users/${id}/`);
       return { data: normalizeUser(response.data) };
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -139,7 +139,7 @@ export const usersService = {
       };
 
       const response = await apiClient.post(
-        "/api/v1/rrhh/usuarios/",
+        "/api/v1/identity/users/",
         backendData,
       );
       return response.data;
@@ -169,7 +169,7 @@ export const usersService = {
       };
 
       const response = await apiClient.patch(
-        `/api/v1/rrhh/usuarios/${id}/`,
+        `/api/v1/identity/users/${id}/`,
         backendData,
       );
       return response.data;
@@ -184,7 +184,7 @@ export const usersService = {
    */
   async delete(id: number) {
     try {
-      const response = await apiClient.delete(`/api/v1/rrhh/usuarios/${id}/`);
+      const response = await apiClient.delete(`/api/v1/identity/users/${id}/`);
       return response.data;
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -198,7 +198,7 @@ export const usersService = {
   async changePassword(userId: number, data: ChangePasswordData) {
     try {
       const response = await apiClient.post(
-        `/api/v1/rrhh/usuarios/${userId}/change-password/`,
+        `/api/v1/identity/users/${userId}/change-password/`,
         data,
       );
       return response.data;
@@ -214,7 +214,7 @@ export const usersService = {
   async getUsersWithoutRecentLogin(days: number = 30) {
     try {
       const response = await apiClient.get(
-        `/api/v1/rrhh/usuarios/sin_login_reciente/?dias=${days}`,
+        `/api/v1/identity/users/sin_login_reciente/?dias=${days}`,
       );
       const data =
         response.data.data?.results ||
@@ -234,7 +234,7 @@ export const usersService = {
   async getStatistics() {
     try {
       const response = await apiClient.get(
-        "/api/v1/rrhh/usuarios/estadisticas/",
+        "/api/v1/identity/users/estadisticas/",
       );
       return response.data;
     } catch (error) {
@@ -269,7 +269,7 @@ export const usersService = {
       }
 
       const response = await apiClient.get(
-        `/api/v1/rrhh/usuario-roles/buscar_usuarios_por_roles/?${queryParams.toString()}`,
+        `/api/v1/identity/user-roles/buscar_usuarios_por_roles/?${queryParams.toString()}`,
       );
       const users = extractCollection(response.data);
       return users.map((user: any) => normalizeUser(user));
@@ -285,7 +285,7 @@ export const usersService = {
   async updateUserRoles(userId: number, assignment: UserRoleAssignment) {
     try {
       const response = await apiClient.post(
-        `/api/v1/rrhh/usuarios/${userId}/asignar_rol/`,
+        `/api/v1/identity/users/${userId}/asignar_rol/`,
         assignment,
       );
       return response.data;
@@ -304,7 +304,7 @@ export const usersService = {
   ) {
     try {
       const response = await apiClient.post(
-        `/api/v1/rrhh/usuarios/${userId}/asignar_rol/`,
+        `/api/v1/identity/users/${userId}/asignar_rol/`,
         data,
       );
       return response.data;
@@ -320,7 +320,7 @@ export const usersService = {
   async removeUserRole(userId: number, rolId: number) {
     try {
       const response = await apiClient.post(
-        `/api/v1/rrhh/usuarios/${userId}/remover_rol/`,
+        `/api/v1/identity/users/${userId}/remover_rol/`,
         { rol_id: rolId },
       );
       return response.data;
@@ -336,7 +336,7 @@ export const usersService = {
   async assignRoles(assignment: UserRoleAssignment) {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/usuario-roles/asignar_multiple/",
+        "/api/v1/identity/user-roles/asignar_multiple/",
         {
           usuario_ids: [assignment.user_id],
           rol_ids: assignment.role_ids || [],
@@ -358,7 +358,7 @@ export const rolesService = {
    */
   async getAll(params?: Record<string, any>) {
     try {
-      const response = await apiClient.get("/api/v1/rrhh/roles/", { params });
+      const response = await apiClient.get("/api/v1/identity/roles/", { params });
       const roles = extractCollection(response.data);
       return roles.map((role: any) => normalizeRole(role));
     } catch (error) {
@@ -372,7 +372,7 @@ export const rolesService = {
    */
   async getById(id: number) {
     try {
-      const response = await apiClient.get(`/api/v1/rrhh/roles/${id}/`);
+      const response = await apiClient.get(`/api/v1/identity/roles/${id}/`);
       return normalizeRole(response.data);
     } catch (error) {
       console.error("Error fetching role:", error);
@@ -389,7 +389,7 @@ export const rolesService = {
     estado_rol: string;
   }) {
     try {
-      const response = await apiClient.post("/api/v1/rrhh/roles/", data);
+      const response = await apiClient.post("/api/v1/identity/roles/", data);
       return response.data;
     } catch (error) {
       console.error("Error creating role:", error);
@@ -409,7 +409,7 @@ export const rolesService = {
     }>,
   ) {
     try {
-      const response = await apiClient.patch(`/api/v1/rrhh/roles/${id}/`, data);
+      const response = await apiClient.patch(`/api/v1/identity/roles/${id}/`, data);
       return response.data;
     } catch (error) {
       console.error("Error updating role:", error);
@@ -422,7 +422,7 @@ export const rolesService = {
    */
   async delete(id: number) {
     try {
-      const response = await apiClient.delete(`/api/v1/rrhh/roles/${id}/`);
+      const response = await apiClient.delete(`/api/v1/identity/roles/${id}/`);
       return response.data;
     } catch (error) {
       console.error("Error deleting role:", error);
@@ -435,7 +435,7 @@ export const rolesService = {
    */
   async getActive() {
     try {
-      const response = await apiClient.get("/api/v1/rrhh/roles/activos/");
+      const response = await apiClient.get("/api/v1/identity/roles/activos/");
 
       // Manejar diferentes estructuras de respuesta del backend
       let data;
@@ -469,7 +469,7 @@ export const permissionsService = {
    */
   async getAll(params?: Record<string, any>) {
     try {
-      const response = await apiClient.get("/api/v1/rrhh/permisos/", {
+      const response = await apiClient.get("/api/v1/identity/permissions/", {
         params,
       });
       const data =
@@ -498,7 +498,7 @@ export const permissionsService = {
    */
   async getById(id: number) {
     try {
-      const response = await apiClient.get(`/api/v1/rrhh/permisos/${id}/`);
+      const response = await apiClient.get(`/api/v1/identity/permissions/${id}/`);
       const permission = response.data;
 
       return {

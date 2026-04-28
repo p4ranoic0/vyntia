@@ -63,7 +63,7 @@ export const onboardingService = {
   async getMiOnboarding(): Promise<OnboardingStatus | null> {
     try {
       const response = await apiClient.get(
-        "/api/v1/rrhh/onboarding/mi-onboarding/",
+        "/api/v1/onboarding/processes/mi-onboarding/",
       );
       return response.data?.data || response.data;
     } catch (err) {
@@ -75,7 +75,7 @@ export const onboardingService = {
   async getAll(
     params?: Record<string, any>,
   ): Promise<{ results: OnboardingStatus[]; count: number }> {
-    const response = await apiClient.get("/api/v1/rrhh/onboarding/", params);
+    const response = await apiClient.get("/api/v1/onboarding/processes/", params);
     const rawData = response.data;
     const items = Array.isArray(rawData?.data) ? rawData.data : [];
     const pagination = rawData?.meta?.pagination || {};
@@ -86,12 +86,12 @@ export const onboardingService = {
   },
 
   async getById(id: number): Promise<OnboardingStatus> {
-    const response = await apiClient.get(`/api/v1/rrhh/onboarding/${id}/`);
+    const response = await apiClient.get(`/api/v1/onboarding/processes/${id}/`);
     return response.data?.data || response.data;
   },
 
   async crear(data: OnboardingCreateData): Promise<OnboardingCreateResponse> {
-    const response = await apiClient.post("/api/v1/rrhh/onboarding/", data);
+    const response = await apiClient.post("/api/v1/onboarding/processes/", data);
     return response.data?.data || response.data;
   },
 
@@ -101,7 +101,7 @@ export const onboardingService = {
     observaciones?: string,
   ): Promise<OnboardingStatus> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/onboarding/${id}/validar/`,
+      `/api/v1/onboarding/processes/${id}/validar/`,
       {
         accion,
         observaciones: observaciones || "",
@@ -111,12 +111,12 @@ export const onboardingService = {
   },
 
   async reenviarEmail(id: number): Promise<void> {
-    await apiClient.post(`/api/v1/rrhh/onboarding/${id}/reenviar_email/`, {});
+    await apiClient.post(`/api/v1/onboarding/processes/${id}/reenviar_email/`, {});
   },
 
   async actualizarEstado(id: number): Promise<OnboardingStatus> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/onboarding/${id}/actualizar-estado/`,
+      `/api/v1/onboarding/processes/${id}/actualizar-estado/`,
       {},
     );
     return response.data?.data || response.data;

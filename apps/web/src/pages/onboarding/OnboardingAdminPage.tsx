@@ -821,7 +821,7 @@ function OnboardingDetailDialog({
   const handleValidarDocumento = async (docId: number) => {
     try {
       await apiClient.post(
-        `/api/v1/rrhh/onboarding/${onboarding.onboarding_id}/documentos/${docId}/aprobar/`
+        `/api/v1/onboarding/processes/${onboarding.onboarding_id}/documentos/${docId}/aprobar/`
       )
       toast.success('Documento aprobado')
       const docs = await legajoService.getByEmpleado(onboarding.empleado)
@@ -836,7 +836,7 @@ function OnboardingDetailDialog({
     setRechazandoDoc(true)
     try {
       await apiClient.post(
-        `/api/v1/rrhh/onboarding/${onboarding.onboarding_id}/documentos/${rechazarDocId}/rechazar/`,
+        `/api/v1/onboarding/processes/${onboarding.onboarding_id}/documentos/${rechazarDocId}/rechazar/`,
         { motivo: motivoRechazoDoc }
       )
       toast.success('Documento rechazado y notificacion enviada al empleado')

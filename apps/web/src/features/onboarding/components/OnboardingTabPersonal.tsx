@@ -145,7 +145,7 @@ export function OnboardingTabPersonal({ empleadoId, docs, initialValues }: Onboa
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await apiClient.patch(`/api/v1/rrhh/empleados/${empleadoId}/`, {
+      await apiClient.patch(`/api/v1/employees/${empleadoId}/`, {
         telefono_celular: data.telefono_celular || undefined,
         telefono_fijo: data.telefono_fijo || undefined,
         tipo_sangre: data.tipo_sangre || undefined,

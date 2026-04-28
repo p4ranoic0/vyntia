@@ -163,7 +163,7 @@ export const legajoService = {
       };
       if (categoria) params.categoria = categoria;
       const response = await apiClient.get(
-        "/api/v1/rrhh/documentos-digitales/",
+        "/api/v1/documents/documents/",
         params,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -182,7 +182,7 @@ export const legajoService = {
   async getById(id: number): Promise<Documento> {
     try {
       const response = await apiClient.get(
-        `/api/v1/rrhh/documentos-digitales/${id}/`,
+        `/api/v1/documents/documents/${id}/`,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw: any = response.data;
@@ -218,7 +218,7 @@ export const legajoService = {
 
       // apiClient.post only accepts 2 args; axios handles FormData content-type automatically
       const response = await apiClient.post(
-        "/api/v1/rrhh/documentos-digitales/",
+        "/api/v1/documents/documents/",
         formData,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -234,7 +234,7 @@ export const legajoService = {
    */
   async delete(id: number): Promise<void> {
     try {
-      await apiClient.delete(`/api/v1/rrhh/documentos-digitales/${id}/`);
+      await apiClient.delete(`/api/v1/documents/documents/${id}/`);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -245,7 +245,7 @@ export const legajoService = {
    */
   async validar(id: number, observaciones?: string): Promise<void> {
     try {
-      await apiClient.post(`/api/v1/rrhh/documentos-digitales/${id}/validar/`, {
+      await apiClient.post(`/api/v1/documents/documents/${id}/validar/`, {
         observaciones: observaciones || "",
       });
     } catch (error) {
@@ -259,7 +259,7 @@ export const legajoService = {
   async rechazar(id: number, motivo: string): Promise<void> {
     try {
       await apiClient.post(
-        `/api/v1/rrhh/documentos-digitales/${id}/rechazar/`,
+        `/api/v1/documents/documents/${id}/rechazar/`,
         {
           motivo,
         },
@@ -296,7 +296,7 @@ export const legajoService = {
       }
 
       const response = await apiClient.post(
-        "/api/v1/rrhh/documentos-digitales/subir_institucional/",
+        "/api/v1/documents/documents/subir_institucional/",
         formData,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

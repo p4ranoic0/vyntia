@@ -68,7 +68,7 @@ export const plantillasService = {
       const params: Record<string, string> = {}
       if (tipo) params.tipo = tipo
       const response = await apiClient.get(
-        '/api/v1/rrhh/documentos/plantillas-word/',
+        '/api/v1/documents/documents/plantillas-word/',
         params,
       )
       const data = extractData(response.data)
@@ -86,7 +86,7 @@ export const plantillasService = {
       formData.append('descripcion', data.descripcion)
       formData.append('archivo', data.archivo)
       const response = await apiClient.post(
-        '/api/v1/rrhh/documentos/plantillas-word/subir/',
+        '/api/v1/documents/documents/plantillas-word/subir/',
         formData,
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,7 +100,7 @@ export const plantillasService = {
   async eliminar(id: number): Promise<void> {
     try {
       await apiClient.delete(
-        `/api/v1/rrhh/documentos/plantillas-word/${id}/eliminar/`,
+        `/api/v1/documents/documents/plantillas-word/${id}/eliminar/`,
       )
     } catch (error) {
       throw new Error(getErrorMessage(error))
@@ -110,7 +110,7 @@ export const plantillasService = {
   async descargar(id: number, nombreArchivo: string): Promise<void> {
     try {
       const response = await apiClient.getBlob(
-        `/api/v1/rrhh/documentos/plantillas-word/${id}/descargar/`,
+        `/api/v1/documents/documents/plantillas-word/${id}/descargar/`,
       )
       const url = URL.createObjectURL(response.data)
       const anchor = document.createElement('a')
@@ -130,7 +130,7 @@ export const plantillasService = {
   ): Promise<GenerarDesdeTemplateResult> {
     try {
       const response = await apiClient.post(
-        '/api/v1/rrhh/documentos/generar-desde-plantilla-word/',
+        '/api/v1/documents/documents/generar-desde-plantilla-word/',
         data,
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
