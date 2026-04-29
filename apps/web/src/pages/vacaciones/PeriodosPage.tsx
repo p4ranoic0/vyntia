@@ -244,14 +244,14 @@ const DetallePeriodo: React.FC<DetallePeriodoProps> = ({ periodo, resumen, onClo
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Fecha de Creación</Label>
             <p className="text-sm">
-              {format(new Date(periodo.fecha_creacion), 'PPP', { locale: es })}
+              {format(new Date(periodo.created_at), 'PPP', { locale: es })}
             </p>
           </div>
           
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Última Actualización</Label>
             <p className="text-sm">
-              {format(new Date(periodo.fecha_actualizacion), 'PPP', { locale: es })}
+              {format(new Date(periodo.updated_at), 'PPP', { locale: es })}
             </p>
           </div>
         </div>

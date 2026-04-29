@@ -35,8 +35,8 @@ export interface Contrato {
   estado: string;
   estado_texto?: string;
   documento_generado: boolean;
-  fecha_creacion: string;
-  fecha_modificacion: string;
+  created_at: string;
+  updated_at: string;
   // Campos calculados
   dias_hasta_vencimiento?: number | null;
   esta_vigente?: boolean;

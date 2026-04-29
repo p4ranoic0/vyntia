@@ -383,7 +383,7 @@ export default function PlantillasDocumentosPage() {
                         </span>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                        {formatDate(p.fecha_creacion)}
+                        {formatDate(p.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
