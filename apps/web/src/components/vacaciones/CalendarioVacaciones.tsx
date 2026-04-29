@@ -413,7 +413,7 @@ const CalendarioVacaciones: React.FC<CalendarioVacacionesProps> = ({
                 <p className="text-sm font-medium mb-2">Información del Período</p>
                 <div className="text-sm text-muted-foreground space-y-1">
                   <p>Período: {selectedEvent.solicitud.periodo_ano}</p>
-                  <p>Solicitud creada: {format(new Date(selectedEvent.solicitud.fecha_creacion), 'PPP', { locale: es })}</p>
+                  <p>Solicitud creada: {format(new Date(selectedEvent.solicitud.created_at), 'PPP', { locale: es })}</p>
                   {selectedEvent.solicitud.fecha_aprobacion && (
                     <p>Aprobada: {format(new Date(selectedEvent.solicitud.fecha_aprobacion), 'PPP', { locale: es })}</p>
                   )}

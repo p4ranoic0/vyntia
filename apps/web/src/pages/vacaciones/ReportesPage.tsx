@@ -649,7 +649,7 @@ const ReportesPage: React.FC = () => {
                               <span className="font-medium">{solicitud.dias_calendario}</span>
                             </TableCell>
                             <TableCell>
-                              {solicitud.fecha_creacion ? format(new Date(solicitud.fecha_creacion), 'dd/MM/yyyy') : '-'}
+                              {solicitud.created_at ? format(new Date(solicitud.created_at), 'dd/MM/yyyy') : '-'}
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="bg-yellow-100 text-yellow-800">

@@ -61,7 +61,7 @@ export interface SolicitudVacaciones {
   dias_habiles?: number
   estado_solicitud: string
   fecha_envio?: string
-  fecha_creacion: string
+  created_at: string
   observaciones_solicitud?: string
   fraccionamiento?: boolean
 }
@@ -249,7 +249,7 @@ function normalizeSolicitud(raw: any): SolicitudVacaciones {
     dias_habiles: raw.dias_habiles,
     estado_solicitud: raw.estado_solicitud,
     fecha_envio: raw.fecha_envio,
-    fecha_creacion: raw.fecha_creacion,
+    created_at: raw.created_at,
     observaciones_solicitud: raw.observaciones_empleado,
     fraccionamiento: raw.tipo_solicitud === 'fraccionamiento',
   }

@@ -78,7 +78,7 @@ export const normalizeUser = (user: unknown) => {
     nivel_acceso: getString(userObj.nivel_acceso),
     estado_usuario: estadoUsuario,
     is_active: estadoUsuario === "activo",
-    date_joined: userObj.date_joined ?? userObj.fecha_creacion ?? null,
+    date_joined: userObj.date_joined ?? userObj.created_at ?? null,
     last_login: userObj.last_login ?? userObj.ultimo_acceso ?? null,
     empleado: userObj.empleado_detalle ?? userObj.empleado,
     roles_activos: asArray(userObj.roles_activos).map((role) =>

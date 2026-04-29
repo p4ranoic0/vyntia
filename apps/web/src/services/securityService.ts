@@ -104,9 +104,8 @@ export const roleService = {
 
     return {
       ...role,
-      created_at: response.data?.fecha_creacion || response.data?.created_at,
-      updated_at:
-        response.data?.fecha_actualizacion || response.data?.updated_at,
+      created_at: response.data?.created_at,
+      updated_at: response.data?.updated_at,
     };
   },
 

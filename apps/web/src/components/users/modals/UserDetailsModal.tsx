@@ -165,7 +165,7 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">
-                            Creado: {formatDate(user.fecha_creacion)}
+                            Creado: {formatDate(user.created_at)}
                           </span>
                         </div>
                         
@@ -345,12 +345,12 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                     
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Fecha Creación</label>
-                      <p className="text-sm">{formatDate(user.fecha_creacion)}</p>
+                      <p className="text-sm">{formatDate(user.created_at)}</p>
                     </div>
                     
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Última Modificación</label>
-                      <p className="text-sm">{formatDate(user.fecha_modificacion)}</p>
+                      <p className="text-sm">{formatDate(user.updated_at)}</p>
                     </div>
                     
                     <div>

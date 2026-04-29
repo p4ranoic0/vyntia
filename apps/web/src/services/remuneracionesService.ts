@@ -14,8 +14,8 @@ export interface ConceptoRemuneracion {
   orden: number;
   estado: "activo" | "inactivo";
   es_activo?: boolean;
-  fecha_creacion?: string;
-  fecha_actualizacion?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ConceptoRemuneracionPayload {
@@ -47,8 +47,8 @@ export interface ConfiguracionAfp {
   remuneracion_max_asegurable: number;
   estado: "activo" | "inactivo";
   es_activo?: boolean;
-  fecha_creacion?: string;
-  fecha_actualizacion?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ConfiguracionAfpPayload {
@@ -73,10 +73,10 @@ export interface ConfiguracionUit {
   es_activo?: boolean;
   tope_renta_cuarta_soles: number;
   essalud_cas_mensual: number;
-  creado_por?: number;
-  creado_por_nombre?: string;
-  fecha_creacion?: string;
-  fecha_actualizacion?: string;
+  created_by?: number;
+  created_by_nombre?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ConfiguracionUitPayload {
@@ -133,10 +133,10 @@ export interface PlanillaMensual {
   fecha_pago?: string;
   usuario_generacion?: Record<string, unknown>;
   usuario_aprobacion?: Record<string, unknown>;
-  creado_por?: Record<string, unknown>;
+  created_by?: Record<string, unknown>;
   aprobado_por?: Record<string, unknown>;
-  fecha_creacion?: string;
-  fecha_actualizacion?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PlanillaMensualPayload {
@@ -189,8 +189,8 @@ export interface DetallePlanilla {
   banco?: string;
   numero_cuenta?: string;
   observaciones?: string;
-  fecha_creacion: string;
-  fecha_actualizacion: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface DetallePlanillaPayload {
@@ -225,7 +225,7 @@ export interface DescuentoMasivo {
   };
   fecha_carga: string;
   fecha_procesado?: string;
-  fecha_actualizacion: string;
+  updated_at: string;
 }
 
 export interface DescuentoMasivoPayload {
@@ -271,11 +271,11 @@ export interface CalendarioPago {
   estado: EstadoCalendario;
   estado_texto?: string;
   observaciones?: string;
-  creado_por?: {
+  created_by?: {
     usuario_id: number;
     username: string;
   };
-  fecha_creacion: string;
+  created_at: string;
 }
 
 export interface CalendarioPagoPayload {

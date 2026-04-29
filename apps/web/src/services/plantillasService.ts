@@ -14,7 +14,7 @@ export interface PlantillaDocumento {
   nombre: string
   descripcion: string
   activa: boolean
-  fecha_creacion: string
+  created_at: string
   variables_disponibles: string[]
   archivo_nombre: string | null
 }

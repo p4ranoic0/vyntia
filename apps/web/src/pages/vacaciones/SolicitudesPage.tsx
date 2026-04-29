@@ -451,7 +451,7 @@ const SolicitudesPage: React.FC = () => {
       s.fecha_fin_solicitud || s.fecha_fin,
       s.dias_solicitados ?? '',
       s.estado_solicitud || '',
-      s.fecha_creacion || ''
+      s.created_at || ''
     ])
 
     const escape = (value: any) => `"${String(value ?? '').replace(/"/g, '""')}"`
@@ -480,8 +480,8 @@ const SolicitudesPage: React.FC = () => {
   const estadosDisponibles = ['borrador', 'enviada', 'en_revision', 'aprobada', 'rechazada', 'cancelada']
   const anosDisponibles = Array.from(new Set(
     (solicitudes || [])
-      .filter(s => s?.fecha_creacion)
-      .map(s => new Date(s.fecha_creacion).getFullYear())
+      .filter(s => s?.created_at)
+      .map(s => new Date(s.created_at).getFullYear())
       .filter(ano => !isNaN(ano) && ano > 1900) // Filtrar años inválidos
   )).sort((a, b) => b - a)
 
@@ -647,7 +647,7 @@ const SolicitudesPage: React.FC = () => {
                         <EstadoBadge estado={solicitud?.estado_solicitud || 'borrador'} />
                       </TableCell>
                       <TableCell>
-                        {solicitud?.fecha_creacion ? format(new Date(solicitud.fecha_creacion), 'dd/MM/yyyy') : 'No definida'}
+                        {solicitud?.created_at ? format(new Date(solicitud.created_at), 'dd/MM/yyyy') : 'No definida'}
                       </TableCell>
                       <TableCell>
                         <Button

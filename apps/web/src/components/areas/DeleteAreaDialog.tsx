@@ -18,7 +18,7 @@ interface Area {
   descripcion?: string
   jefe?: string
   empleados_count?: number
-  fecha_creacion?: string
+  created_at?: string
   estado?: 'activa' | 'inactiva'
 }
 

@@ -407,8 +407,8 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <span key={`nivel-${role.rol_id}`}>Nivel: {role.nivel_rol}</span>
                                 <span key={`estado-${role.rol_id}`}>Estado: {role.estado_rol}</span>
-                                {role.fecha_creacion && (
-                                  <span key={`fecha-${role.rol_id}`}>Creado: {new Date(role.fecha_creacion).toLocaleDateString()}</span>
+                                {role.created_at && (
+                                  <span key={`fecha-${role.rol_id}`}>Creado: {new Date(role.created_at).toLocaleDateString()}</span>
                                 )}
                               </div>
                             </div>

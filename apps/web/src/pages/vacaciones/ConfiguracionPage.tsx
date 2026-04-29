@@ -737,7 +737,7 @@ const ConfiguracionPage: React.FC = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {periodo.fecha_creacion ? format(new Date(periodo.fecha_creacion), 'dd/MM/yyyy') : 'N/A'}
+                            {periodo.created_at ? format(new Date(periodo.created_at), 'dd/MM/yyyy') : 'N/A'}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -872,14 +872,14 @@ const ConfiguracionPage: React.FC = () => {
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Fecha de Creación</Label>
                     <p className="text-sm">
-                      {format(new Date(selectedConfiguracion.fecha_creacion), 'PPP', { locale: es })}
+                      {format(new Date(selectedConfiguracion.created_at), 'PPP', { locale: es })}
                     </p>
                   </div>
                   
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Última Actualización</Label>
                     <p className="text-sm">
-                      {format(new Date(selectedConfiguracion.fecha_actualizacion), 'PPP', { locale: es })}
+                      {format(new Date(selectedConfiguracion.updated_at), 'PPP', { locale: es })}
                     </p>
                   </div>
                 </div>
