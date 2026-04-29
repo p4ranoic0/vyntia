@@ -257,37 +257,37 @@ function normalizeSolicitud(raw: any): SolicitudVacaciones {
 
 const vacacionesService = {
   async getConfiguraciones(): Promise<ConfiguracionVacaciones[]> {
-    const response = await apiClient.get('/api/v1/vacaciones/configuraciones/')
+    const response = await apiClient.get('/api/v1/time-off/configurations/')
     return asArray<any>(unwrap(response))
   },
 
   async getConfiguracion(id: number): Promise<ConfiguracionVacaciones> {
-    const response = await apiClient.get(`/api/v1/vacaciones/configuraciones/${id}/`)
+    const response = await apiClient.get(`/api/v1/time-off/configurations/${id}/`)
     return unwrap(response)
   },
 
   async createConfiguracion(data: ConfiguracionVacacionesForm): Promise<ConfiguracionVacaciones> {
-    const response = await apiClient.post('/api/v1/vacaciones/configuraciones/', data)
+    const response = await apiClient.post('/api/v1/time-off/configurations/', data)
     return unwrap(response)
   },
 
   async updateConfiguracion(id: number, data: Partial<ConfiguracionVacacionesForm>): Promise<ConfiguracionVacaciones> {
-    const response = await apiClient.patch(`/api/v1/vacaciones/configuraciones/${id}/`, data)
+    const response = await apiClient.patch(`/api/v1/time-off/configurations/${id}/`, data)
     return unwrap(response)
   },
 
   async deleteConfiguracion(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/vacaciones/configuraciones/${id}/`)
+    await apiClient.delete(`/api/v1/time-off/configurations/${id}/`)
   },
 
   async getPeriodos(empleadoId?: number): Promise<PeriodoVacacional[]> {
-    const url = empleadoId ? `/api/v1/vacaciones/periodos/?empleado=${empleadoId}` : '/api/v1/vacaciones/periodos/'
+    const url = empleadoId ? `/api/v1/time-off/periods/?empleado=${empleadoId}` : '/api/v1/time-off/periods/'
     const response = await apiClient.get(url)
     return asArray<any>(unwrap(response)).map(normalizePeriodo)
   },
 
   async getPeriodo(id: number): Promise<PeriodoVacacional> {
-    const response = await apiClient.get(`/api/v1/vacaciones/periodos/${id}/`)
+    const response = await apiClient.get(`/api/v1/time-off/periods/${id}/`)
     return normalizePeriodo(unwrap(response))
   },
 
@@ -296,12 +296,12 @@ const vacacionesService = {
   },
 
   async generarPeriodos(ano: number): Promise<{ message: string; periodos_creados: number }> {
-    const response = await apiClient.post('/api/v1/vacaciones/periodos/generar-masivo/', { ano })
+    const response = await apiClient.post('/api/v1/time-off/periods/generar-masivo/', { ano })
     return unwrap(response)
   },
 
   async ajustarDiasPeriodo(periodoId: number, nuevos_dias: number, motivo: string): Promise<PeriodoVacacional> {
-    const response = await apiClient.post(`/api/v1/vacaciones/periodos/${periodoId}/ajustar-dias/`, {
+    const response = await apiClient.post(`/api/v1/time-off/periods/${periodoId}/ajustar-dias/`, {
       nuevos_dias,
       motivo,
     })
@@ -318,7 +318,7 @@ const vacacionesService = {
         else params.append(key, String(value))
       })
     }
-    const response = await apiClient.get(`/api/v1/vacaciones/solicitudes/${params.toString() ? `?${params}` : ''}`)
+    const response = await apiClient.get(`/api/v1/time-off/requests/${params.toString() ? `?${params}` : ''}`)
     const raw = unwrap<any>(response)
     const results = asArray<any>(raw).map(normalizeSolicitud)
     if (raw?.results) return { ...raw, results }
@@ -326,7 +326,7 @@ const vacacionesService = {
   },
 
   async getSolicitud(id: number): Promise<SolicitudVacaciones> {
-    const response = await apiClient.get(`/api/v1/vacaciones/solicitudes/${id}/`)
+    const response = await apiClient.get(`/api/v1/time-off/requests/${id}/`)
     return normalizeSolicitud(unwrap(response))
   },
 
@@ -341,31 +341,31 @@ const vacacionesService = {
       observaciones_empleado: data.observaciones_empleado ?? data.observaciones_solicitud ?? '',
       medio_dia: data.medio_dia ?? false,
     }
-    const response = await apiClient.post('/api/v1/vacaciones/solicitudes/', payload)
+    const response = await apiClient.post('/api/v1/time-off/requests/', payload)
     return normalizeSolicitud(unwrap(response))
   },
 
   async updateSolicitud(id: number, data: Partial<SolicitudVacacionesForm>): Promise<SolicitudVacaciones> {
-    const response = await apiClient.patch(`/api/v1/vacaciones/solicitudes/${id}/`, data)
+    const response = await apiClient.patch(`/api/v1/time-off/requests/${id}/`, data)
     return normalizeSolicitud(unwrap(response))
   },
 
   async deleteSolicitud(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/vacaciones/solicitudes/${id}/`)
+    await apiClient.delete(`/api/v1/time-off/requests/${id}/`)
   },
 
   async enviarSolicitud(id: number): Promise<SolicitudVacaciones> {
-    const response = await apiClient.post(`/api/v1/vacaciones/solicitudes/${id}/enviar/`)
+    const response = await apiClient.post(`/api/v1/time-off/requests/${id}/enviar/`)
     return normalizeSolicitud(unwrap(response))
   },
 
   async aprobarSolicitud(id: number, data: AprobacionSolicitudForm): Promise<SolicitudVacaciones> {
     const payload = { accion: data.accion ?? data.accion_aprobacion ?? 'aprobar', motivo: data.motivo ?? data.motivo_aprobacion ?? '' }
     try {
-      const response = await apiClient.post(`/api/v1/vacaciones/solicitudes/${id}/aprobar-jefe/`, payload)
+      const response = await apiClient.post(`/api/v1/time-off/requests/${id}/aprobar-jefe/`, payload)
       return normalizeSolicitud(unwrap(response))
     } catch {
-      const response = await apiClient.post(`/api/v1/vacaciones/solicitudes/${id}/aprobar-rrhh/`, payload)
+      const response = await apiClient.post(`/api/v1/time-off/requests/${id}/aprobar-rrhh/`, payload)
       return normalizeSolicitud(unwrap(response))
     }
   },
@@ -378,52 +378,52 @@ const vacacionesService = {
   },
 
   async cancelarSolicitud(id: number, motivo?: string): Promise<SolicitudVacaciones> {
-    const response = await apiClient.post(`/api/v1/vacaciones/solicitudes/${id}/cancelar/`, { motivo })
+    const response = await apiClient.post(`/api/v1/time-off/requests/${id}/cancelar/`, { motivo })
     return normalizeSolicitud(unwrap(response))
   },
 
   async getSolicitudesPendientes(): Promise<SolicitudVacaciones[]> {
-    const response = await apiClient.get('/api/v1/vacaciones/solicitudes/pendientes-rrhh/')
+    const response = await apiClient.get('/api/v1/time-off/requests/pendientes-rrhh/')
     return asArray<any>(unwrap(response)).map(normalizeSolicitud)
   },
 
   async getSolicitudesPendientesJefe(): Promise<SolicitudVacaciones[]> {
-    const response = await apiClient.get('/api/v1/vacaciones/solicitudes/pendientes-jefe/')
+    const response = await apiClient.get('/api/v1/time-off/requests/pendientes-jefe/')
     return asArray<any>(unwrap(response)).map(normalizeSolicitud)
   },
 
   async getMisSolicitudes(): Promise<SolicitudVacaciones[]> {
-    const response = await apiClient.get('/api/v1/vacaciones/solicitudes/mis-solicitudes/')
+    const response = await apiClient.get('/api/v1/time-off/requests/mis-solicitudes/')
     return asArray<any>(unwrap(response)).map(normalizeSolicitud)
   },
 
   async getGoces(solicitudId?: number): Promise<GoceVacaciones[]> {
-    const url = solicitudId ? `/api/v1/vacaciones/goces/?solicitud_vacaciones=${solicitudId}` : '/api/v1/vacaciones/goces/'
+    const url = solicitudId ? `/api/v1/time-off/grants/?solicitud_vacaciones=${solicitudId}` : '/api/v1/time-off/grants/'
     const response = await apiClient.get(url)
     return asArray<any>(unwrap(response))
   },
 
   async getGoce(id: number): Promise<GoceVacaciones> {
-    const response = await apiClient.get(`/api/v1/vacaciones/goces/${id}/`)
+    const response = await apiClient.get(`/api/v1/time-off/grants/${id}/`)
     return unwrap(response)
   },
 
   async createGoce(data: GoceVacacionesForm): Promise<GoceVacaciones> {
-    const response = await apiClient.post('/api/v1/vacaciones/goces/', data)
+    const response = await apiClient.post('/api/v1/time-off/grants/', data)
     return unwrap(response)
   },
 
   async updateGoce(id: number, data: Partial<GoceVacacionesForm>): Promise<GoceVacaciones> {
-    const response = await apiClient.patch(`/api/v1/vacaciones/goces/${id}/`, data)
+    const response = await apiClient.patch(`/api/v1/time-off/grants/${id}/`, data)
     return unwrap(response)
   },
 
   async deleteGoce(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/vacaciones/goces/${id}/`)
+    await apiClient.delete(`/api/v1/time-off/grants/${id}/`)
   },
 
   async getHistorialSolicitud(solicitudId: number): Promise<HistorialSolicitudVacaciones[]> {
-    const response = await apiClient.get(`/api/v1/vacaciones/historial/?solicitud_vacaciones=${solicitudId}`)
+    const response = await apiClient.get(`/api/v1/time-off/history/?solicitud_vacaciones=${solicitudId}`)
     return asArray<any>(unwrap(response))
   },
 
@@ -431,12 +431,12 @@ const vacacionesService = {
     const params = new URLSearchParams()
     if (filtros?.ano) params.append('ano', filtros.ano.toString())
     if (filtros?.area) params.append('area_id', filtros.area.toString())
-    const response = await apiClient.get(`/api/v1/vacaciones/reportes/estadisticas/${params.toString() ? `?${params}` : ''}`)
+    const response = await apiClient.get(`/api/v1/time-off/reports/estadisticas/${params.toString() ? `?${params}` : ''}`)
     return unwrap(response)
   },
 
   async getEmpleadosDiasVencidos(ano?: number): Promise<EmpleadoDiasVencidos[]> {
-    const response = await apiClient.get(`/api/v1/vacaciones/reportes/dias-vencidos/${ano ? `?ano=${ano}` : ''}`)
+    const response = await apiClient.get(`/api/v1/time-off/reports/dias-vencidos/${ano ? `?ano=${ano}` : ''}`)
     return asArray<any>(unwrap(response)).map((row) => ({
       empleado_id: row.empleado_id,
       empleado_nombre_completo: row.empleado_nombre,

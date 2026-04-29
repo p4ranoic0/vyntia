@@ -82,8 +82,8 @@ function useEmpleadosStats() {
     queryKey: ['dashboard', 'empleados-stats'],
     queryFn: async () => {
       const [totalRes, activosRes] = await Promise.all([
-        apiClient.get<EmpleadosResponse>('/api/v1/rrhh/empleados/', { page_size: 1 }),
-        apiClient.get<EmpleadosResponse>('/api/v1/rrhh/empleados/', {
+        apiClient.get<EmpleadosResponse>('/api/v1/employees/', { page_size: 1 }),
+        apiClient.get<EmpleadosResponse>('/api/v1/employees/', {
           page_size: 1,
           estado_empleado: 'activo',
         }),
@@ -117,7 +117,7 @@ function useAreasDistribucion() {
     queryKey: ['dashboard', 'areas-distribucion'],
     queryFn: async () => {
       const response = await apiClient.get<{ data?: Area[]; results?: Area[] }>(
-        '/api/v1/rrhh/areas/',
+        '/api/v1/organization/departments/',
         { page_size: 100, estado_area: 'activo' },
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,7 +141,7 @@ function usePlanillasMes() {
     queryKey: ['dashboard', 'planillas-mes'],
     queryFn: async () => {
       const response = await apiClient.get<{ data?: PlanillaMensual[]; results?: PlanillaMensual[] }>(
-        '/api/v1/rrhh/planillas-mensuales/',
+        '/api/v1/payroll/monthly-runs/',
         { page_size: 6, ordering: '-periodo' },
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

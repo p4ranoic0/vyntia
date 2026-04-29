@@ -328,7 +328,7 @@ function extractTypedList<T>(responseData: unknown): T[] {
 export const remuneracionesService = {
   async list(params?: ListParams): Promise<ConceptoRemuneracion[]> {
     const response = await apiClient.get(
-      "/api/v1/rrhh/configuracion-remuneraciones/",
+      "/api/v1/payroll/compensation-configurations/",
       {
         params,
       },
@@ -340,7 +340,7 @@ export const remuneracionesService = {
     payload: ConceptoRemuneracionPayload,
   ): Promise<ConceptoRemuneracion> {
     const response = await apiClient.post<ApiEnvelope<ConceptoRemuneracion>>(
-      "/api/v1/rrhh/configuracion-remuneraciones/",
+      "/api/v1/payroll/compensation-configurations/",
       payload,
     );
     return (
@@ -353,7 +353,7 @@ export const remuneracionesService = {
     payload: Partial<ConceptoRemuneracionPayload>,
   ): Promise<ConceptoRemuneracion> {
     const response = await apiClient.patch<ApiEnvelope<ConceptoRemuneracion>>(
-      `/api/v1/rrhh/configuracion-remuneraciones/${id}/`,
+      `/api/v1/payroll/compensation-configurations/${id}/`,
       payload,
     );
     return (
@@ -362,14 +362,14 @@ export const remuneracionesService = {
   },
 
   async remove(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/configuracion-remuneraciones/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/compensation-configurations/${id}/`);
   },
 
   async listAfp(params?: {
     vigencia_mes?: string;
     estado?: "activo" | "inactivo";
   }): Promise<ConfiguracionAfp[]> {
-    const response = await apiClient.get("/api/v1/rrhh/configuracion-afp/", {
+    const response = await apiClient.get("/api/v1/payroll/afp-configurations/", {
       params,
     });
     return extractTypedList<ConfiguracionAfp>(response.data);
@@ -377,7 +377,7 @@ export const remuneracionesService = {
 
   async createAfp(payload: ConfiguracionAfpPayload): Promise<ConfiguracionAfp> {
     const response = await apiClient.post<ApiEnvelope<ConfiguracionAfp>>(
-      "/api/v1/rrhh/configuracion-afp/",
+      "/api/v1/payroll/afp-configurations/",
       payload,
     );
     return response.data.data || (response.data as unknown as ConfiguracionAfp);
@@ -388,14 +388,14 @@ export const remuneracionesService = {
     payload: Partial<ConfiguracionAfpPayload>,
   ): Promise<ConfiguracionAfp> {
     const response = await apiClient.patch<ApiEnvelope<ConfiguracionAfp>>(
-      `/api/v1/rrhh/configuracion-afp/${id}/`,
+      `/api/v1/payroll/afp-configurations/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as ConfiguracionAfp);
   },
 
   async removeAfp(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/configuracion-afp/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/afp-configurations/${id}/`);
   },
 
   // ========== Configuración UIT ==========
@@ -413,7 +413,7 @@ export const remuneracionesService = {
       } as unknown as typeof params;
     }
 
-    const response = await apiClient.get("/api/v1/rrhh/configuracion-uit/", {
+    const response = await apiClient.get("/api/v1/payroll/tax-parameters/", {
       params: requestParams,
     });
     return extractTypedList<ConfiguracionUit>(response.data);
@@ -421,14 +421,14 @@ export const remuneracionesService = {
 
   async getUit(id: number): Promise<ConfiguracionUit> {
     const response = await apiClient.get<ApiEnvelope<ConfiguracionUit>>(
-      `/api/v1/rrhh/configuracion-uit/${id}/`,
+      `/api/v1/payroll/tax-parameters/${id}/`,
     );
     return response.data.data || (response.data as unknown as ConfiguracionUit);
   },
 
   async createUit(payload: ConfiguracionUitPayload): Promise<ConfiguracionUit> {
     const response = await apiClient.post<ApiEnvelope<ConfiguracionUit>>(
-      "/api/v1/rrhh/configuracion-uit/",
+      "/api/v1/payroll/tax-parameters/",
       payload,
     );
     return response.data.data || (response.data as unknown as ConfiguracionUit);
@@ -439,19 +439,19 @@ export const remuneracionesService = {
     payload: Partial<ConfiguracionUitPayload>,
   ): Promise<ConfiguracionUit> {
     const response = await apiClient.patch<ApiEnvelope<ConfiguracionUit>>(
-      `/api/v1/rrhh/configuracion-uit/${id}/`,
+      `/api/v1/payroll/tax-parameters/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as ConfiguracionUit);
   },
 
   async removeUit(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/configuracion-uit/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/tax-parameters/${id}/`);
   },
 
   async activarUit(id: number): Promise<ConfiguracionUit> {
     const response = await apiClient.post<ApiEnvelope<ConfiguracionUit>>(
-      `/api/v1/rrhh/configuracion-uit/${id}/activar/`,
+      `/api/v1/payroll/tax-parameters/${id}/activar/`,
     );
     return response.data.data || (response.data as unknown as ConfiguracionUit);
   },
@@ -464,7 +464,7 @@ export const remuneracionesService = {
     estado?: EstadoPlanilla;
     meta_presupuestal?: string;
   }): Promise<PlanillaMensual[]> {
-    const response = await apiClient.get("/api/v1/rrhh/planillas-mensuales/", {
+    const response = await apiClient.get("/api/v1/payroll/monthly-runs/", {
       params,
     });
     return extractTypedList<PlanillaMensual>(response.data);
@@ -472,7 +472,7 @@ export const remuneracionesService = {
 
   async getPlanilla(id: number): Promise<PlanillaMensual> {
     const response = await apiClient.get<ApiEnvelope<PlanillaMensual>>(
-      `/api/v1/rrhh/planillas-mensuales/${id}/`,
+      `/api/v1/payroll/monthly-runs/${id}/`,
     );
     return response.data.data || (response.data as unknown as PlanillaMensual);
   },
@@ -481,7 +481,7 @@ export const remuneracionesService = {
     payload: PlanillaMensualPayload,
   ): Promise<PlanillaMensual> {
     const response = await apiClient.post<ApiEnvelope<PlanillaMensual>>(
-      "/api/v1/rrhh/planillas-mensuales/",
+      "/api/v1/payroll/monthly-runs/",
       payload,
     );
     return response.data.data || (response.data as unknown as PlanillaMensual);
@@ -492,14 +492,14 @@ export const remuneracionesService = {
     payload: Partial<PlanillaMensualPayload>,
   ): Promise<PlanillaMensual> {
     const response = await apiClient.patch<ApiEnvelope<PlanillaMensual>>(
-      `/api/v1/rrhh/planillas-mensuales/${id}/`,
+      `/api/v1/payroll/monthly-runs/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as PlanillaMensual);
   },
 
   async removePlanilla(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/planillas-mensuales/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/monthly-runs/${id}/`);
   },
 
   // Acciones especiales de planilla
@@ -511,42 +511,42 @@ export const remuneracionesService = {
     total_empleados: number;
   }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/planillas-mensuales/${id}/generar_planilla/`,
+      `/api/v1/payroll/monthly-runs/${id}/generar_planilla/`,
     );
     return (response.data as any).data || response.data;
   },
 
   async regenerarPlanilla(id: number): Promise<{ message: string }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/planillas-mensuales/${id}/regenerar/`,
+      `/api/v1/payroll/monthly-runs/${id}/regenerar/`,
     );
     return (response.data as any).data || response.data;
   },
 
   async calcularPlanilla(id: number): Promise<{ message: string }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/planillas-mensuales/${id}/calcular_planilla/`,
+      `/api/v1/payroll/monthly-runs/${id}/calcular_planilla/`,
     );
     return (response.data as any).data || response.data;
   },
 
   async previewPlanilla(id: number): Promise<VistaPreviaPlanilla> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/planillas-mensuales/${id}/preview/`,
+      `/api/v1/payroll/monthly-runs/${id}/preview/`,
     );
     return (response.data as any).data || response.data;
   },
 
   async aprobarPlanilla(id: number): Promise<PlanillaMensual> {
     const response = await apiClient.post<ApiEnvelope<PlanillaMensual>>(
-      `/api/v1/rrhh/planillas-mensuales/${id}/aprobar_planilla/`,
+      `/api/v1/payroll/monthly-runs/${id}/aprobar_planilla/`,
     );
     return response.data.data || (response.data as unknown as PlanillaMensual);
   },
 
   async getEstadisticasPlanilla(id: number): Promise<EstadisticasPlanilla> {
     const response = await apiClient.get(
-      `/api/v1/rrhh/planillas-mensuales/${id}/estadisticas/`,
+      `/api/v1/payroll/monthly-runs/${id}/estadisticas/`,
     );
     return (response.data as any).data || response.data;
   },
@@ -558,7 +558,7 @@ export const remuneracionesService = {
     empleado?: number;
     estado?: EstadoDetalle;
   }): Promise<DetallePlanilla[]> {
-    const response = await apiClient.get("/api/v1/rrhh/detalles-planilla/", {
+    const response = await apiClient.get("/api/v1/payroll/details/", {
       params,
     });
     return extractTypedList<DetallePlanilla>(response.data);
@@ -566,7 +566,7 @@ export const remuneracionesService = {
 
   async getDetalle(id: number): Promise<DetallePlanilla> {
     const response = await apiClient.get<ApiEnvelope<DetallePlanilla>>(
-      `/api/v1/rrhh/detalles-planilla/${id}/`,
+      `/api/v1/payroll/details/${id}/`,
     );
     return response.data.data || (response.data as unknown as DetallePlanilla);
   },
@@ -575,7 +575,7 @@ export const remuneracionesService = {
     payload: DetallePlanillaPayload,
   ): Promise<DetallePlanilla> {
     const response = await apiClient.post<ApiEnvelope<DetallePlanilla>>(
-      "/api/v1/rrhh/detalles-planilla/",
+      "/api/v1/payroll/details/",
       payload,
     );
     return response.data.data || (response.data as unknown as DetallePlanilla);
@@ -586,14 +586,14 @@ export const remuneracionesService = {
     payload: Partial<DetallePlanillaPayload>,
   ): Promise<DetallePlanilla> {
     const response = await apiClient.patch<ApiEnvelope<DetallePlanilla>>(
-      `/api/v1/rrhh/detalles-planilla/${id}/`,
+      `/api/v1/payroll/details/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as DetallePlanilla);
   },
 
   async removeDetalle(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/detalles-planilla/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/details/${id}/`);
   },
 
   // ========== Descuentos Masivos ==========
@@ -602,7 +602,7 @@ export const remuneracionesService = {
     periodo?: string;
     estado?: EstadoDescuento;
   }): Promise<DescuentoMasivo[]> {
-    const response = await apiClient.get("/api/v1/rrhh/descuentos-masivos/", {
+    const response = await apiClient.get("/api/v1/payroll/mass-deductions/", {
       params,
     });
     return extractTypedList<DescuentoMasivo>(response.data);
@@ -610,7 +610,7 @@ export const remuneracionesService = {
 
   async getDescuento(id: number): Promise<DescuentoMasivo> {
     const response = await apiClient.get<ApiEnvelope<DescuentoMasivo>>(
-      `/api/v1/rrhh/descuentos-masivos/${id}/`,
+      `/api/v1/payroll/mass-deductions/${id}/`,
     );
     return response.data.data || (response.data as unknown as DescuentoMasivo);
   },
@@ -629,7 +629,7 @@ export const remuneracionesService = {
     }
 
     const response = await apiClient.post<ApiEnvelope<DescuentoMasivo>>(
-      "/api/v1/rrhh/descuentos-masivos/",
+      "/api/v1/payroll/mass-deductions/",
       formData,
     );
     return response.data.data || (response.data as unknown as DescuentoMasivo);
@@ -640,14 +640,14 @@ export const remuneracionesService = {
     payload: Partial<Omit<DescuentoMasivoPayload, "archivo_origen">>,
   ): Promise<DescuentoMasivo> {
     const response = await apiClient.patch<ApiEnvelope<DescuentoMasivo>>(
-      `/api/v1/rrhh/descuentos-masivos/${id}/`,
+      `/api/v1/payroll/mass-deductions/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as DescuentoMasivo);
   },
 
   async removeDescuento(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/descuentos-masivos/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/mass-deductions/${id}/`);
   },
 
   async procesarDescuento(id: number): Promise<{
@@ -658,7 +658,7 @@ export const remuneracionesService = {
     errores: string[];
   }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/descuentos-masivos/${id}/procesar/`,
+      `/api/v1/payroll/mass-deductions/${id}/procesar/`,
     );
     return (response.data as any).data || response.data;
   },
@@ -667,7 +667,7 @@ export const remuneracionesService = {
     conceptos_eliminados: number;
   }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/descuentos-masivos/${id}/anular/`,
+      `/api/v1/payroll/mass-deductions/${id}/anular/`,
     );
     return (response.data as any).data || response.data;
   },
@@ -682,7 +682,7 @@ export const remuneracionesService = {
     total: number;
   }> {
     const response = await apiClient.post(
-      `/api/v1/rrhh/planillas-mensuales/${planillaId}/generar_boletas/`,
+      `/api/v1/payroll/monthly-runs/${planillaId}/generar_boletas/`,
     );
     return (response.data as any).data || response.data;
   },
@@ -692,7 +692,7 @@ export const remuneracionesService = {
     periodo?: string;
     estado?: EstadoBoleta;
   }): Promise<BoletaPago[]> {
-    const response = await apiClient.get("/api/v1/rrhh/boletas-pago/", {
+    const response = await apiClient.get("/api/v1/payroll/payslips/", {
       params,
     });
     return extractTypedList<BoletaPago>(response.data);
@@ -700,14 +700,14 @@ export const remuneracionesService = {
 
   async getBoleta(id: number): Promise<BoletaPago> {
     const response = await apiClient.get<ApiEnvelope<BoletaPago>>(
-      `/api/v1/rrhh/boletas-pago/${id}/`,
+      `/api/v1/payroll/payslips/${id}/`,
     );
     return response.data.data || (response.data as unknown as BoletaPago);
   },
 
   async downloadBoletaPdf(id: number): Promise<Blob> {
     const response = await apiClient.get(
-      `/api/v1/rrhh/boletas-pago/${id}/pdf/`,
+      `/api/v1/payroll/payslips/${id}/pdf/`,
       {
         responseType: "blob",
       },
@@ -717,7 +717,7 @@ export const remuneracionesService = {
 
   async descargaMasivaBoletas(planillaId: number): Promise<Blob> {
     const response = await apiClient.getBlob(
-      `/api/v1/rrhh/boletas-pago/descarga-masiva/`,
+      `/api/v1/payroll/payslips/descarga-masiva/`,
       { planilla_id: planillaId },
     );
     return response.data;
@@ -730,7 +730,7 @@ export const remuneracionesService = {
     modalidad?: ModalidadContrato;
     estado?: EstadoCalendario;
   }): Promise<CalendarioPago[]> {
-    const response = await apiClient.get("/api/v1/rrhh/calendarios-pago/", {
+    const response = await apiClient.get("/api/v1/payroll/payment-schedules/", {
       params,
     });
     return extractTypedList<CalendarioPago>(response.data);
@@ -738,7 +738,7 @@ export const remuneracionesService = {
 
   async getCalendario(id: number): Promise<CalendarioPago> {
     const response = await apiClient.get<ApiEnvelope<CalendarioPago>>(
-      `/api/v1/rrhh/calendarios-pago/${id}/`,
+      `/api/v1/payroll/payment-schedules/${id}/`,
     );
     return response.data.data || (response.data as unknown as CalendarioPago);
   },
@@ -747,7 +747,7 @@ export const remuneracionesService = {
     payload: CalendarioPagoPayload,
   ): Promise<CalendarioPago> {
     const response = await apiClient.post<ApiEnvelope<CalendarioPago>>(
-      "/api/v1/rrhh/calendarios-pago/",
+      "/api/v1/payroll/payment-schedules/",
       payload,
     );
     return response.data.data || (response.data as unknown as CalendarioPago);
@@ -758,13 +758,13 @@ export const remuneracionesService = {
     payload: Partial<CalendarioPagoPayload>,
   ): Promise<CalendarioPago> {
     const response = await apiClient.patch<ApiEnvelope<CalendarioPago>>(
-      `/api/v1/rrhh/calendarios-pago/${id}/`,
+      `/api/v1/payroll/payment-schedules/${id}/`,
       payload,
     );
     return response.data.data || (response.data as unknown as CalendarioPago);
   },
 
   async removeCalendario(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/calendarios-pago/${id}/`);
+    await apiClient.delete(`/api/v1/payroll/payment-schedules/${id}/`);
   },
 };

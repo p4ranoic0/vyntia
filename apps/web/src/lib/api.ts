@@ -362,7 +362,7 @@ class ApiClient {
   // Métodos específicos del dominio (simplificados)
   async getEmpleados(params?: Record<string, any>) {
     try {
-      const response = await this.get("/api/v1/rrhh/empleados/", params);
+      const response = await this.get("/api/v1/employees/", params);
 
       // El backend devuelve: { success, message, data: [...], meta: { pagination: {...} } }
       const rawData = response.data;
@@ -385,88 +385,88 @@ class ApiClient {
   }
 
   async getEmpleadoDetail(id: number) {
-    const response = await this.get(`/api/v1/rrhh/empleados/${id}/`);
+    const response = await this.get(`/api/v1/employees/${id}/`);
     return response.data?.data || response.data;
   }
 
   async createEmpleado(data: any) {
-    return this.post("/api/v1/rrhh/empleados/", data);
+    return this.post("/api/v1/employees/", data);
   }
 
   async updateEmpleado(id: number, data: any) {
-    return this.patch(`/api/v1/rrhh/empleados/${id}/`, data);
+    return this.patch(`/api/v1/employees/${id}/`, data);
   }
 
   async deleteEmpleado(id: number) {
-    return this.delete(`/api/v1/rrhh/empleados/${id}/`);
+    return this.delete(`/api/v1/employees/${id}/`);
   }
 
   // Áreas
   async getAreas(params?: Record<string, any>) {
-    return this.get("/api/v1/rrhh/areas/", params);
+    return this.get("/api/v1/organization/departments/", params);
   }
 
   async createArea(data: any) {
-    return this.post("/api/v1/rrhh/areas/", data);
+    return this.post("/api/v1/organization/departments/", data);
   }
 
   async updateArea(id: number, data: any) {
-    return this.patch(`/api/v1/rrhh/areas/${id}/`, data);
+    return this.patch(`/api/v1/organization/departments/${id}/`, data);
   }
 
   async deleteArea(id: number) {
-    return this.delete(`/api/v1/rrhh/areas/${id}/`);
+    return this.delete(`/api/v1/organization/departments/${id}/`);
   }
 
   // Usuarios
   async getUsuarios(params?: Record<string, any>) {
-    return this.get("/api/v1/rrhh/usuarios/", params);
+    return this.get("/api/v1/identity/users/", params);
   }
 
   async createUsuario(data: any) {
-    return this.post("/api/v1/rrhh/usuarios/", data);
+    return this.post("/api/v1/identity/users/", data);
   }
 
   async updateUsuario(id: number, data: any) {
-    return this.patch(`/api/v1/rrhh/usuarios/${id}/`, data);
+    return this.patch(`/api/v1/identity/users/${id}/`, data);
   }
 
   async deleteUsuario(id: number) {
-    return this.delete(`/api/v1/rrhh/usuarios/${id}/`);
+    return this.delete(`/api/v1/identity/users/${id}/`);
   }
 
   // Roles
   async getRoles(params?: Record<string, any>) {
-    return this.get("/api/v1/rrhh/roles/", params);
+    return this.get("/api/v1/identity/roles/", params);
   }
 
   async createRol(data: any) {
-    return this.post("/api/v1/rrhh/roles/", data);
+    return this.post("/api/v1/identity/roles/", data);
   }
 
   async updateRol(id: number, data: any) {
-    return this.patch(`/api/v1/rrhh/roles/${id}/`, data);
+    return this.patch(`/api/v1/identity/roles/${id}/`, data);
   }
 
   async deleteRol(id: number) {
-    return this.delete(`/api/v1/rrhh/roles/${id}/`);
+    return this.delete(`/api/v1/identity/roles/${id}/`);
   }
 
   // Permisos
   async getPermisos(params?: Record<string, any>) {
-    return this.get("/api/v1/rrhh/permisos/", params);
+    return this.get("/api/v1/identity/permissions/", params);
   }
 
   async createPermiso(data: any) {
-    return this.post("/api/v1/rrhh/permisos/", data);
+    return this.post("/api/v1/identity/permissions/", data);
   }
 
   async updatePermiso(id: number, data: any) {
-    return this.patch(`/api/v1/rrhh/permisos/${id}/`, data);
+    return this.patch(`/api/v1/identity/permissions/${id}/`, data);
   }
 
   async deletePermiso(id: number) {
-    return this.delete(`/api/v1/rrhh/permisos/${id}/`);
+    return this.delete(`/api/v1/identity/permissions/${id}/`);
   }
 }
 

@@ -110,37 +110,37 @@ export interface AreasResponse {
 export const areasService = {
   // Operaciones CRUD básicas
   async getAreas(params?: AreasQueryParams): Promise<AreasResponse> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/', { params })
+    const response = await apiClient.get('/api/v1/organization/departments/', { params })
     return response.data
   },
 
   async getArea(id: number): Promise<Area> {
-    const response = await apiClient.get(`/api/v1/rrhh/areas/${id}/`)
+    const response = await apiClient.get(`/api/v1/organization/departments/${id}/`)
     return response.data
   },
 
   async createArea(data: CreateAreaData): Promise<Area> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/', data)
+    const response = await apiClient.post('/api/v1/organization/departments/', data)
     return response.data.data || response.data
   },
 
   async updateArea(id: number, data: Partial<CreateAreaData>): Promise<Area> {
-    const response = await apiClient.patch(`/api/v1/rrhh/areas/${id}/`, data)
+    const response = await apiClient.patch(`/api/v1/organization/departments/${id}/`, data)
     return response.data.data || response.data
   },
 
   async deleteArea(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/areas/${id}/`)
+    await apiClient.delete(`/api/v1/organization/departments/${id}/`)
   },
 
   // Estadísticas y análisis
   async getAreasStats(): Promise<AreaStats> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/stats/')
+    const response = await apiClient.get('/api/v1/organization/departments/stats/')
     return response.data.data || response.data
   },
 
   async getAreasByOrgano(organo?: string): Promise<Area[]> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/', {
+    const response = await apiClient.get('/api/v1/organization/departments/', {
       params: organo ? { nombre_organo: organo } : undefined
     })
     return response.data.data || response.data.results || []
@@ -157,12 +157,12 @@ export const areasService = {
     count: number
     results: AreaEmployee[]
   }> {
-    const response = await apiClient.get(`/api/v1/rrhh/areas/${areaId}/empleados/`, { params })
+    const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/empleados/`, { params })
     return response.data.data || response.data
   },
 
   async assignEmployeeToArea(areaId: number, empleadoId: number, cargo?: string): Promise<void> {
-    const response = await apiClient.post(`/api/v1/rrhh/areas/${areaId}/empleados/`, {
+    const response = await apiClient.post(`/api/v1/organization/departments/${areaId}/empleados/`, {
       empleado_id: empleadoId,
       cargo
     })
@@ -170,30 +170,30 @@ export const areasService = {
   },
 
   async removeEmployeeFromArea(areaId: number, empleadoId: number): Promise<void> {
-    await apiClient.delete(`/api/v1/rrhh/areas/${areaId}/empleados/${empleadoId}/`)
+    await apiClient.delete(`/api/v1/organization/departments/${areaId}/empleados/${empleadoId}/`)
   },
 
   async updateEmployeeInArea(areaId: number, empleadoId: number, data: {
     cargo?: string
     fecha_asignacion?: string
   }): Promise<void> {
-    const response = await apiClient.patch(`/api/v1/rrhh/areas/${areaId}/empleados/${empleadoId}/`, data)
+    const response = await apiClient.patch(`/api/v1/organization/departments/${areaId}/empleados/${empleadoId}/`, data)
     return response.data.data || response.data
   },
 
   // Jerarquía organizacional
   async getAreaHierarchy(): Promise<AreaHierarchy[]> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/hierarchy/')
+    const response = await apiClient.get('/api/v1/organization/departments/hierarchy/')
     return response.data.data || response.data.results || response.data
   },
 
   async getAreaChildren(areaId: number): Promise<Area[]> {
-    const response = await apiClient.get(`/api/v1/rrhh/areas/${areaId}/children/`)
+    const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/children/`)
     return response.data.data || response.data.results || response.data
   },
 
   async getAreaParent(areaId: number): Promise<Area | null> {
-    const response = await apiClient.get(`/api/v1/rrhh/areas/${areaId}/parent/`)
+    const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/parent/`)
     return response.data.data || response.data
   },
 
@@ -208,7 +208,7 @@ export const areasService = {
       end: string
     }
   }): Promise<Blob> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/report/', {
+    const response = await apiClient.get('/api/v1/organization/departments/report/', {
       params,
       responseType: 'blob'
     })
@@ -216,7 +216,7 @@ export const areasService = {
   },
 
   async exportAreas(format: 'excel' | 'csv', filters?: AreasQueryParams): Promise<Blob> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/export/', {
+    const response = await apiClient.get('/api/v1/organization/departments/export/', {
       params: {
         format,
         ...filters
@@ -233,7 +233,7 @@ export const areasService = {
     tiene_jefe?: boolean
     rango_empleados?: [number, number]
   }): Promise<Area[]> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/search/', {
+    const response = await apiClient.post('/api/v1/organization/departments/search/', {
       query,
       filters
     })
@@ -245,7 +245,7 @@ export const areasService = {
     is_valid: boolean
     message?: string
   }> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/validate-siglas/', {
+    const response = await apiClient.post('/api/v1/organization/departments/validate-siglas/', {
       siglas,
       exclude_id: excludeId
     })
@@ -257,7 +257,7 @@ export const areasService = {
     errors?: Record<string, string[]>
     warnings?: string[]
   }> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/validate/', data)
+    const response = await apiClient.post('/api/v1/organization/departments/validate/', data)
     return response.data.data || response.data
   },
 
@@ -272,7 +272,7 @@ export const areasService = {
       error: string
     }>
   }> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/bulk-update/', { updates })
+    const response = await apiClient.post('/api/v1/organization/departments/bulk-update/', { updates })
     return response.data.data || response.data
   },
 
@@ -283,7 +283,7 @@ export const areasService = {
       error: string
     }>
   }> {
-    const response = await apiClient.post('/api/v1/rrhh/areas/bulk-delete/', { ids })
+    const response = await apiClient.post('/api/v1/organization/departments/bulk-delete/', { ids })
     return response.data.data || response.data
   },
 
@@ -295,7 +295,7 @@ export const areasService = {
     user: string
     timestamp: string
   }>> {
-    const response = await apiClient.get(`/api/v1/rrhh/areas/${areaId}/history/`)
+    const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/history/`)
     return response.data.data || response.data.results || response.data
   },
 
@@ -306,7 +306,7 @@ export const areasService = {
     campos_requeridos: string[]
     validaciones: Record<string, any>
   }> {
-    const response = await apiClient.get('/api/v1/rrhh/areas/metadata/')
+    const response = await apiClient.get('/api/v1/organization/departments/metadata/')
     return response.data.data || response.data
   }
 }

@@ -161,7 +161,7 @@ export const contratosService = {
       if (filters?.fecha_inicio) params.fecha_inicio = filters.fecha_inicio;
       if (filters?.fecha_fin) params.fecha_fin = filters.fecha_fin;
       const response = await apiClient.get(
-        "/api/v1/rrhh/contratos-adendas/",
+        "/api/v1/contracts/",
         params,
       );
       const data = extractData(response.data);
@@ -178,7 +178,7 @@ export const contratosService = {
   async getById(id: number): Promise<Contrato> {
     try {
       const response = await apiClient.get(
-        `/api/v1/rrhh/contratos-adendas/${id}/`,
+        `/api/v1/contracts/${id}/`,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw: any = response.data;
@@ -191,7 +191,7 @@ export const contratosService = {
   async create(data: ContratoFormData): Promise<Contrato> {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/contratos-adendas/",
+        "/api/v1/contracts/",
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,7 +205,7 @@ export const contratosService = {
   async update(id: number, data: Partial<ContratoFormData>): Promise<Contrato> {
     try {
       const response = await apiClient.patch(
-        `/api/v1/rrhh/contratos-adendas/${id}/`,
+        `/api/v1/contracts/${id}/`,
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +219,7 @@ export const contratosService = {
   async getEstadisticas(): Promise<Record<string, unknown>> {
     try {
       const response = await apiClient.get(
-        "/api/v1/rrhh/contratos-adendas/estadisticas/",
+        "/api/v1/contracts/estadisticas/",
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw: any = response.data;
@@ -232,7 +232,7 @@ export const contratosService = {
   async getAlertasVencimiento(dias = 30): Promise<ContratoListItem[]> {
     try {
       const response = await apiClient.get(
-        "/api/v1/rrhh/contratos-adendas/alertas_vencimiento/",
+        "/api/v1/contracts/alertas_vencimiento/",
         { dias },
       );
       const data = extractData(response.data);
@@ -253,7 +253,7 @@ export const contratosService = {
   ): Promise<Contrato> {
     try {
       const response = await apiClient.post(
-        `/api/v1/rrhh/contratos-adendas/${id}/renovar_contrato/`,
+        `/api/v1/contracts/${id}/renovar_contrato/`,
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -279,7 +279,7 @@ export const contratosService = {
   }> {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/documentos/generar-certificado/",
+        "/api/v1/documents/documents/generar-certificado/",
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -301,7 +301,7 @@ export const contratosService = {
   }> {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/documentos/generar-contrato/",
+        "/api/v1/documents/documents/generar-contrato/",
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -323,7 +323,7 @@ export const contratosService = {
   }> {
     try {
       const response = await apiClient.post(
-        "/api/v1/rrhh/documentos/generar-adenda/",
+        "/api/v1/documents/documents/generar-adenda/",
         data,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
