@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, {
+import timeOffService, {
     PeriodoVacacional,
     ResumenPeriodo
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
@@ -286,14 +286,14 @@ const PeriodosPage: React.FC = () => {
         setLoading(true)
         
         // Cargar períodos del empleado
-        const periodosRes = await vacacionesService.getPeriodosByEmpleado(user.empleado_id)
+        const periodosRes = await timeOffService.getPeriodosByEmpleado(user.empleado_id)
         setPeriodos(periodosRes)
         
         // Cargar resúmenes de cada período
         const resumenesData: Record<number, ResumenPeriodo> = {}
         for (const periodo of periodosRes) {
           try {
-            const resumen = await vacacionesService.getResumenPeriodo(user.empleado_id, periodo.id)
+            const resumen = await timeOffService.getResumenPeriodo(user.empleado_id, periodo.id)
             resumenesData[periodo.id] = resumen
           } catch (error) {
             console.error(`Error al cargar resumen del período ${periodo.id}:`, error)

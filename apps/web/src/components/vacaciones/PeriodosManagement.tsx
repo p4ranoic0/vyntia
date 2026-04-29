@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Calendar, Users, Clock, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import vacacionesService, { PeriodoVacacional } from '@/services/vacacionesService'
+import timeOffService, { PeriodoVacacional } from '@/services/timeOffService'
 
 interface PeriodosManagementProps {
   onPeriodoCreated?: () => void
@@ -32,7 +32,7 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
   const cargarDatos = async () => {
     try {
       setLoading(true)
-      const periodosRes = await vacacionesService.getPeriodos()
+      const periodosRes = await timeOffService.getPeriodos()
       setPeriodos(periodosRes)
     } catch (error) {
       console.error('Error al cargar períodos:', error)
@@ -50,7 +50,7 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
     e.preventDefault()
     if (!selectedPeriodo) return
     try {
-      await vacacionesService.ajustarDiasPeriodo(selectedPeriodo.periodo_id, ajusteData.nuevos_dias, ajusteData.motivo)
+      await timeOffService.ajustarDiasPeriodo(selectedPeriodo.periodo_id, ajusteData.nuevos_dias, ajusteData.motivo)
       toast({
         title: 'Éxito',
         description: 'Período ajustado correctamente'

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/components/ui/use-toast'
 import { useCreatePlanilla, useDeletePlanilla, usePlanillas } from '@/hooks/useRemuneraciones'
-import type { EstadoPlanilla, ModalidadContrato } from '@/services/remuneracionesService'
+import type { EstadoPlanilla, ModalidadContrato } from '@/services/payrollService'
 import { Eye, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'

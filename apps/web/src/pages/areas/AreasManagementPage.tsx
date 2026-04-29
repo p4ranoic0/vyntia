@@ -25,7 +25,7 @@ import { useState } from 'react'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { AreasLayout } from '@/components/layout/AreasLayout'
 import { useToast } from '@/components/ui/use-toast'
-import { Area, areasService, AreaStats } from '@/services/areasService'
+import { Area, departmentsService, AreaStats } from '@/services/departmentsService'
 
 export function AreasManagementPage() {
   const { toast } = useToast()
@@ -35,12 +35,12 @@ export function AreasManagementPage() {
 
   const { data: areasData, isLoading } = useQuery({
     queryKey: ['areas'],
-    queryFn: () => areasService.getAreas(),
+    queryFn: () => departmentsService.getAreas(),
   })
 
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
     queryKey: ['areas-stats'],
-    queryFn: () => areasService.getAreasStats(),
+    queryFn: () => departmentsService.getAreasStats(),
   })
 
   const areas = areasData?.data || []

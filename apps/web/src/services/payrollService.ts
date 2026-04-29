@@ -325,7 +325,7 @@ function extractTypedList<T>(responseData: unknown): T[] {
   return [];
 }
 
-export const remuneracionesService = {
+export const payrollService = {
   async list(params?: ListParams): Promise<ConceptoRemuneracion[]> {
     const response = await apiClient.get(
       "/api/v1/payroll/compensation-configurations/",

@@ -1,5 +1,5 @@
 import {
-  remuneracionesService,
+  payrollService,
   type CalendarioPagoPayload,
   type ConceptoRemuneracion,
   type ConfiguracionAfp,
@@ -15,7 +15,7 @@ import {
   type ModalidadContrato,
   type PlanillaMensualPayload,
   type VistaPreviaPlanilla,
-} from "@/services/remuneracionesService";
+} from "@/services/payrollService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ========== Configuración AFP ==========
@@ -26,14 +26,14 @@ export function useConfiguracionAfp(params?: {
 }) {
   return useQuery({
     queryKey: ["configuracion-afp", params],
-    queryFn: () => remuneracionesService.listAfp(params),
+    queryFn: () => payrollService.listAfp(params),
   });
 }
 
 export function useCreateAfp() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: remuneracionesService.createAfp,
+    mutationFn: payrollService.createAfp,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-afp"] });
     },
@@ -49,7 +49,7 @@ export function useUpdateAfp() {
     }: {
       id: number;
       data: Partial<ConfiguracionAfp>;
-    }) => remuneracionesService.updateAfp(id, data),
+    }) => payrollService.updateAfp(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-afp"] });
     },
@@ -59,7 +59,7 @@ export function useUpdateAfp() {
 export function useDeleteAfp() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeAfp(id),
+    mutationFn: (id: number) => payrollService.removeAfp(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-afp"] });
     },
@@ -75,7 +75,7 @@ export function useConfiguracionUit(params?: {
 }) {
   return useQuery({
     queryKey: ["configuracion-uit", params],
-    queryFn: () => remuneracionesService.listUit(params),
+    queryFn: () => payrollService.listUit(params),
   });
 }
 
@@ -86,7 +86,7 @@ export function useGetUit(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar una configuración UIT");
       }
-      return remuneracionesService.getUit(id);
+      return payrollService.getUit(id);
     },
     enabled: Boolean(id),
   });
@@ -96,7 +96,7 @@ export function useCreateUit() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ConfiguracionUitPayload) =>
-      remuneracionesService.createUit(data),
+      payrollService.createUit(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-uit"] });
     },
@@ -112,7 +112,7 @@ export function useUpdateUit() {
     }: {
       id: number;
       data: Partial<ConfiguracionUitPayload>;
-    }) => remuneracionesService.updateUit(id, data),
+    }) => payrollService.updateUit(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-uit"] });
     },
@@ -122,7 +122,7 @@ export function useUpdateUit() {
 export function useDeleteUit() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeUit(id),
+    mutationFn: (id: number) => payrollService.removeUit(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-uit"] });
     },
@@ -132,7 +132,7 @@ export function useDeleteUit() {
 export function useActivarUit() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.activarUit(id),
+    mutationFn: (id: number) => payrollService.activarUit(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["configuracion-uit"] });
     },
@@ -148,14 +148,14 @@ export function useConceptosRemuneracion(params?: {
 }) {
   return useQuery({
     queryKey: ["conceptos-remuneracion", params],
-    queryFn: () => remuneracionesService.list(params),
+    queryFn: () => payrollService.list(params),
   });
 }
 
 export function useCreateConcepto() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: remuneracionesService.create,
+    mutationFn: payrollService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conceptos-remuneracion"] });
     },
@@ -171,7 +171,7 @@ export function useUpdateConcepto() {
     }: {
       id: number;
       data: Partial<ConceptoRemuneracion>;
-    }) => remuneracionesService.update(id, data),
+    }) => payrollService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conceptos-remuneracion"] });
     },
@@ -181,7 +181,7 @@ export function useUpdateConcepto() {
 export function useDeleteConcepto() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.remove(id),
+    mutationFn: (id: number) => payrollService.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conceptos-remuneracion"] });
     },
@@ -198,7 +198,7 @@ export function usePlanillas(params?: {
 }) {
   return useQuery({
     queryKey: ["planillas-mensuales", params],
-    queryFn: () => remuneracionesService.listPlanillas(params),
+    queryFn: () => payrollService.listPlanillas(params),
   });
 }
 
@@ -209,7 +209,7 @@ export function usePlanilla(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar una planilla");
       }
-      return remuneracionesService.getPlanilla(id);
+      return payrollService.getPlanilla(id);
     },
     enabled: Boolean(id),
   });
@@ -219,7 +219,7 @@ export function useCreatePlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: PlanillaMensualPayload) =>
-      remuneracionesService.createPlanilla(data),
+      payrollService.createPlanilla(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
     },
@@ -235,7 +235,7 @@ export function useUpdatePlanilla() {
     }: {
       id: number;
       data: Partial<PlanillaMensualPayload>;
-    }) => remuneracionesService.updatePlanilla(id, data),
+    }) => payrollService.updatePlanilla(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
     },
@@ -245,7 +245,7 @@ export function useUpdatePlanilla() {
 export function useDeletePlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removePlanilla(id),
+    mutationFn: (id: number) => payrollService.removePlanilla(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
     },
@@ -256,7 +256,7 @@ export function useDeletePlanilla() {
 export function useGenerarPlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.generarPlanilla(id),
+    mutationFn: (id: number) => payrollService.generarPlanilla(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales", id] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -267,7 +267,7 @@ export function useGenerarPlanilla() {
 export function useRegenerarPlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.regenerarPlanilla(id),
+    mutationFn: (id: number) => payrollService.regenerarPlanilla(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales", id] });
@@ -279,7 +279,7 @@ export function useRegenerarPlanilla() {
 export function useCalcularPlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.calcularPlanilla(id),
+    mutationFn: (id: number) => payrollService.calcularPlanilla(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales", id] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -289,14 +289,14 @@ export function useCalcularPlanilla() {
 
 export function usePreviewPlanilla() {
   return useMutation<VistaPreviaPlanilla, unknown, number>({
-    mutationFn: (id: number) => remuneracionesService.previewPlanilla(id),
+    mutationFn: (id: number) => payrollService.previewPlanilla(id),
   });
 }
 
 export function useAprobarPlanilla() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.aprobarPlanilla(id),
+    mutationFn: (id: number) => payrollService.aprobarPlanilla(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales", id] });
     },
@@ -310,7 +310,7 @@ export function useEstadisticasPlanilla(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar una planilla");
       }
-      return remuneracionesService.getEstadisticasPlanilla(id);
+      return payrollService.getEstadisticasPlanilla(id);
     },
     enabled: Boolean(id),
   });
@@ -325,7 +325,7 @@ export function useDetallesPlanilla(params?: {
 }) {
   return useQuery({
     queryKey: ["detalles-planilla", params],
-    queryFn: () => remuneracionesService.listDetalles(params),
+    queryFn: () => payrollService.listDetalles(params),
     enabled: !!params?.planilla, // Solo cargar si hay una planilla seleccionada
   });
 }
@@ -337,7 +337,7 @@ export function useDetallePlanilla(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar un detalle");
       }
-      return remuneracionesService.getDetalle(id);
+      return payrollService.getDetalle(id);
     },
     enabled: Boolean(id),
   });
@@ -347,7 +347,7 @@ export function useCreateDetalle() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: DetallePlanillaPayload) =>
-      remuneracionesService.createDetalle(data),
+      payrollService.createDetalle(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
@@ -364,7 +364,7 @@ export function useUpdateDetalle() {
     }: {
       id: number;
       data: Partial<DetallePlanillaPayload>;
-    }) => remuneracionesService.updateDetalle(id, data),
+    }) => payrollService.updateDetalle(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
@@ -375,7 +375,7 @@ export function useUpdateDetalle() {
 export function useDeleteDetalle() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeDetalle(id),
+    mutationFn: (id: number) => payrollService.removeDetalle(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
@@ -391,7 +391,7 @@ export function useDescuentosMasivos(params?: {
 }) {
   return useQuery({
     queryKey: ["descuentos-masivos", params],
-    queryFn: () => remuneracionesService.listDescuentos(params),
+    queryFn: () => payrollService.listDescuentos(params),
   });
 }
 
@@ -402,7 +402,7 @@ export function useDescuentoMasivo(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar un descuento");
       }
-      return remuneracionesService.getDescuento(id);
+      return payrollService.getDescuento(id);
     },
     enabled: Boolean(id),
   });
@@ -412,7 +412,7 @@ export function useCreateDescuento() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: DescuentoMasivoPayload) =>
-      remuneracionesService.createDescuento(data),
+      payrollService.createDescuento(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["descuentos-masivos"] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -429,7 +429,7 @@ export function useUpdateDescuento() {
     }: {
       id: number;
       data: Partial<DescuentoMasivo>;
-    }) => remuneracionesService.updateDescuento(id, data),
+    }) => payrollService.updateDescuento(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["descuentos-masivos"] });
     },
@@ -439,7 +439,7 @@ export function useUpdateDescuento() {
 export function useDeleteDescuento() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeDescuento(id),
+    mutationFn: (id: number) => payrollService.removeDescuento(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["descuentos-masivos"] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -450,7 +450,7 @@ export function useDeleteDescuento() {
 export function useProcesarDescuento() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.procesarDescuento(id),
+    mutationFn: (id: number) => payrollService.procesarDescuento(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["descuentos-masivos"] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -462,7 +462,7 @@ export function useProcesarDescuento() {
 export function useAnularDescuento() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.anularDescuento(id),
+    mutationFn: (id: number) => payrollService.anularDescuento(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["descuentos-masivos"] });
       queryClient.invalidateQueries({ queryKey: ["detalles-planilla"] });
@@ -477,7 +477,7 @@ export function useGenerarBoletas() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (planillaId: number) =>
-      remuneracionesService.generarBoletas(planillaId),
+      payrollService.generarBoletas(planillaId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boletas-pago"] });
       queryClient.invalidateQueries({ queryKey: ["planillas-mensuales"] });
@@ -492,7 +492,7 @@ export function useBoletas(params?: {
 }) {
   return useQuery({
     queryKey: ["boletas-pago", params],
-    queryFn: () => remuneracionesService.listBoletas(params),
+    queryFn: () => payrollService.listBoletas(params),
   });
 }
 
@@ -503,7 +503,7 @@ export function useBoleta(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar una boleta");
       }
-      return remuneracionesService.getBoleta(id);
+      return payrollService.getBoleta(id);
     },
     enabled: Boolean(id),
   });
@@ -511,7 +511,7 @@ export function useBoleta(id: number | null) {
 
 export function useDownloadBoletaPdf() {
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.downloadBoletaPdf(id),
+    mutationFn: (id: number) => payrollService.downloadBoletaPdf(id),
     onSuccess: (blob, id) => {
       // Crear URL del blob y descargar automáticamente
       const url = globalThis.URL.createObjectURL(blob);
@@ -529,7 +529,7 @@ export function useDownloadBoletaPdf() {
 export function useDescargaMasivaBoletas() {
   return useMutation({
     mutationFn: (planillaId: number) =>
-      remuneracionesService.descargaMasivaBoletas(planillaId),
+      payrollService.descargaMasivaBoletas(planillaId),
     onSuccess: (blob, planillaId) => {
       const url = globalThis.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -552,7 +552,7 @@ export function useCalendariosPago(params?: {
 }) {
   return useQuery({
     queryKey: ["calendarios-pago", params],
-    queryFn: () => remuneracionesService.listCalendarios(params),
+    queryFn: () => payrollService.listCalendarios(params),
   });
 }
 
@@ -563,7 +563,7 @@ export function useCalendarioPago(id: number | null) {
       if (!id) {
         throw new Error("Debe indicar un calendario");
       }
-      return remuneracionesService.getCalendario(id);
+      return payrollService.getCalendario(id);
     },
     enabled: Boolean(id),
   });
@@ -573,7 +573,7 @@ export function useCreateCalendario() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CalendarioPagoPayload) =>
-      remuneracionesService.createCalendario(data),
+      payrollService.createCalendario(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["calendarios-pago"] });
     },
@@ -589,7 +589,7 @@ export function useUpdateCalendario() {
     }: {
       id: number;
       data: Partial<CalendarioPagoPayload>;
-    }) => remuneracionesService.updateCalendario(id, data),
+    }) => payrollService.updateCalendario(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["calendarios-pago"] });
     },
@@ -599,7 +599,7 @@ export function useUpdateCalendario() {
 export function useDeleteCalendario() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeCalendario(id),
+    mutationFn: (id: number) => payrollService.removeCalendario(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["calendarios-pago"] });
     },

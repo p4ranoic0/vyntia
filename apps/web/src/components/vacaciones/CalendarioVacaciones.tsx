@@ -27,8 +27,8 @@ import { format,
   parseISO
 } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { SolicitudVacaciones } from '@/services/vacacionesService'
-import vacacionesService from '@/services/vacacionesService'
+import { SolicitudVacaciones } from '@/services/timeOffService'
+import timeOffService from '@/services/timeOffService'
 import { useToast } from '@/hooks/use-toast'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 
@@ -75,7 +75,7 @@ const CalendarioVacaciones: React.FC<CalendarioVacacionesProps> = ({
       const finMes = endOfMonth(fecha)
       
       // Cargar solicitudes aprobadas para el mes
-      const solicitudes = await vacacionesService.getSolicitudes({
+      const solicitudes = await timeOffService.getSolicitudes({
         fecha_inicio_desde: format(inicioMes, 'yyyy-MM-dd'),
         fecha_inicio_hasta: format(finMes, 'yyyy-MM-dd'),
         estado: 'aprobada',

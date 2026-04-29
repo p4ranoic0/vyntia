@@ -149,7 +149,7 @@ function extractData(raw: any) {
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? raw;
 }
 
-export const contratosService = {
+export const contractsService = {
   async getAll(filters?: ContratoFilters): Promise<ContratoListItem[]> {
     try {
       const params: Record<string, string | number> = {};

@@ -37,12 +37,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { toast } from 'sonner'
 import {
-  plantillasService,
+  templatesService,
   TIPO_PLANTILLA_BADGE,
   TIPO_PLANTILLA_LABELS,
   type PlantillaDocumento,
   type TipoPlantilla,
-} from '@/services/plantillasService'
+} from '@/services/templatesService'
 
 type TabValue = 'todos' | TipoPlantilla
 
@@ -251,13 +251,13 @@ export default function PlantillasDocumentosPage() {
 
   const { data: plantillas = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['plantillas-word', activeTab],
-    queryFn: () => plantillasService.getAll(activeTab === 'todos' ? undefined : (activeTab as TipoPlantilla)),
+    queryFn: () => templatesService.getAll(activeTab === 'todos' ? undefined : (activeTab as TipoPlantilla)),
   })
 
   const uploadMutation = useMutation({
     mutationFn: () => {
       if (!form.archivo || !form.tipo) throw new Error('Archivo y tipo son requeridos')
-      return plantillasService.subir({
+      return templatesService.subir({
         nombre: form.nombre, tipo: form.tipo as TipoPlantilla,
         descripcion: form.descripcion, archivo: form.archivo,
       })
@@ -273,7 +273,7 @@ export default function PlantillasDocumentosPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => plantillasService.eliminar(id),
+    mutationFn: (id: number) => templatesService.eliminar(id),
     onSuccess: () => {
       toast.success('Plantilla eliminada correctamente')
       queryClient.invalidateQueries({ queryKey: ['plantillas-word'] })
@@ -285,7 +285,7 @@ export default function PlantillasDocumentosPage() {
 
   const downloadMutation = useMutation({
     mutationFn: ({ id, nombre }: { id: number; nombre: string }) =>
-      plantillasService.descargar(id, nombre),
+      templatesService.descargar(id, nombre),
     onSuccess: () => toast.success('Descarga iniciada'),
     onError: (e: Error) => toast.error(e.message || 'Error al descargar'),
   })

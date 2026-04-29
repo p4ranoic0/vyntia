@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { apiClient } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { contratosService, TIPO_CONTRATO_LABELS } from '@/services/contratosService'
+import { contractsService, TIPO_CONTRATO_LABELS } from '@/services/contractsService'
 import { useQuery } from '@tanstack/react-query'
 import {
     Activity,
@@ -105,7 +105,7 @@ function useContratosEstadisticas() {
     queryKey: ['dashboard', 'contratos-estadisticas'],
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = (await contratosService.getEstadisticas()) as any
+      const raw = (await contractsService.getEstadisticas()) as any
       return raw as ContratosEstadisticas
     },
     staleTime: 5 * 60 * 1000,

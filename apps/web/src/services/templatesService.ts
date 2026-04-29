@@ -62,7 +62,7 @@ function extractData(raw: any): any {
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? raw
 }
 
-export const plantillasService = {
+export const templatesService = {
   async getAll(tipo?: TipoPlantilla): Promise<PlantillaDocumento[]> {
     try {
       const params: Record<string, string> = {}

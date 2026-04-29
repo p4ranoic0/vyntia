@@ -14,8 +14,8 @@ import {
     ConfiguracionAfp,
     ConfiguracionAfpPayload,
     TipoConceptoRemuneracion,
-    remuneracionesService,
-} from '@/services/remuneracionesService'
+    payrollService,
+} from '@/services/payrollService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
@@ -113,18 +113,18 @@ export default function ConfiguracionRemuneracionesPage() {
 
   const { data: conceptos = [], isLoading } = useQuery({
     queryKey: ['config-remuneraciones', tipo],
-    queryFn: () => remuneracionesService.list({ tipo: tipo as TipoConceptoRemuneracion }),
+    queryFn: () => payrollService.list({ tipo: tipo as TipoConceptoRemuneracion }),
     enabled: tipo !== 'afp',
   })
 
   const { data: afpConfigs = [], isLoading: isLoadingAfp } = useQuery({
     queryKey: ['config-afp'],
-    queryFn: () => remuneracionesService.listAfp(),
+    queryFn: () => payrollService.listAfp(),
     enabled: tipo === 'afp',
   })
 
   const createMutation = useMutation({
-    mutationFn: (payload: ConceptoRemuneracionPayload) => remuneracionesService.create(payload),
+    mutationFn: (payload: ConceptoRemuneracionPayload) => payrollService.create(payload),
     onSuccess: () => {
       toast({ title: 'Concepto creado', description: 'Se registró correctamente.' })
       setForm({ ...EMPTY_FORM, tipo: tipo as TipoConceptoRemuneracion })
@@ -136,7 +136,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: ConceptoRemuneracionPayload }) => remuneracionesService.update(id, payload),
+    mutationFn: ({ id, payload }: { id: number; payload: ConceptoRemuneracionPayload }) => payrollService.update(id, payload),
     onSuccess: () => {
       toast({ title: 'Concepto actualizado', description: 'Los cambios fueron guardados.' })
       setEditingId(null)
@@ -149,7 +149,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => remuneracionesService.remove(id),
+    mutationFn: (id: number) => payrollService.remove(id),
     onSuccess: () => {
       toast({ title: 'Concepto eliminado', description: 'Se eliminó del catálogo.' })
       queryClient.invalidateQueries({ queryKey: ['config-remuneraciones'] })
@@ -169,7 +169,7 @@ export default function ConfiguracionRemuneracionesPage() {
   }, [afpConfigs, conceptos, tipo])
 
   const createAfpMutation = useMutation({
-    mutationFn: (payload: ConfiguracionAfpPayload) => remuneracionesService.createAfp(payload),
+    mutationFn: (payload: ConfiguracionAfpPayload) => payrollService.createAfp(payload),
     onSuccess: () => {
       toast({ title: 'Configuración AFP creada', description: 'Se registró correctamente.' })
       setAfpForm(EMPTY_AFP_FORM)
@@ -181,7 +181,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const updateAfpMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Partial<ConfiguracionAfpPayload> }) => remuneracionesService.updateAfp(id, payload),
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<ConfiguracionAfpPayload> }) => payrollService.updateAfp(id, payload),
     onSuccess: () => {
       toast({ title: 'Configuración AFP actualizada', description: 'Los cambios fueron guardados.' })
       setEditingAfpId(null)
@@ -194,7 +194,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const deleteAfpMutation = useMutation({
-    mutationFn: (id: number) => remuneracionesService.removeAfp(id),
+    mutationFn: (id: number) => payrollService.removeAfp(id),
     onSuccess: () => {
       toast({ title: 'Configuración AFP eliminada', description: 'Se eliminó del catálogo.' })
       queryClient.invalidateQueries({ queryKey: ['config-afp'] })

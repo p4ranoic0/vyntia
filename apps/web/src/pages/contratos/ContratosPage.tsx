@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import {
-    contratosService,
+    contractsService,
     ESTADO_CONTRATO_BADGE,
     ESTADO_CONTRATO_LABELS,
     JORNADA_LABELS,
@@ -39,7 +39,7 @@ import {
     type ContratoFilters,
     type ContratoFormData,
     type ContratoListItem,
-} from '@/services/contratosService'
+} from '@/services/contractsService'
 import { employeesService, type Employee } from '@/services/employeesService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -345,7 +345,7 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
 
   const { data: contrato, isLoading } = useQuery<Contrato>({
     queryKey: ['contrato', contratoId],
-    queryFn: () => contratosService.getById(contratoId!),
+    queryFn: () => contractsService.getById(contratoId!),
     enabled: open && contratoId != null,
   })
 
@@ -354,8 +354,8 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
       if (!contratoId) throw new Error('No se selecciono contrato')
       const esAdenda = contrato?.es_adenda || contrato?.tipo_documento?.startsWith('ADENDA_')
       return esAdenda
-        ? contratosService.generarAdendaPdf({ adenda_id: contratoId })
-        : contratosService.generarContratoPdf({ contrato_id: contratoId })
+        ? contractsService.generarAdendaPdf({ adenda_id: contratoId })
+        : contractsService.generarContratoPdf({ contrato_id: contratoId })
     },
     onSuccess: (data) => {
       const label = contrato?.es_adenda ? 'Adenda' : 'Contrato'
@@ -371,7 +371,7 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
 
   const renovarMutation = useMutation({
     mutationFn: (data: { fecha_inicio: string; fecha_fin?: string; salario_bruto?: number; observaciones?: string }) =>
-      contratosService.renovar(contratoId!, data),
+      contractsService.renovar(contratoId!, data),
     onSuccess: () => {
       toast.success('Contrato renovado exitosamente')
       queryClient.invalidateQueries({ queryKey: ['contratos'] })
@@ -670,7 +670,7 @@ function GenerarCertificadoDialog({ open, onOpenChange, employees }: Certificado
 
   const certificadoMutation = useMutation({
     mutationFn: (data: { empleado_id: number; proposito?: string; incluir_salario?: boolean }) =>
-      contratosService.generarCertificado(data),
+      contractsService.generarCertificado(data),
     onSuccess: (data) => {
       toast.success(`Certificado generado: ${data.numero_certificado || 'OK'}`)
       if (data.archivo_url) {
@@ -798,8 +798,8 @@ function GenerarContratoPdfDialog({ open, onOpenChange, contratoId, contratoNume
   const generarMutation = useMutation({
     mutationFn: (id: number) =>
       esAdenda
-        ? contratosService.generarAdendaPdf({ adenda_id: id })
-        : contratosService.generarContratoPdf({ contrato_id: id }),
+        ? contractsService.generarAdendaPdf({ adenda_id: id })
+        : contractsService.generarContratoPdf({ contrato_id: id }),
     onSuccess: (data) => {
       const label = esAdenda ? 'Adenda' : 'Contrato'
       toast.success(`${label} PDF generado exitosamente`)
@@ -882,18 +882,18 @@ export default function ContratosPage() {
       const filters: ContratoFilters = {}
       if (estadoFilter) filters.estado = estadoFilter
       if (tipoFilter) filters.tipo_documento = tipoFilter
-      return contratosService.getAll(filters)
+      return contractsService.getAll(filters)
     },
   })
 
   const { data: estadisticas } = useQuery<Record<string, unknown>>({
     queryKey: ['contratos-estadisticas'],
-    queryFn: () => contratosService.getEstadisticas(),
+    queryFn: () => contractsService.getEstadisticas(),
   })
 
   const { data: alertas = [] } = useQuery<ContratoListItem[]>({
     queryKey: ['contratos-alertas'],
-    queryFn: () => contratosService.getAlertasVencimiento(30),
+    queryFn: () => contractsService.getAlertasVencimiento(30),
   })
 
   const { data: employees = [] } = useQuery<Employee[]>({
@@ -903,7 +903,7 @@ export default function ContratosPage() {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: ContratoFormData) => contratosService.create(data),
+    mutationFn: (data: ContratoFormData) => contractsService.create(data),
     onSuccess: () => {
       toast.success('Contrato creado exitosamente')
       queryClient.invalidateQueries({ queryKey: ['contratos'] })

@@ -13,12 +13,12 @@ import PeriodosManagement from '@/components/vacaciones/PeriodosManagement'
 import ResumenDiasVacaciones from '@/components/vacaciones/ResumenDiasVacaciones'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, {
+import timeOffService, {
     EmpleadoDiasVencidos,
     EstadisticasVacaciones as EstadisticasVacacionesType,
     PeriodoVacacional,
     SolicitudVacaciones
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { AlertTriangle, Calendar, Clock, FileText, Plus } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
@@ -201,10 +201,10 @@ const VacacionesManagementPage: React.FC = () => {
       
       // Datos de gestión solo para RRHH/Admin
       if (esGestor) {
-        const estadisticasRes = await vacacionesService.getEstadisticas({ ano: new Date().getFullYear() })
+        const estadisticasRes = await timeOffService.getEstadisticas({ ano: new Date().getFullYear() })
         setEstadisticas(Array.isArray(estadisticasRes) ? estadisticasRes : [])
         
-        const empleadosVencidosRes = await vacacionesService.getEmpleadosDiasVencidos(new Date().getFullYear())
+        const empleadosVencidosRes = await timeOffService.getEmpleadosDiasVencidos(new Date().getFullYear())
         setEmpleadosVencidos(Array.isArray(empleadosVencidosRes) ? empleadosVencidosRes : [])
       } else {
         setEstadisticas([])
@@ -215,8 +215,8 @@ const VacacionesManagementPage: React.FC = () => {
       if (esGestor || esJefe) {
         try {
           const solicitudesPendientesRes = esGestor
-            ? await vacacionesService.getSolicitudesPendientes()
-            : await vacacionesService.getSolicitudesPendientesJefe()
+            ? await timeOffService.getSolicitudesPendientes()
+            : await timeOffService.getSolicitudesPendientesJefe()
           setSolicitudesPendientes(Array.isArray(solicitudesPendientesRes) ? solicitudesPendientesRes : [])
         } catch (error) {
           console.warn('Error al cargar solicitudes pendientes:', error)
@@ -229,12 +229,12 @@ const VacacionesManagementPage: React.FC = () => {
       // Cargar solicitudes recientes
       try {
         if (esGestor || esJefe) {
-          const solicitudesRes = await vacacionesService.getSolicitudes({
+          const solicitudesRes = await timeOffService.getSolicitudes({
             fecha_inicio: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]
           })
           setSolicitudesRecientes(Array.isArray(solicitudesRes) ? solicitudesRes.slice(0, 10) : [])
         } else {
-          const solicitudesRes = await vacacionesService.getMisSolicitudes()
+          const solicitudesRes = await timeOffService.getMisSolicitudes()
           setSolicitudesRecientes(Array.isArray(solicitudesRes) ? solicitudesRes.slice(0, 10) : [])
         }
       } catch (error) {
@@ -245,7 +245,7 @@ const VacacionesManagementPage: React.FC = () => {
       // Si es empleado, cargar sus períodos
       if (user?.empleado_id) {
         try {
-          const periodosRes = await vacacionesService.getPeriodosByEmpleado(user.empleado_id)
+          const periodosRes = await timeOffService.getPeriodosByEmpleado(user.empleado_id)
           setMisPeriodos(Array.isArray(periodosRes) ? periodosRes : [])
           setPeriodosEmpleado(Array.isArray(periodosRes) ? periodosRes : [])
         } catch (error) {

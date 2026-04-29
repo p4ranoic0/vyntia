@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Settings, Save, RefreshCw, AlertTriangle, CheckCircle, Calendar, Users, Clock } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import vacacionesService, { ConfiguracionVacaciones } from '@/services/vacacionesService'
+import timeOffService, { ConfiguracionVacaciones } from '@/services/timeOffService'
 
 interface ConfiguracionPanelProps {
   onConfiguracionUpdated?: () => void
@@ -50,7 +50,7 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
   const cargarConfiguracion = async () => {
     try {
       setLoading(true)
-      const configuraciones = await vacacionesService.getConfiguraciones()
+      const configuraciones = await timeOffService.getConfiguraciones()
       
       // Buscar configuración general activa
       const config = configuraciones?.find(c => 
@@ -112,13 +112,13 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
       }
       
       if (configuracion) {
-        await vacacionesService.updateConfiguracion(configuracion.id, configData)
+        await timeOffService.updateConfiguracion(configuracion.id, configData)
         toast({
           title: 'Éxito',
           description: 'Configuración actualizada correctamente'
         })
       } else {
-        await vacacionesService.createConfiguracion(configData)
+        await timeOffService.createConfiguracion(configData)
         toast({
           title: 'Éxito',
           description: 'Configuración creada correctamente'

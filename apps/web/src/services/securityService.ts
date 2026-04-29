@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api";
 import {
   extractCollection,
   normalizeSecurityRole,
-} from "@/services/normalizers/rrhhNormalizers";
+} from "@/services/normalizers/apiNormalizers";
 
 // Interfaces para paginación
 export interface PaginationMeta {

@@ -20,7 +20,7 @@ import {
 // Form components no disponibles - usando formularios HTML nativos
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { useToast } from '@/components/ui/use-toast'
-import { areasService, Area, CreateAreaData } from '@/services/areasService'
+import { departmentsService, Area, CreateAreaData } from '@/services/departmentsService'
 import { AreasLayout } from '@/components/layout/AreasLayout'
 import { getErrorMessage } from '@/lib/errorUtils'
 
@@ -58,7 +58,7 @@ export function AreaFormPage() {
   // Cargar datos del área si estamos editando
   const { data: areaData, isLoading: isLoadingArea } = useQuery({
     queryKey: ['area', id],
-    queryFn: () => areasService.getArea(Number(id)),
+    queryFn: () => departmentsService.getArea(Number(id)),
     enabled: isEditing,
   })
 
@@ -80,7 +80,7 @@ export function AreaFormPage() {
 
   // Mutación para crear área
   const createAreaMutation = useMutation({
-    mutationFn: (data: AreaFormData) => areasService.createArea(data),
+    mutationFn: (data: AreaFormData) => departmentsService.createArea(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -100,7 +100,7 @@ export function AreaFormPage() {
 
   // Mutación para actualizar área
   const updateAreaMutation = useMutation({
-    mutationFn: (data: AreaFormData) => areasService.updateArea(Number(id), data),
+    mutationFn: (data: AreaFormData) => departmentsService.updateArea(Number(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       queryClient.invalidateQueries({ queryKey: ['area', id] })
