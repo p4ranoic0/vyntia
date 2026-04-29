@@ -16,7 +16,7 @@ import {
   useDeleteDescuento,
   useConceptosRemuneracion,
 } from '@/hooks/useRemuneraciones'
-import type { ConfiguracionRemuneracion, DescuentoMasivo } from '@/services/remuneracionesService'
+import type { ConfiguracionRemuneracion, DescuentoMasivo } from '@/services/payrollService'
 import { Upload, Trash2, Play, XCircle, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 

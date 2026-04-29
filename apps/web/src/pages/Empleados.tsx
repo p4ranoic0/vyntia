@@ -41,7 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEmpleados } from '@/hooks/useApi'
 import { useDebounce } from '@/hooks/useDebounce'
-import { contratosService } from '@/services/contratosService'
+import { contractsService } from '@/services/contractsService'
 import { employeesService } from '@/services/employeesService'
 import { OnboardingCreateData, onboardingService } from '@/services/onboardingService'
 import {
@@ -313,7 +313,7 @@ export function Empleados() {
 
   const handleGenerarDocumento = async (empleado: Empleado, tipo: 'constancia' | 'certificado') => {
     try {
-      await contratosService.generarCertificado({
+      await contractsService.generarCertificado({
         empleado_id: empleado.empleado_id,
         tipo_certificado: tipo === 'certificado' ? 'trabajo' : 'constancia',
         guardar_documento: true,

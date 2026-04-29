@@ -9,11 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, {
+import timeOffService, {
     EmpleadoDiasVencidos,
     EstadisticasVacaciones as EstadisticasVacacionesType,
     SolicitudVacaciones
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { format } from 'date-fns'
 import {
     AlertTriangle,
@@ -180,15 +180,15 @@ const ReportesPage: React.FC = () => {
       
       if (esGestor) {
         // Cargar estadísticas por área
-        const estadisticasRes = await vacacionesService.getEstadisticasPorArea(ano)
+        const estadisticasRes = await timeOffService.getEstadisticasPorArea(ano)
         setEstadisticas(estadisticasRes)
         
         // Cargar empleados con días vencidos
-        const empleadosVencidosRes = await vacacionesService.getEmpleadosDiasVencidos(ano)
+        const empleadosVencidosRes = await timeOffService.getEmpleadosDiasVencidos(ano)
         setEmpleadosVencidos(empleadosVencidosRes)
         
         // Cargar solicitudes pendientes (RRHH)
-        const solicitudesPendientesRes = await vacacionesService.getSolicitudes({ estado: 'aprobada_jefe' })
+        const solicitudesPendientesRes = await timeOffService.getSolicitudes({ estado: 'aprobada_jefe' })
         setSolicitudesPendientes(solicitudesPendientesRes.results || solicitudesPendientesRes || [])
       } else {
         setEstadisticas([])

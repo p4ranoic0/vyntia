@@ -4,7 +4,7 @@ import {
   extractCollection,
   normalizeRole,
   normalizeUser,
-} from "@/services/normalizers/rrhhNormalizers";
+} from "@/services/normalizers/apiNormalizers";
 
 // Interfaces para usuarios
 export interface User {

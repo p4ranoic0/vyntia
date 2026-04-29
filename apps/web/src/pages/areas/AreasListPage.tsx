@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast'
 import { getErrorMessage } from '@/lib/errorUtils'
-import { areasService, Area as AreaType } from '@/services/areasService'
+import { departmentsService, Area as AreaType } from '@/services/departmentsService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Building2, Edit, MoreHorizontal, Plus, Search, Trash2, Users } from 'lucide-react'
@@ -35,14 +35,14 @@ export function AreasListPage() {
 
   const { data: areasData, isLoading, error } = useQuery({
     queryKey: ['areas'],
-    queryFn: () => areasService.getAreas(),
+    queryFn: () => departmentsService.getAreas(),
   })
 
   const areas = areasData?.data || []
 
   // Delete area mutation
   const deleteAreaMutation = useMutation({
-    mutationFn: (id: number) => areasService.deleteArea(id),
+    mutationFn: (id: number) => departmentsService.deleteArea(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -84,7 +84,7 @@ export function AreasListPage() {
 
   // Mutación para crear área
   const createAreaMutation = useMutation({
-    mutationFn: (data: any) => areasService.createArea(data),
+    mutationFn: (data: any) => departmentsService.createArea(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -105,7 +105,7 @@ export function AreasListPage() {
 
   // Mutación para actualizar área
   const updateAreaMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => areasService.updateArea(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) => departmentsService.updateArea(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({

@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, { SolicitudVacaciones } from '@/services/vacacionesService'
+import timeOffService, { SolicitudVacaciones } from '@/services/timeOffService'
 import { Bell } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -44,8 +44,8 @@ const NotificationsBell: React.FC = () => {
     try {
       setLoading(true)
       const data = isGestor
-        ? await vacacionesService.getSolicitudesPendientes()
-        : await vacacionesService.getSolicitudesPendientesJefe()
+        ? await timeOffService.getSolicitudesPendientes()
+        : await timeOffService.getSolicitudesPendientesJefe()
       setItems(buildItems(data).slice(0, 5))
     } catch {
       setItems([])

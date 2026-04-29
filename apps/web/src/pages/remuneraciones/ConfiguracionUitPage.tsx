@@ -13,7 +13,7 @@ import {
   useDeleteUit,
   useUpdateUit,
 } from '@/hooks/useRemuneraciones'
-import { ConfiguracionUitPayload } from '@/services/remuneracionesService'
+import { ConfiguracionUitPayload } from '@/services/payrollService'
 import { CheckCircle2, Landmark, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 

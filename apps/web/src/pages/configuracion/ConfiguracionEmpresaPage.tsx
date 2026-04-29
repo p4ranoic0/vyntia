@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Building2, Save, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { empresaService, type ConfiguracionEmpresa } from '@/services/empresaService'
+import { companyService, type ConfiguracionEmpresa } from '@/services/companyService'
 
 export default function ConfiguracionEmpresaPage() {
   const queryClient = useQueryClient()
@@ -18,7 +18,7 @@ export default function ConfiguracionEmpresaPage() {
 
   const { data: config, isLoading } = useQuery<ConfiguracionEmpresa>({
     queryKey: ['configuracion-empresa'],
-    queryFn: () => empresaService.get(),
+    queryFn: () => companyService.get(),
   })
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function ConfiguracionEmpresaPage() {
   }, [config])
 
   const mutation = useMutation({
-    mutationFn: () => empresaService.update(form, logoFile ?? undefined),
+    mutationFn: () => companyService.update(form, logoFile ?? undefined),
     onSuccess: (data) => {
       toast.success('Configuración guardada')
       queryClient.setQueryData(['configuracion-empresa'], data)

@@ -3,7 +3,7 @@ import { getErrorMessage } from "@/lib/errorUtils";
 import {
   extractCollection,
   normalizeEmployee,
-} from "@/services/normalizers/rrhhNormalizers";
+} from "@/services/normalizers/apiNormalizers";
 
 // Interfaces para empleados
 export interface Employee {

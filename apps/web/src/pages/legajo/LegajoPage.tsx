@@ -19,9 +19,9 @@ import { useAuth } from '@/hooks/useAuth'
 import {
     ESTADO_CONTRATO_BADGE,
     TIPO_CONTRATO_LABELS,
-    contratosService,
+    contractsService,
     type ContratoListItem,
-} from '@/services/contratosService'
+} from '@/services/contractsService'
 import { employeesService } from '@/services/employeesService'
 import {
     CATEGORIA_LABELS,
@@ -704,7 +704,7 @@ export default function LegajoPage() {
   // Fetch contratos
   const { data: contratos = [] } = useQuery({
     queryKey: ['contratos-empleado', empId],
-    queryFn: () => contratosService.getByEmpleado(empId),
+    queryFn: () => contractsService.getByEmpleado(empId),
     enabled: !showAdminPanel && empId > 0,
   })
 

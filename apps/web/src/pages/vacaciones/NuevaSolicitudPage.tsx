@@ -11,11 +11,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
-import vacacionesService, {
+import timeOffService, {
     PeriodoVacacional,
     ResumenPeriodo,
     SolicitudVacacionesForm
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addDays, differenceInDays, format, isWeekend } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -267,7 +267,7 @@ const NuevaSolicitudPage: React.FC = () => {
       
       try {
         setLoading(true)
-        const periodosRes = await vacacionesService.getPeriodosByEmpleado(user.empleado_id)
+        const periodosRes = await timeOffService.getPeriodosByEmpleado(user.empleado_id)
         // Filtrar solo períodos activos con días pendientes
         const periodosDisponibles = periodosRes.filter(
           periodo => periodo.estado_periodo === 'activo' && periodo.dias_pendientes > 0
@@ -301,7 +301,7 @@ const NuevaSolicitudPage: React.FC = () => {
         const periodo = periodos.find(p => p.id.toString() === periodo_vacacional_id)
         if (periodo) {
           setPeriodoSeleccionado(periodo)
-          const resumen = await vacacionesService.getResumenPeriodo(user.empleado_id, periodo.id)
+          const resumen = await timeOffService.getResumenPeriodo(user.empleado_id, periodo.id)
           setResumenPeriodo(resumen)
         }
       } catch (error) {
@@ -328,7 +328,7 @@ const NuevaSolicitudPage: React.FC = () => {
         medio_dia: data.medio_dia
       }
       
-      await vacacionesService.createSolicitud(solicitudData)
+      await timeOffService.createSolicitud(solicitudData)
       
       toast({
         title: 'Solicitud creada',

@@ -19,7 +19,7 @@ export interface ConfiguracionEmpresa {
   resolucion_creacion: string
 }
 
-export const empresaService = {
+export const companyService = {
   async get(): Promise<ConfiguracionEmpresa> {
     const response = await apiClient.get('/api/v1/organization/companies/')
     const raw = response.data

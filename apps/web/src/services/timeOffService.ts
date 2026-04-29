@@ -255,7 +255,7 @@ function normalizeSolicitud(raw: any): SolicitudVacaciones {
   }
 }
 
-const vacacionesService = {
+const timeOffService = {
   async getConfiguraciones(): Promise<ConfiguracionVacaciones[]> {
     const response = await apiClient.get('/api/v1/time-off/configurations/')
     return asArray<any>(unwrap(response))
@@ -483,4 +483,4 @@ const vacacionesService = {
   },
 }
 
-export default vacacionesService
+export default timeOffService

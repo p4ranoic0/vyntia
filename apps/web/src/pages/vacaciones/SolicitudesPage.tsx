@@ -11,11 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, {
+import timeOffService, {
     AprobacionSolicitudForm,
     SolicitudesFilter,
     SolicitudVacaciones
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
@@ -319,9 +319,9 @@ const SolicitudesPage: React.FC = () => {
         
         let solicitudesRes: SolicitudVacaciones[] | any
         if (user?.empleado_id && !esGestor && !esJefe) {
-          solicitudesRes = await vacacionesService.getMisSolicitudes()
+          solicitudesRes = await timeOffService.getMisSolicitudes()
         } else {
-          solicitudesRes = await vacacionesService.getSolicitudes(filters)
+          solicitudesRes = await timeOffService.getSolicitudes(filters)
         }
         setSolicitudes(solicitudesRes)
         setFilteredSolicitudes(solicitudesRes)
@@ -366,7 +366,7 @@ const SolicitudesPage: React.FC = () => {
 
   const handleApprove = async (solicitudId: number, data: AprobacionSolicitudForm) => {
     try {
-      await vacacionesService.aprobarSolicitud(solicitudId, data)
+      await timeOffService.aprobarSolicitud(solicitudId, data)
       toast({
         title: 'Solicitud aprobada',
         description: 'La solicitud ha sido aprobada correctamente'
@@ -374,8 +374,8 @@ const SolicitudesPage: React.FC = () => {
       
       // Recargar solicitudes
       const solicitudesRes = esGestor || esJefe
-        ? await vacacionesService.getSolicitudes()
-        : await vacacionesService.getMisSolicitudes()
+        ? await timeOffService.getSolicitudes()
+        : await timeOffService.getMisSolicitudes()
       setSolicitudes(solicitudesRes)
       setFilteredSolicitudes(solicitudesRes)
       
@@ -391,7 +391,7 @@ const SolicitudesPage: React.FC = () => {
 
   const handleReject = async (solicitudId: number, data: AprobacionSolicitudForm) => {
     try {
-      await vacacionesService.rechazarSolicitud(solicitudId, data)
+      await timeOffService.rechazarSolicitud(solicitudId, data)
       toast({
         title: 'Solicitud rechazada',
         description: 'La solicitud ha sido rechazada'
@@ -399,8 +399,8 @@ const SolicitudesPage: React.FC = () => {
       
       // Recargar solicitudes
       const solicitudesRes = esGestor || esJefe
-        ? await vacacionesService.getSolicitudes()
-        : await vacacionesService.getMisSolicitudes()
+        ? await timeOffService.getSolicitudes()
+        : await timeOffService.getMisSolicitudes()
       setSolicitudes(solicitudesRes)
       setFilteredSolicitudes(solicitudesRes)
       

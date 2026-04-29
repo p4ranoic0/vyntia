@@ -107,7 +107,7 @@ export interface AreasResponse {
 }
 
 // Servicio de Áreas
-export const areasService = {
+export const departmentsService = {
   // Operaciones CRUD básicas
   async getAreas(params?: AreasQueryParams): Promise<AreasResponse> {
     const response = await apiClient.get('/api/v1/organization/departments/', { params })
@@ -311,4 +311,4 @@ export const areasService = {
   }
 }
 
-export default areasService
+export default departmentsService

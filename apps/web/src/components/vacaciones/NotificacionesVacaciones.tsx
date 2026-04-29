@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import { es } from 'date-fns/locale'
-import vacacionesService, { EstadisticasVacaciones as EstadisticasVacacionesType, EmpleadoDiasVencidos } from '@/services/vacacionesService'
+import timeOffService, { EstadisticasVacaciones as EstadisticasVacacionesType, EmpleadoDiasVencidos } from '@/services/timeOffService'
 
 interface Notificacion {
   id: string
@@ -72,13 +72,13 @@ const NotificacionesVacaciones: React.FC<NotificacionesVacacionesProps> = ({
       setLoading(true)
       
       // Cargar estadísticas
-      const statsData = await vacacionesService.getEstadisticas()
+      const statsData = await timeOffService.getEstadisticas()
       setEstadisticas(statsData[0] || null) // Tomar el primer elemento del array
       
       // Cargar empleados con días vencidos si es personal
       let empleadosVencidosData: EmpleadoDiasVencidos[] = []
       if (esPersonal) {
-        empleadosVencidosData = await vacacionesService.getEmpleadosDiasVencidos()
+        empleadosVencidosData = await timeOffService.getEmpleadosDiasVencidos()
         setEmpleadosVencidos(empleadosVencidosData)
       }
       
@@ -173,7 +173,7 @@ const NotificacionesVacaciones: React.FC<NotificacionesVacacionesProps> = ({
     // Notificación si no hay configuración activa (solo para personal)
     if (esPersonal) {
       try {
-        const configuraciones = await vacacionesService.getConfiguraciones()
+        const configuraciones = await timeOffService.getConfiguraciones()
         const configuracionActiva = configuraciones.find(c => c.activo)
         
         if (!configuracionActiva) {

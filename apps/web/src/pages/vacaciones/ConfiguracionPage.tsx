@@ -12,10 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
-import vacacionesService, {
+import timeOffService, {
     ConfiguracionVacaciones,
     PeriodoVacacional
-} from '@/services/vacacionesService'
+} from '@/services/timeOffService'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -317,11 +317,11 @@ const ConfiguracionPage: React.FC = () => {
       setLoading(true)
       
       // Cargar configuraciones
-      const configuracionesRes = await vacacionesService.getConfiguraciones()
+      const configuracionesRes = await timeOffService.getConfiguraciones()
       setConfiguraciones(configuracionesRes)
       
       // Cargar períodos recientes (últimos 50)
-      const periodosRes = await vacacionesService.getPeriodos({ limit: 50 })
+      const periodosRes = await timeOffService.getPeriodos({ limit: 50 })
       setPeriodos(periodosRes.results || [])
       
     } catch (error) {
@@ -349,7 +349,7 @@ const ConfiguracionPage: React.FC = () => {
   const handleCrearConfiguracion = async (data: ConfiguracionFormData) => {
     try {
       setSaving(true)
-      await vacacionesService.createConfiguracion(data)
+      await timeOffService.createConfiguracion(data)
       toast({
         title: 'Éxito',
         description: 'Configuración creada correctamente'
@@ -373,7 +373,7 @@ const ConfiguracionPage: React.FC = () => {
     
     try {
       setSaving(true)
-      await vacacionesService.updateConfiguracion(selectedConfiguracion.id, data)
+      await timeOffService.updateConfiguracion(selectedConfiguracion.id, data)
       toast({
         title: 'Éxito',
         description: 'Configuración actualizada correctamente'
@@ -397,7 +397,7 @@ const ConfiguracionPage: React.FC = () => {
     if (!confirm('¿Está seguro de eliminar esta configuración?')) return
     
     try {
-      await vacacionesService.deleteConfiguracion(id)
+      await timeOffService.deleteConfiguracion(id)
       toast({
         title: 'Éxito',
         description: 'Configuración eliminada correctamente'
