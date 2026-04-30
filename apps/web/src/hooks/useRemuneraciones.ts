@@ -22,7 +22,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useConfiguracionAfp(params?: {
   vigencia_mes?: string;
-  status?: "activo" | "inactivo";
+  estado?: "activo" | "inactivo";
 }) {
   return useQuery({
     queryKey: ["configuracion-afp", params],
@@ -70,8 +70,8 @@ export function useDeleteAfp() {
 
 export function useConfiguracionUit(params?: {
   anio?: number;
-  status?: "activo" | "inactivo";
-  is_active?: boolean;
+  estado?: "activo" | "inactivo";
+  activo?: boolean;
 }) {
   return useQuery({
     queryKey: ["configuracion-uit", params],
@@ -143,7 +143,7 @@ export function useActivarUit() {
 
 export function useConceptosRemuneracion(params?: {
   tipo?: "ingreso" | "descuento";
-  status?: "activo" | "inactivo";
+  estado?: "activo" | "inactivo";
   search?: string;
 }) {
   return useQuery({
@@ -193,7 +193,7 @@ export function useDeleteConcepto() {
 export function usePlanillas(params?: {
   periodo?: string;
   modalidad?: ModalidadContrato;
-  status?: EstadoPlanilla;
+  estado?: EstadoPlanilla;
   meta_presupuestal?: string;
 }) {
   return useQuery({
@@ -321,7 +321,7 @@ export function useEstadisticasPlanilla(id: number | null) {
 export function useDetallesPlanilla(params?: {
   planilla?: number;
   empleado?: number;
-  status?: EstadoDetalle;
+  estado?: EstadoDetalle;
 }) {
   return useQuery({
     queryKey: ["detalles-planilla", params],
@@ -387,7 +387,7 @@ export function useDeleteDetalle() {
 
 export function useDescuentosMasivos(params?: {
   periodo?: string;
-  status?: EstadoDescuento;
+  estado?: EstadoDescuento;
 }) {
   return useQuery({
     queryKey: ["descuentos-masivos", params],
@@ -488,7 +488,7 @@ export function useGenerarBoletas() {
 export function useBoletas(params?: {
   empleado?: number;
   periodo?: string;
-  status?: EstadoBoleta;
+  estado?: EstadoBoleta;
 }) {
   return useQuery({
     queryKey: ["boletas-pago", params],
@@ -548,7 +548,7 @@ export function useDescargaMasivaBoletas() {
 export function useCalendariosPago(params?: {
   periodo?: string;
   modalidad?: ModalidadContrato;
-  status?: EstadoCalendario;
+  estado?: EstadoCalendario;
 }) {
   return useQuery({
     queryKey: ["calendarios-pago", params],

@@ -32,7 +32,7 @@ export interface ConceptoRemuneracionPayload {
 
 interface ListParams {
   tipo?: TipoConceptoRemuneracion;
-  status?: "activo" | "inactivo";
+  estado?: "activo" | "inactivo";
   search?: string;
 }
 
@@ -367,7 +367,7 @@ export const payrollService = {
 
   async listAfp(params?: {
     vigencia_mes?: string;
-    status?: "activo" | "inactivo";
+    estado?: "activo" | "inactivo";
   }): Promise<ConfiguracionAfp[]> {
     const response = await apiClient.get("/api/v1/payroll/afp-configurations/", {
       params,
@@ -402,14 +402,14 @@ export const payrollService = {
 
   async listUit(params?: {
     anio?: number;
-    status?: "activo" | "inactivo";
-    is_active?: boolean;
+    estado?: "activo" | "inactivo";
+    activo?: boolean;
   }): Promise<ConfiguracionUit[]> {
     let requestParams = params;
-    if (params && Object.hasOwn(params, "is_active")) {
+    if (params && Object.hasOwn(params, "activo")) {
       requestParams = {
         ...params,
-        activo: String(params.is_active),
+        activo: String(params.activo),
       } as unknown as typeof params;
     }
 
@@ -461,7 +461,7 @@ export const payrollService = {
   async listPlanillas(params?: {
     periodo?: string;
     modalidad?: ModalidadContrato;
-    status?: EstadoPlanilla;
+    estado?: EstadoPlanilla;
     meta_presupuestal?: string;
   }): Promise<PlanillaMensual[]> {
     const response = await apiClient.get("/api/v1/payroll/monthly-runs/", {
@@ -556,7 +556,7 @@ export const payrollService = {
   async listDetalles(params?: {
     planilla?: number;
     empleado?: number;
-    status?: EstadoDetalle;
+    estado?: EstadoDetalle;
   }): Promise<DetallePlanilla[]> {
     const response = await apiClient.get("/api/v1/payroll/details/", {
       params,
@@ -600,7 +600,7 @@ export const payrollService = {
 
   async listDescuentos(params?: {
     periodo?: string;
-    status?: EstadoDescuento;
+    estado?: EstadoDescuento;
   }): Promise<DescuentoMasivo[]> {
     const response = await apiClient.get("/api/v1/payroll/mass-deductions/", {
       params,
@@ -690,7 +690,7 @@ export const payrollService = {
   async listBoletas(params?: {
     empleado?: number;
     periodo?: string;
-    status?: EstadoBoleta;
+    estado?: EstadoBoleta;
   }): Promise<BoletaPago[]> {
     const response = await apiClient.get("/api/v1/payroll/payslips/", {
       params,
@@ -728,7 +728,7 @@ export const payrollService = {
   async listCalendarios(params?: {
     periodo?: string;
     modalidad?: ModalidadContrato;
-    status?: EstadoCalendario;
+    estado?: EstadoCalendario;
   }): Promise<CalendarioPago[]> {
     const response = await apiClient.get("/api/v1/payroll/payment-schedules/", {
       params,

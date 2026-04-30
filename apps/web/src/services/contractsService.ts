@@ -89,7 +89,7 @@ export interface ContratoFilters {
   empleado_id?: number;
   area_id?: number;
   tipo_documento?: string;
-  status?: string;
+  estado?: string;
   fecha_inicio?: string;
   fecha_fin?: string;
 }
@@ -157,7 +157,7 @@ export const contractsService = {
       if (filters?.area_id) params.area_id = filters.area_id;
       if (filters?.tipo_documento)
         params.tipo_documento = filters.tipo_documento;
-      if (filters?.status) params.estado = filters.status;
+      if (filters?.estado) params.estado = filters.estado;
       if (filters?.fecha_inicio) params.fecha_inicio = filters.fecha_inicio;
       if (filters?.fecha_fin) params.fecha_fin = filters.fecha_fin;
       const response = await apiClient.get(

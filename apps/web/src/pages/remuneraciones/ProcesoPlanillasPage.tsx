@@ -93,7 +93,7 @@ function PlanillaSelector({ onSelect }: Readonly<{ onSelect: (id: number) => voi
         <TableCell className="text-right">{p.total_trabajadores ?? 0}</TableCell>
         <TableCell>
           <Badge variant={getEstadoBadgeVariant(p.status)}>
-            {p.status_texto || p.status || 'Desconocido'}
+            {p.estado_texto || p.status || 'Desconocido'}
           </Badge>
         </TableCell>
         <TableCell className="text-right">
@@ -345,7 +345,7 @@ export default function ProcesoPlanillasPage() {
         </TableCell>
         <TableCell>
           <Badge variant={detalle.status === 'activo' ? 'default' : 'secondary'}>
-            {detalle.status_texto || detalle.status}
+            {detalle.estado_texto || detalle.status}
           </Badge>
         </TableCell>
       </TableRow>
@@ -367,7 +367,7 @@ export default function ProcesoPlanillasPage() {
           </p>
         </div>
         <Badge variant={planilla.status === 'aprobada' ? 'default' : 'outline'} className="text-sm">
-          {planilla.status_texto || planilla.status}
+          {planilla.estado_texto || planilla.status}
         </Badge>
       </div>
 

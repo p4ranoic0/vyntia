@@ -880,7 +880,7 @@ export default function ContratosPage() {
     queryKey: ['contratos', estadoFilter, tipoFilter],
     queryFn: () => {
       const filters: ContratoFilters = {}
-      if (estadoFilter) filters.status = estadoFilter
+      if (estadoFilter) filters.estado = estadoFilter
       if (tipoFilter) filters.tipo_documento = tipoFilter
       return contractsService.getAll(filters)
     },

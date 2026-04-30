@@ -115,13 +115,13 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Validaciones a nivel de objeto."""
         # Validar que solo haya una UIT activa por año
-        if attrs.get("estado") == "activo":
+        if attrs.get("status") == "activo":
             anio = attrs.get("anio")
             instance = self.instance
 
             # Verificar si ya existe otra UIT activa para ese año
             existing = TaxParameter.objects.filter(
-                anio=anio, estado="activo"
+                anio=anio, status="activo"
             ).exclude(
                 configuracion_uit_id=instance.configuracion_uit_id if instance else None
             )
