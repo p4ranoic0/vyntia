@@ -344,8 +344,8 @@ export default function ProcesoPlanillasPage() {
           S/ {toNumber(detalle.neto_pagar).toFixed(2)}
         </TableCell>
         <TableCell>
-          <Badge variant={detalle.status === 'activo' ? 'default' : 'secondary'}>
-            {detalle.estado_texto || detalle.status}
+          <Badge variant={detalle.estado === 'activo' ? 'default' : 'secondary'}>
+            {detalle.estado_texto || detalle.estado}
           </Badge>
         </TableCell>
       </TableRow>

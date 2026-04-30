@@ -184,7 +184,7 @@ export interface DetallePlanilla {
   neto_pagar: number;
   aporte_essalud: number;
   aporte_afp_empleador: number;
-  status: EstadoDetalle;
+  estado: EstadoDetalle;
   estado_texto?: string;
   banco?: string;
   numero_cuenta?: string;
