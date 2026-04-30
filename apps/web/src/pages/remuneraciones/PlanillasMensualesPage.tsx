@@ -201,8 +201,8 @@ export default function PlanillasMensualesPage() {
           <TableCell className="text-right">S/ {totalDescuentos.toFixed(2)}</TableCell>
           <TableCell className="text-right font-semibold">S/ {totalNeto.toFixed(2)}</TableCell>
           <TableCell>
-            <Badge variant={getEstadoBadgeVariant(planilla.estado)}>
-              {planilla.estado_texto || planilla.estado || 'Desconocido'}
+            <Badge variant={getEstadoBadgeVariant(planilla.status)}>
+              {planilla.status_texto || planilla.status || 'Desconocido'}
             </Badge>
           </TableCell>
           <TableCell className="text-right space-x-2">
@@ -213,7 +213,7 @@ export default function PlanillasMensualesPage() {
             >
               <Eye className="h-4 w-4" />
             </Button>
-            {planilla.estado === 'borrador' && (
+            {planilla.status === 'borrador' && (
               <Button
                 variant="outline"
                 size="sm"

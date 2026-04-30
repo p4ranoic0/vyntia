@@ -191,8 +191,8 @@ function ContratoCard({ contrato }: ContratoCardProps) {
             {contrato.cargo ? ` - ${contrato.cargo}` : ''}
           </p>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_CONTRATO_BADGE[contrato.estado] ?? 'bg-gray-100 text-gray-800'}`}>
-              {contrato.estado_texto ?? contrato.estado}
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_CONTRATO_BADGE[contrato.status] ?? 'bg-gray-100 text-gray-800'}`}>
+              {contrato.estado_texto ?? contrato.status}
             </span>
             <span className="text-xs text-muted-foreground">
               {new Date(contrato.fecha_inicio).toLocaleDateString('es-PE')}

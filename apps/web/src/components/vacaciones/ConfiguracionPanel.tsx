@@ -53,9 +53,9 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
       const configuraciones = await timeOffService.getConfiguraciones()
       
       // Buscar configuración general activa
-      const config = configuraciones?.find(c => 
-        c.tipo_configuracion === 'general' && 
-        c.activo
+      const config = configuraciones?.find(c =>
+        c.tipo_configuracion === 'general' &&
+        c.is_active
       )
       
       if (config) {
@@ -75,7 +75,7 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
           permitir_solicitudes_retroactivas: false, // Campo no existe en el modelo
           dias_retroactivos_permitidos: 0, // Campo no existe en el modelo
           mensaje_politicas: config.observaciones || '',
-          activo: config.activo ?? true
+          activo: config.is_active ?? true
         })
       }
     } catch (error) {
@@ -108,7 +108,7 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
         requiere_aprobacion_jefe: formData.requiere_aprobacion_jefe,
         requiere_aprobacion_rrhh: formData.requiere_aprobacion_rrhh,
         observaciones: formData.mensaje_politicas,
-        activo: formData.activo
+        is_active: formData.activo
       }
       
       if (configuracion) {
@@ -156,7 +156,7 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
         permitir_solicitudes_retroactivas: false, // Campo no existe en el modelo
         dias_retroactivos_permitidos: 0, // Campo no existe en el modelo
         mensaje_politicas: configuracion.observaciones || '',
-        activo: configuracion.activo ?? true
+        activo: configuracion.is_active ?? true
       })
     }
   }
@@ -183,9 +183,9 @@ const ConfiguracionPanel: React.FC<ConfiguracionPanelProps> = ({ onConfiguracion
               <CardTitle>Estado de la Configuración</CardTitle>
             </div>
             {configuracion ? (
-              <Badge variant={configuracion.activo ? 'default' : 'secondary'}>
+              <Badge variant={configuracion.is_active ? 'default' : 'secondary'}>
                 <CheckCircle className="mr-1 h-3 w-3" />
-                {configuracion.activo ? 'Activa' : 'Inactiva'}
+                {configuracion.is_active ? 'Activa' : 'Inactiva'}
               </Badge>
             ) : (
               <Badge variant="destructive">

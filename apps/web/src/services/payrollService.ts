@@ -12,7 +12,7 @@ export interface ConceptoRemuneracion {
   monto_fijo: number;
   aplica_base_imponible: boolean;
   orden: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   es_activo?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -27,12 +27,12 @@ export interface ConceptoRemuneracionPayload {
   monto_fijo?: number;
   aplica_base_imponible?: boolean;
   orden?: number;
-  estado?: "activo" | "inactivo";
+  status?: "activo" | "inactivo";
 }
 
 interface ListParams {
   tipo?: TipoConceptoRemuneracion;
-  estado?: "activo" | "inactivo";
+  status?: "activo" | "inactivo";
   search?: string;
 }
 
@@ -45,7 +45,7 @@ export interface ConfiguracionAfp {
   comision_mixta_pct: number;
   prima_seguro_pct: number;
   remuneracion_max_asegurable: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   es_activo?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -59,7 +59,7 @@ export interface ConfiguracionAfpPayload {
   comision_mixta_pct: number;
   prima_seguro_pct: number;
   remuneracion_max_asegurable: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
 }
 
 export interface ConfiguracionUit {
@@ -68,7 +68,7 @@ export interface ConfiguracionUit {
   valor_uit: number;
   tope_renta_cuarta_uit: number;
   porcentaje_renta_cuarta: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   estado_texto?: string;
   es_activo?: boolean;
   tope_renta_cuarta_soles: number;
@@ -84,7 +84,7 @@ export interface ConfiguracionUitPayload {
   valor_uit: number;
   tope_renta_cuarta_uit?: number;
   porcentaje_renta_cuarta?: number;
-  estado?: "activo" | "inactivo";
+  status?: "activo" | "inactivo";
 }
 
 // ========== Planillas Mensuales ==========
@@ -126,7 +126,7 @@ export interface PlanillaMensual {
   total_essalud?: number;
   total_aporte_afp?: number;
   total_onp?: number;
-  estado?: EstadoPlanilla;
+  status?: EstadoPlanilla;
   estado_texto?: string;
   fecha_generacion?: string;
   fecha_aprobacion?: string;
@@ -144,7 +144,7 @@ export interface PlanillaMensualPayload {
   modalidad: ModalidadContrato;
   meta_presupuestal: string;
   descripcion?: string;
-  estado?: EstadoPlanilla;
+  status?: EstadoPlanilla;
 }
 
 export interface DetallePlanilla {
@@ -184,7 +184,7 @@ export interface DetallePlanilla {
   neto_pagar: number;
   aporte_essalud: number;
   aporte_afp_empleador: number;
-  estado: EstadoDetalle;
+  status: EstadoDetalle;
   estado_texto?: string;
   banco?: string;
   numero_cuenta?: string;
@@ -215,7 +215,7 @@ export interface DescuentoMasivo {
   registros_procesados: number;
   registros_error: number;
   monto_total: number;
-  estado: EstadoDescuento;
+  status: EstadoDescuento;
   estado_texto?: string;
   errores_log?: string;
   usuario_carga?: {
@@ -251,7 +251,7 @@ export interface BoletaPago {
   total_ingresos: number;
   total_descuentos: number;
   neto_pagar: number;
-  estado: EstadoBoleta;
+  status: EstadoBoleta;
   estado_texto?: string;
   pdf_url?: string;
   hash_documento?: string;
@@ -268,7 +268,7 @@ export interface CalendarioPago {
   fecha_pago_real?: string;
   modalidad: ModalidadContrato;
   meta_presupuestal?: string;
-  estado: EstadoCalendario;
+  status: EstadoCalendario;
   estado_texto?: string;
   observaciones?: string;
   created_by?: {
@@ -367,7 +367,7 @@ export const payrollService = {
 
   async listAfp(params?: {
     vigencia_mes?: string;
-    estado?: "activo" | "inactivo";
+    status?: "activo" | "inactivo";
   }): Promise<ConfiguracionAfp[]> {
     const response = await apiClient.get("/api/v1/payroll/afp-configurations/", {
       params,
@@ -402,14 +402,14 @@ export const payrollService = {
 
   async listUit(params?: {
     anio?: number;
-    estado?: "activo" | "inactivo";
-    activo?: boolean;
+    status?: "activo" | "inactivo";
+    is_active?: boolean;
   }): Promise<ConfiguracionUit[]> {
     let requestParams = params;
-    if (params && Object.hasOwn(params, "activo")) {
+    if (params && Object.hasOwn(params, "is_active")) {
       requestParams = {
         ...params,
-        activo: String(params.activo),
+        activo: String(params.is_active),
       } as unknown as typeof params;
     }
 
@@ -461,7 +461,7 @@ export const payrollService = {
   async listPlanillas(params?: {
     periodo?: string;
     modalidad?: ModalidadContrato;
-    estado?: EstadoPlanilla;
+    status?: EstadoPlanilla;
     meta_presupuestal?: string;
   }): Promise<PlanillaMensual[]> {
     const response = await apiClient.get("/api/v1/payroll/monthly-runs/", {
@@ -556,7 +556,7 @@ export const payrollService = {
   async listDetalles(params?: {
     planilla?: number;
     empleado?: number;
-    estado?: EstadoDetalle;
+    status?: EstadoDetalle;
   }): Promise<DetallePlanilla[]> {
     const response = await apiClient.get("/api/v1/payroll/details/", {
       params,
@@ -600,7 +600,7 @@ export const payrollService = {
 
   async listDescuentos(params?: {
     periodo?: string;
-    estado?: EstadoDescuento;
+    status?: EstadoDescuento;
   }): Promise<DescuentoMasivo[]> {
     const response = await apiClient.get("/api/v1/payroll/mass-deductions/", {
       params,
@@ -690,7 +690,7 @@ export const payrollService = {
   async listBoletas(params?: {
     empleado?: number;
     periodo?: string;
-    estado?: EstadoBoleta;
+    status?: EstadoBoleta;
   }): Promise<BoletaPago[]> {
     const response = await apiClient.get("/api/v1/payroll/payslips/", {
       params,
@@ -728,7 +728,7 @@ export const payrollService = {
   async listCalendarios(params?: {
     periodo?: string;
     modalidad?: ModalidadContrato;
-    estado?: EstadoCalendario;
+    status?: EstadoCalendario;
   }): Promise<CalendarioPago[]> {
     const response = await apiClient.get("/api/v1/payroll/payment-schedules/", {
       params,

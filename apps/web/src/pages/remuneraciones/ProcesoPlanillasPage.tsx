@@ -92,8 +92,8 @@ function PlanillaSelector({ onSelect }: Readonly<{ onSelect: (id: number) => voi
         <TableCell>{p.meta_presupuestal || '-'}</TableCell>
         <TableCell className="text-right">{p.total_trabajadores ?? 0}</TableCell>
         <TableCell>
-          <Badge variant={getEstadoBadgeVariant(p.estado)}>
-            {p.estado_texto || p.estado || 'Desconocido'}
+          <Badge variant={getEstadoBadgeVariant(p.status)}>
+            {p.status_texto || p.status || 'Desconocido'}
           </Badge>
         </TableCell>
         <TableCell className="text-right">
@@ -285,7 +285,7 @@ export default function ProcesoPlanillasPage() {
     )
   }
 
-  const currentEstado = planilla.estado ?? ''
+  const currentEstado = planilla.status ?? ''
   const canGenerate = ['borrador', 'procesando'].includes(currentEstado)
   const canRegenerate = ['generada', 'procesando'].includes(currentEstado)
   const canCalculate = ['borrador', 'generada', 'procesando'].includes(currentEstado)
@@ -344,8 +344,8 @@ export default function ProcesoPlanillasPage() {
           S/ {toNumber(detalle.neto_pagar).toFixed(2)}
         </TableCell>
         <TableCell>
-          <Badge variant={detalle.estado === 'activo' ? 'default' : 'secondary'}>
-            {detalle.estado_texto || detalle.estado}
+          <Badge variant={detalle.status === 'activo' ? 'default' : 'secondary'}>
+            {detalle.status_texto || detalle.status}
           </Badge>
         </TableCell>
       </TableRow>
@@ -366,8 +366,8 @@ export default function ProcesoPlanillasPage() {
             {planilla.modalidad} - {planilla.meta_presupuestal}
           </p>
         </div>
-        <Badge variant={planilla.estado === 'aprobada' ? 'default' : 'outline'} className="text-sm">
-          {planilla.estado_texto || planilla.estado}
+        <Badge variant={planilla.status === 'aprobada' ? 'default' : 'outline'} className="text-sm">
+          {planilla.status_texto || planilla.status}
         </Badge>
       </div>
 

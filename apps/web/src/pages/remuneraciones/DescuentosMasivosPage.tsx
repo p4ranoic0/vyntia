@@ -284,8 +284,8 @@ export default function DescuentosMasivosPage() {
                     S/ {Number(descuento.monto_total || 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getEstadoBadgeVariant(descuento.estado)}>
-                      {descuento.estado}
+                    <Badge variant={getEstadoBadgeVariant(descuento.status)}>
+                      {descuento.status}
                     </Badge>
                   </TableCell>
                   <TableCell>{descuento.usuario_carga?.username || 'N/A'}</TableCell>
@@ -294,7 +294,7 @@ export default function DescuentosMasivosPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {descuento.estado === 'pendiente' && (
+                      {descuento.status === 'pendiente' && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -304,7 +304,7 @@ export default function DescuentosMasivosPage() {
                           <Play className="h-4 w-4" />
                         </Button>
                       )}
-                      {descuento.estado === 'procesado' && (
+                      {descuento.status === 'procesado' && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -314,11 +314,11 @@ export default function DescuentosMasivosPage() {
                           <XCircle className="h-4 w-4" />
                         </Button>
                       )}
-                      {descuento.estado === 'pendiente' && (
+                      {descuento.status === 'pendiente' && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(descuento.descuento_masivo_id, descuento.estado)}
+                          onClick={() => handleDelete(descuento.descuento_masivo_id, descuento.status)}
                           disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />

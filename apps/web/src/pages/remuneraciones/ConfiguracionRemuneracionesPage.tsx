@@ -62,7 +62,7 @@ function toPayload(form: FormState): ConceptoRemuneracionPayload {
     monto_fijo: Number(form.monto_fijo || 0),
     aplica_base_imponible: form.aplica_base_imponible,
     orden: Number(form.orden || 1),
-    estado: form.estado,
+    status: form.estado,
   }
 }
 
@@ -97,7 +97,7 @@ function toAfpPayload(form: AfpFormState): ConfiguracionAfpPayload {
     comision_mixta_pct: Number(form.comision_mixta_pct || 0),
     prima_seguro_pct: Number(form.prima_seguro_pct || 0),
     remuneracion_max_asegurable: Number(form.remuneracion_max_asegurable || 0),
-    estado: form.estado,
+    status: form.estado,
   }
 }
 
@@ -161,10 +161,10 @@ export default function ConfiguracionRemuneracionesPage() {
 
   const resumen = useMemo(() => {
     if (tipo === 'afp') {
-      const activos = afpConfigs.filter((item) => item.estado === 'activo').length
+      const activos = afpConfigs.filter((item) => item.status === 'activo').length
       return { total: afpConfigs.length, activos }
     }
-    const activos = conceptos.filter((item) => item.estado === 'activo').length
+    const activos = conceptos.filter((item) => item.status === 'activo').length
     return { total: conceptos.length, activos }
   }, [afpConfigs, conceptos, tipo])
 
@@ -225,7 +225,7 @@ export default function ConfiguracionRemuneracionesPage() {
       monto_fijo: String(item.monto_fijo),
       aplica_base_imponible: item.aplica_base_imponible,
       orden: String(item.orden),
-      estado: item.estado,
+      estado: item.status,
     })
   }
 
@@ -256,7 +256,7 @@ export default function ConfiguracionRemuneracionesPage() {
       comision_mixta_pct: String(item.comision_mixta_pct),
       prima_seguro_pct: String(item.prima_seguro_pct),
       remuneracion_max_asegurable: String(item.remuneracion_max_asegurable),
-      estado: item.estado,
+      estado: item.status,
     })
   }
 
@@ -317,8 +317,8 @@ export default function ConfiguracionRemuneracionesPage() {
         <TableCell>{Number(item.porcentaje).toFixed(3)}</TableCell>
         <TableCell>{Number(item.monto_fijo).toFixed(2)}</TableCell>
         <TableCell>
-          <Badge variant={item.estado === 'activo' ? 'default' : 'secondary'}>
-            {item.estado}
+          <Badge variant={item.status === 'activo' ? 'default' : 'secondary'}>
+            {item.status}
           </Badge>
         </TableCell>
         <TableCell className="text-right">
@@ -363,7 +363,7 @@ export default function ConfiguracionRemuneracionesPage() {
         <TableCell>{Number(item.prima_seguro_pct).toFixed(3)}%</TableCell>
         <TableCell>{Number(item.remuneracion_max_asegurable).toFixed(2)}</TableCell>
         <TableCell>
-          <Badge variant={item.estado === 'activo' ? 'default' : 'secondary'}>{item.estado}</Badge>
+          <Badge variant={item.status === 'activo' ? 'default' : 'secondary'}>{item.status}</Badge>
         </TableCell>
         <TableCell className="text-right">
           <div className="flex justify-end gap-2">

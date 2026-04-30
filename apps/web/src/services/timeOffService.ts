@@ -4,7 +4,7 @@ export interface ConfiguracionVacaciones {
   configuracion_id: number
   tipo_configuracion: string
   dias_por_ano: number
-  activo: boolean
+  is_active: boolean
 }
 
 export interface PeriodoVacacional {
@@ -151,7 +151,7 @@ export interface GoceVacacionesForm {
 export interface ConfiguracionVacacionesForm {
   tipo_configuracion: string
   dias_por_ano: number
-  activo?: boolean
+  is_active?: boolean
 }
 
 export interface FiltrosSolicitudes {

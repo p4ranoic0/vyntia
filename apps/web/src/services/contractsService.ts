@@ -32,7 +32,7 @@ export interface Contrato {
   lugar_trabajo?: string | null;
   horario_trabajo?: string | null;
   observaciones?: string | null;
-  estado: string;
+  status: string;
   estado_texto?: string;
   documento_generado: boolean;
   created_at: string;
@@ -61,7 +61,7 @@ export interface ContratoListItem {
   salario_bruto: number;
   salario_neto?: number | null;
   cargo: string;
-  estado: string;
+  status: string;
   estado_texto: string;
   dias_hasta_vencimiento?: number | null;
   esta_vigente?: boolean;
@@ -89,7 +89,7 @@ export interface ContratoFilters {
   empleado_id?: number;
   area_id?: number;
   tipo_documento?: string;
-  estado?: string;
+  status?: string;
   fecha_inicio?: string;
   fecha_fin?: string;
 }
@@ -157,7 +157,7 @@ export const contractsService = {
       if (filters?.area_id) params.area_id = filters.area_id;
       if (filters?.tipo_documento)
         params.tipo_documento = filters.tipo_documento;
-      if (filters?.estado) params.estado = filters.estado;
+      if (filters?.status) params.estado = filters.status;
       if (filters?.fecha_inicio) params.fecha_inicio = filters.fecha_inicio;
       if (filters?.fecha_fin) params.fecha_fin = filters.fecha_fin;
       const response = await apiClient.get(
