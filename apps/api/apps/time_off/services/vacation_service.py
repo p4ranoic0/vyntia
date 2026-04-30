@@ -218,7 +218,7 @@ class VacationService:
                 "El período vacacional no tiene contrato asociado.",
                 error_code="CONTRACT_NOT_LINKED",
             )
-        if contrato.estado != "ACTIVO":
+        if contrato.status != "ACTIVO":
             raise BusinessLogicError(
                 "El contrato asociado al período no está activo.",
                 error_code="CONTRACT_NOT_ACTIVE",

@@ -367,7 +367,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             contrato_original = self.get_object()
 
             # Validar que el contrato se pueda renovar
-            if contrato_original.estado not in ["ACTIVO", "VENCIDO"]:
+            if contrato_original.status not in ["ACTIVO", "VENCIDO"]:
                 return APIResponse.error(
                     message="Solo se pueden renovar contratos activos o vencidos",
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -403,16 +403,16 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
                 nuevo_contrato = serializer.save(created_by=request.user)
 
                 # Activar el nuevo contrato
-                nuevo_contrato.estado = "ACTIVO"
-                nuevo_contrato.save(update_fields=["estado"])
+                nuevo_contrato.status = "ACTIVO"
+                nuevo_contrato.save(update_fields=["status"])
 
                 # Marcar el contrato original como terminado
-                contrato_original.estado = "TERMINADO"
+                contrato_original.status = "TERMINADO"
                 obs_anterior = contrato_original.observaciones or ""
                 contrato_original.observaciones = f"{obs_anterior} - Renovado con contrato {nuevo_contrato.pk}".strip(
                     " -"
                 )
-                contrato_original.save(update_fields=["estado", "observaciones"])
+                contrato_original.save(update_fields=["status", "observaciones"])
 
                 return APIResponse.success(
                     data=ContratosAdendasSerializer(

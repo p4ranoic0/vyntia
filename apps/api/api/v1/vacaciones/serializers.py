@@ -95,7 +95,7 @@ class PeriodoVacacionalSerializer(serializers.ModelSerializer):
     contrato_numero = serializers.CharField(source='contrato.numero_contrato', read_only=True)
     contrato_fecha_inicio = serializers.DateField(source='contrato.fecha_inicio', read_only=True)
     contrato_fecha_fin = serializers.DateField(source='contrato.fecha_fin', read_only=True)
-    contrato_estado = serializers.CharField(source='contrato.estado', read_only=True)
+    contrato_estado = serializers.CharField(source='contrato.status', read_only=True)
     configuracion_tipo = serializers.CharField(source='configuracion.get_tipo_configuracion_display', read_only=True)
     porcentaje_uso = serializers.ReadOnlyField()
     esta_vencido = serializers.ReadOnlyField()
