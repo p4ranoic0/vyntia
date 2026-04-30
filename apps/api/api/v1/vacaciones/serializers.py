@@ -75,7 +75,7 @@ class ConfiguracionVacacionesSerializer(serializers.ModelSerializer):
             'permite_fraccionamiento',
             'min_dias_por_fraccion',
             'max_fracciones_por_ano',
-            'activo',
+            'is_active',
             'fecha_inicio_vigencia',
             'fecha_fin_vigencia',
             'observaciones',
