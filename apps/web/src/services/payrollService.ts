@@ -12,7 +12,7 @@ export interface ConceptoRemuneracion {
   monto_fijo: number;
   aplica_base_imponible: boolean;
   orden: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   es_activo?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -27,7 +27,7 @@ export interface ConceptoRemuneracionPayload {
   monto_fijo?: number;
   aplica_base_imponible?: boolean;
   orden?: number;
-  estado?: "activo" | "inactivo";
+  status?: "activo" | "inactivo";
 }
 
 interface ListParams {
@@ -45,7 +45,7 @@ export interface ConfiguracionAfp {
   comision_mixta_pct: number;
   prima_seguro_pct: number;
   remuneracion_max_asegurable: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   es_activo?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -59,7 +59,7 @@ export interface ConfiguracionAfpPayload {
   comision_mixta_pct: number;
   prima_seguro_pct: number;
   remuneracion_max_asegurable: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
 }
 
 export interface ConfiguracionUit {
@@ -68,7 +68,7 @@ export interface ConfiguracionUit {
   valor_uit: number;
   tope_renta_cuarta_uit: number;
   porcentaje_renta_cuarta: number;
-  estado: "activo" | "inactivo";
+  status: "activo" | "inactivo";
   estado_texto?: string;
   es_activo?: boolean;
   tope_renta_cuarta_soles: number;
@@ -84,7 +84,7 @@ export interface ConfiguracionUitPayload {
   valor_uit: number;
   tope_renta_cuarta_uit?: number;
   porcentaje_renta_cuarta?: number;
-  estado?: "activo" | "inactivo";
+  status?: "activo" | "inactivo";
 }
 
 // ========== Planillas Mensuales ==========
@@ -126,7 +126,7 @@ export interface PlanillaMensual {
   total_essalud?: number;
   total_aporte_afp?: number;
   total_onp?: number;
-  estado?: EstadoPlanilla;
+  status?: EstadoPlanilla;
   estado_texto?: string;
   fecha_generacion?: string;
   fecha_aprobacion?: string;
@@ -144,7 +144,7 @@ export interface PlanillaMensualPayload {
   modalidad: ModalidadContrato;
   meta_presupuestal: string;
   descripcion?: string;
-  estado?: EstadoPlanilla;
+  status?: EstadoPlanilla;
 }
 
 export interface DetallePlanilla {
@@ -215,7 +215,7 @@ export interface DescuentoMasivo {
   registros_procesados: number;
   registros_error: number;
   monto_total: number;
-  estado: EstadoDescuento;
+  status: EstadoDescuento;
   estado_texto?: string;
   errores_log?: string;
   usuario_carga?: {
@@ -251,7 +251,7 @@ export interface BoletaPago {
   total_ingresos: number;
   total_descuentos: number;
   neto_pagar: number;
-  estado: EstadoBoleta;
+  status: EstadoBoleta;
   estado_texto?: string;
   pdf_url?: string;
   hash_documento?: string;
@@ -268,7 +268,7 @@ export interface CalendarioPago {
   fecha_pago_real?: string;
   modalidad: ModalidadContrato;
   meta_presupuestal?: string;
-  estado: EstadoCalendario;
+  status: EstadoCalendario;
   estado_texto?: string;
   observaciones?: string;
   created_by?: {

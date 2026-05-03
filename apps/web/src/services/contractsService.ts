@@ -32,7 +32,7 @@ export interface Contrato {
   lugar_trabajo?: string | null;
   horario_trabajo?: string | null;
   observaciones?: string | null;
-  estado: string;
+  status: string;
   estado_texto?: string;
   documento_generado: boolean;
   created_at: string;
@@ -61,7 +61,7 @@ export interface ContratoListItem {
   salario_bruto: number;
   salario_neto?: number | null;
   cargo: string;
-  estado: string;
+  status: string;
   estado_texto: string;
   dias_hasta_vencimiento?: number | null;
   esta_vigente?: boolean;

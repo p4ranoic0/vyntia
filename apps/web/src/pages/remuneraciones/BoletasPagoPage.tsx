@@ -61,7 +61,7 @@ export default function BoletasPagoPage() {
 
   // Filter planillas that are ready for boleta generation (generada or aprobada)
   const planillas = allPlanillas.filter((p) =>
-    ['generada', 'aprobada', 'pagada'].includes(p.estado ?? '')
+    ['generada', 'aprobada', 'pagada'].includes(p.status ?? '')
   )
   const { data: boletas = [], isLoading: loadingBoletas, refetch: refetchBoletas } = useBoletas({
     periodo: periodo || undefined,
@@ -138,8 +138,8 @@ export default function BoletasPagoPage() {
         <TableCell>{p.modalidad || '-'}</TableCell>
         <TableCell>{p.meta_presupuestal || '-'}</TableCell>
         <TableCell>
-          <Badge variant={p.estado === 'aprobada' || p.estado === 'pagada' ? 'default' : 'secondary'}>
-            {getPlanillaEstadoLabel(p.estado)}
+          <Badge variant={p.status === 'aprobada' || p.status === 'pagada' ? 'default' : 'secondary'}>
+            {getPlanillaEstadoLabel(p.status)}
           </Badge>
         </TableCell>
         <TableCell className="text-right">{p.total_trabajadores ?? 0}</TableCell>
@@ -208,8 +208,8 @@ export default function BoletasPagoPage() {
           S/ {toNumber(b.neto_pagar).toFixed(2)}
         </TableCell>
         <TableCell>
-          <Badge variant={getBoletaBadgeVariant(b.estado)}>
-            {b.estado_texto || b.estado}
+          <Badge variant={getBoletaBadgeVariant(b.status)}>
+            {b.estado_texto || b.status}
           </Badge>
         </TableCell>
         <TableCell>{b.fecha_generacion ? new Date(b.fecha_generacion).toLocaleDateString() : '-'}</TableCell>

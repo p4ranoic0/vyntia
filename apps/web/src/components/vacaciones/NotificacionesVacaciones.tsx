@@ -174,7 +174,7 @@ const NotificacionesVacaciones: React.FC<NotificacionesVacacionesProps> = ({
     if (esPersonal) {
       try {
         const configuraciones = await timeOffService.getConfiguraciones()
-        const configuracionActiva = configuraciones.find(c => c.activo)
+        const configuracionActiva = configuraciones.find(c => c.is_active)
         
         if (!configuracionActiva) {
           notificaciones.push({

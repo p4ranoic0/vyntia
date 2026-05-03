@@ -94,7 +94,7 @@ class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
         if vigencia_mes:
             queryset = queryset.filter(vigencia_mes=vigencia_mes)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
 
         return queryset
 
@@ -146,10 +146,10 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
 
         try:
             # Desactivar todas las configuraciones del mismo año
-            TaxParameter.objects.filter(anio=uit.anio).update(estado="inactivo")
+            TaxParameter.objects.filter(anio=uit.anio).update(status="inactivo")
 
             # Activar la seleccionada
-            uit.estado = "activo"
+            uit.status = "activo"
             uit.save()
 
             return APIResponse.success(
@@ -176,11 +176,11 @@ class ConfiguracionUitViewSet(viewsets.ModelViewSet):
         if anio:
             queryset = queryset.filter(anio=anio)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
         if activo == "true":
-            queryset = queryset.filter(estado="activo")
+            queryset = queryset.filter(status="activo")
         elif activo == "false":
-            queryset = queryset.filter(estado="inactivo")
+            queryset = queryset.filter(status="inactivo")
 
         return queryset
 
@@ -227,7 +227,7 @@ class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
         if codigo:
             queryset = queryset.filter(codigo__icontains=codigo)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
 
         return queryset
 
@@ -280,7 +280,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Eliminar planilla mensual - requiere rol administrador."""
         instance = self.get_object()
-        if instance.estado in ["aprobada", "pagada"]:
+        if instance.status in ["aprobada", "pagada"]:
             return APIResponse.error(
                 message="No se puede eliminar una planilla aprobada o pagada",
                 status_code=400,
@@ -314,7 +314,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         if modalidad:
             queryset = queryset.filter(modalidad=modalidad)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
         if meta_presupuestal:
             queryset = queryset.filter(meta_presupuestal__icontains=meta_presupuestal)
 
@@ -329,7 +329,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         logger = logging.getLogger(__name__)
         planilla = self.get_object()
 
-        if planilla.estado not in ["borrador", "procesando"]:
+        if planilla.status not in ["borrador", "procesando"]:
             return APIResponse.error(
                 message="Solo se pueden generar planillas en estado borrador o procesando",
                 status_code=400,
@@ -416,7 +416,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                 )
 
             # Actualizar estado de planilla
-            planilla.estado = "generada"
+            planilla.status = "generada"
             planilla.fecha_generacion = timezone.now()
             planilla.total_trabajadores = PayrollDetail.objects.filter(
                 planilla=planilla
@@ -452,7 +452,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         """
         planilla = self.get_object()
 
-        if planilla.estado not in ["borrador", "generada", "procesando"]:
+        if planilla.status not in ["borrador", "generada", "procesando"]:
             return APIResponse.error(
                 message="Solo se pueden calcular planillas en borrador o generadas",
                 status_code=400,
@@ -502,7 +502,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
                 "periodo": str(planilla.periodo),
                 "modalidad": planilla.modalidad,
                 "meta_presupuestal": planilla.meta_presupuestal,
-                "estado_actual": planilla.estado,
+                "estado_actual": planilla.status,
                 "resumen": {
                     "total_trabajadores": detalles.count(),
                     "total_ingresos": float(
@@ -550,12 +550,12 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         """Aprueba la planilla para pago."""
         planilla = self.get_object()
 
-        if planilla.estado != "generada":
+        if planilla.status != "generada":
             return APIResponse.error(
                 message="Solo se pueden aprobar planillas generadas", status_code=400
             )
 
-        planilla.estado = "aprobada"
+        planilla.status = "aprobada"
         planilla.fecha_aprobacion = timezone.now()
         planilla.usuario_aprobacion = request.user
         planilla.save()
@@ -571,7 +571,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         """Genera boletas de pago para todos los detalles de una planilla aprobada."""
         planilla = self.get_object()
 
-        if planilla.estado not in ["generada", "aprobada"]:
+        if planilla.status not in ["generada", "aprobada"]:
             return APIResponse.error(
                 message="Solo se pueden generar boletas de planillas generadas o aprobadas",
                 status_code=400,
@@ -615,7 +615,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         """Resetea una planilla generada a borrador, elimina sus detalles y permite regenerar."""
         planilla = self.get_object()
 
-        if planilla.estado in ["aprobada", "pagada"]:
+        if planilla.status in ["aprobada", "pagada"]:
             return APIResponse.error(
                 message="No se puede regenerar una planilla aprobada o pagada",
                 status_code=400,
@@ -625,7 +625,7 @@ class PlanillaMensualViewSet(viewsets.ModelViewSet):
         eliminados = PayrollDetail.objects.filter(planilla=planilla).delete()[0]
 
         # Resetear estado
-        planilla.estado = "borrador"
+        planilla.status = "borrador"
         planilla.total_trabajadores = 0
         planilla.total_remuneracion_bruta = Decimal("0.00")
         planilla.total_descuentos = Decimal("0.00")
@@ -878,7 +878,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Eliminar descuento masivo - requiere rol administrador."""
         instance = self.get_object()
-        if instance.estado == "aplicado":
+        if instance.status == "aplicado":
             return APIResponse.error(
                 message="No se puede eliminar un descuento ya aplicado", status_code=400
             )
@@ -905,7 +905,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
         if periodo:
             queryset = queryset.filter(periodo=periodo)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
 
         return queryset
 
@@ -918,9 +918,9 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
         """
         descuento = self.get_object()
 
-        if descuento.estado != "pendiente":
+        if descuento.status != "pendiente":
             return APIResponse.error(
-                message=f"El descuento masivo ya fue procesado (estado: {descuento.estado})",
+                message=f"El descuento masivo ya fue procesado (estado: {descuento.status})",
                 status_code=400,
             )
 
@@ -963,7 +963,7 @@ class DescuentoMasivoViewSet(viewsets.ModelViewSet):
         """
         descuento = self.get_object()
 
-        if descuento.estado == "anulado":
+        if descuento.status == "anulado":
             return APIResponse.error(
                 message="El descuento masivo ya está anulado", status_code=400
             )
@@ -1034,9 +1034,9 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                 f'attachment; filename="boleta-{boleta.boleta_id}.txt"'
             )
 
-            boleta.estado = "descargada"
+            boleta.status = "descargada"
             boleta.fecha_descarga = timezone.now()
-            boleta.save(update_fields=["estado", "fecha_descarga"])
+            boleta.save(update_fields=["status", "fecha_descarga"])
 
             return response
 
@@ -1047,9 +1047,9 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
             f'attachment; filename="boleta-{boleta.boleta_id}.pdf"'
         )
 
-        boleta.estado = "descargada"
+        boleta.status = "descargada"
         boleta.fecha_descarga = timezone.now()
-        boleta.save(update_fields=["estado", "fecha_descarga"])
+        boleta.save(update_fields=["status", "fecha_descarga"])
 
         return response
 
@@ -1127,11 +1127,11 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
                     zf.writestr(f"{nombre_archivo}.txt", content.encode("utf-8"))
 
                 # Marcar como descargada
-                boleta.estado = "descargada"
+                boleta.status = "descargada"
                 boleta.fecha_descarga = timezone.now()
 
             PaySlip.objects.filter(detalle_planilla__planilla_id=planilla_id).update(
-                estado="descargada", fecha_descarga=timezone.now()
+                status="descargada", fecha_descarga=timezone.now()
             )
 
         buffer.seek(0)
@@ -1169,7 +1169,7 @@ class BoletaPagoViewSet(viewsets.ReadOnlyModelViewSet):
         if periodo:
             queryset = queryset.filter(detalle_planilla__planilla__periodo=periodo)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
 
         return queryset
 
@@ -1207,7 +1207,7 @@ class CalendarioPagoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Eliminar calendario de pago - requiere rol administrador."""
         instance = self.get_object()
-        if instance.estado == "completado":
+        if instance.status == "completado":
             return APIResponse.error(
                 message="No se puede eliminar un calendario completado", status_code=400
             )
@@ -1235,7 +1235,7 @@ class CalendarioPagoViewSet(viewsets.ModelViewSet):
         if planilla_id:
             queryset = queryset.filter(planilla_id=planilla_id)
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
         if tipo_pago:
             queryset = queryset.filter(tipo_pago=tipo_pago)
 

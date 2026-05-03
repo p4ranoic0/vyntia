@@ -424,8 +424,8 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
           <div className="space-y-6 py-2">
             {/* Estado badge */}
             <div className="flex items-center gap-3">
-              <Badge className={ESTADO_CONTRATO_BADGE[contrato.estado] ?? 'bg-gray-100 text-gray-800'}>
-                {contrato.estado_texto ?? ESTADO_CONTRATO_LABELS[contrato.estado] ?? contrato.estado}
+              <Badge className={ESTADO_CONTRATO_BADGE[contrato.status] ?? 'bg-gray-100 text-gray-800'}>
+                {contrato.estado_texto ?? ESTADO_CONTRATO_LABELS[contrato.status] ?? contrato.status}
               </Badge>
               {contrato.es_adenda && (
                 <Badge variant="outline">Adenda</Badge>
@@ -558,7 +558,7 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
                     </>
                   )}
                 </Button>
-                {(contrato.estado === 'ACTIVO' || contrato.estado === 'VENCIDO') && !showRenovar && (
+                {(contrato.status === 'ACTIVO' || contrato.status === 'VENCIDO') && !showRenovar && (
                   <Button onClick={() => setShowRenovar(true)} className="bg-blue-600 hover:bg-blue-700">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Renovar Contrato
@@ -923,11 +923,11 @@ export default function ContratosPage() {
       contratos.length
     const activos =
       (estadisticas?.activos as number) ??
-      contratos.filter((c) => c.estado === 'ACTIVO').length
+      contratos.filter((c) => c.status === 'ACTIVO').length
     const porVencer = alertas.length
     const vencidos =
       (estadisticas?.vencidos as number) ??
-      contratos.filter((c) => c.estado === 'VENCIDO').length
+      contratos.filter((c) => c.status === 'VENCIDO').length
     return { total, activos, porVencer, vencidos }
   }, [estadisticas, contratos, alertas])
 
@@ -1185,8 +1185,8 @@ export default function ContratosPage() {
                       <TableCell>{formatDate(contrato.fecha_fin)}</TableCell>
                       <TableCell>{contrato.cargo}</TableCell>
                       <TableCell>
-                        <Badge className={ESTADO_CONTRATO_BADGE[contrato.estado] ?? 'bg-gray-100 text-gray-800'}>
-                          {contrato.estado_texto ?? ESTADO_CONTRATO_LABELS[contrato.estado] ?? contrato.estado}
+                        <Badge className={ESTADO_CONTRATO_BADGE[contrato.status] ?? 'bg-gray-100 text-gray-800'}>
+                          {contrato.estado_texto ?? ESTADO_CONTRATO_LABELS[contrato.status] ?? contrato.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">{formatCurrency(contrato.salario_neto)}</TableCell>

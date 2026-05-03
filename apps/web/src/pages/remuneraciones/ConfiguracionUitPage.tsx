@@ -39,7 +39,7 @@ function toPayload(form: FormState): ConfiguracionUitPayload {
     valor_uit: Number(form.valor_uit || 0),
     tope_renta_cuarta_uit: Number(form.tope_renta_cuarta_uit || 45),
     porcentaje_renta_cuarta: Number(form.porcentaje_renta_cuarta || 8),
-    estado: form.estado,
+    status: form.estado,
   }
 }
 
@@ -56,7 +56,7 @@ export default function ConfiguracionUitPage() {
   const activarMutation = useActivarUit()
 
   const resumen = useMemo(() => {
-    const activos = configs.filter((item) => item.estado === 'activo').length
+    const activos = configs.filter((item) => item.status === 'activo').length
     return { total: configs.length, activos }
   }, [configs])
 
@@ -67,7 +67,7 @@ export default function ConfiguracionUitPage() {
       valor_uit: String(item.valor_uit),
       tope_renta_cuarta_uit: String(item.tope_renta_cuarta_uit),
       porcentaje_renta_cuarta: String(item.porcentaje_renta_cuarta),
-      estado: item.estado,
+      estado: item.status,
     })
   }
 
@@ -195,13 +195,13 @@ export default function ConfiguracionUitPage() {
         <TableCell className="text-center">{Number(item.porcentaje_renta_cuarta).toFixed(2)}%</TableCell>
         <TableCell className="text-right">S/ {Number(item.essalud_cas_mensual).toFixed(2)}</TableCell>
         <TableCell>
-          <Badge variant={item.estado === 'activo' ? 'default' : 'secondary'}>
-            {item.estado}
+          <Badge variant={item.status === 'activo' ? 'default' : 'secondary'}>
+            {item.status}
           </Badge>
         </TableCell>
         <TableCell className="text-right">
           <div className="flex justify-end gap-2">
-            {item.estado === 'inactivo' && (
+            {item.status === 'inactivo' && (
               <Button
                 size="icon"
                 variant="outline"

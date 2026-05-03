@@ -47,7 +47,7 @@ class ConfiguracionAfpSerializer(serializers.ModelSerializer):
             "comision_mixta_pct",
             "prima_seguro_pct",
             "remuneracion_max_asegurable",
-            "estado",
+            "status",
             "estado_texto",
             "es_activo",
             "created_at",
@@ -79,7 +79,7 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
             "valor_uit",
             "tope_renta_cuarta_uit",
             "porcentaje_renta_cuarta",
-            "estado",
+            "status",
             "estado_texto",
             "es_activo",
             "tope_renta_cuarta_soles",
@@ -98,7 +98,7 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
 
     def get_es_activo(self, obj):
         """Retorna si la configuración UIT está activa."""
-        return obj.estado == "activo"
+        return obj.status == "activo"
 
     def validate_anio(self, value):
         """Valida que el año sea válido."""
@@ -115,13 +115,13 @@ class ConfiguracionUitSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Validaciones a nivel de objeto."""
         # Validar que solo haya una UIT activa por año
-        if attrs.get("estado") == "activo":
+        if attrs.get("status") == "activo":
             anio = attrs.get("anio")
             instance = self.instance
 
             # Verificar si ya existe otra UIT activa para ese año
             existing = TaxParameter.objects.filter(
-                anio=anio, estado="activo"
+                anio=anio, status="activo"
             ).exclude(
                 configuracion_uit_id=instance.configuracion_uit_id if instance else None
             )
@@ -154,7 +154,7 @@ class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
             "monto_fijo",
             "aplica_base_imponible",
             "orden",
-            "estado",
+            "status",
             "estado_texto",
             "es_activo",
             "created_at",
@@ -193,7 +193,7 @@ class PlanillaMensualListSerializer(serializers.ModelSerializer):
             "modalidad_texto",
             "meta_presupuestal",
             "descripcion",
-            "estado",
+            "status",
             "estado_texto",
             "total_trabajadores",
             "total_remuneracion_bruta",
@@ -244,7 +244,7 @@ class PlanillaMensualDetailSerializer(serializers.ModelSerializer):
             "modalidad_texto",
             "meta_presupuestal",
             "descripcion",
-            "estado",
+            "status",
             "estado_texto",
             "total_trabajadores",
             "total_remuneracion_bruta",
@@ -532,7 +532,7 @@ class DescuentoMasivoListSerializer(serializers.ModelSerializer):
             "registros_procesados",
             "registros_error",
             "monto_total",
-            "estado",
+            "status",
             "estado_texto",
             "usuario_nombre",
             "fecha_carga",
@@ -566,7 +566,7 @@ class DescuentoMasivoDetailSerializer(serializers.ModelSerializer):
             "registros_procesados",
             "registros_error",
             "monto_total",
-            "estado",
+            "status",
             "estado_texto",
             "errores_log",
             "usuario_carga",
@@ -646,7 +646,7 @@ class BoletaPagoListSerializer(serializers.ModelSerializer):
             "id",
             "detalle_planilla",
             "archivo_pdf",
-            "estado",
+            "status",
             "estado_texto",
             "empleado_nombre",
             "empleado_dni",
@@ -681,7 +681,7 @@ class BoletaPagoDetailSerializer(serializers.ModelSerializer):
             "detalle_planilla",
             "detalle_planilla_info",
             "archivo_pdf",
-            "estado",
+            "status",
             "estado_texto",
             "fecha_generacion",
             "fecha_envio_email",
@@ -726,7 +726,7 @@ class CalendarioPagoListSerializer(serializers.ModelSerializer):
             "fecha_pago_programada",
             "fecha_pago_ejecutada",
             "descripcion",
-            "estado",
+            "status",
             "estado_texto",
             "created_at",
         ]
@@ -757,7 +757,7 @@ class CalendarioPagoDetailSerializer(serializers.ModelSerializer):
             "fecha_pago_programada",
             "fecha_pago_ejecutada",
             "descripcion",
-            "estado",
+            "status",
             "estado_texto",
             "usuario_programacion",
             "usuario_detalle",
