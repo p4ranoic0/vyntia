@@ -1,10 +1,10 @@
 import { AreaForm } from '@/components/areas/AreaForm'
-import { DataTable } from '@/components/common/DataTable'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { DataTable } from '@/shared/components/DataTable'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AreasLayout } from '@/components/layout/AreasLayout'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,10 +12,10 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { useToast } from '@/components/ui/use-toast'
-import { getErrorMessage } from '@/lib/errorUtils'
+} from '@/shared/ui/dropdown-menu'
+import { Input } from '@/shared/ui/input'
+import { useToast } from '@/shared/ui/use-toast'
+import { getErrorMessage } from '@/shared/api/errorUtils'
 import { departmentsService, Area as AreaType } from '@/services/departmentsService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'

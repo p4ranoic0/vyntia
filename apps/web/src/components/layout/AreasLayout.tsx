@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 import { BarChart3, Building2, List, Plus } from 'lucide-react'
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'

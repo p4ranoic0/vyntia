@@ -1,15 +1,15 @@
-import { VyntiaLogo } from '@/components/brand/VyntiaLogo'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { VyntiaLogo } from '@/shared/ui/brand/VyntiaLogo'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { useStaggerAnimation } from '@/hooks/useAnimations'
+} from '@/shared/ui/tooltip'
+import { useStaggerAnimation } from '@/shared/hooks/useAnimations'
 import { useAuth } from '@/hooks/useAuth'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 import { Module } from '@/services/authService'
 import { menuService, MenuItem as MenuServiceItem } from '@/services/menuService'
 import {

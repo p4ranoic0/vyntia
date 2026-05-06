@@ -1,14 +1,14 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import { useQuery } from '@tanstack/react-query'
 import {
     Building2,
@@ -22,9 +22,9 @@ import {
 import { useState } from 'react'
 // Progress component no disponible - usando alternativa con div
 // Tabs component no disponible - usando navegación simple
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AreasLayout } from '@/components/layout/AreasLayout'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/shared/ui/use-toast'
 import { Area, departmentsService, AreaStats } from '@/services/departmentsService'
 
 export function AreasManagementPage() {

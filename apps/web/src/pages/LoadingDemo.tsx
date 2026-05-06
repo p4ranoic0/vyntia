@@ -14,11 +14,11 @@ import {
   SidebarSkeleton,
   useLoading,
   useLoadingWithDelay
-} from '@/components/common'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
+} from '@/shared/components'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { Badge } from '@/shared/ui/badge'
 
 /**
  * Página de demostración de componentes de loading

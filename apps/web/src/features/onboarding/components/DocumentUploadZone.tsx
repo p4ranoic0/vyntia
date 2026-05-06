@@ -1,13 +1,13 @@
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import { Upload, FileText, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { TipoDocumento, DocumentInfo, UploadDocumentResponse } from '../types/onboarding'
 import { uploadDocument, uploadFoto } from '../services/onboardingUploadService'
 import { useQueryClient } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 import { DocumentPreviewModal } from './DocumentPreviewModal'
 
 interface DocumentUploadZoneProps {

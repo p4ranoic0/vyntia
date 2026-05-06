@@ -5,12 +5,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { getInitials } from '@/lib/utils'
+} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Badge } from '@/shared/ui/badge'
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { getInitials } from '@/shared/utils/cn'
 import {
   Building,
   Calendar,
@@ -24,14 +24,14 @@ import {
   Users,
   X
 } from 'lucide-react'
-import { Separator } from '@/components/ui/separator'
-// import { ScrollArea } from '@/components/ui/scroll-area' // Componente no disponible
+import { Separator } from '@/shared/ui/separator'
+// import { ScrollArea } from '@/shared/ui/scroll-area' // Componente no disponible
 import { toast } from 'sonner'
 import { 
   usersService, 
   type User as UserType 
 } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface UserDetailsModalProps {
   open: boolean

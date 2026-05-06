@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { MoreHorizontal, Plus, Edit, Trash2, Key, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/shared/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -21,12 +21,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { DataTable } from '@/components/common/DataTable'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { useToast } from '@/components/ui/use-toast'
+} from '@/shared/ui/dialog'
+import { Label } from '@/shared/ui/label'
+import { Textarea } from '@/shared/ui/textarea'
+import { DataTable } from '@/shared/components/DataTable'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { useToast } from '@/shared/ui/use-toast'
 import { permissionService, type Permission, type PermissionFormData } from '@/services/securityService'
 
 export default function PermissionsPage() {

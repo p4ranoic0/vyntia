@@ -3,24 +3,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus, Trash2, Upload, X } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+} from '@/shared/ui/dialog'
+import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { DocumentUploadZone } from './DocumentUploadZone'
 import { DocumentPreviewModal } from './DocumentPreviewModal'
 import {
@@ -29,7 +29,7 @@ import {
   deleteFamiliar,
 } from '../services/onboardingDataService'
 import { subirDocumento } from '../services/onboardingUploadService'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 
 interface OnboardingTabFamiliarProps {
   empleadoId: number

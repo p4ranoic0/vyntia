@@ -4,9 +4,9 @@ import {
   AlertTriangle, BookOpen, Check, ChevronDown, ChevronUp,
   Copy, Download, Eye, FileText, Info, Trash2, Upload,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -14,16 +14,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/shared/ui/dialog'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import {
   Table,
   TableBody,
@@ -31,10 +31,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+} from '@/shared/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { Textarea } from '@/shared/ui/textarea'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from 'sonner'
 import {
   templatesService,

@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api";
+import { apiClient } from "@/shared/api/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Interface for paginated API response

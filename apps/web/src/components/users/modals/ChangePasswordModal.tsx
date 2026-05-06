@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Key, Eye, EyeOff, Shield, AlertTriangle, CheckCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+} from '@/shared/ui/dialog'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { usersService, type User, type ChangePasswordData } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface ChangePasswordModalProps {
   open: boolean

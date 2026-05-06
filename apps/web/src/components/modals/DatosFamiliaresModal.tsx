@@ -8,22 +8,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+} from '@/shared/ui/select'
+import { Textarea } from '@/shared/ui/textarea'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Badge } from '@/shared/ui/badge'
+import { LoadingSpinner } from '@/shared/ui/loading-spinner'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { Users, Heart, Baby, Plus, Trash2, Phone, MapPin, User, Lock, AlertCircle } from 'lucide-react'
 import { employeesService, type DatosFamiliares } from '@/services/employeesService'

@@ -10,7 +10,7 @@ import {
   Users,
   Settings
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -18,13 +18,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
-// import { ScrollArea } from '@/components/ui/scroll-area' // Componente no disponible
+} from '@/shared/ui/dialog'
+import { Input } from '@/shared/ui/input'
+import { Badge } from '@/shared/ui/badge'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
+import { Separator } from '@/shared/ui/separator'
+// import { ScrollArea } from '@/shared/ui/scroll-area' // Componente no disponible
 import { toast } from 'sonner'
 import { 
   usersService, 
@@ -33,7 +33,7 @@ import {
   type Role, 
   type UserRoleAssignment 
 } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface RoleManagementModalProps {
   open: boolean

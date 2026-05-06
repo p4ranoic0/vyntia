@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Building2, Upload, Search, FileUp, X, FileText } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/shared/ui/select'
+import { Textarea } from '@/shared/ui/textarea'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+} from '@/shared/ui/dialog'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from 'sonner'
 import {
   legajoService,

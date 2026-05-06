@@ -1,8 +1,8 @@
-import { apiClient } from "@/lib/api";
+import { apiClient } from "@/shared/api/api";
 import {
   extractCollection,
   normalizeSecurityRole,
-} from "@/services/normalizers/apiNormalizers";
+} from "@/shared/api/apiNormalizers";
 
 // Interfaces para paginación
 export interface PaginationMeta {

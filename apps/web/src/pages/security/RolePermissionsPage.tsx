@@ -1,21 +1,21 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Settings, Search, Save, X, Check, Key, UserCog, Plus, Minus, FolderOpen, User, FileText, Calendar, DollarSign, BarChart3 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { useToast } from '@/components/ui/use-toast'
-import { apiClient } from '@/lib/api'
+} from '@/shared/ui/select'
+import { Badge } from '@/shared/ui/badge'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { useToast } from '@/shared/ui/use-toast'
+import { apiClient } from '@/shared/api/api'
 import { roleService, permissionService, rolePermissionService } from '@/services/securityService'
 
 // Importar interfaces del servicio

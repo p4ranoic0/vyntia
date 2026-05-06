@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock the apiClient before importing the module under test
-vi.mock('@/lib/api', () => ({
+vi.mock('@/shared/api/api', () => ({
   apiClient: {
     post: vi.fn(),
     get: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 import { subirDocumento } from '../onboardingUploadService'
-import { apiClient } from '@/lib/api'
+import { apiClient } from '@/shared/api/api'
 
 describe('subirDocumento', () => {
   beforeEach(() => {

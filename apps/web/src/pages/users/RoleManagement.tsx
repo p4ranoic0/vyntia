@@ -12,13 +12,13 @@ import {
   Users,
   Settings
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
+import { Badge } from '@/shared/ui/badge'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
+import { Separator } from '@/shared/ui/separator'
 import { toast } from 'sonner'
 import { 
   usersService, 
@@ -27,7 +27,7 @@ import {
   type Role, 
   type UserRoleAssignment 
 } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 
 export function RoleManagement() {

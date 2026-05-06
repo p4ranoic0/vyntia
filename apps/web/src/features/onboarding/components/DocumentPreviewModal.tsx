@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
 import { FileText, X } from 'lucide-react'
 
 interface DocumentPreviewModalProps {

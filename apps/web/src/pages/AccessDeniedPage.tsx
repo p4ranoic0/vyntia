@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import { ShieldAlert } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

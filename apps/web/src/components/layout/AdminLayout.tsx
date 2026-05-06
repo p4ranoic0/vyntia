@@ -12,10 +12,10 @@ import {
   Key,
   UserCog
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent } from '@/shared/ui/card'
+import { Badge } from '@/shared/ui/badge'
+import { Separator } from '@/shared/ui/separator'
 
 interface AdminLayoutProps {
   children?: React.ReactNode

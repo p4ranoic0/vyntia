@@ -1,10 +1,10 @@
-import { Skeleton } from '@/components/common/LoadingSkeleton'
-import { ProfileImage } from '@/components/common/ProfileImage'
+import { Skeleton } from '@/shared/components/LoadingSkeleton'
+import { ProfileImage } from '@/shared/components/ProfileImage'
 import { TabAcademicos, TabFamiliares, TabLaborales, TabPersonales } from '@/components/empleados'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent } from '@/shared/ui/card'
+import { Checkbox } from '@/shared/ui/checkbox'
 import {
     Dialog,
     DialogContent,
@@ -12,7 +12,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/shared/ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,16 +20,16 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/shared/ui/dropdown-menu'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import {
     Table,
     TableBody,
@@ -37,10 +37,10 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+} from '@/shared/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useEmpleados } from '@/hooks/useApi'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { contractsService } from '@/services/contractsService'
 import { employeesService } from '@/services/employeesService'
 import { OnboardingCreateData, onboardingService } from '@/services/onboardingService'
