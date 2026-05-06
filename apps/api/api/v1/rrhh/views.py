@@ -390,7 +390,7 @@ class AreaViewSet(viewsets.ModelViewSet):
 class ModulosViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de módulos del sistema."""
 
-    queryset = Module.objects.prefetch_related("permiso_set")
+    queryset = Module.objects.prefetch_related("modulo_permisos")
     serializer_class = ModulosSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
