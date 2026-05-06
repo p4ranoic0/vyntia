@@ -4,18 +4,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { apiClient } from '@/lib/api'
+} from '@/shared/ui/select'
+import { apiClient } from '@/shared/api/api'
 import { DocumentInfo } from '../types/onboarding'
 import { DocumentUploadZone } from './DocumentUploadZone'
 

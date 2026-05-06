@@ -4,9 +4,9 @@ import DatosAcademicosModal from '@/components/modals/DatosAcademicosModal'
 import DatosFamiliaresModal from '@/components/modals/DatosFamiliaresModal'
 import DatosLaboralesModal from '@/components/modals/DatosLaboralesModal'
 import DatosPersonalesModal from '@/components/modals/DatosPersonalesModal'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,16 +14,16 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
+} from '@/shared/ui/dropdown-menu'
+import { Input } from '@/shared/ui/input'
+import { LoadingSpinner } from '@/shared/ui/loading-spinner'
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import {
     Table,
     TableBody,
@@ -31,7 +31,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'
+} from '@/shared/ui/table'
 import { useAuth } from '@/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 import { employeesService, type Employee } from '@/services/employeesService'

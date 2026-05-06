@@ -1,6 +1,6 @@
 import React from 'react'
 import { Loader2, RotateCw } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 
 interface LoadingSpinnerProps {
   className?: string

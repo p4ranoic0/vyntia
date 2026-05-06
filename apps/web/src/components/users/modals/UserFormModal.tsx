@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Save, User, Mail, Lock, Shield, Building2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -10,19 +10,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
+} from '@/shared/ui/dialog'
+import { Separator } from '@/shared/ui/separator'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
+} from '@/shared/ui/select'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { toast } from 'sonner'
 import { usersService, rolesService, type UserFormData, type Role } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface Employee {
   id: number

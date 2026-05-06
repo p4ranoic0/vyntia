@@ -8,21 +8,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+} from '@/shared/ui/select'
+import { Textarea } from '@/shared/ui/textarea'
+import { LoadingSpinner } from '@/shared/ui/loading-spinner'
+import { Badge } from '@/shared/ui/badge'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { User, Calendar, MapPin, Phone, Mail, CreditCard, Lock, AlertCircle, Edit } from 'lucide-react'
 import { employeesService, type DatosPersonales } from '@/services/employeesService'

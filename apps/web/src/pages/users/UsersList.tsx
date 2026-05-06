@@ -13,10 +13,10 @@ import {
   Key,
   Shield
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Badge } from '@/shared/ui/badge'
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/shared/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,18 +32,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/shared/ui/dropdown-menu'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import { toast } from 'sonner'
 import { usersService, rolesService, type User, type Role } from '@/services/usersService'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/ui/alert-dialog'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 
 // Importar los modales

@@ -1,4 +1,4 @@
-import { Progress } from '@/components/ui/progress'
+import { Progress } from '@/shared/ui/progress'
 
 interface OnboardingProgressBarProps {
   progreso_porcentaje?: number   // upload completion

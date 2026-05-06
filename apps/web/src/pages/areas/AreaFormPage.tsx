@@ -5,24 +5,24 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { ArrowLeft, Save, Building2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
+import { Textarea } from '@/shared/ui/textarea'
+import { Label } from '@/shared/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 // Form components no disponibles - usando formularios HTML nativos
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { useToast } from '@/components/ui/use-toast'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { useToast } from '@/shared/ui/use-toast'
 import { departmentsService, Area, CreateAreaData } from '@/services/departmentsService'
 import { AreasLayout } from '@/components/layout/AreasLayout'
-import { getErrorMessage } from '@/lib/errorUtils'
+import { getErrorMessage } from '@/shared/api/errorUtils'
 
 // Schema de validación
 const areaSchema = z.object({

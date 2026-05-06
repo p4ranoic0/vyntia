@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/utils/cn"
 import { cva, type VariantProps } from "class-variance-authority"
 
 const statusBadgeVariants = cva(

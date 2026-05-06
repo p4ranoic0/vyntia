@@ -17,13 +17,13 @@ import {
   Lock,
   UserCog
 } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { Progress } from '@/shared/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useAuth } from '@/hooks/useAuth'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 // Interfaces para los datos del dashboard
 interface DashboardStats {

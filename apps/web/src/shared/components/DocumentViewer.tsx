@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/shared/ui/dialog'
 import { Download, X } from 'lucide-react'
 
 interface DocumentViewerProps {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { LoadingSpinner } from './LoadingSpinner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 
 interface LoadingPageProps {
   title?: string

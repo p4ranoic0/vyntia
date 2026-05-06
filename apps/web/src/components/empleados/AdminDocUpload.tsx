@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from '@/shared/ui/button'
+import { cn } from '@/shared/utils/cn'
 import { legajoService, TIPO_DOCUMENTO_LABELS } from '@/services/legajoService'
 import { Eye, FileText, Loader2, Trash2, Upload } from 'lucide-react'
 import { useCallback, useState } from 'react'

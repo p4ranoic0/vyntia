@@ -1,10 +1,10 @@
-import { apiClient } from "@/lib/api";
-import { getErrorMessage } from "@/lib/errorUtils";
+import { apiClient } from "@/shared/api/api";
+import { getErrorMessage } from "@/shared/api/errorUtils";
 import {
   extractCollection,
   normalizeRole,
   normalizeUser,
-} from "@/services/normalizers/apiNormalizers";
+} from "@/shared/api/apiNormalizers";
 
 // Interfaces para usuarios
 export interface User {

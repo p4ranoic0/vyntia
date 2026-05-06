@@ -1,7 +1,7 @@
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
     Dialog,
     DialogContent,
@@ -9,16 +9,16 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/shared/ui/dialog'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/shared/ui/select'
 import {
     Table,
     TableBody,
@@ -26,8 +26,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/shared/ui/table'
+import { Textarea } from '@/shared/ui/textarea'
 import {
     contractsService,
     ESTADO_CONTRATO_BADGE,

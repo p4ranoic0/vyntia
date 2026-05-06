@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/shared/ui/dropdown-menu'
 import { useAuth } from '@/hooks/useAuth'
 import timeOffService, { SolicitudVacaciones } from '@/services/timeOffService'
 import { Bell } from 'lucide-react'

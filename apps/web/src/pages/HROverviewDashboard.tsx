@@ -1,8 +1,8 @@
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { apiClient } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { Badge } from '@/shared/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton } from '@/shared/ui/skeleton'
+import { apiClient } from '@/shared/api/api'
+import { cn } from '@/shared/utils/cn'
 import { contractsService, TIPO_CONTRATO_LABELS } from '@/services/contractsService'
 import { useQuery } from '@tanstack/react-query'
 import {

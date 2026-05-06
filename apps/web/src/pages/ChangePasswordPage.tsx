@@ -1,6 +1,6 @@
 import React from 'react'
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 
 /**
  * Página para el cambio de contraseña del usuario

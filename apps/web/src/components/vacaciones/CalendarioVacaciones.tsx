@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -29,8 +29,8 @@ import { format,
 import { es } from 'date-fns/locale'
 import { SolicitudVacaciones } from '@/services/timeOffService'
 import timeOffService from '@/services/timeOffService'
-import { useToast } from '@/hooks/use-toast'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { useToast } from '@/shared/hooks/use-toast'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface CalendarioVacacionesProps {
   empleadoId?: number

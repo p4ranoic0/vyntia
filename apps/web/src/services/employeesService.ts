@@ -1,9 +1,9 @@
-import { apiClient } from "@/lib/api";
-import { getErrorMessage } from "@/lib/errorUtils";
+import { apiClient } from "@/shared/api/api";
+import { getErrorMessage } from "@/shared/api/errorUtils";
 import {
   extractCollection,
   normalizeEmployee,
-} from "@/services/normalizers/apiNormalizers";
+} from "@/shared/api/apiNormalizers";
 
 // Interfaces para empleados
 export interface Employee {

@@ -1,7 +1,7 @@
 import NotificationsBell from '@/components/notifications/NotificationsBell'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,13 +9,13 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+} from '@/shared/ui/dropdown-menu'
+import { Input } from '@/shared/ui/input'
 import { useTheme } from '@/context/ThemeContext'
-import { useEntranceAnimation, useStaggerAnimation } from '@/hooks/useAnimations'
+import { useEntranceAnimation, useStaggerAnimation } from '@/shared/hooks/useAnimations'
 import { useAuth } from '@/hooks/useAuth'
-import { useScrolled } from '@/hooks/useScrolled'
-import { cn, getInitials } from '@/lib/utils'
+import { useScrolled } from '@/shared/hooks/useScrolled'
+import { cn, getInitials } from '@/shared/utils/cn'
 import { Menu, Moon, Search, Shield, Sun, User } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'

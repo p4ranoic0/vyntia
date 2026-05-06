@@ -1,5 +1,5 @@
-import { apiClient } from "@/lib/api";
-import { getErrorMessage } from "@/lib/errorUtils";
+import { apiClient } from "@/shared/api/api";
+import { getErrorMessage } from "@/shared/api/errorUtils";
 
 export interface Documento {
   id: string;

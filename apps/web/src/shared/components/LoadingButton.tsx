@@ -1,7 +1,7 @@
 import React from 'react'
-import { Button, ButtonProps } from '@/components/ui/button'
+import { Button, ButtonProps } from '@/shared/ui/button'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 import { LoadingSpinner } from './LoadingSpinner'
 
 type ButtonStatus = 'idle' | 'loading' | 'success' | 'error'

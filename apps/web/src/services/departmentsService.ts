@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api'
+import { apiClient } from '@/shared/api/api'
 
 // Interfaces para Áreas
 export interface Area {

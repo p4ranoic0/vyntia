@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api'
+import { apiClient } from '@/shared/api/api'
 
 // --- DatosFamiliares ---
 export async function getFamiliares(empleadoId: number) {

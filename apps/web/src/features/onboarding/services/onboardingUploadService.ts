@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api'
+import { apiClient } from '@/shared/api/api'
 import { UploadDocumentResponse, TipoDocumento } from '../types/onboarding'
 
 export async function uploadFoto(archivo: File): Promise<UploadDocumentResponse> {

@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { ArrowRight, Calculator, FileSpreadsheet, FileText, Landmark, Settings, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

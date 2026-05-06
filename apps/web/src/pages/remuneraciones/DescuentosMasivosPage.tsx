@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+import { Badge } from '@/shared/ui/badge'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { Label } from '@/shared/ui/label'
+import { Input } from '@/shared/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { useToast } from '@/shared/ui/use-toast'
 import { 
   useDescuentosMasivos, 
   useCreateDescuento, 
@@ -18,7 +18,7 @@ import {
 } from '@/hooks/useRemuneraciones'
 import type { ConfiguracionRemuneracion, DescuentoMasivo } from '@/services/payrollService'
 import { Upload, Trash2, Play, XCircle, AlertCircle } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
 
 function getEstadoBadgeVariant(estado: string) {
   switch (estado) {

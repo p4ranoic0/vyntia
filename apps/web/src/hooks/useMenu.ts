@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { authService, Module } from '@/services/authService'
 import { useAuth } from './useAuth'
-import { useLoading } from '@/components/common'
+import { useLoading } from '@/shared/components'
 
 // Interfaz para compatibilidad con el componente Sidebar
 interface MenuItem {

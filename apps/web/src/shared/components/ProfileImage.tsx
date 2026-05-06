@@ -1,6 +1,6 @@
 import React from 'react'
 import { User } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 
 interface ProfileImageProps {
   src?: string | null

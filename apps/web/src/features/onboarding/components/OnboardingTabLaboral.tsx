@@ -3,28 +3,28 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { LockKeyhole, Plus, Briefcase, Upload, X } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
+} from '@/shared/ui/dialog'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion'
+} from '@/shared/ui/accordion'
 import { DocumentUploadZone } from './DocumentUploadZone'
 import { DocumentPreviewModal } from './DocumentPreviewModal'
 import { getConstanciasTrabajo } from '../services/onboardingDataService'
 import { subirDocumento } from '../services/onboardingUploadService'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/utils/cn'
 
 interface DatosLaboralesInfo {
   cargo?: string
