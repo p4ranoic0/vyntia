@@ -9,7 +9,7 @@ interface LoginCredentials {
 }
 
 interface User {
-  usuario_id: number;
+  usuario_id: string;
   username: string;
   nombres_usuario: string;
   apellidos_usuario: string;
@@ -21,23 +21,23 @@ interface User {
   is_superuser?: boolean;
   es_admin_rrhh?: boolean;
   es_jefe?: boolean;
-  empleado_id?: number | null;
-  area_id?: number | null;
+  empleado_id?: string | null;
+  area_id?: string | null;
   requiere_cambio_password?: boolean;
   empleado?: {
-    id: number | null;
+    id: string | null;
     nombres: string | null;
     apellido_paterno: string | null;
     apellido_materno: string | null;
     numero_documento: string | null;
     ruta_fotografia: string | null;
   } | null;
-  roles?: Array<{ id: number; nombre: string }>;
+  roles?: Array<{ id: string; nombre: string }>;
 }
 
 interface Role {
-  rol_id?: number;
-  id?: number;
+  rol_id?: string;
+  id?: string;
   nombre_rol?: string;
   nombre?: string;
   descripcion_rol?: string;
@@ -46,15 +46,15 @@ interface Role {
 }
 
 interface Permission {
-  permiso_id: number;
+  permiso_id: string;
   nombre_permiso: string;
   descripcion_permiso: string;
-  modulo_id: number;
+  modulo_id: string;
   tipo_permiso: string;
 }
 
 interface Module {
-  modulo_id: number;
+  modulo_id: string;
   nombre_modulo: string;
   descripcion_modulo: string;
   icono_modulo: string;
@@ -116,7 +116,7 @@ class AuthService {
   private normalizeUser(raw: any): User {
     const empleado = this.normalizeEmpleado(raw.empleado)
     return {
-      usuario_id: raw.usuario_id ?? raw.id ?? raw.user_id ?? 0,
+      usuario_id: raw.usuario_id ?? raw.id ?? raw.user_id ?? "",
       username: raw.username ?? "",
       nombres_usuario: raw.nombres_usuario ?? raw.nombres ?? "",
       apellidos_usuario: raw.apellidos_usuario ?? raw.apellidos ?? "",

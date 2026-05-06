@@ -36,7 +36,7 @@ export function ChangePassword() {
 
   useEffect(() => {
     if (id) {
-      loadUserData(parseInt(id))
+      loadUserData(id)
     }
   }, [id])
 
@@ -48,7 +48,7 @@ export function ChangePassword() {
     }
   }, [formData.new_password])
 
-  const loadUserData = async (userId: number) => {
+  const loadUserData = async (userId: string) => {
     try {
       setLoading(true)
       const userData = await usersService.getById(userId)
@@ -146,7 +146,7 @@ export function ChangePassword() {
 
     try {
       setSubmitting(true)
-      await usersService.changePassword(user.usuario_id, formData)
+      await usersService.changePassword(user.id, formData)
       
       toast.success('Contraseña cambiada exitosamente', {
         description: formData.send_notification 
@@ -154,7 +154,7 @@ export function ChangePassword() {
           : 'El usuario será notificado en su próximo acceso'
       })
       
-      navigate(`/usuarios/gestion/${user.usuario_id}`)
+      navigate(`/usuarios/gestion/${user.id}`)
     } catch (error: any) {
       console.error('Error changing password:', error)
       
@@ -206,7 +206,7 @@ export function ChangePassword() {
       <div className="flex items-center justify-between mb-6">
         <Button
           variant="outline"
-          onClick={() => navigate(`/usuarios/gestion/${user.usuario_id}`)}
+          onClick={() => navigate(`/usuarios/gestion/${user.id}`)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a Gestión
@@ -366,7 +366,7 @@ export function ChangePassword() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/usuarios/gestion/${user.usuario_id}`)}
+                    onClick={() => navigate(`/usuarios/gestion/${user.id}`)}
                     disabled={submitting}
                   >
                     Cancelar

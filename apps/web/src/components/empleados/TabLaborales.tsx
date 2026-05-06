@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { AdminDocUpload } from './AdminDocUpload'
 
 interface TabLaboralesProps {
-  empleadoId: number
+  empleadoId: string
 }
 
 export function TabLaborales({ empleadoId }: TabLaboralesProps) {
@@ -78,7 +78,7 @@ export function TabLaborales({ empleadoId }: TabLaboralesProps) {
     setLoading(true)
     try {
       await employeesService.datosLaborales.update(recordId, {
-        area: form.area_id ? Number(form.area_id) : undefined,
+        area: form.area_id || undefined,
         cargo_empleado: form.cargo_empleado,
         fecha_ingreso: form.fecha_ingreso,
         tipo_contrato: form.tipo_contrato,
@@ -193,13 +193,13 @@ export function TabLaborales({ empleadoId }: TabLaboralesProps) {
           <div className="space-y-1.5">
             {laboralDocs.map(doc => (
               <AdminDocUpload
-                key={doc.documento_id}
+                key={doc.id}
                 empleadoId={empleadoId}
                 tipoDocumento={doc.tipo_documento}
                 categoria="laboral"
                 label={doc.nombre_documento}
                 existing={{
-                  documento_id: doc.documento_id,
+                  documento_id: doc.id,
                   nombre_documento: doc.nombre_documento,
                   archivo: doc.archivo,
                 }}

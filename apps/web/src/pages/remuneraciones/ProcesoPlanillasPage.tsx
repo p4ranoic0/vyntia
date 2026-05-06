@@ -83,9 +83,9 @@ function PlanillaSelector({ onSelect }: Readonly<{ onSelect: (id: number) => voi
   } else {
     rows = planillas.map((p) => (
       <TableRow
-        key={p.planilla_id}
+        key={p.id}
         className="cursor-pointer hover:bg-muted/50"
-        onClick={() => onSelect(p.planilla_id)}
+        onClick={() => onSelect(p.id)}
       >
         <TableCell className="font-medium">{p.periodo}</TableCell>
         <TableCell>{p.modalidad || '-'}</TableCell>
@@ -311,7 +311,7 @@ export default function ProcesoPlanillasPage() {
     )
   } else {
     detalleRows = detalles.map((detalle) => (
-      <TableRow key={detalle.detalle_id}>
+      <TableRow key={detalle.id}>
         <TableCell className="font-medium whitespace-nowrap">
           {detalle.empleado.nombres_completos}
         </TableCell>

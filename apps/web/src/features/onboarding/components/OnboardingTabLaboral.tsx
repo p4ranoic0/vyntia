@@ -214,7 +214,7 @@ export function OnboardingTabLaboral({ empleadoId, docs = [], datosLaborales }: 
                 </p>
               )}
               {(constancias as Record<string, unknown>[]).map((constancia: Record<string, unknown>, idx: number) => (
-                <Card key={(constancia.documento_id as number) ?? idx} className="border">
+                <Card key={(constancia.id as string) ?? idx} className="border">
                   <CardHeader className="pb-2">
                     <p className="font-medium text-sm">
                       {(constancia.entidad_emisora as string) ?? (constancia.nombre_documento as string) ?? 'Constancia de trabajo'}

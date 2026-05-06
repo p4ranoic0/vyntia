@@ -22,7 +22,7 @@ interface NotificacionItem {
 
 function buildItems(solicitudes: SolicitudVacaciones[]): NotificacionItem[] {
   return solicitudes.map((s) => ({
-    id: String(s.solicitud_id ?? s.id),
+    id: s.id,
     titulo: s.empleado_nombre || s.empleado_nombre_completo || 'Solicitud',
     descripcion: `${s.fecha_inicio} - ${s.fecha_fin} (${s.dias_solicitados} días)`,
   }))

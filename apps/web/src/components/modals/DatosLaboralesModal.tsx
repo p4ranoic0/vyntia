@@ -196,8 +196,8 @@ export function DatosLaboralesModal({
                   Área
                 </Label>
                 <Select
-                  value={datos.area_id?.toString() || ''}
-                  onValueChange={(value) => handleInputChange('area_id', parseInt(value))}
+                  value={datos.area_id || ''}
+                  onValueChange={(value) => handleInputChange('area_id', value)}
                   disabled={isReadOnlyMode || !isEditing}
                 >
                   <SelectTrigger>
@@ -215,8 +215,8 @@ export function DatosLaboralesModal({
               <div className="space-y-2">
                 <Label htmlFor="cargo_id">Cargo</Label>
                 <Select
-                  value={datos.cargo_id?.toString() || ''}
-                  onValueChange={(value) => handleInputChange('cargo_id', parseInt(value))}
+                  value={datos.cargo_id || ''}
+                  onValueChange={(value) => handleInputChange('cargo_id', value)}
                   disabled={isReadOnlyMode || !isEditing}
                 >
                   <SelectTrigger>
@@ -335,8 +335,8 @@ export function DatosLaboralesModal({
               <div className="space-y-2">
                 <Label htmlFor="supervisor_id">Supervisor</Label>
                 <Select
-                  value={datos.supervisor_id?.toString() || ''}
-                  onValueChange={(value) => handleInputChange('supervisor_id', parseInt(value))}
+                  value={datos.supervisor_id || ''}
+                  onValueChange={(value) => handleInputChange('supervisor_id', value)}
                   disabled={isReadOnlyMode || !isEditing}
                 >
                   <SelectTrigger>

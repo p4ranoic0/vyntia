@@ -255,7 +255,7 @@ export function AreasManagementPage() {
             <CardContent>
               <div className="grid gap-4">
                 {filteredAreas.map((area: Area) => (
-                  <div key={area.area_id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg">
+                  <div key={area.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg">
                     <div className="flex items-center gap-3 sm:gap-4">
                       <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                         <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />

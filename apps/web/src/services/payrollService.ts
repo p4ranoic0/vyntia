@@ -3,7 +3,7 @@ import { apiClient } from "@/lib/api";
 export type TipoConceptoRemuneracion = "ingreso" | "descuento";
 
 export interface ConceptoRemuneracion {
-  configuracion_id: number;
+  id: string;
   tipo: TipoConceptoRemuneracion;
   codigo: string;
   nombre: string;
@@ -37,7 +37,7 @@ interface ListParams {
 }
 
 export interface ConfiguracionAfp {
-  afp_config_id: number;
+  id: string;
   afp_nombre: string;
   vigencia_mes: string;
   aporte_obligatorio_pct: number;
@@ -63,7 +63,7 @@ export interface ConfiguracionAfpPayload {
 }
 
 export interface ConfiguracionUit {
-  configuracion_uit_id: number;
+  id: string;
   anio: number;
   valor_uit: number;
   tope_renta_cuarta_uit: number;
@@ -73,7 +73,7 @@ export interface ConfiguracionUit {
   es_activo?: boolean;
   tope_renta_cuarta_soles: number;
   essalud_cas_mensual: number;
-  created_by?: number;
+  created_by?: string;
   created_by_nombre?: string;
   created_at?: string;
   updated_at?: string;
@@ -112,7 +112,7 @@ export type EstadoBoleta = "generada" | "enviada" | "vista" | "descargada";
 export type EstadoCalendario = "programado" | "ejecutado" | "cancelado";
 
 export interface PlanillaMensual {
-  planilla_id: number;
+  id: string;
   periodo: string;
   modalidad?: string;
   meta_presupuestal?: string;
@@ -148,14 +148,14 @@ export interface PlanillaMensualPayload {
 }
 
 export interface DetallePlanilla {
-  detalle_id: number;
+  id: string;
   planilla: {
-    planilla_id: number;
+    id: string;
     periodo: string;
     modalidad: ModalidadContrato;
   };
   empleado: {
-    empleado_id: number;
+    id: string;
     dni: string;
     nombres_completos: string;
     area_nombre: string;
@@ -194,8 +194,8 @@ export interface DetallePlanilla {
 }
 
 export interface DetallePlanillaPayload {
-  planilla_id: number;
-  empleado_id: number;
+  planilla_id: string;
+  empleado_id: string;
   dias_laborados?: number;
   dias_subsidiados?: number;
   remuneracion_basica?: number;
@@ -203,10 +203,10 @@ export interface DetallePlanillaPayload {
 }
 
 export interface DescuentoMasivo {
-  descuento_masivo_id: number;
+  id: string;
   periodo: string;
   configuracion_concepto?: {
-    configuracion_id: number;
+    id: string;
     nombre: string;
     codigo: string;
   };
@@ -219,7 +219,7 @@ export interface DescuentoMasivo {
   estado_texto?: string;
   errores_log?: string;
   usuario_carga?: {
-    usuario_id: number;
+    id: string;
     username: string;
     nombres_completos: string;
   };
@@ -230,18 +230,18 @@ export interface DescuentoMasivo {
 
 export interface DescuentoMasivoPayload {
   periodo: string;
-  configuracion_concepto_id: number;
+  configuracion_concepto_id: string;
   archivo_origen: File | string;
 }
 
 export interface BoletaPago {
-  boleta_id: number;
+  id: string;
   detalle_planilla: {
-    detalle_id: number;
+    id: string;
     planilla_periodo: string;
   };
   empleado?: {
-    empleado_id: number;
+    id: string;
     dni: string;
     nombres_completos: string;
   };
@@ -261,7 +261,7 @@ export interface BoletaPago {
 }
 
 export interface CalendarioPago {
-  calendario_id: number;
+  id: string;
   periodo: string;
   descripcion: string;
   fecha_pago_programada: string;
@@ -272,7 +272,7 @@ export interface CalendarioPago {
   estado_texto?: string;
   observaciones?: string;
   created_by?: {
-    usuario_id: number;
+    id: string;
     username: string;
   };
   created_at: string;
@@ -349,7 +349,7 @@ export const payrollService = {
   },
 
   async update(
-    id: number,
+    id: string,
     payload: Partial<ConceptoRemuneracionPayload>,
   ): Promise<ConceptoRemuneracion> {
     const response = await apiClient.patch<ApiEnvelope<ConceptoRemuneracion>>(
@@ -361,7 +361,7 @@ export const payrollService = {
     );
   },
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/compensation-configurations/${id}/`);
   },
 
@@ -384,7 +384,7 @@ export const payrollService = {
   },
 
   async updateAfp(
-    id: number,
+    id: string,
     payload: Partial<ConfiguracionAfpPayload>,
   ): Promise<ConfiguracionAfp> {
     const response = await apiClient.patch<ApiEnvelope<ConfiguracionAfp>>(
@@ -394,7 +394,7 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as ConfiguracionAfp);
   },
 
-  async removeAfp(id: number): Promise<void> {
+  async removeAfp(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/afp-configurations/${id}/`);
   },
 
@@ -419,7 +419,7 @@ export const payrollService = {
     return extractTypedList<ConfiguracionUit>(response.data);
   },
 
-  async getUit(id: number): Promise<ConfiguracionUit> {
+  async getUit(id: string): Promise<ConfiguracionUit> {
     const response = await apiClient.get<ApiEnvelope<ConfiguracionUit>>(
       `/api/v1/payroll/tax-parameters/${id}/`,
     );
@@ -435,7 +435,7 @@ export const payrollService = {
   },
 
   async updateUit(
-    id: number,
+    id: string,
     payload: Partial<ConfiguracionUitPayload>,
   ): Promise<ConfiguracionUit> {
     const response = await apiClient.patch<ApiEnvelope<ConfiguracionUit>>(
@@ -445,11 +445,11 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as ConfiguracionUit);
   },
 
-  async removeUit(id: number): Promise<void> {
+  async removeUit(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/tax-parameters/${id}/`);
   },
 
-  async activarUit(id: number): Promise<ConfiguracionUit> {
+  async activarUit(id: string): Promise<ConfiguracionUit> {
     const response = await apiClient.post<ApiEnvelope<ConfiguracionUit>>(
       `/api/v1/payroll/tax-parameters/${id}/activar/`,
     );
@@ -470,7 +470,7 @@ export const payrollService = {
     return extractTypedList<PlanillaMensual>(response.data);
   },
 
-  async getPlanilla(id: number): Promise<PlanillaMensual> {
+  async getPlanilla(id: string): Promise<PlanillaMensual> {
     const response = await apiClient.get<ApiEnvelope<PlanillaMensual>>(
       `/api/v1/payroll/monthly-runs/${id}/`,
     );
@@ -488,7 +488,7 @@ export const payrollService = {
   },
 
   async updatePlanilla(
-    id: number,
+    id: string,
     payload: Partial<PlanillaMensualPayload>,
   ): Promise<PlanillaMensual> {
     const response = await apiClient.patch<ApiEnvelope<PlanillaMensual>>(
@@ -498,13 +498,13 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as PlanillaMensual);
   },
 
-  async removePlanilla(id: number): Promise<void> {
+  async removePlanilla(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/monthly-runs/${id}/`);
   },
 
   // Acciones especiales de planilla
   async generarPlanilla(
-    id: number,
+    id: string,
   ): Promise<{
     message: string;
     empleados_agregados: number;
@@ -516,35 +516,35 @@ export const payrollService = {
     return (response.data as any).data || response.data;
   },
 
-  async regenerarPlanilla(id: number): Promise<{ message: string }> {
+  async regenerarPlanilla(id: string): Promise<{ message: string }> {
     const response = await apiClient.post(
       `/api/v1/payroll/monthly-runs/${id}/regenerar/`,
     );
     return (response.data as any).data || response.data;
   },
 
-  async calcularPlanilla(id: number): Promise<{ message: string }> {
+  async calcularPlanilla(id: string): Promise<{ message: string }> {
     const response = await apiClient.post(
       `/api/v1/payroll/monthly-runs/${id}/calcular_planilla/`,
     );
     return (response.data as any).data || response.data;
   },
 
-  async previewPlanilla(id: number): Promise<VistaPreviaPlanilla> {
+  async previewPlanilla(id: string): Promise<VistaPreviaPlanilla> {
     const response = await apiClient.post(
       `/api/v1/payroll/monthly-runs/${id}/preview/`,
     );
     return (response.data as any).data || response.data;
   },
 
-  async aprobarPlanilla(id: number): Promise<PlanillaMensual> {
+  async aprobarPlanilla(id: string): Promise<PlanillaMensual> {
     const response = await apiClient.post<ApiEnvelope<PlanillaMensual>>(
       `/api/v1/payroll/monthly-runs/${id}/aprobar_planilla/`,
     );
     return response.data.data || (response.data as unknown as PlanillaMensual);
   },
 
-  async getEstadisticasPlanilla(id: number): Promise<EstadisticasPlanilla> {
+  async getEstadisticasPlanilla(id: string): Promise<EstadisticasPlanilla> {
     const response = await apiClient.get(
       `/api/v1/payroll/monthly-runs/${id}/estadisticas/`,
     );
@@ -554,8 +554,8 @@ export const payrollService = {
   // ========== Detalles de Planilla ==========
 
   async listDetalles(params?: {
-    planilla?: number;
-    empleado?: number;
+    planilla?: string;
+    empleado?: string;
     estado?: EstadoDetalle;
   }): Promise<DetallePlanilla[]> {
     const response = await apiClient.get("/api/v1/payroll/details/", {
@@ -564,7 +564,7 @@ export const payrollService = {
     return extractTypedList<DetallePlanilla>(response.data);
   },
 
-  async getDetalle(id: number): Promise<DetallePlanilla> {
+  async getDetalle(id: string): Promise<DetallePlanilla> {
     const response = await apiClient.get<ApiEnvelope<DetallePlanilla>>(
       `/api/v1/payroll/details/${id}/`,
     );
@@ -582,7 +582,7 @@ export const payrollService = {
   },
 
   async updateDetalle(
-    id: number,
+    id: string,
     payload: Partial<DetallePlanillaPayload>,
   ): Promise<DetallePlanilla> {
     const response = await apiClient.patch<ApiEnvelope<DetallePlanilla>>(
@@ -592,7 +592,7 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as DetallePlanilla);
   },
 
-  async removeDetalle(id: number): Promise<void> {
+  async removeDetalle(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/details/${id}/`);
   },
 
@@ -608,7 +608,7 @@ export const payrollService = {
     return extractTypedList<DescuentoMasivo>(response.data);
   },
 
-  async getDescuento(id: number): Promise<DescuentoMasivo> {
+  async getDescuento(id: string): Promise<DescuentoMasivo> {
     const response = await apiClient.get<ApiEnvelope<DescuentoMasivo>>(
       `/api/v1/payroll/mass-deductions/${id}/`,
     );
@@ -622,7 +622,7 @@ export const payrollService = {
     formData.append("periodo", payload.periodo);
     formData.append(
       "configuracion_concepto",
-      payload.configuracion_concepto_id.toString(),
+      payload.configuracion_concepto_id,
     );
     if (payload.archivo_origen instanceof File) {
       formData.append("archivo_origen", payload.archivo_origen);
@@ -636,7 +636,7 @@ export const payrollService = {
   },
 
   async updateDescuento(
-    id: number,
+    id: string,
     payload: Partial<Omit<DescuentoMasivoPayload, "archivo_origen">>,
   ): Promise<DescuentoMasivo> {
     const response = await apiClient.patch<ApiEnvelope<DescuentoMasivo>>(
@@ -646,11 +646,11 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as DescuentoMasivo);
   },
 
-  async removeDescuento(id: number): Promise<void> {
+  async removeDescuento(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/mass-deductions/${id}/`);
   },
 
-  async procesarDescuento(id: number): Promise<{
+  async procesarDescuento(id: string): Promise<{
     total_registros: number;
     registros_procesados: number;
     registros_error: number;
@@ -663,7 +663,7 @@ export const payrollService = {
     return (response.data as any).data || response.data;
   },
 
-  async anularDescuento(id: number): Promise<{
+  async anularDescuento(id: string): Promise<{
     conceptos_eliminados: number;
   }> {
     const response = await apiClient.post(
@@ -674,8 +674,8 @@ export const payrollService = {
 
   // ========== Boletas de Pago ==========
 
-  async generarBoletas(planillaId: number): Promise<{
-    planilla_id: number;
+  async generarBoletas(planillaId: string): Promise<{
+    planilla_id: string;
     periodo: string;
     boletas_creadas: number;
     boletas_existentes: number;
@@ -688,7 +688,7 @@ export const payrollService = {
   },
 
   async listBoletas(params?: {
-    empleado?: number;
+    empleado?: string;
     periodo?: string;
     estado?: EstadoBoleta;
   }): Promise<BoletaPago[]> {
@@ -698,14 +698,14 @@ export const payrollService = {
     return extractTypedList<BoletaPago>(response.data);
   },
 
-  async getBoleta(id: number): Promise<BoletaPago> {
+  async getBoleta(id: string): Promise<BoletaPago> {
     const response = await apiClient.get<ApiEnvelope<BoletaPago>>(
       `/api/v1/payroll/payslips/${id}/`,
     );
     return response.data.data || (response.data as unknown as BoletaPago);
   },
 
-  async downloadBoletaPdf(id: number): Promise<Blob> {
+  async downloadBoletaPdf(id: string): Promise<Blob> {
     const response = await apiClient.get(
       `/api/v1/payroll/payslips/${id}/pdf/`,
       {
@@ -715,7 +715,7 @@ export const payrollService = {
     return response.data as Blob;
   },
 
-  async descargaMasivaBoletas(planillaId: number): Promise<Blob> {
+  async descargaMasivaBoletas(planillaId: string): Promise<Blob> {
     const response = await apiClient.getBlob(
       `/api/v1/payroll/payslips/descarga-masiva/`,
       { planilla_id: planillaId },
@@ -736,7 +736,7 @@ export const payrollService = {
     return extractTypedList<CalendarioPago>(response.data);
   },
 
-  async getCalendario(id: number): Promise<CalendarioPago> {
+  async getCalendario(id: string): Promise<CalendarioPago> {
     const response = await apiClient.get<ApiEnvelope<CalendarioPago>>(
       `/api/v1/payroll/payment-schedules/${id}/`,
     );
@@ -754,7 +754,7 @@ export const payrollService = {
   },
 
   async updateCalendario(
-    id: number,
+    id: string,
     payload: Partial<CalendarioPagoPayload>,
   ): Promise<CalendarioPago> {
     const response = await apiClient.patch<ApiEnvelope<CalendarioPago>>(
@@ -764,7 +764,7 @@ export const payrollService = {
     return response.data.data || (response.data as unknown as CalendarioPago);
   },
 
-  async removeCalendario(id: number): Promise<void> {
+  async removeCalendario(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/payroll/payment-schedules/${id}/`);
   },
 };

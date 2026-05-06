@@ -55,11 +55,11 @@ export default function RolePermissionsPage() {// Estados
 
   // Mutación para guardar permisos del rol
   const saveRolePermissionsMutation = useMutation({
-    mutationFn: async ({ roleId, permissionIds }: { roleId: number; permissionIds: number[] }) => {
+    mutationFn: async ({ roleId, permissionIds }: { roleId: string; permissionIds: string[] }) => {
       return rolePermissionService.updateRolePermissions(roleId, permissionIds)
     },
     onSuccess: (_, { permissionIds }) => {
-      const selectedRole = roles.find(role => role.id.toString() === selectedRoleId)
+      const selectedRole = roles.find(role => role.id === selectedRoleId)
       // Invalidar la query específica del rol seleccionado
       queryClient.invalidateQueries({ queryKey: ['role-permissions', selectedRoleId] })
       // También invalidar todas las queries de role-permissions para asegurar consistencia
@@ -87,7 +87,7 @@ export default function RolePermissionsPage() {// Estados
   React.useEffect(() => {
     if (memoizedRolePermissions.length > 0) {
       const permissionIds = memoizedRolePermissions.map(
-        (rp: RolePermission) => rp.permiso_id
+        (rp: RolePermission) => rp.id
       )
       setSelectedPermissions(new Set(permissionIds))
     } else {
@@ -107,7 +107,7 @@ export default function RolePermissionsPage() {// Estados
     setHasUnsavedChanges(false)
   }
 
-  const handlePermissionToggle = (permissionId: number) => {
+  const handlePermissionToggle = (permissionId: string) => {
     setSelectedPermissions(prev => {
       const newSet = new Set(prev)
       if (newSet.has(permissionId)) {
@@ -121,7 +121,7 @@ export default function RolePermissionsPage() {// Estados
   }
 
   const handleSelectAll = () => {
-    const filteredPermissionIds = filteredPermissions.map(p => p.permiso_id)
+    const filteredPermissionIds = filteredPermissions.map(p => p.id)
     setSelectedPermissions(new Set(filteredPermissionIds))
     setHasUnsavedChanges(true)
   }
@@ -134,7 +134,7 @@ export default function RolePermissionsPage() {// Estados
   // Función para seleccionar/deseleccionar todos los permisos de un módulo
   const handleModuleToggle = (moduleName: string, select: boolean) => {
     const modulePermissions = groupedPermissions[moduleName] || []
-    const modulePermissionIds = modulePermissions.map(p => p.permiso_id)
+    const modulePermissionIds = modulePermissions.map(p => p.id)
     
     setSelectedPermissions(prev => {
       const newSet = new Set(prev)
@@ -151,13 +151,13 @@ export default function RolePermissionsPage() {// Estados
   // Función para verificar si todos los permisos de un módulo están seleccionados
   const isModuleFullySelected = (moduleName: string) => {
     const modulePermissions = groupedPermissions[moduleName] || []
-    return modulePermissions.length > 0 && modulePermissions.every(p => selectedPermissions.has(p.permiso_id))
+    return modulePermissions.length > 0 && modulePermissions.every(p => selectedPermissions.has(p.id))
   }
 
   // Función para verificar si algunos permisos de un módulo están seleccionados
   const isModulePartiallySelected = (moduleName: string) => {
     const modulePermissions = groupedPermissions[moduleName] || []
-    return modulePermissions.some(p => selectedPermissions.has(p.permiso_id)) && !isModuleFullySelected(moduleName)
+    return modulePermissions.some(p => selectedPermissions.has(p.id)) && !isModuleFullySelected(moduleName)
   }
 
   // Función para obtener el icono del módulo
@@ -299,7 +299,7 @@ export default function RolePermissionsPage() {// Estados
                       size="sm"
                       onClick={() => {
                         const originalPermissionIds = memoizedRolePermissions.map(
-                          (rp: RolePermission) => rp.permiso_id
+                          (rp: RolePermission) => rp.id
                         )
                         setSelectedPermissions(new Set(originalPermissionIds))
                         setHasUnsavedChanges(false)
@@ -410,7 +410,7 @@ export default function RolePermissionsPage() {// Estados
                   <div className="space-y-6">
                     {Object.entries(groupedPermissions).map(([contentType, groupPermissions]) => {
                       const ModuleIcon = getModuleIcon(contentType)
-                      const selectedCount = groupPermissions.filter(p => selectedPermissions.has(p.permiso_id)).length
+                      const selectedCount = groupPermissions.filter(p => selectedPermissions.has(p.id)).length
                       const totalCount = groupPermissions.length
                       const isFullySelected = isModuleFullySelected(contentType)
                       const isPartiallySelected = isModulePartiallySelected(contentType)
@@ -464,19 +464,19 @@ export default function RolePermissionsPage() {// Estados
                             <div className="grid gap-3 md:grid-cols-2">
                               {groupPermissions.map(permission => (
                                 <div 
-                                  key={permission.permiso_id} 
+                                  key={permission.id} 
                                   className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                                 >
                                   <Checkbox
-                                    id={`permission-${permission.permiso_id}`}
-                                    checked={selectedPermissions.has(permission.permiso_id)}
-                                    onCheckedChange={() => handlePermissionToggle(permission.permiso_id)}
+                                    id={`permission-${permission.id}`}
+                                    checked={selectedPermissions.has(permission.id)}
+                                    onCheckedChange={() => handlePermissionToggle(permission.id)}
                                     className="mt-1"
                                     disabled={isSaving}
                                   />
                                   <div className="flex-1 min-w-0">
                                     <label 
-                                      htmlFor={`permission-${permission.permiso_id}`}
+                                      htmlFor={`permission-${permission.id}`}
                                       className="text-sm font-medium cursor-pointer"
                                     >
                                       {permission.nombre_permiso}
@@ -488,7 +488,7 @@ export default function RolePermissionsPage() {// Estados
                                       {permission.tipo_permiso}
                                     </code>
                                   </div>
-                                  {selectedPermissions.has(permission.permiso_id) && (
+                                  {selectedPermissions.has(permission.id) && (
                                     <Check className="h-4 w-4 text-green-600 mt-1" />
                                   )}
                                 </div>
@@ -535,7 +535,7 @@ export default function RolePermissionsPage() {// Estados
                   size="sm"
                   onClick={() => {
                     const originalPermissionIds = memoizedRolePermissions.map(
-                      (rp: RolePermission) => rp.permiso_id
+                      (rp: RolePermission) => rp.id
                     )
                     setSelectedPermissions(new Set(originalPermissionIds))
                     setHasUnsavedChanges(false)

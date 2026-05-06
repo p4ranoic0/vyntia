@@ -133,7 +133,7 @@ export default function PlanillasMensualesPage() {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar esta planilla?')) return
 
     try {
@@ -192,7 +192,7 @@ export default function PlanillasMensualesPage() {
       const totalDescuentos = toNumber(planilla.total_descuentos)
       const totalNeto = toNumber(planilla.total_neto_pagar ?? planilla.total_neto)
       return (
-        <TableRow key={planilla.planilla_id}>
+        <TableRow key={planilla.id}>
           <TableCell className="font-medium">{planilla.periodo}</TableCell>
           <TableCell>{planilla.modalidad || '-'}</TableCell>
           <TableCell>{planilla.meta_presupuestal || '-'}</TableCell>
@@ -209,7 +209,7 @@ export default function PlanillasMensualesPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/remuneraciones/proceso-planillas?planilla=${planilla.planilla_id}`)}
+              onClick={() => navigate(`/remuneraciones/proceso-planillas?planilla=${planilla.id}`)}
             >
               <Eye className="h-4 w-4" />
             </Button>
@@ -217,7 +217,7 @@ export default function PlanillasMensualesPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleDelete(planilla.planilla_id)}
+                onClick={() => handleDelete(planilla.id)}
                 disabled={deleteMutation.isPending}
               >
                 <Trash2 className="h-4 w-4" />

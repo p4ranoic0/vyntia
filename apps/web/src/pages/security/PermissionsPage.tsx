@@ -39,7 +39,7 @@ export default function PermissionsPage() {
   const [formData, setFormData] = useState<PermissionFormData>({
     nombre_permiso: '',
     descripcion_permiso: '',
-    modulo_id: 1,
+    modulo_id: '',
     tipo_permiso: 'leer',
     estado_permiso: 'activo'
   })
@@ -107,7 +107,7 @@ export default function PermissionsPage() {
 
   // Mutación para editar permiso
   const editPermissionMutation = useMutation({
-    mutationFn: ({ id, ...data }: PermissionFormData & { id: number }) => 
+    mutationFn: ({ id, ...data }: PermissionFormData & { id: string }) =>
       permissionService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['permissions'] })
@@ -170,7 +170,7 @@ export default function PermissionsPage() {
     setIsEditDialogOpen(true)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (window.confirm('¿Está seguro de que desea eliminar este permiso?')) {
       deletePermissionMutation.mutate(id)
     }
@@ -179,7 +179,7 @@ export default function PermissionsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (selectedPermission) {
-      editPermissionMutation.mutate({ ...formData, id: selectedPermission.permiso_id })
+      editPermissionMutation.mutate({ ...formData, id: selectedPermission.id })
     } else {
       createPermissionMutation.mutate(formData)
     }
@@ -258,7 +258,7 @@ export default function PermissionsPage() {
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => handleDelete(permission.permiso_id)}
+                onClick={() => handleDelete(permission.id)}
                 className="text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />

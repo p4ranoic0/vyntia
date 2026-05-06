@@ -41,7 +41,7 @@ const ACADEMICO_EMPTY = {
 }
 
 interface TabAcademicosProps {
-  empleadoId: number
+  empleadoId: string
 }
 
 export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
@@ -74,7 +74,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
   useEffect(() => { reload(); loadDocs() }, [reload, loadDocs])
 
   const startEdit = (acad: any) => {
-    setEditingId(acad.academico_id ?? acad.id)
+    setEditingId(acad.id)
     setFormData({
       nivel_educativo: acad.nivel_educativo || '',
       nombre_institucion: acad.nombre_institucion || '',
@@ -115,7 +115,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!globalThis.confirm('¿Eliminar este registro academico?')) return
     try {
       await employeesService.datosAcademicos.delete(empleadoId, id)
@@ -168,7 +168,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
             ) : (
               <div className="space-y-2">
                 {certificados.map((acad: any) => {
-                  const acadId = acad.academico_id ?? acad.id
+                  const acadId = acad.id
                   const existingDoc = findDoc('certificado_estudios', acad.nombre_institucion)
                   return (
                     <div key={acadId} className="border rounded p-2 space-y-1.5">
@@ -194,7 +194,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
                         categoria="academico"
                         label={`Certificado - ${acad.nombre_institucion}`}
                         existing={existingDoc ? {
-                          documento_id: existingDoc.documento_id,
+                          documento_id: existingDoc.id,
                           nombre_documento: existingDoc.nombre_documento,
                           archivo: existingDoc.archivo,
                         } : null}
@@ -224,7 +224,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
             ) : (
               <div className="space-y-2">
                 {postgrados.map((acad: any) => {
-                  const acadId = acad.academico_id ?? acad.id
+                  const acadId = acad.id
                   const existingDoc = findDoc('titulo_profesional', acad.nombre_institucion)
                   return (
                     <div key={acadId} className="border rounded p-2 space-y-1.5">
@@ -250,7 +250,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
                         categoria="academico"
                         label={`Titulo - ${acad.nombre_carrera || acad.nombre_institucion}`}
                         existing={existingDoc ? {
-                          documento_id: existingDoc.documento_id,
+                          documento_id: existingDoc.id,
                           nombre_documento: existingDoc.nombre_documento,
                           archivo: existingDoc.archivo,
                         } : null}
@@ -280,13 +280,13 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
               <div className="space-y-1.5 mb-3">
                 {acadDocs.filter(d => d.tipo_documento === 'certificado_capacitacion').map(doc => (
                   <AdminDocUpload
-                    key={doc.documento_id}
+                    key={doc.id}
                     empleadoId={empleadoId}
                     tipoDocumento="certificado_capacitacion"
                     categoria="capacitacion"
                     label={doc.nombre_documento}
                     existing={{
-                      documento_id: doc.documento_id,
+                      documento_id: doc.id,
                       nombre_documento: doc.nombre_documento,
                       archivo: doc.archivo,
                     }}

@@ -59,7 +59,7 @@ function sugerirNombre(tipo: string): string {
    -------------------------------------------------------- */
 
 interface EmpleadoOption {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -146,7 +146,7 @@ export default function GestionDocumentosPage() {
   const queryClient = useQueryClient()
 
   // Employee selection
-  const [selectedEmpleado, setSelectedEmpleado] = useState<number | null>(null)
+  const [selectedEmpleado, setSelectedEmpleado] = useState<string | null>(null)
   const [empleadoSearch, setEmpleadoSearch] = useState('')
   const [empleadoDropdownOpen, setEmpleadoDropdownOpen] = useState(false)
 
@@ -176,7 +176,7 @@ export default function GestionDocumentosPage() {
   const empleadoSeleccionado = useMemo(() => {
     if (!selectedEmpleado) return null
     return (empleados as EmpleadoOption[]).find(
-      (e) => e.empleado_id === selectedEmpleado,
+      (e) => e.id === selectedEmpleado,
     ) ?? null
   }, [empleados, selectedEmpleado])
 
@@ -232,7 +232,7 @@ export default function GestionDocumentosPage() {
   }
 
   const handleSelectEmpleado = (emp: EmpleadoOption) => {
-    setSelectedEmpleado(emp.empleado_id)
+    setSelectedEmpleado(emp.id)
     setEmpleadoSearch('')
     setEmpleadoDropdownOpen(false)
   }
@@ -300,7 +300,7 @@ export default function GestionDocumentosPage() {
                 <div>
                   <p className="font-medium text-sm">{empleadoNombreCompleto}</p>
                   <p className="text-xs text-muted-foreground">
-                    ID: {empleadoSeleccionado.empleado_id}
+                    ID: {empleadoSeleccionado.id}
                   </p>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function GestionDocumentosPage() {
                   ) : (
                     empleadosFiltrados.map((emp) => (
                       <button
-                        key={emp.empleado_id}
+                        key={emp.id}
                         type="button"
                         className="w-full text-left px-4 py-2 hover:bg-muted/50 transition-colors text-sm"
                         onClick={() => handleSelectEmpleado(emp)}

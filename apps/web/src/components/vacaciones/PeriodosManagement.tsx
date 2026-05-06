@@ -50,7 +50,7 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
     e.preventDefault()
     if (!selectedPeriodo) return
     try {
-      await timeOffService.ajustarDiasPeriodo(selectedPeriodo.periodo_id, ajusteData.nuevos_dias, ajusteData.motivo)
+      await timeOffService.ajustarDiasPeriodo(selectedPeriodo.id, ajusteData.nuevos_dias, ajusteData.motivo)
       toast({
         title: 'Éxito',
         description: 'Período ajustado correctamente'
@@ -168,9 +168,9 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
                   <div>
                     <Label>Período</Label>
                     <Select
-                      value={selectedPeriodo ? String(selectedPeriodo.periodo_id) : ''}
+                      value={selectedPeriodo ? String(selectedPeriodo.id) : ''}
                       onValueChange={(value) => {
-                        const periodo = periodos.find((p) => String(p.periodo_id) === value) || null
+                        const periodo = periodos.find((p) => String(p.id) === value) || null
                         setSelectedPeriodo(periodo)
                         if (periodo) {
                           setAjusteData({ ...ajusteData, nuevos_dias: periodo.dias_correspondientes })
@@ -182,7 +182,7 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
                       </SelectTrigger>
                       <SelectContent>
                         {periodos.map((p) => (
-                          <SelectItem key={p.periodo_id} value={String(p.periodo_id)}>
+                          <SelectItem key={p.id} value={String(p.id)}>
                             {p.empleado_nombre} - {p.periodo_label}
                           </SelectItem>
                         ))}
@@ -248,7 +248,7 @@ const PeriodosManagement: React.FC<PeriodosManagementProps> = ({ onPeriodoCreate
               <TableBody>
                 {periodos.map((periodo) => {
                   return (
-                    <TableRow key={periodo.periodo_id}>
+                    <TableRow key={periodo.id}>
                       <TableCell className="font-medium">{periodo.ano_periodo}</TableCell>
                       <TableCell>
                         <div className="text-sm">

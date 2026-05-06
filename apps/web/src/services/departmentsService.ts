@@ -2,7 +2,7 @@ import { apiClient } from '@/lib/api'
 
 // Interfaces para Áreas
 export interface Area {
-  area_id: number
+  id: string
   nombre_organo: string
   nombre_unidad_organica?: string
   siglas_area: string
@@ -23,7 +23,7 @@ export interface CreateAreaData {
 }
 
 export interface UpdateAreaData extends Partial<CreateAreaData> {
-  id: number
+  id: string
 }
 
 export interface AreaStats {
@@ -39,7 +39,7 @@ export interface AreaStats {
     porcentaje: number
   }>
   top_areas_empleados: Array<{
-    id: number
+    id: string
     unidad_organica: string
     siglas: string
     empleados_count: number
@@ -47,7 +47,7 @@ export interface AreaStats {
 }
 
 export interface AreaEmployee {
-  id: number
+  id: string
   nombres: string
   apellidos: string
   numero_documento: string
@@ -57,11 +57,11 @@ export interface AreaEmployee {
 }
 
 export interface AreaHierarchy {
-  id: number
+  id: string
   unidad_organica: string
   siglas: string
   nivel: number
-  parent_id?: number
+  parent_id?: string
   children?: AreaHierarchy[]
 }
 
@@ -114,7 +114,7 @@ export const departmentsService = {
     return response.data
   },
 
-  async getArea(id: number): Promise<Area> {
+  async getArea(id: string): Promise<Area> {
     const response = await apiClient.get(`/api/v1/organization/departments/${id}/`)
     return response.data
   },
@@ -124,12 +124,12 @@ export const departmentsService = {
     return response.data.data || response.data
   },
 
-  async updateArea(id: number, data: Partial<CreateAreaData>): Promise<Area> {
+  async updateArea(id: string, data: Partial<CreateAreaData>): Promise<Area> {
     const response = await apiClient.patch(`/api/v1/organization/departments/${id}/`, data)
     return response.data.data || response.data
   },
 
-  async deleteArea(id: number): Promise<void> {
+  async deleteArea(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/organization/departments/${id}/`)
   },
 
@@ -147,7 +147,7 @@ export const departmentsService = {
   },
 
   // Gestión de empleados por área
-  async getAreaEmployees(areaId: number, params?: {
+  async getAreaEmployees(areaId: string, params?: {
     page?: number
     page_size?: number
     search?: string
@@ -161,7 +161,7 @@ export const departmentsService = {
     return response.data.data || response.data
   },
 
-  async assignEmployeeToArea(areaId: number, empleadoId: number, cargo?: string): Promise<void> {
+  async assignEmployeeToArea(areaId: string, empleadoId: string, cargo?: string): Promise<void> {
     const response = await apiClient.post(`/api/v1/organization/departments/${areaId}/empleados/`, {
       empleado_id: empleadoId,
       cargo
@@ -169,11 +169,11 @@ export const departmentsService = {
     return response.data.data || response.data
   },
 
-  async removeEmployeeFromArea(areaId: number, empleadoId: number): Promise<void> {
+  async removeEmployeeFromArea(areaId: string, empleadoId: string): Promise<void> {
     await apiClient.delete(`/api/v1/organization/departments/${areaId}/empleados/${empleadoId}/`)
   },
 
-  async updateEmployeeInArea(areaId: number, empleadoId: number, data: {
+  async updateEmployeeInArea(areaId: string, empleadoId: string, data: {
     cargo?: string
     fecha_asignacion?: string
   }): Promise<void> {
@@ -187,12 +187,12 @@ export const departmentsService = {
     return response.data.data || response.data.results || response.data
   },
 
-  async getAreaChildren(areaId: number): Promise<Area[]> {
+  async getAreaChildren(areaId: string): Promise<Area[]> {
     const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/children/`)
     return response.data.data || response.data.results || response.data
   },
 
-  async getAreaParent(areaId: number): Promise<Area | null> {
+  async getAreaParent(areaId: string): Promise<Area | null> {
     const response = await apiClient.get(`/api/v1/organization/departments/${areaId}/parent/`)
     return response.data.data || response.data
   },
@@ -200,7 +200,7 @@ export const departmentsService = {
   // Reportes y exportación
   async generateReport(params: {
     format: 'pdf' | 'excel' | 'csv'
-    areas?: number[]
+    areas?: string[]
     include_employees?: boolean
     include_stats?: boolean
     date_range?: {
@@ -241,7 +241,7 @@ export const departmentsService = {
   },
 
   // Validaciones
-  async validateAreaSiglas(siglas: string, excludeId?: number): Promise<{
+  async validateAreaSiglas(siglas: string, excludeId?: string): Promise<{
     is_valid: boolean
     message?: string
   }> {
@@ -263,12 +263,12 @@ export const departmentsService = {
 
   // Operaciones masivas
   async bulkUpdateAreas(updates: Array<{
-    id: number
+    id: string
     data: Partial<CreateAreaData>
   }>): Promise<{
     success: number
     errors: Array<{
-      id: number
+      id: string
       error: string
     }>
   }> {
@@ -276,10 +276,10 @@ export const departmentsService = {
     return response.data.data || response.data
   },
 
-  async bulkDeleteAreas(ids: number[]): Promise<{
+  async bulkDeleteAreas(ids: string[]): Promise<{
     deleted: number
     errors: Array<{
-      id: number
+      id: string
       error: string
     }>
   }> {
@@ -288,8 +288,8 @@ export const departmentsService = {
   },
 
   // Historial y auditoría
-  async getAreaHistory(areaId: number): Promise<Array<{
-    id: number
+  async getAreaHistory(areaId: string): Promise<Array<{
+    id: string
     action: string
     changes: Record<string, any>
     user: string

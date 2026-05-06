@@ -133,7 +133,7 @@ export default function BoletasPagoPage() {
     )
   } else {
     planillaRows = planillas.map((p) => (
-      <TableRow key={p.planilla_id}>
+      <TableRow key={p.id}>
         <TableCell className="font-medium">{p.periodo}</TableCell>
         <TableCell>{p.modalidad || '-'}</TableCell>
         <TableCell>{p.meta_presupuestal || '-'}</TableCell>
@@ -150,10 +150,10 @@ export default function BoletasPagoPage() {
           <div className="flex items-center justify-end gap-2">
             <Button
               size="sm"
-              onClick={() => handleGenerarBoletas(p.planilla_id)}
-              disabled={generarMutation.isPending && generandoPlanillaId === p.planilla_id}
+              onClick={() => handleGenerarBoletas(p.id)}
+              disabled={generarMutation.isPending && generandoPlanillaId === p.id}
             >
-              {generarMutation.isPending && generandoPlanillaId === p.planilla_id ? (
+              {generarMutation.isPending && generandoPlanillaId === p.id ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generando...</>
               ) : (
                 <><FileText className="mr-2 h-4 w-4" />Generar Boletas</>
@@ -162,7 +162,7 @@ export default function BoletasPagoPage() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleDescargaMasiva(p.planilla_id)}
+              onClick={() => handleDescargaMasiva(p.id)}
               disabled={descargaMasivaMutation.isPending}
               title="Descargar todas las boletas en ZIP"
             >
@@ -198,7 +198,7 @@ export default function BoletasPagoPage() {
     )
   } else {
     boletaRows = boletas.map((b) => (
-      <TableRow key={b.boleta_id}>
+      <TableRow key={b.id}>
         <TableCell className="font-medium">
           {b.empleado_nombre || b.empleado?.nombres_completos || '-'}
         </TableCell>
@@ -217,7 +217,7 @@ export default function BoletasPagoPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleDownload(b.boleta_id)}
+            onClick={() => handleDownload(b.id)}
             disabled={downloadMutation.isPending}
           >
             <Download className="h-4 w-4" />
@@ -298,8 +298,7 @@ export default function BoletasPagoPage() {
                     <Button
                       variant="secondary"
                       onClick={() => {
-                        const planillaId = (boletas[0] as any).planilla_id
-                          ?? (boletas[0] as any).detalle_planilla?.planilla_id
+                        const planillaId = (boletas[0] as any).detalle_planilla?.planilla?.id
                           ?? (boletas[0] as any).detalle_planilla?.planilla;
                         if (planillaId) handleDescargaMasiva(planillaId)
                       }}

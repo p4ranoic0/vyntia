@@ -9,12 +9,12 @@ import { toast } from 'sonner'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 interface AdminDocUploadProps {
-  empleadoId: number
+  empleadoId: string
   tipoDocumento: string
   categoria: string
   label?: string
   /** Existing document info */
-  existing?: { documento_id: number; nombre_documento: string; archivo?: string } | null
+  existing?: { id: string; nombre_documento: string; archivo?: string } | null
   onUploaded?: () => void
   onDeleted?: () => void
   acceptImages?: boolean
@@ -64,7 +64,7 @@ export function AdminDocUpload({
     if (!existing) return
     if (!globalThis.confirm('¿Eliminar este documento?')) return
     try {
-      await legajoService.delete(existing.documento_id)
+      await legajoService.delete(existing.id)
       toast.success('Documento eliminado')
       onDeleted?.()
     } catch (err) {

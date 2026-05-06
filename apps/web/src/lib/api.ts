@@ -7,14 +7,14 @@ const API_BASE_URL =
 const MOCK_MODE = false; // Conectar directamente con el backend
 
 export interface Role {
-  id: number;
+  id: string;
   nombre: string;
   descripcion: string;
   estado: string;
 }
 
 export interface Permission {
-  id: number;
+  id: string;
   nombre: string;
   descripcion: string;
   modulo: string;
@@ -22,8 +22,7 @@ export interface Permission {
 }
 
 export interface User {
-  id: number;
-  usuario_id: number;
+  id: string;
   username: string;
   email: string;
   is_active: boolean;
@@ -31,13 +30,13 @@ export interface User {
   apellidos_usuario?: string;
   requiere_cambio_password?: boolean;
   empleado?: {
-    id: number;
+    id: string;
     nombres: string;
     ape_paterno: string;
     ape_materno: string;
     dni: string;
     area: {
-      id: number;
+      id: string;
       organo: string;
       siglas: string;
     };
@@ -62,8 +61,7 @@ export interface ApiResponse<T> {
 
 // Mock data for development
 const mockUser: User = {
-  id: 1,
-  usuario_id: 1,
+  id: "1",
   username: "admin",
   email: "admin@company.com",
   is_active: true,
@@ -71,20 +69,20 @@ const mockUser: User = {
   apellidos_usuario: "User",
   requiere_cambio_password: false, // Por defecto no requiere cambio de contraseña
   empleado: {
-    id: 1,
+    id: "1",
     nombres: "Admin",
     ape_paterno: "User",
     ape_materno: "",
     dni: "12345678",
     area: {
-      id: 1,
+      id: "1",
       organo: "Recursos Humanos",
       siglas: "RH",
     },
   },
   roles: [
     {
-      id: 1,
+      id: "1",
       nombre: "Administrador",
       descripcion: "Acceso completo al sistema",
       estado: "activo",
@@ -92,14 +90,14 @@ const mockUser: User = {
   ],
   permisos: [
     {
-      id: 1,
+      id: "1",
       nombre: "ver_dashboard",
       descripcion: "Ver dashboard principal",
       modulo: "dashboard",
       estado: "activo",
     },
     {
-      id: 2,
+      id: "2",
       nombre: "gestionar_usuarios",
       descripcion: "Gestionar usuarios del sistema",
       modulo: "usuarios",
@@ -384,7 +382,7 @@ class ApiClient {
     }
   }
 
-  async getEmpleadoDetail(id: number) {
+  async getEmpleadoDetail(id: string) {
     const response = await this.get(`/api/v1/employees/${id}/`);
     return response.data?.data || response.data;
   }
@@ -393,11 +391,11 @@ class ApiClient {
     return this.post("/api/v1/employees/", data);
   }
 
-  async updateEmpleado(id: number, data: any) {
+  async updateEmpleado(id: string, data: any) {
     return this.patch(`/api/v1/employees/${id}/`, data);
   }
 
-  async deleteEmpleado(id: number) {
+  async deleteEmpleado(id: string) {
     return this.delete(`/api/v1/employees/${id}/`);
   }
 
@@ -410,11 +408,11 @@ class ApiClient {
     return this.post("/api/v1/organization/departments/", data);
   }
 
-  async updateArea(id: number, data: any) {
+  async updateArea(id: string, data: any) {
     return this.patch(`/api/v1/organization/departments/${id}/`, data);
   }
 
-  async deleteArea(id: number) {
+  async deleteArea(id: string) {
     return this.delete(`/api/v1/organization/departments/${id}/`);
   }
 
@@ -427,11 +425,11 @@ class ApiClient {
     return this.post("/api/v1/identity/users/", data);
   }
 
-  async updateUsuario(id: number, data: any) {
+  async updateUsuario(id: string, data: any) {
     return this.patch(`/api/v1/identity/users/${id}/`, data);
   }
 
-  async deleteUsuario(id: number) {
+  async deleteUsuario(id: string) {
     return this.delete(`/api/v1/identity/users/${id}/`);
   }
 
@@ -444,11 +442,11 @@ class ApiClient {
     return this.post("/api/v1/identity/roles/", data);
   }
 
-  async updateRol(id: number, data: any) {
+  async updateRol(id: string, data: any) {
     return this.patch(`/api/v1/identity/roles/${id}/`, data);
   }
 
-  async deleteRol(id: number) {
+  async deleteRol(id: string) {
     return this.delete(`/api/v1/identity/roles/${id}/`);
   }
 
@@ -461,11 +459,11 @@ class ApiClient {
     return this.post("/api/v1/identity/permissions/", data);
   }
 
-  async updatePermiso(id: number, data: any) {
+  async updatePermiso(id: string, data: any) {
     return this.patch(`/api/v1/identity/permissions/${id}/`, data);
   }
 
-  async deletePermiso(id: number) {
+  async deletePermiso(id: string) {
     return this.delete(`/api/v1/identity/permissions/${id}/`);
   }
 }

@@ -298,7 +298,7 @@ const NuevaSolicitudPage: React.FC = () => {
       }
       
       try {
-        const periodo = periodos.find(p => p.id.toString() === periodo_vacacional_id)
+        const periodo = periodos.find(p => p.id === periodo_vacacional_id)
         if (periodo) {
           setPeriodoSeleccionado(periodo)
           const resumen = await timeOffService.getResumenPeriodo(user.empleado_id, periodo.id)
@@ -319,8 +319,8 @@ const NuevaSolicitudPage: React.FC = () => {
       setSubmitting(true)
       
       const solicitudData: SolicitudVacacionesForm = {
-        empleado_id: user?.empleado_id || 0,
-        periodo_vacacional_id: parseInt(data.periodo_vacacional_id),
+        empleado_id: user?.empleado_id || '',
+        periodo_vacacional_id: data.periodo_vacacional_id,
         fecha_inicio_solicitud: format(data.fecha_inicio_solicitud, 'yyyy-MM-dd'),
         fecha_fin_solicitud: format(data.fecha_fin_solicitud, 'yyyy-MM-dd'),
         observaciones_solicitud: data.observaciones_solicitud || '',

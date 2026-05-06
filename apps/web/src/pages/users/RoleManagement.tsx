@@ -39,16 +39,16 @@ export function RoleManagement() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedRoles, setSelectedRoles] = useState<Set<number>>(new Set())
-  const [rolesToRemove, setRolesToRemove] = useState<Set<number>>(new Set())
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
+  const [rolesToRemove, setRolesToRemove] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (id) {
-      loadData(parseInt(id))
+      loadData(id)
     }
   }, [id])
 
-  const loadData = async (userId: number) => {
+  const loadData = async (userId: string) => {
     try {
       setLoading(true)
       const [userData, rolesData] = await Promise.all([
@@ -77,7 +77,7 @@ export function RoleManagement() {
     role.descripcion_rol?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleRoleToggle = (roleId: number, isCurrentlyAssigned: boolean) => {
+  const handleRoleToggle = (roleId: string, isCurrentlyAssigned: boolean) => {
     if (isCurrentlyAssigned) {
       // Si el rol está actualmente asignado, marcarlo para remover
       if (rolesToRemove.has(roleId)) {
@@ -109,7 +109,7 @@ export function RoleManagement() {
     }
   }
 
-  const getRoleStatus = (roleId: number) => {
+  const getRoleStatus = (roleId: string) => {
     const isCurrentlyAssigned = userRoles.some(role => role.id === roleId)
     const isSelected = selectedRoles.has(roleId)
     const isMarkedForRemoval = rolesToRemove.has(roleId)
@@ -152,7 +152,7 @@ export function RoleManagement() {
       setSubmitting(true)
       
       const assignment: UserRoleAssignment = {
-        user_id: user.usuario_id,
+        user_id: user.id,
         role_ids: Array.from(selectedRoles),
         remove_existing: true // Esto reemplazará todos los roles existentes
       }
@@ -164,7 +164,7 @@ export function RoleManagement() {
       })
       
       // Recargar datos para reflejar los cambios
-      await loadData(user.usuario_id)
+      await loadData(user.id)
       
       // Limpiar estados de cambios
       setRolesToRemove(new Set())
@@ -212,7 +212,7 @@ export function RoleManagement() {
     >
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
-        <Button variant="outline" onClick={() => navigate(`/usuarios/gestion/${user.usuario_id}`)}>
+        <Button variant="outline" onClick={() => navigate(`/usuarios/gestion/${user.id}`)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a Gestión
         </Button>
@@ -446,7 +446,7 @@ export function RoleManagement() {
             
             <Button
               variant="ghost"
-              onClick={() => navigate(`/usuarios/gestion/${user.usuario_id}`)}
+              onClick={() => navigate(`/usuarios/gestion/${user.id}`)}
               disabled={submitting}
               className="w-full"
             >

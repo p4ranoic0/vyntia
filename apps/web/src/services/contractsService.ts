@@ -2,18 +2,18 @@ import { apiClient } from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
 export interface Contrato {
-  contrato_id: number;
-  empleado: number;
+  id: string;
+  empleado: string;
   empleado_detalle?: {
-    empleado_id: number;
+    id: string;
     nombres_empleado: string;
     apellido_paterno: string;
     apellido_materno: string;
     nombre_completo: string;
   };
-  area: number;
+  area: string;
   area_detalle?: {
-    area_id: number;
+    id: string;
     nombre: string;
   };
   numero_contrato: string;
@@ -48,10 +48,10 @@ export interface Contrato {
 }
 
 export interface ContratoListItem {
-  contrato_id: number;
+  id: string;
   numero_contrato: string;
   numero_adenda?: string | null;
-  empleado: number;
+  empleado: string;
   empleado_nombre: string;
   area_nombre: string;
   tipo_documento: string;
@@ -68,8 +68,8 @@ export interface ContratoListItem {
 }
 
 export interface ContratoFormData {
-  empleado: number;
-  area: number;
+  empleado: string;
+  area: string;
   numero_contrato?: string;
   numero_adenda?: string;
   tipo_documento: string;
@@ -86,8 +86,8 @@ export interface ContratoFormData {
 }
 
 export interface ContratoFilters {
-  empleado_id?: number;
-  area_id?: number;
+  empleado_id?: string;
+  area_id?: string;
   tipo_documento?: string;
   estado?: string;
   fecha_inicio?: string;
@@ -171,11 +171,11 @@ export const contractsService = {
     }
   },
 
-  async getByEmpleado(empleadoId: number): Promise<ContratoListItem[]> {
+  async getByEmpleado(empleadoId: string): Promise<ContratoListItem[]> {
     return this.getAll({ empleado_id: empleadoId });
   },
 
-  async getById(id: number): Promise<Contrato> {
+  async getById(id: string): Promise<Contrato> {
     try {
       const response = await apiClient.get(
         `/api/v1/contracts/${id}/`,
@@ -202,7 +202,7 @@ export const contractsService = {
     }
   },
 
-  async update(id: number, data: Partial<ContratoFormData>): Promise<Contrato> {
+  async update(id: string, data: Partial<ContratoFormData>): Promise<Contrato> {
     try {
       const response = await apiClient.patch(
         `/api/v1/contracts/${id}/`,
@@ -243,7 +243,7 @@ export const contractsService = {
   },
 
   async renovar(
-    id: number,
+    id: string,
     data: {
       fecha_inicio: string;
       fecha_fin?: string;
@@ -265,14 +265,14 @@ export const contractsService = {
   },
 
   async generarCertificado(data: {
-    empleado_id: number;
+    empleado_id: string;
     tipo_certificado?: string;
     proposito?: string;
     incluir_salario?: boolean;
     formato?: string;
     guardar_documento?: boolean;
   }): Promise<{
-    documento_id?: number;
+    documento_id?: string;
     archivo_url?: string;
     nombre_archivo?: string;
     numero_certificado?: string;
@@ -291,11 +291,11 @@ export const contractsService = {
   },
 
   async generarContratoPdf(data: {
-    contrato_id: number;
+    contrato_id: string;
     formato?: string;
     guardar_documento?: boolean;
   }): Promise<{
-    documento_id?: number;
+    documento_id?: string;
     archivo_url?: string;
     nombre_archivo?: string;
   }> {
@@ -313,11 +313,11 @@ export const contractsService = {
   },
 
   async generarAdendaPdf(data: {
-    adenda_id: number;
+    adenda_id: string;
     formato?: string;
     guardar_documento?: boolean;
   }): Promise<{
-    documento_id?: number;
+    documento_id?: string;
     archivo_url?: string;
     nombre_archivo?: string;
   }> {

@@ -68,7 +68,7 @@ export function DatosAcademicosPage() {
         const items = response?.data || response?.results || []
         const records = Array.isArray(items) ? items : []
         const formacion = records.map((r: any) => ({
-          id: r.academico_id,
+          id: r.id,
           nivel_educativo: r.nivel_educativo || r.tipo_formacion || '',
           institucion: r.nombre_institucion || '',
           carrera_especialidad: r.carrera_especialidad || '',

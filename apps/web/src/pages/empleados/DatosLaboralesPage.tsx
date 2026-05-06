@@ -64,7 +64,7 @@ export function DatosLaboralesPage() {
 
         if (record) {
           setEmpleado({
-            id: record.dato_laboral_id,
+            id: record.id,
             codigo_empleado: '',
             fecha_ingreso: record.fecha_ingreso || '',
             fecha_cese: record.fecha_cese || undefined,

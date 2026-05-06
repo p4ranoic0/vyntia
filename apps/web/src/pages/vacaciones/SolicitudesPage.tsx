@@ -442,7 +442,7 @@ const SolicitudesPage: React.FC = () => {
     ]
 
     const rows = filteredSolicitudes.map((s) => [
-      s.solicitud_id ?? s.id,
+      s.id,
       `${s.empleado?.nombres || ''} ${s.empleado?.apellidos || ''}`.trim(),
       s.empleado?.numero_identificacion || '',
       s.area_nombre || '',

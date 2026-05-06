@@ -263,7 +263,7 @@ export function OnboardingTabFamiliar({ empleadoId }: OnboardingTabFamiliarProps
 
       <div className="space-y-4">
         {familiares.map((familiar: Record<string, unknown>) => {
-          const familiarId = familiar.familiar_id as number
+          const familiarId = familiar.id as string
           const parentesco = (familiar.parentesco as string) ?? ''
           const requiredDocs = getRequiredDocs(parentesco)
           return (

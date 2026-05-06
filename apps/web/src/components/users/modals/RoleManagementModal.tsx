@@ -38,7 +38,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 interface RoleManagementModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  userId: number
+  userId: string
   onSuccess?: () => void
 }
 
@@ -49,7 +49,7 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedRoles, setSelectedRoles] = useState<Set<number>>(new Set())
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
   const [isInitialized, setIsInitialized] = useState(false)
 
   // Cargar datos cuando se abre el modal
@@ -66,14 +66,14 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
   useEffect(() => {
 
     if (userRoles.length > 0 || isInitialized) {
-      const currentRoleIds = new Set(userRoles.map(role => role.rol_id))
+      const currentRoleIds = new Set(userRoles.map(role => role.id))
   
       setSelectedRoles(currentRoleIds)
       setIsInitialized(true)
     }
   }, [userRoles, isInitialized])
 
-  const loadData = async (userId: number) => {
+  const loadData = async (userId: string) => {
     try {
       setLoading(true)
       setIsInitialized(false) // Reset initialization state
@@ -116,7 +116,7 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
     role.descripcion_rol?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleRoleToggle = (roleId: number, isCurrentlyAssigned: boolean) => {
+  const handleRoleToggle = (roleId: string, isCurrentlyAssigned: boolean) => {
     // Simplemente alternar la selección del rol
     if (selectedRoles.has(roleId)) {
       // Si está seleccionado, deseleccionarlo
@@ -131,8 +131,8 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
     }
   }
 
-  const getRoleStatus = (roleId: number) => {
-    const isCurrentlyAssigned = userRoles.some(role => role.rol_id === roleId)
+  const getRoleStatus = (roleId: string) => {
+    const isCurrentlyAssigned = userRoles.some(role => role.id === roleId)
     const isSelected = selectedRoles.has(roleId)
     
     
@@ -163,11 +163,11 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
 
   const getChangesCount = () => {
     const rolesToAdd = Array.from(selectedRoles).filter(roleId => 
-      !userRoles.some(role => role.rol_id === roleId)
+      !userRoles.some(role => role.id === roleId)
     )
     
     // Calcular roles a remover: roles actuales del usuario que ya no están seleccionados
-    const rolesToRemoveCount = userRoles.filter(role => !selectedRoles.has(role.rol_id)).length
+    const rolesToRemoveCount = userRoles.filter(role => !selectedRoles.has(role.id)).length
     
     return {
       toAdd: rolesToAdd.length,
@@ -189,13 +189,13 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
       setSubmitting(true)
       
       const rolesToAdd = Array.from(selectedRoles).filter(roleId => 
-        !userRoles.some(role => role.rol_id === roleId)
+        !userRoles.some(role => role.id === roleId)
       )
       
       // Calcular roles a remover: roles actuales del usuario que ya no están seleccionados
       const rolesToRemoveArray = userRoles
-        .filter(role => !selectedRoles.has(role.rol_id))
-        .map(role => role.rol_id)
+        .filter(role => !selectedRoles.has(role.id))
+        .map(role => role.id)
       
       // Procesar asignaciones y remociones por separado
       const promises = []
@@ -228,10 +228,10 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
 
   const handleSelectAll = () => {
     // Solo seleccionar roles que no están actualmente asignados
-    const currentRoleIds = new Set(userRoles.map(role => role.rol_id))
+    const currentRoleIds = new Set(userRoles.map(role => role.id))
     const unassignedRoleIds = filteredRoles
-      .filter(role => !currentRoleIds.has(role.rol_id))
-      .map(role => role.rol_id)
+      .filter(role => !currentRoleIds.has(role.id))
+      .map(role => role.id)
     
     // Combinar roles actualmente asignados con todos los no asignados
     const newSelectedRoles = new Set([...currentRoleIds, ...unassignedRoleIds])
@@ -240,12 +240,12 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
 
   const handleDeselectAll = () => {
     // Solo mantener los roles que están actualmente asignados
-    const currentRoleIds = new Set(userRoles.map(role => role.rol_id))
+    const currentRoleIds = new Set(userRoles.map(role => role.id))
     setSelectedRoles(currentRoleIds)
   }
 
   const handleResetChanges = () => {
-    const currentRoleIds = new Set(userRoles.map(role => role.rol_id))
+    const currentRoleIds = new Set(userRoles.map(role => role.id))
     setSelectedRoles(currentRoleIds)
   }
 
@@ -372,15 +372,15 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
                     </div>
                   ) : (
                     filteredRoles.map((role) => {
-                      const status = getRoleStatus(role.rol_id)
-                      const isCurrentlyAssigned = userRoles.some(r => r.rol_id === role.rol_id)
-                      const isChecked = selectedRoles.has(role.rol_id)
+                      const status = getRoleStatus(role.id)
+                      const isCurrentlyAssigned = userRoles.some(r => r.id === role.id)
+                      const isChecked = selectedRoles.has(role.id)
                       
               
                       
                       return (
                         <div
-                          key={role.rol_id}
+                          key={role.id}
                           className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
                             status === 'to-remove' ? 'bg-red-50 border-red-200' :
                             status === 'to-add' ? 'bg-blue-50 border-blue-200' :
@@ -391,7 +391,7 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
                           <div className="flex items-center space-x-3">
                             <Checkbox
                               checked={isChecked}
-                              onCheckedChange={() => handleRoleToggle(role.rol_id, isCurrentlyAssigned)}
+                              onCheckedChange={() => handleRoleToggle(role.id, isCurrentlyAssigned)}
                               disabled={submitting}
                             />
                             <div className="flex-1">
@@ -405,10 +405,10 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
                                 </p>
                               )}
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                <span key={`nivel-${role.rol_id}`}>Nivel: {role.nivel_rol}</span>
-                                <span key={`estado-${role.rol_id}`}>Estado: {role.estado_rol}</span>
+                                <span key={`nivel-${role.id}`}>Nivel: {role.nivel_rol}</span>
+                                <span key={`estado-${role.id}`}>Estado: {role.estado_rol}</span>
                                 {role.created_at && (
-                                  <span key={`fecha-${role.rol_id}`}>Creado: {new Date(role.created_at).toLocaleDateString()}</span>
+                                  <span key={`fecha-${role.id}`}>Creado: {new Date(role.created_at).toLocaleDateString()}</span>
                                 )}
                               </div>
                             </div>

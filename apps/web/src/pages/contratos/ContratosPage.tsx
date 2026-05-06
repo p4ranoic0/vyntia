@@ -329,7 +329,7 @@ function CreateContratoDialog({ open, onOpenChange, employees, isPending, onSubm
 interface DetailDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  contratoId: number | null
+  contratoId: string | null
   onRenovarSuccess: () => void
 }
 
@@ -669,7 +669,7 @@ function GenerarCertificadoDialog({ open, onOpenChange, employees }: Certificado
   const [incluirSalario, setIncluirSalario] = useState(false)
 
   const certificadoMutation = useMutation({
-    mutationFn: (data: { empleado_id: number; proposito?: string; incluir_salario?: boolean }) =>
+    mutationFn: (data: { empleado_id: string; proposito?: string; incluir_salario?: boolean }) =>
       contractsService.generarCertificado(data),
     onSuccess: (data) => {
       toast.success(`Certificado generado: ${data.numero_certificado || 'OK'}`)
@@ -789,14 +789,14 @@ function GenerarCertificadoDialog({ open, onOpenChange, employees }: Certificado
 interface GenerarContratoPdfDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  contratoId: number | null
+  contratoId: string | null
   contratoNumero?: string
   esAdenda?: boolean
 }
 
 function GenerarContratoPdfDialog({ open, onOpenChange, contratoId, contratoNumero, esAdenda }: GenerarContratoPdfDialogProps) {
   const generarMutation = useMutation({
-    mutationFn: (id: number) =>
+    mutationFn: (id: string) =>
       esAdenda
         ? contractsService.generarAdendaPdf({ adenda_id: id })
         : contractsService.generarContratoPdf({ contrato_id: id }),
@@ -864,7 +864,7 @@ export default function ContratosPage() {
   const [estadoFilter, setEstadoFilter] = useState<string>('')
   const [tipoFilter, setTipoFilter] = useState<string>('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [selectedContratoId, setSelectedContratoId] = useState<number | null>(null)
+  const [selectedContratoId, setSelectedContratoId] = useState<string | null>(null)
   const [selectedContratoNumero, setSelectedContratoNumero] = useState<string>('')
   const [selectedEsAdenda, setSelectedEsAdenda] = useState(false)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
@@ -946,7 +946,7 @@ export default function ContratosPage() {
 
   // Handlers
   const handleRowClick = (contrato: ContratoListItem) => {
-    setSelectedContratoId(contrato.contrato_id)
+    setSelectedContratoId(contrato.id)
     setSelectedContratoNumero(contrato.numero_contrato)
     setIsDetailOpen(true)
   }
@@ -1165,7 +1165,7 @@ export default function ContratosPage() {
                 <TableBody>
                   {filteredContratos.map((contrato) => (
                     <TableRow
-                      key={contrato.contrato_id}
+                      key={contrato.id}
                       className="cursor-pointer"
                       onClick={() => handleRowClick(contrato)}
                     >
@@ -1209,7 +1209,7 @@ export default function ContratosPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setSelectedContratoId(contrato.contrato_id)
+                              setSelectedContratoId(contrato.id)
                               setSelectedContratoNumero(contrato.numero_contrato)
                               setSelectedEsAdenda(contrato.tipo_documento?.startsWith('ADENDA_') ?? false)
                               setIsGenerarPdfOpen(true)

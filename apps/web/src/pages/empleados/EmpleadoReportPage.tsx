@@ -29,7 +29,7 @@ import { toast } from 'sonner'
 
 // Interfaz alineada con los campos reales del backend (EmpleadoSerializer)
 interface EmpleadoDetalle {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -51,7 +51,7 @@ interface EmpleadoDetalle {
   es_activo: boolean
   ruta_fotografia?: string
   datos_laborales_actuales?: {
-    dato_laboral_id: number
+    id: string
     cargo_empleado: string
     tipo_contrato: string
     regimen_laboral: string
@@ -60,14 +60,14 @@ interface EmpleadoDetalle {
     fecha_ingreso: string
     fecha_cese?: string
     sueldo_basico?: number
-    area?: number
+    area?: string
     area_nombre?: string
     es_activo?: boolean
     tiempo_servicio?: string
     [key: string]: any
   } | null
   familiares?: Array<{
-    familiar_id: number
+    id: string
     nombres_familiar: string
     apellido_paterno: string
     apellido_materno: string
@@ -86,7 +86,7 @@ interface EmpleadoDetalle {
     [key: string]: any
   }>
   formacion?: Array<{
-    academico_id: number
+    id: string
     tipo_formacion: string
     nombre_institucion: string
     carrera_especialidad: string
@@ -364,7 +364,7 @@ export default function EmpleadoReportPage() {
                   </thead>
                   <tbody>
                     {empleado.formacion.map((f, idx) => (
-                      <tr key={f.academico_id || idx} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <tr key={f.id || idx} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2.5 px-3">
                           <span className="font-medium">{f.nivel_educativo || f.tipo_formacion}</span>
                         </td>
@@ -414,7 +414,7 @@ export default function EmpleadoReportPage() {
                   </thead>
                   <tbody>
                     {empleado.familiares.map((f, idx) => (
-                      <tr key={f.familiar_id || idx} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <tr key={f.id || idx} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2.5 px-3">
                           <span className="font-medium">
                             {f.nombres_completos || `${f.nombres_familiar} ${f.apellido_paterno} ${f.apellido_materno}`}

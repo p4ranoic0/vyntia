@@ -15,7 +15,7 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 interface DatosPersonales {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -53,7 +53,7 @@ export function DatosPersonalesPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Determinar el ID del empleado: del URL param o del usuario autenticado
-  const empleadoId = id ? Number(id) : user?.empleado?.id
+  const empleadoId = id ?? user?.empleado?.id
 
   useEffect(() => {
     if (!empleadoId) {
@@ -69,7 +69,7 @@ export function DatosPersonalesPage() {
         const response = await employeesService.getById(empleadoId)
         const data = response?.data || response
         setEmpleado({
-          empleado_id: data.empleado_id,
+          id: data.id,
           nombres_empleado: data.nombres_empleado || '',
           apellido_paterno: data.apellido_paterno || '',
           apellido_materno: data.apellido_materno || '',
@@ -176,7 +176,7 @@ export function DatosPersonalesPage() {
   return (
     <EmployeeLayout
       title="Datos Personales"
-      description={`Informacion personal del empleado - ID: ${empleado.empleado_id}`}
+      description={`Informacion personal del empleado - ID: ${empleado.id}`}
     >
       <div className="space-y-6">
         {/* Header */}

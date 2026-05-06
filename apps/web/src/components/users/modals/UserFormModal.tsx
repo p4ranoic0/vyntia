@@ -109,7 +109,7 @@ export function UserFormModal({ open, onOpenChange, userId, onSuccess }: UserFor
         tipo_usuario: user.tipo_usuario || 'empleado',
         nivel_acceso: user.nivel_acceso || 'basico',
         estado_usuario: user.estado_usuario || 'activo',
-        empleado: user.empleado_detalle?.empleado_id,
+        empleado: user.empleado_detalle?.id,
         password: '',
         password_confirm: '',
         roles: user.roles_activos?.map(role => role.id) || []

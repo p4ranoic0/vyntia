@@ -7,7 +7,7 @@ import {
 
 // Interfaces para empleados
 export interface Employee {
-  id: number;
+  id: string;
   nombres: string;
   ape_paterno: string;
   ape_materno: string;
@@ -19,19 +19,19 @@ export interface Employee {
   estado_civil?: string;
   genero?: string;
   area: {
-    id: number;
+    id: string;
     organo: string;
     siglas: string;
   };
   cargo?: {
-    id: number;
+    id: string;
     nombre: string;
     descripcion?: string;
   };
   fecha_ingreso?: string;
   estado?: string;
   usuario?: {
-    id: number;
+    id: string;
     username: string;
     email: string;
   };
@@ -43,8 +43,8 @@ export interface Employee {
 
 // Interfaces para datos específicos del empleado
 export interface DatosPersonales {
-  id?: number;
-  empleado_id: number;
+  id?: string;
+  empleado_id: string;
   nombres: string;
   ape_paterno: string;
   ape_materno: string;
@@ -66,10 +66,10 @@ export interface DatosPersonales {
 }
 
 export interface DatosLaborales {
-  id?: number;
-  empleado_id: number;
-  area_id: number;
-  cargo_id?: number;
+  id?: string;
+  empleado_id: string;
+  area_id: string;
+  cargo_id?: string;
   fecha_ingreso: string;
   tipo_contrato?: string;
   modalidad_trabajo?: string;
@@ -78,12 +78,12 @@ export interface DatosLaborales {
   estado: string;
   fecha_cese?: string;
   motivo_cese?: string;
-  supervisor_id?: number;
+  supervisor_id?: string;
 }
 
 export interface DatosFamiliares {
-  id?: number;
-  empleado_id: number;
+  id?: string;
+  empleado_id: string;
   nombre_familiar: string;
   apellidos_familiar: string;
   parentesco: string;
@@ -95,8 +95,8 @@ export interface DatosFamiliares {
 }
 
 export interface DatosAcademicos {
-  id?: number;
-  empleado_id: number;
+  id?: string;
+  empleado_id: string;
   nivel_educativo: string;
   institucion: string;
   titulo_obtenido?: string;
@@ -128,7 +128,7 @@ export const employeesService = {
   /**
    * Obtener empleado por ID
    */
-  async getById(id: number) {
+  async getById(id: string) {
     try {
       const response = await apiClient.get(`/api/v1/employees/${id}/`);
       return response.data;
@@ -157,7 +157,7 @@ export const employeesService = {
   /**
    * Actualizar empleado
    */
-  async update(id: number, employeeData: Partial<Employee>) {
+  async update(id: string, employeeData: Partial<Employee>) {
     try {
       const response = await apiClient.patch(
         `/api/v1/employees/${id}/`,
@@ -173,7 +173,7 @@ export const employeesService = {
   /**
    * Eliminar empleado
    */
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const response = await apiClient.delete(`/api/v1/employees/${id}/`);
       return response.data;
@@ -185,7 +185,7 @@ export const employeesService = {
 
   // Servicios para datos personales
   datosPersonales: {
-    async get(empleadoId: number) {
+    async get(empleadoId: string) {
       try {
         const response = await apiClient.get(
           `/api/v1/employees/${empleadoId}/`,
@@ -197,7 +197,7 @@ export const employeesService = {
       }
     },
 
-    async update(empleadoId: number, data: Partial<DatosPersonales>) {
+    async update(empleadoId: string, data: Partial<DatosPersonales>) {
       try {
         const response = await apiClient.patch(
           `/api/v1/employees/${empleadoId}/`,
@@ -213,7 +213,7 @@ export const employeesService = {
 
   // Servicios para datos laborales
   datosLaborales: {
-    async get(empleadoId: number) {
+    async get(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/employment-data/`, {
           params: { empleado: empleadoId },
@@ -225,7 +225,7 @@ export const employeesService = {
       }
     },
 
-    async update(recordId: number, data: Partial<DatosLaborales>) {
+    async update(recordId: string, data: Partial<DatosLaborales>) {
       try {
         const response = await apiClient.patch(
           `/api/v1/employment-data/${recordId}/`,
@@ -241,7 +241,7 @@ export const employeesService = {
 
   // Servicios para datos familiares
   datosFamiliares: {
-    async getAll(empleadoId: number) {
+    async getAll(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/family-members/`, {
           params: { empleado: empleadoId },
@@ -253,7 +253,7 @@ export const employeesService = {
       }
     },
 
-    async create(empleadoId: number, data: Partial<DatosFamiliares>) {
+    async create(empleadoId: string, data: Partial<DatosFamiliares>) {
       try {
         const response = await apiClient.post(
           `/api/v1/family-members/`,
@@ -270,8 +270,8 @@ export const employeesService = {
     },
 
     async update(
-      _empleadoId: number,
-      id: number,
+      _empleadoId: string,
+      id: string,
       data: Partial<DatosFamiliares>,
     ) {
       try {
@@ -286,7 +286,7 @@ export const employeesService = {
       }
     },
 
-    async delete(_empleadoId: number, id: number) {
+    async delete(_empleadoId: string, id: string) {
       try {
         const response = await apiClient.delete(
           `/api/v1/family-members/${id}/`,
@@ -301,7 +301,7 @@ export const employeesService = {
 
   // Servicios para datos académicos
   datosAcademicos: {
-    async getAll(empleadoId: number) {
+    async getAll(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/academic-records/`, {
           params: { empleado: empleadoId },
@@ -313,7 +313,7 @@ export const employeesService = {
       }
     },
 
-    async create(empleadoId: number, data: Partial<DatosAcademicos>) {
+    async create(empleadoId: string, data: Partial<DatosAcademicos>) {
       try {
         const response = await apiClient.post(
           `/api/v1/academic-records/`,
@@ -330,8 +330,8 @@ export const employeesService = {
     },
 
     async update(
-      _empleadoId: number,
-      id: number,
+      _empleadoId: string,
+      id: string,
       data: Partial<DatosAcademicos>,
     ) {
       try {
@@ -346,7 +346,7 @@ export const employeesService = {
       }
     },
 
-    async delete(_empleadoId: number, id: number) {
+    async delete(_empleadoId: string, id: string) {
       try {
         const response = await apiClient.delete(
           `/api/v1/academic-records/${id}/`,
@@ -361,7 +361,7 @@ export const employeesService = {
 
   // Servicios para reportes PDF
   reportes: {
-    async descargarReporteIntegral(empleadoId: number): Promise<void> {
+    async descargarReporteIntegral(empleadoId: string): Promise<void> {
       try {
         const response = await apiClient.getBlob(
           `/api/v1/employees/${empleadoId}/reporte_integral/`,
@@ -382,7 +382,7 @@ export const employeesService = {
     },
 
     async descargarReporteSeccion(
-      empleadoId: number,
+      empleadoId: string,
       seccion: "personal" | "laboral" | "academico" | "familiar",
     ): Promise<void> {
       try {

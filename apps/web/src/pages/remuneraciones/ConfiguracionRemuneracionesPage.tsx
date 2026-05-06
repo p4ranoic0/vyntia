@@ -136,7 +136,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: ConceptoRemuneracionPayload }) => payrollService.update(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: ConceptoRemuneracionPayload }) => payrollService.update(id, payload),
     onSuccess: () => {
       toast({ title: 'Concepto actualizado', description: 'Los cambios fueron guardados.' })
       setEditingId(null)
@@ -149,7 +149,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => payrollService.remove(id),
+    mutationFn: (id: string) => payrollService.remove(id),
     onSuccess: () => {
       toast({ title: 'Concepto eliminado', description: 'Se eliminó del catálogo.' })
       queryClient.invalidateQueries({ queryKey: ['config-remuneraciones'] })
@@ -181,7 +181,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const updateAfpMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Partial<ConfiguracionAfpPayload> }) => payrollService.updateAfp(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<ConfiguracionAfpPayload> }) => payrollService.updateAfp(id, payload),
     onSuccess: () => {
       toast({ title: 'Configuración AFP actualizada', description: 'Los cambios fueron guardados.' })
       setEditingAfpId(null)
@@ -194,7 +194,7 @@ export default function ConfiguracionRemuneracionesPage() {
   })
 
   const deleteAfpMutation = useMutation({
-    mutationFn: (id: number) => payrollService.removeAfp(id),
+    mutationFn: (id: string) => payrollService.removeAfp(id),
     onSuccess: () => {
       toast({ title: 'Configuración AFP eliminada', description: 'Se eliminó del catálogo.' })
       queryClient.invalidateQueries({ queryKey: ['config-afp'] })
@@ -215,7 +215,7 @@ export default function ConfiguracionRemuneracionesPage() {
   }
 
   const handleEdit = (item: ConceptoRemuneracion) => {
-    setEditingId(item.configuracion_id)
+    setEditingId(item.id)
     setForm({
       tipo: item.tipo,
       codigo: item.codigo,
@@ -247,7 +247,7 @@ export default function ConfiguracionRemuneracionesPage() {
   }
 
   const handleEditAfp = (item: ConfiguracionAfp) => {
-    setEditingAfpId(item.afp_config_id)
+    setEditingAfpId(item.id)
     setAfpForm({
       afp_nombre: item.afp_nombre,
       vigencia_mes: item.vigencia_mes,
@@ -308,7 +308,7 @@ export default function ConfiguracionRemuneracionesPage() {
     )
   } else {
     tableContent = conceptos.map((item) => (
-      <TableRow key={item.configuracion_id}>
+      <TableRow key={item.id}>
         <TableCell className="font-semibold">{item.codigo}</TableCell>
         <TableCell>
           <div className="font-medium">{item.nombre}</div>
@@ -329,7 +329,7 @@ export default function ConfiguracionRemuneracionesPage() {
             <Button
               size="icon"
               variant="destructive"
-              onClick={() => deleteMutation.mutate(item.configuracion_id)}
+              onClick={() => deleteMutation.mutate(item.id)}
               disabled={deleteMutation.isPending}
             >
               <Trash2 className="h-4 w-4" />
@@ -354,7 +354,7 @@ export default function ConfiguracionRemuneracionesPage() {
     )
   } else {
     afpTableContent = afpConfigs.map((item) => (
-      <TableRow key={item.afp_config_id}>
+      <TableRow key={item.id}>
         <TableCell className="font-semibold">{item.afp_nombre}</TableCell>
         <TableCell>{item.vigencia_mes}</TableCell>
         <TableCell>{Number(item.aporte_obligatorio_pct).toFixed(3)}%</TableCell>
@@ -373,7 +373,7 @@ export default function ConfiguracionRemuneracionesPage() {
             <Button
               size="icon"
               variant="destructive"
-              onClick={() => deleteAfpMutation.mutate(item.afp_config_id)}
+              onClick={() => deleteAfpMutation.mutate(item.id)}
               disabled={deleteAfpMutation.isPending}
             >
               <Trash2 className="h-4 w-4" />

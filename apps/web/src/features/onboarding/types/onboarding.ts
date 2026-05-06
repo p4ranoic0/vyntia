@@ -25,7 +25,7 @@ export type TipoDocumento =
   | 'carta_recomendacion'
 
 export interface DocumentInfo {
-  documento_id: number
+  id: string
   tipo_documento: TipoDocumento
   nombre_documento: string
   estado_documento: 'pendiente_revision' | 'aprobado' | 'rechazado'
@@ -35,8 +35,8 @@ export interface DocumentInfo {
 }
 
 export interface OnboardingStatus {
-  onboarding_id: number
-  empleado: number
+  id: string
+  empleado: string
   empleado_nombre: string
   empleado_documento: string
   estado_onboarding: EstadoOnboarding
@@ -55,7 +55,7 @@ export interface OnboardingStatus {
 }
 
 export interface UploadDocumentResponse {
-  documento_id: number
+  id: string
   tipo_documento: string
   estado_documento: string
   fecha_subida: string | null

@@ -50,7 +50,7 @@ function getRequiredDocTypes(parentesco: string): Array<{ tipo: string; label: s
 }
 
 interface TabFamiliaresProps {
-  empleadoId: number
+  empleadoId: string
 }
 
 export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
@@ -74,10 +74,10 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
   const loadDocs = useCallback(() => {
     legajoService.getByEmpleado(empleadoId, 'personal').then(docs => {
       // Agrupar docs por familiar_id (si el backend lo provee) o por tipo
-      const grouped: Record<number, Documento[]> = {}
+      const grouped: Record<string, Documento[]> = {}
       for (const doc of docs) {
         // Los docs familiares usan un campo referencia libre o el nombre contiene info
-        const refId = (doc as Documento & { familiar_id?: number }).familiar_id || 0
+        const refId = (doc as Documento & { familiar_id?: string }).familiar_id || ''
         if (!grouped[refId]) grouped[refId] = []
         grouped[refId].push(doc)
       }
@@ -88,7 +88,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
   useEffect(() => { reload(); loadDocs() }, [reload, loadDocs])
 
   const startEdit = (fam: any) => {
-    setEditingId(fam.familiar_id ?? fam.id)
+    setEditingId(fam.id)
     setFormData({
       nombres_familiar: fam.nombres_familiar || '',
       apellido_paterno: fam.apellido_paterno || '',
@@ -132,7 +132,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!globalThis.confirm('¿Eliminar este familiar?')) return
     try {
       await employeesService.datosFamiliares.delete(empleadoId, id)
@@ -157,7 +157,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
       {familiares.length > 0 && (
         <div className="space-y-2">
           {familiares.map((fam: any) => {
-            const famId = fam.familiar_id ?? fam.id
+            const famId = fam.id
             const requiredDocs = getRequiredDocTypes(fam.parentesco || '')
             return (
               <div key={famId} className="border rounded-md p-3 space-y-2">
@@ -197,7 +197,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
                         categoria="personal"
                         label={`${docType.label} - ${fam.nombres_familiar || 'Familiar'}`}
                         existing={existingDoc ? {
-                          documento_id: existingDoc.documento_id,
+                          documento_id: existingDoc.id,
                           nombre_documento: existingDoc.nombre_documento,
                           archivo: existingDoc.archivo,
                         } : null}
