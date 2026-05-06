@@ -22,7 +22,7 @@ export const extractCollection = (raw: unknown): unknown[] => {
 
 export const normalizeRole = (role: unknown) => {
   const roleObj = asRecord(role);
-  const roleId = getNumber(roleObj.rol_id ?? roleObj.id);
+  const roleId = getString(roleObj.rol_id ?? roleObj.id);
   const isActive = roleObj.is_active === true;
   const estadoRol = getString(
     roleObj.estado_rol,
@@ -31,7 +31,6 @@ export const normalizeRole = (role: unknown) => {
 
   return {
     id: roleId,
-    rol_id: roleId,
     nombre_rol: getString(roleObj.nombre_rol ?? roleObj.nombre),
     descripcion_rol: getString(roleObj.descripcion_rol ?? roleObj.descripcion),
     estado_rol: estadoRol,
@@ -60,7 +59,7 @@ export const normalizeSecurityRole = (role: unknown) => {
 
 export const normalizeUser = (user: unknown) => {
   const userObj = asRecord(user);
-  const userId = getNumber(userObj.usuario_id ?? userObj.id);
+  const userId = getString(userObj.usuario_id ?? userObj.id);
   const isActive = userObj.is_active === true;
   const estadoUsuario = getString(
     userObj.estado_usuario,
@@ -69,7 +68,6 @@ export const normalizeUser = (user: unknown) => {
 
   return {
     id: userId,
-    usuario_id: userId,
     username: getString(userObj.username ?? userObj.nombre_usuario),
     email: getString(userObj.email ?? userObj.correo_institucional),
     nombres_usuario: getString(userObj.nombres_usuario),
@@ -92,11 +90,10 @@ export const normalizeUser = (user: unknown) => {
 export const normalizeEmployee = (employee: unknown) => {
   const employeeObj = asRecord(employee);
   const ubicacionActual = asRecord(employeeObj.ubicacion_actual);
-  const employeeId = getNumber(employeeObj.empleado_id ?? employeeObj.id);
+  const employeeId = getString(employeeObj.empleado_id ?? employeeObj.id);
 
   return {
     id: employeeId,
-    empleado_id: employeeId,
     nombres: getString(employeeObj.nombres_empleado ?? employeeObj.nombres),
     ape_paterno: getString(
       employeeObj.apellido_paterno ?? employeeObj.ape_paterno,
@@ -115,7 +112,7 @@ export const normalizeEmployee = (employee: unknown) => {
       employeeObj.area ??
       (Object.keys(ubicacionActual).length > 0
         ? {
-            id: getNumber(ubicacionActual.area_id),
+            id: getString(ubicacionActual.area_id),
             organo: getString(ubicacionActual.area_nombre),
             siglas: getString(ubicacionActual.area_siglas),
           }

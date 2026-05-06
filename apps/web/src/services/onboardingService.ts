@@ -2,11 +2,11 @@ import { apiClient } from "@/lib/api";
 import axios from "axios";
 
 export interface OnboardingStatus {
-  onboarding_id: number;
-  empleado: number;
+  id: string;
+  empleado: string;
   empleado_nombre: string;
   empleado_documento: string;
-  usuario: number;
+  usuario: string;
   usuario_username: string;
   estado_onboarding: string;
   datos_personales_completos: boolean;
@@ -23,7 +23,7 @@ export interface OnboardingStatus {
     categoria: string;
     label: string;
   }>;
-  validado_por: number | null;
+  validado_por: string | null;
   fecha_validacion: string | null;
   observaciones: string | null;
   email_bienvenida_enviado: boolean;
@@ -85,7 +85,7 @@ export const onboardingService = {
     };
   },
 
-  async getById(id: number): Promise<OnboardingStatus> {
+  async getById(id: string): Promise<OnboardingStatus> {
     const response = await apiClient.get(`/api/v1/onboarding/processes/${id}/`);
     return response.data?.data || response.data;
   },
@@ -96,7 +96,7 @@ export const onboardingService = {
   },
 
   async validar(
-    id: number,
+    id: string,
     accion: "aprobar" | "rechazar",
     observaciones?: string,
   ): Promise<OnboardingStatus> {
@@ -110,11 +110,11 @@ export const onboardingService = {
     return response.data?.data || response.data;
   },
 
-  async reenviarEmail(id: number): Promise<void> {
+  async reenviarEmail(id: string): Promise<void> {
     await apiClient.post(`/api/v1/onboarding/processes/${id}/reenviar_email/`, {});
   },
 
-  async actualizarEstado(id: number): Promise<OnboardingStatus> {
+  async actualizarEstado(id: string): Promise<OnboardingStatus> {
     const response = await apiClient.post(
       `/api/v1/onboarding/processes/${id}/actualizar-estado/`,
       {},

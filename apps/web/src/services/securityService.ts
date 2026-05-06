@@ -25,7 +25,7 @@ export interface PaginatedResponse<T> {
 
 // Interfaces para el módulo de seguridad
 export interface Role {
-  id: number;
+  id: string;
   nombre: string;
   descripcion?: string;
   is_active: boolean;
@@ -35,10 +35,10 @@ export interface Role {
 }
 
 export interface Permission {
-  permiso_id: number;
+  id: string;
   nombre_permiso: string;
   descripcion_permiso?: string;
-  modulo_id: number;
+  modulo_id: string;
   modulo_nombre: string;
   tipo_permiso: string;
   estado_permiso: string;
@@ -46,18 +46,18 @@ export interface Permission {
 }
 
 export interface Module {
-  id: number;
+  id: string;
   name: string;
   description: string;
   permissions: Permission[];
 }
 
 export interface RolePermission {
-  rol_permiso_id: number;
-  rol_id: number;
-  permiso_id: number;
+  id: string;
+  rol_id: string;
+  permiso_id: string;
   fecha_asignacion: string;
-  asignado_por_usuario_id: number;
+  asignado_por_usuario_id: string;
   rol_nombre: string;
   permiso_nombre: string;
   modulo_nombre: string;
@@ -74,7 +74,7 @@ export interface RoleFormData {
 export interface PermissionFormData {
   nombre_permiso: string;
   descripcion_permiso: string;
-  modulo_id: number;
+  modulo_id: string;
   tipo_permiso: string;
   estado_permiso?: string;
 }
@@ -85,8 +85,8 @@ export interface ModuleFormData {
 }
 
 export interface RolePermissionFormData {
-  role: number;
-  permission: number;
+  role: string;
+  permission: string;
   granted: boolean;
 }
 
@@ -98,7 +98,7 @@ export const roleService = {
     return roles.map((role: any) => normalizeSecurityRole(role));
   },
 
-  async getById(id: number) {
+  async getById(id: string) {
     const response = await apiClient.get<any>(`/api/v1/identity/roles/${id}/`);
     const role = normalizeSecurityRole(response.data);
 
@@ -120,7 +120,7 @@ export const roleService = {
     return response.data;
   },
 
-  async update(id: number, data: Partial<RoleFormData>) {
+  async update(id: string, data: Partial<RoleFormData>) {
     // Mapear los datos del frontend al formato esperado por el backend
     const backendData: any = {};
     if (data.nombre !== undefined) backendData.nombre_rol = data.nombre;
@@ -133,7 +133,7 @@ export const roleService = {
     return response.data;
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const response = await apiClient.deleteRol(id);
     return response.data;
   },
@@ -191,7 +191,7 @@ export const permissionService = {
     };
   },
 
-  async getById(id: number) {
+  async getById(id: string) {
     const response = await apiClient.get<Permission>(
       `/api/v1/identity/permissions/${id}/`,
     );
@@ -203,12 +203,12 @@ export const permissionService = {
     return response.data;
   },
 
-  async update(id: number, data: Partial<PermissionFormData>) {
+  async update(id: string, data: Partial<PermissionFormData>) {
     const response = await apiClient.updatePermiso(id, data);
     return response.data;
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const response = await apiClient.deletePermiso(id);
     return response.data;
   },
@@ -224,7 +224,7 @@ export const moduleService = {
     return response.data.results || response.data;
   },
 
-  async getById(id: number) {
+  async getById(id: string) {
     const response = await apiClient.get<Module>(`/api/v1/identity/modules/${id}/`);
     return response.data;
   },
@@ -237,7 +237,7 @@ export const moduleService = {
     return response.data;
   },
 
-  async update(id: number, data: Partial<ModuleFormData>) {
+  async update(id: string, data: Partial<ModuleFormData>) {
     const response = await apiClient.patch<Module>(
       `/api/v1/identity/modules/${id}/`,
       data,
@@ -245,7 +245,7 @@ export const moduleService = {
     return response.data;
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const response = await apiClient.delete(`/api/v1/identity/modules/${id}/`);
     return response.data;
   },
@@ -261,7 +261,7 @@ export const rolePermissionService = {
     return response.data.results || response.data;
   },
 
-  async getByRoleId(roleId: number) {
+  async getByRoleId(roleId: string) {
     const response = await apiClient.get<any>(
       `/api/v1/identity/role-permissions/por_rol/?rol_id=${roleId}`,
     );
@@ -286,7 +286,7 @@ export const rolePermissionService = {
     return response.data;
   },
 
-  async update(id: number, data: Partial<RolePermissionFormData>) {
+  async update(id: string, data: Partial<RolePermissionFormData>) {
     // Convertir el formato del frontend al formato esperado por el backend
     // Django espera los IDs de las ForeignKeys directamente
     const backendData: any = {};
@@ -299,12 +299,12 @@ export const rolePermissionService = {
     return response.data;
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const response = await apiClient.delete(`/api/v1/identity/role-permissions/${id}/`);
     return response.data;
   },
 
-  async assignPermissionsToRole(roleId: number, permissionIds: number[]) {
+  async assignPermissionsToRole(roleId: string, permissionIds: string[]) {
     const promises = permissionIds.map(async (permissionId) => {
       try {
         return await this.create({
@@ -325,7 +325,7 @@ export const rolePermissionService = {
     return results.filter((result) => result !== null); // Filtrar los null
   },
 
-  async removePermissionsFromRole(roleId: number, permissionIds: number[]) {
+  async removePermissionsFromRole(roleId: string, permissionIds: string[]) {
     // Primero obtener los role-permissions existentes para este rol
     const existingRolePermissions = await this.getByRoleId(roleId);
 
@@ -337,20 +337,20 @@ export const rolePermissionService = {
 
     // Eliminar permisos seleccionados
 
-    // Eliminar cada uno usando el campo correcto rol_permiso_id
+    // Eliminar cada uno usando el id del role-permission
     const promises = toDelete.map((rp: RolePermission) =>
-      this.delete(rp.rol_permiso_id),
+      this.delete(rp.id),
     );
     return await Promise.all(promises);
   },
 
   // Método alias para compatibilidad con RolePermissionsPage
   async getByRole(roleId: string) {
-    return this.getByRoleId(Number.parseInt(roleId, 10));
+    return this.getByRoleId(roleId);
   },
 
   // Método para actualizar permisos de un rol de manera masiva
-  async updateRolePermissions(roleId: number, permissionIds: number[]) {
+  async updateRolePermissions(roleId: string, permissionIds: string[]) {
     try {
       // Actualizar permisos de rol de manera masiva
 

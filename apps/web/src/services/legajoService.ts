@@ -2,8 +2,8 @@ import { apiClient } from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
 export interface Documento {
-  documento_id: number;
-  empleado: number;
+  id: string;
+  empleado: string;
   empleado_nombre?: string;
   tipo_documento: string;
   categoria: string;
@@ -26,14 +26,14 @@ export interface Documento {
   nivel_acceso: string;
   dias_para_vencimiento?: number | null;
   fecha_subida: string;
-  subido_por?: number | null;
-  validado_por?: number | null;
+  subido_por?: string | null;
+  validado_por?: string | null;
   fecha_validacion?: string | null;
   observaciones_validacion?: string | null;
 }
 
 export interface DocumentoFormData {
-  empleado: number;
+  empleado: string;
   tipo_documento: string;
   categoria: string;
   nombre_documento: string;
@@ -153,7 +153,7 @@ export const legajoService = {
    * Obtener documentos de un empleado específico
    */
   async getByEmpleado(
-    empleadoId: number,
+    empleadoId: string,
     categoria?: string,
   ): Promise<Documento[]> {
     try {
@@ -179,7 +179,7 @@ export const legajoService = {
   /**
    * Obtener un documento por ID
    */
-  async getById(id: number): Promise<Documento> {
+  async getById(id: string): Promise<Documento> {
     try {
       const response = await apiClient.get(
         `/api/v1/documents/documents/${id}/`,
@@ -232,7 +232,7 @@ export const legajoService = {
   /**
    * Eliminar un documento
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     try {
       await apiClient.delete(`/api/v1/documents/documents/${id}/`);
     } catch (error) {
@@ -243,7 +243,7 @@ export const legajoService = {
   /**
    * Validar un documento (RRHH)
    */
-  async validar(id: number, observaciones?: string): Promise<void> {
+  async validar(id: string, observaciones?: string): Promise<void> {
     try {
       await apiClient.post(`/api/v1/documents/documents/${id}/validar/`, {
         observaciones: observaciones || "",
@@ -256,7 +256,7 @@ export const legajoService = {
   /**
    * Rechazar un documento (RRHH)
    */
-  async rechazar(id: number, motivo: string): Promise<void> {
+  async rechazar(id: string, motivo: string): Promise<void> {
     try {
       await apiClient.post(
         `/api/v1/documents/documents/${id}/rechazar/`,
@@ -273,7 +273,7 @@ export const legajoService = {
    * Subir documento institucional al legajo de un empleado (RRHH)
    */
   async subirInstitucional(data: {
-    empleado: number;
+    empleado: string;
     tipo_documento: string;
     nombre_documento?: string;
     descripcion?: string;

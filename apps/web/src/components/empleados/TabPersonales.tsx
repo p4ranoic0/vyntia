@@ -13,7 +13,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface Empleado {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -29,7 +29,7 @@ interface Empleado {
 }
 
 interface TabPersonalesProps {
-  empleadoId: number
+  empleadoId: string
   initialData: Empleado
 }
 

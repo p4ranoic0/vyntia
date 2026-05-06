@@ -8,8 +8,7 @@ import {
 
 // Interfaces para usuarios
 export interface User {
-  id: number;
-  usuario_id: number;
+  id: string;
   username: string;
   email: string;
   nombres_usuario: string;
@@ -21,13 +20,13 @@ export interface User {
   date_joined: string;
   last_login?: string;
   empleado?: {
-    id: number;
+    id: string;
     nombres: string;
     ape_paterno: string;
     ape_materno: string;
     dni: string;
     area: {
-      id: number;
+      id: string;
       organo: string;
       siglas: string;
     };
@@ -38,8 +37,7 @@ export interface User {
 }
 
 export interface Role {
-  id: number;
-  rol_id: number;
+  id: string;
   nombre_rol: string;
   descripcion_rol: string;
   estado_rol: string;
@@ -50,8 +48,7 @@ export interface Role {
 }
 
 export interface Permission {
-  id: number;
-  permiso_id: number;
+  id: string;
   nombre_permiso: string;
   descripcion_permiso: string;
   estado_permiso: string;
@@ -66,10 +63,10 @@ export interface UserFormData {
   tipo_usuario: string;
   nivel_acceso: string;
   estado_usuario: string;
-  empleado?: number;
+  empleado?: string;
   password?: string;
   password_confirm?: string;
-  roles?: number[];
+  roles?: string[];
 }
 
 export interface ChangePasswordData {
@@ -79,10 +76,10 @@ export interface ChangePasswordData {
 }
 
 export interface UserRoleAssignment {
-  user_id: number;
-  roles_to_add?: number[];
-  roles_to_remove?: number[];
-  role_ids?: number[];
+  user_id: string;
+  roles_to_add?: string[];
+  roles_to_remove?: string[];
+  role_ids?: string[];
   remove_existing?: boolean;
 }
 
@@ -107,7 +104,7 @@ export const usersService = {
   /**
    * Obtener usuario por ID
    */
-  async getById(id: number) {
+  async getById(id: string) {
     try {
       const response = await apiClient.get(`/api/v1/identity/users/${id}/`);
       return { data: normalizeUser(response.data) };
@@ -152,7 +149,7 @@ export const usersService = {
   /**
    * Actualizar usuario existente
    */
-  async update(id: number, data: Partial<UserFormData>) {
+  async update(id: string, data: Partial<UserFormData>) {
     try {
       // Mapear los datos del frontend al formato esperado por el backend
       const backendData = {
@@ -182,7 +179,7 @@ export const usersService = {
   /**
    * Eliminar usuario (soft delete)
    */
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const response = await apiClient.delete(`/api/v1/identity/users/${id}/`);
       return response.data;
@@ -195,7 +192,7 @@ export const usersService = {
   /**
    * Cambiar contraseña de usuario
    */
-  async changePassword(userId: number, data: ChangePasswordData) {
+  async changePassword(userId: string, data: ChangePasswordData) {
     try {
       const response = await apiClient.post(
         `/api/v1/identity/users/${userId}/change-password/`,
@@ -247,7 +244,7 @@ export const usersService = {
    * Buscar usuarios por roles asignados
    */
   async searchByRoles(params: {
-    rol_ids?: number[];
+    rol_ids?: string[];
     nombres?: string;
     estado?: string;
     operador?: "AND" | "OR";
@@ -282,7 +279,7 @@ export const usersService = {
   /**
    * Actualizar roles de un usuario
    */
-  async updateUserRoles(userId: number, assignment: UserRoleAssignment) {
+  async updateUserRoles(userId: string, assignment: UserRoleAssignment) {
     try {
       const response = await apiClient.post(
         `/api/v1/identity/users/${userId}/asignar_rol/`,
@@ -299,8 +296,8 @@ export const usersService = {
    * Asignar roles a un usuario
    */
   async assignUserRoles(
-    userId: number,
-    data: { roles: number[]; fecha_expiracion?: string },
+    userId: string,
+    data: { roles: string[]; fecha_expiracion?: string },
   ) {
     try {
       const response = await apiClient.post(
@@ -317,7 +314,7 @@ export const usersService = {
   /**
    * Remover un rol de un usuario
    */
-  async removeUserRole(userId: number, rolId: number) {
+  async removeUserRole(userId: string, rolId: string) {
     try {
       const response = await apiClient.post(
         `/api/v1/identity/users/${userId}/remover_rol/`,
@@ -370,7 +367,7 @@ export const rolesService = {
   /**
    * Obtener rol por ID
    */
-  async getById(id: number) {
+  async getById(id: string) {
     try {
       const response = await apiClient.get(`/api/v1/identity/roles/${id}/`);
       return normalizeRole(response.data);
@@ -401,7 +398,7 @@ export const rolesService = {
    * Actualizar rol existente
    */
   async update(
-    id: number,
+    id: string,
     data: Partial<{
       nombre_rol: string;
       descripcion_rol: string;
@@ -420,7 +417,7 @@ export const rolesService = {
   /**
    * Eliminar rol (soft delete)
    */
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const response = await apiClient.delete(`/api/v1/identity/roles/${id}/`);
       return response.data;
@@ -481,7 +478,6 @@ export const permissionsService = {
 
       return permissions.map((permission: any) => ({
         id: permission.permiso_id || permission.id,
-        permiso_id: permission.permiso_id || permission.id,
         nombre_permiso: permission.nombre_permiso,
         descripcion_permiso: permission.descripcion_permiso,
         estado_permiso: permission.estado_permiso,
@@ -496,14 +492,13 @@ export const permissionsService = {
   /**
    * Obtener permiso por ID
    */
-  async getById(id: number) {
+  async getById(id: string) {
     try {
       const response = await apiClient.get(`/api/v1/identity/permissions/${id}/`);
       const permission = response.data;
 
       return {
         id: permission.permiso_id || permission.id,
-        permiso_id: permission.permiso_id || permission.id,
         nombre_permiso: permission.nombre_permiso,
         descripcion_permiso: permission.descripcion_permiso,
         estado_permiso: permission.estado_permiso,

@@ -78,7 +78,7 @@ export function AreasListPage() {
 
   const confirmDelete = () => {
     if (selectedArea) {
-      deleteAreaMutation.mutate(selectedArea.area_id)
+      deleteAreaMutation.mutate(selectedArea.id)
     }
   }
 
@@ -105,7 +105,7 @@ export function AreasListPage() {
 
   // Mutación para actualizar área
   const updateAreaMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => departmentsService.updateArea(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => departmentsService.updateArea(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -126,7 +126,7 @@ export function AreasListPage() {
 
   const handleFormSubmit = async (data: any) => {
     if (editingArea) {
-      await updateAreaMutation.mutateAsync({ id: editingArea.area_id, data })
+      await updateAreaMutation.mutateAsync({ id: editingArea.id, data })
     } else {
       await createAreaMutation.mutateAsync(data)
     }
@@ -198,7 +198,7 @@ export function AreasListPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(area.area_id.toString())}>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(area.id)}>
                 Copiar ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />

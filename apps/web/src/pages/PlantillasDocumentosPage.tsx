@@ -273,7 +273,7 @@ export default function PlantillasDocumentosPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => templatesService.eliminar(id),
+    mutationFn: (id: string) => templatesService.eliminar(id),
     onSuccess: () => {
       toast.success('Plantilla eliminada correctamente')
       queryClient.invalidateQueries({ queryKey: ['plantillas-word'] })
@@ -284,7 +284,7 @@ export default function PlantillasDocumentosPage() {
   })
 
   const downloadMutation = useMutation({
-    mutationFn: ({ id, nombre }: { id: number; nombre: string }) =>
+    mutationFn: ({ id, nombre }: { id: string; nombre: string }) =>
       templatesService.descargar(id, nombre),
     onSuccess: () => toast.success('Descarga iniciada'),
     onError: (e: Error) => toast.error(e.message || 'Error al descargar'),
@@ -370,7 +370,7 @@ export default function PlantillasDocumentosPage() {
                 </TableHeader>
                 <TableBody>
                   {plantillas.map(p => (
-                    <TableRow key={p.plantilla_id}>
+                    <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.nombre}</TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TIPO_PLANTILLA_BADGE[p.tipo] ?? 'bg-gray-100 text-gray-800'}`}>
@@ -398,7 +398,7 @@ export default function PlantillasDocumentosPage() {
                           <Button
                             variant="ghost" size="sm"
                             title="Descargar archivo .docx"
-                            onClick={() => downloadMutation.mutate({ id: p.plantilla_id, nombre: p.archivo_nombre || `plantilla_${p.plantilla_id}.docx` })}
+                            onClick={() => downloadMutation.mutate({ id: p.id, nombre: p.archivo_nombre || `plantilla_${p.id}.docx` })}
                             disabled={downloadMutation.isPending}
                             className="h-8 w-8 p-0"
                           >
@@ -596,7 +596,7 @@ export default function PlantillasDocumentosPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => selectedPlantilla && deleteMutation.mutate(selectedPlantilla.plantilla_id)}
+              onClick={() => selectedPlantilla && deleteMutation.mutate(selectedPlantilla.id)}
               disabled={deleteMutation.isPending}
               className="gap-2"
             >

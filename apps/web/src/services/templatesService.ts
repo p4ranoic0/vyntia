@@ -8,7 +8,7 @@ export type TipoPlantilla =
   | 'adenda'
 
 export interface PlantillaDocumento {
-  plantilla_id: number
+  id: string
   tipo: TipoPlantilla
   tipo_texto: string
   nombre: string
@@ -27,9 +27,9 @@ export interface SubirPlantillaData {
 }
 
 export interface GenerarDesdeTemplateData {
-  plantilla_id: number
-  empleado_id?: number
-  contrato_id?: number
+  plantilla_id: string
+  empleado_id?: string
+  contrato_id?: string
   formato: 'docx' | 'pdf'
   guardar_documento: boolean
   proposito?: string
@@ -37,7 +37,7 @@ export interface GenerarDesdeTemplateData {
 }
 
 export interface GenerarDesdeTemplateResult {
-  documento_id?: number
+  documento_id?: string
   archivo_url?: string
   nombre_archivo?: string
   formato?: string
@@ -97,7 +97,7 @@ export const templatesService = {
     }
   },
 
-  async eliminar(id: number): Promise<void> {
+  async eliminar(id: string): Promise<void> {
     try {
       await apiClient.delete(
         `/api/v1/documents/documents/plantillas-word/${id}/eliminar/`,
@@ -107,7 +107,7 @@ export const templatesService = {
     }
   },
 
-  async descargar(id: number, nombreArchivo: string): Promise<void> {
+  async descargar(id: string, nombreArchivo: string): Promise<void> {
     try {
       const response = await apiClient.getBlob(
         `/api/v1/documents/documents/plantillas-word/${id}/descargar/`,

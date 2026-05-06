@@ -83,11 +83,11 @@ const ESTADO_LABELS: Record<string, string> = {
 
 interface DocCardProps {
   readonly doc: Documento
-  readonly onDelete: (id: number) => void
+  readonly onDelete: (id: string) => void
   readonly onView: (doc: Documento) => void
   readonly isAdmin: boolean
-  readonly onValidar?: (id: number) => void
-  readonly onRechazar?: (id: number) => void
+  readonly onValidar?: (id: string) => void
+  readonly onRechazar?: (id: string) => void
 }
 
 function DocumentoCard({ doc, onDelete, onView, isAdmin, onValidar, onRechazar }: DocCardProps) {
@@ -138,7 +138,7 @@ function DocumentoCard({ doc, onDelete, onView, isAdmin, onValidar, onRechazar }
           <>
             <Button
               variant="ghost" size="sm"
-              onClick={() => onValidar?.(doc.documento_id)}
+              onClick={() => onValidar?.(doc.id)}
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
               title="Validar"
             >
@@ -146,7 +146,7 @@ function DocumentoCard({ doc, onDelete, onView, isAdmin, onValidar, onRechazar }
             </Button>
             <Button
               variant="ghost" size="sm"
-              onClick={() => onRechazar?.(doc.documento_id)}
+              onClick={() => onRechazar?.(doc.id)}
               className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
               title="Rechazar"
             >
@@ -157,7 +157,7 @@ function DocumentoCard({ doc, onDelete, onView, isAdmin, onValidar, onRechazar }
         {isAdmin && (
           <Button
             variant="ghost" size="sm"
-            onClick={() => onDelete(doc.documento_id)}
+            onClick={() => onDelete(doc.id)}
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
             title="Eliminar"
           >
@@ -229,7 +229,7 @@ function sugerirNombreDocumento(tipo: string): string {
 
 interface UploadDialogProps {
   readonly open: boolean
-  readonly empleadoId: number
+  readonly empleadoId: string
   readonly isAdmin: boolean
   readonly onClose: () => void
   readonly onSuccess: () => void
@@ -501,7 +501,7 @@ function RechazoDialog({ open, onClose, onConfirm }: RechazoDialogProps) {
    -------------------------------------------------------- */
 
 interface EmpleadoRow {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -618,7 +618,7 @@ function LegajoAdminPanel() {
           {!loadingEmpleados && empleadosFiltrados.length > 0 && (
             <div className="divide-y max-h-[500px] overflow-y-auto">
               {empleadosFiltrados.map((emp: any) => {
-                const id = emp.id ?? emp.empleado_id
+                const id = emp.id
                 const nombre = emp.nombre_completo ?? `${emp.nombres ?? emp.nombres_empleado ?? ''} ${emp.ape_paterno ?? emp.apellido_paterno ?? ''} ${emp.ape_materno ?? emp.apellido_materno ?? ''}`
                 const doc = emp.dni ?? emp.numero_documento ?? ''
                 const area = emp.area?.siglas ?? emp.area?.organo ?? ''
@@ -727,7 +727,7 @@ export default function LegajoPage() {
   })
 
   const validarMutation = useMutation({
-    mutationFn: (id: number) => legajoService.validar(id),
+    mutationFn: (id: string) => legajoService.validar(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documentos', empId] })
       toast.success('Documento validado')
@@ -736,7 +736,7 @@ export default function LegajoPage() {
   })
 
   const rechazarMutation = useMutation({
-    mutationFn: ({ id, motivo }: { id: number; motivo: string }) => legajoService.rechazar(id, motivo),
+    mutationFn: ({ id, motivo }: { id: string; motivo: string }) => legajoService.rechazar(id, motivo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documentos', empId] })
       toast.success('Documento rechazado')
@@ -784,7 +784,7 @@ export default function LegajoPage() {
       ) : (
         docs.map((doc) => (
           <DocumentoCard
-            key={doc.documento_id}
+            key={doc.id}
             doc={doc}
             onDelete={setDeleteId}
             onView={setViewDoc}
@@ -886,7 +886,7 @@ export default function LegajoPage() {
                   {contratos.length === 0 ? (
                     <p className="text-center text-muted-foreground py-6 text-sm">No hay contratos registrados</p>
                   ) : (
-                    contratos.map((c) => <ContratoCard key={c.contrato_id} contrato={c} />)
+                    contratos.map((c) => <ContratoCard key={c.id} contrato={c} />)
                   )}
                 </div>
               </TabsContent>

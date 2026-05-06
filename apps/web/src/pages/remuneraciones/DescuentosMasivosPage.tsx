@@ -96,7 +96,7 @@ export default function DescuentosMasivosPage() {
     }
   }
 
-  const handleProcesar = async (id: number) => {
+  const handleProcesar = async (id: string) => {
     try {
       const resultado = await procesarMutation.mutateAsync(id)
 
@@ -121,7 +121,7 @@ export default function DescuentosMasivosPage() {
     }
   }
 
-  const handleAnular = async (id: number) => {
+  const handleAnular = async (id: string) => {
     if (!confirm('¿Estás seguro de anular este descuento? Se revertirán todos los descuentos aplicados.')) {
       return
     }
@@ -145,7 +145,7 @@ export default function DescuentosMasivosPage() {
     }
   }
 
-  const handleDelete = async (id: number, estado: EstadoDescuento) => {
+  const handleDelete = async (id: string, estado: EstadoDescuento) => {
     if (estado !== 'pendiente') {
       toast({
         title: 'Error',
@@ -268,7 +268,7 @@ export default function DescuentosMasivosPage() {
                 </TableRow>
               )}
               {!isLoading && descuentos.length > 0 && descuentos.map((descuento: DescuentoMasivo) => (
-                <TableRow key={descuento.descuento_masivo_id}>
+                <TableRow key={descuento.id}>
                   <TableCell>{descuento.periodo}</TableCell>
                   <TableCell>{descuento.configuracion_concepto?.nombre || 'N/A'}</TableCell>
                   <TableCell>{descuento.total_registros}</TableCell>
@@ -298,7 +298,7 @@ export default function DescuentosMasivosPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleProcesar(descuento.descuento_masivo_id)}
+                          onClick={() => handleProcesar(descuento.id)}
                           disabled={procesarMutation.isPending}
                         >
                           <Play className="h-4 w-4" />
@@ -308,7 +308,7 @@ export default function DescuentosMasivosPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleAnular(descuento.descuento_masivo_id)}
+                          onClick={() => handleAnular(descuento.id)}
                           disabled={anularMutation.isPending}
                         >
                           <XCircle className="h-4 w-4" />
@@ -318,7 +318,7 @@ export default function DescuentosMasivosPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(descuento.descuento_masivo_id, descuento.status)}
+                          onClick={() => handleDelete(descuento.id, descuento.status)}
                           disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
@@ -360,7 +360,7 @@ export default function DescuentosMasivosPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {conceptosDescuento.map((concepto: ConfiguracionRemuneracion) => (
-                    <SelectItem key={concepto.configuracion_id} value={concepto.configuracion_id.toString()}>
+                    <SelectItem key={concepto.id} value={concepto.id}>
                       {concepto.nombre}
                     </SelectItem>
                   ))}

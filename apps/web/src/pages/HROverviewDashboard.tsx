@@ -54,7 +54,7 @@ interface ContratosEstadisticas {
 }
 
 interface Area {
-  area_id: number
+  id: string
   siglas_area: string
   nombre_organo: string
   nombre_unidad_organica?: string
@@ -64,7 +64,7 @@ interface Area {
 }
 
 interface PlanillaMensual {
-  planilla_id: number
+  id: string
   periodo: string
   estado?: string
   estado_texto?: string
@@ -424,7 +424,7 @@ function AreaBars({ areas, loading }: { areas: Area[]; loading: boolean }) {
         const pct = totalEmpleados > 0 ? Math.round((count / totalEmpleados) * 100) : 0
         const nombre = area.nombre_unidad_organica || area.nombre_organo
         return (
-          <div key={area.area_id}>
+          <div key={area.id}>
             <div className="flex items-center gap-3 mb-1.5">
               <span className="text-[10px] font-mono font-bold w-8 text-muted-foreground uppercase">
                 {area.siglas_area}
@@ -480,7 +480,7 @@ function PlanillasList({ planillas, loading }: { planillas: PlanillaMensual[]; l
         const pct = PLANILLA_ESTADO_PCT[estado] ?? 10
         const color = PLANILLA_ESTADO_COLOR[estado] ?? 'hsl(var(--muted-foreground))'
         return (
-          <div key={p.planilla_id}>
+          <div key={p.id}>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-foreground">{formatPeriodo(p.periodo)}</span>

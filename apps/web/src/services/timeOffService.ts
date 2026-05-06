@@ -1,16 +1,15 @@
 import { apiClient } from '@/lib/api'
 
 export interface ConfiguracionVacaciones {
-  configuracion_id: number
+  id: string
   tipo_configuracion: string
   dias_por_ano: number
   is_active: boolean
 }
 
 export interface PeriodoVacacional {
-  id: number
-  periodo_id: number
-  empleado: number
+  id: string
+  empleado: string
   empleado_nombre?: string
   ano_periodo: number
   periodo_label?: string
@@ -24,8 +23,7 @@ export interface PeriodoVacacional {
   dias_pendientes: number
   dias_vencidos?: number
   estado_periodo: 'activo' | 'cerrado' | 'vencido' | 'cancelado'
-  contrato?: number | null
-  contrato_id?: number | null
+  contrato?: string | null
   contrato_numero?: string | null
   contrato_fecha_inicio?: string | null
   contrato_fecha_fin?: string | null
@@ -33,10 +31,9 @@ export interface PeriodoVacacional {
 }
 
 export interface SolicitudVacaciones {
-  id: number
-  solicitud_id: number
+  id: string
   empleado: {
-    id: number
+    id: string
     nombres?: string
     apellidos?: string
     numero_identificacion?: string
@@ -46,7 +43,7 @@ export interface SolicitudVacaciones {
   area?: { nombre_area?: string }
   area_nombre?: string
   periodo_vacacional: {
-    id: number
+    id: string
     ano_periodo?: number
   }
   periodo_ano?: string
@@ -67,10 +64,10 @@ export interface SolicitudVacaciones {
 }
 
 export interface GoceVacaciones {
-  goce_id: number
-  empleado: number
-  solicitud_vacaciones: number
-  periodo_vacacional: number
+  id: string
+  empleado: string
+  solicitud_vacaciones: string
+  periodo_vacacional: string
   fecha_inicio_real: string
   fecha_fin_real: string
   dias_gozados: number
@@ -78,8 +75,8 @@ export interface GoceVacaciones {
 }
 
 export interface HistorialSolicitudVacaciones {
-  historial_id: number
-  solicitud_vacaciones: number
+  id: string
+  solicitud_vacaciones: string
   tipo_accion: string
   descripcion_accion: string
   estado_anterior?: string
@@ -98,7 +95,7 @@ export interface EstadisticasVacaciones {
 }
 
 export interface EmpleadoDiasVencidos {
-  empleado_id: number
+  empleado_id: string
   empleado_nombre_completo: string
   empleado_numero_empleado: string
   area_nombre: string
@@ -118,10 +115,10 @@ export interface ResumenPeriodo {
 }
 
 export interface SolicitudVacacionesForm {
-  empleado_id?: number
-  empleado?: number
-  periodo_vacacional_id?: number
-  periodo_vacacional?: number
+  empleado_id?: string
+  empleado?: string
+  periodo_vacacional_id?: string
+  periodo_vacacional?: string
   tipo_solicitud?: 'vacaciones' | 'adelanto_vacaciones' | 'fraccionamiento'
   fecha_inicio_solicitud?: string
   fecha_fin_solicitud?: string
@@ -142,7 +139,7 @@ export interface AprobacionSolicitudForm {
 }
 
 export interface GoceVacacionesForm {
-  solicitud_vacaciones: number
+  solicitud_vacaciones: string
   fecha_inicio_real: string
   fecha_fin_real: string
   observaciones?: string
@@ -155,10 +152,10 @@ export interface ConfiguracionVacacionesForm {
 }
 
 export interface FiltrosSolicitudes {
-  empleado?: number
-  empleado_id?: number
-  area?: number
-  area_id?: number
+  empleado?: string
+  empleado_id?: string
+  area?: string
+  area_id?: string
   estado_solicitud?: string
   estado?: string
   ano_periodo?: number
@@ -169,7 +166,7 @@ export interface FiltrosSolicitudes {
 export type SolicitudesFilter = FiltrosSolicitudes
 
 export interface FiltrosEstadisticas {
-  area?: number
+  area?: string
   ano?: number
 }
 
@@ -186,7 +183,6 @@ function asArray<T>(value: any): T[] {
 function normalizePeriodo(raw: any): PeriodoVacacional {
   return {
     id: raw.periodo_id ?? raw.id,
-    periodo_id: raw.periodo_id ?? raw.id,
     empleado: raw.empleado,
     empleado_nombre: raw.empleado_nombre,
     ano_periodo: raw.ano_periodo,
@@ -202,7 +198,6 @@ function normalizePeriodo(raw: any): PeriodoVacacional {
     dias_vencidos: raw.dias_vencidos,
     estado_periodo: raw.estado_periodo,
     contrato: raw.contrato ?? null,
-    contrato_id: raw.contrato_id ?? null,
     contrato_numero: raw.contrato_numero ?? null,
     contrato_fecha_inicio: raw.contrato_fecha_inicio ?? null,
     contrato_fecha_fin: raw.contrato_fecha_fin ?? null,
@@ -222,7 +217,6 @@ function normalizeSolicitud(raw: any): SolicitudVacaciones {
   const parsed = splitEmployeeName(raw.empleado_nombre)
   return {
     id: raw.solicitud_id ?? raw.id,
-    solicitud_id: raw.solicitud_id ?? raw.id,
     empleado: {
       id: raw.empleado,
       nombres: parsed.nombres,
@@ -261,7 +255,7 @@ const timeOffService = {
     return asArray<any>(unwrap(response))
   },
 
-  async getConfiguracion(id: number): Promise<ConfiguracionVacaciones> {
+  async getConfiguracion(id: string): Promise<ConfiguracionVacaciones> {
     const response = await apiClient.get(`/api/v1/time-off/configurations/${id}/`)
     return unwrap(response)
   },
@@ -271,27 +265,27 @@ const timeOffService = {
     return unwrap(response)
   },
 
-  async updateConfiguracion(id: number, data: Partial<ConfiguracionVacacionesForm>): Promise<ConfiguracionVacaciones> {
+  async updateConfiguracion(id: string, data: Partial<ConfiguracionVacacionesForm>): Promise<ConfiguracionVacaciones> {
     const response = await apiClient.patch(`/api/v1/time-off/configurations/${id}/`, data)
     return unwrap(response)
   },
 
-  async deleteConfiguracion(id: number): Promise<void> {
+  async deleteConfiguracion(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/time-off/configurations/${id}/`)
   },
 
-  async getPeriodos(empleadoId?: number): Promise<PeriodoVacacional[]> {
+  async getPeriodos(empleadoId?: string): Promise<PeriodoVacacional[]> {
     const url = empleadoId ? `/api/v1/time-off/periods/?empleado=${empleadoId}` : '/api/v1/time-off/periods/'
     const response = await apiClient.get(url)
     return asArray<any>(unwrap(response)).map(normalizePeriodo)
   },
 
-  async getPeriodo(id: number): Promise<PeriodoVacacional> {
+  async getPeriodo(id: string): Promise<PeriodoVacacional> {
     const response = await apiClient.get(`/api/v1/time-off/periods/${id}/`)
     return normalizePeriodo(unwrap(response))
   },
 
-  async getPeriodosByEmpleado(empleadoId: number): Promise<PeriodoVacacional[]> {
+  async getPeriodosByEmpleado(empleadoId: string): Promise<PeriodoVacacional[]> {
     return this.getPeriodos(empleadoId)
   },
 
@@ -325,7 +319,7 @@ const timeOffService = {
     return results
   },
 
-  async getSolicitud(id: number): Promise<SolicitudVacaciones> {
+  async getSolicitud(id: string): Promise<SolicitudVacaciones> {
     const response = await apiClient.get(`/api/v1/time-off/requests/${id}/`)
     return normalizeSolicitud(unwrap(response))
   },
@@ -345,21 +339,21 @@ const timeOffService = {
     return normalizeSolicitud(unwrap(response))
   },
 
-  async updateSolicitud(id: number, data: Partial<SolicitudVacacionesForm>): Promise<SolicitudVacaciones> {
+  async updateSolicitud(id: string, data: Partial<SolicitudVacacionesForm>): Promise<SolicitudVacaciones> {
     const response = await apiClient.patch(`/api/v1/time-off/requests/${id}/`, data)
     return normalizeSolicitud(unwrap(response))
   },
 
-  async deleteSolicitud(id: number): Promise<void> {
+  async deleteSolicitud(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/time-off/requests/${id}/`)
   },
 
-  async enviarSolicitud(id: number): Promise<SolicitudVacaciones> {
+  async enviarSolicitud(id: string): Promise<SolicitudVacaciones> {
     const response = await apiClient.post(`/api/v1/time-off/requests/${id}/enviar/`)
     return normalizeSolicitud(unwrap(response))
   },
 
-  async aprobarSolicitud(id: number, data: AprobacionSolicitudForm): Promise<SolicitudVacaciones> {
+  async aprobarSolicitud(id: string, data: AprobacionSolicitudForm): Promise<SolicitudVacaciones> {
     const payload = { accion: data.accion ?? data.accion_aprobacion ?? 'aprobar', motivo: data.motivo ?? data.motivo_aprobacion ?? '' }
     try {
       const response = await apiClient.post(`/api/v1/time-off/requests/${id}/aprobar-jefe/`, payload)
@@ -370,14 +364,14 @@ const timeOffService = {
     }
   },
 
-  async rechazarSolicitud(id: number, data: AprobacionSolicitudForm): Promise<SolicitudVacaciones> {
+  async rechazarSolicitud(id: string, data: AprobacionSolicitudForm): Promise<SolicitudVacaciones> {
     return this.aprobarSolicitud(id, {
       accion: 'rechazar',
       motivo: data.motivo ?? data.motivo_aprobacion ?? '',
     })
   },
 
-  async cancelarSolicitud(id: number, motivo?: string): Promise<SolicitudVacaciones> {
+  async cancelarSolicitud(id: string, motivo?: string): Promise<SolicitudVacaciones> {
     const response = await apiClient.post(`/api/v1/time-off/requests/${id}/cancelar/`, { motivo })
     return normalizeSolicitud(unwrap(response))
   },
@@ -397,13 +391,13 @@ const timeOffService = {
     return asArray<any>(unwrap(response)).map(normalizeSolicitud)
   },
 
-  async getGoces(solicitudId?: number): Promise<GoceVacaciones[]> {
+  async getGoces(solicitudId?: string): Promise<GoceVacaciones[]> {
     const url = solicitudId ? `/api/v1/time-off/grants/?solicitud_vacaciones=${solicitudId}` : '/api/v1/time-off/grants/'
     const response = await apiClient.get(url)
     return asArray<any>(unwrap(response))
   },
 
-  async getGoce(id: number): Promise<GoceVacaciones> {
+  async getGoce(id: string): Promise<GoceVacaciones> {
     const response = await apiClient.get(`/api/v1/time-off/grants/${id}/`)
     return unwrap(response)
   },
@@ -413,16 +407,16 @@ const timeOffService = {
     return unwrap(response)
   },
 
-  async updateGoce(id: number, data: Partial<GoceVacacionesForm>): Promise<GoceVacaciones> {
+  async updateGoce(id: string, data: Partial<GoceVacacionesForm>): Promise<GoceVacaciones> {
     const response = await apiClient.patch(`/api/v1/time-off/grants/${id}/`, data)
     return unwrap(response)
   },
 
-  async deleteGoce(id: number): Promise<void> {
+  async deleteGoce(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/time-off/grants/${id}/`)
   },
 
-  async getHistorialSolicitud(solicitudId: number): Promise<HistorialSolicitudVacaciones[]> {
+  async getHistorialSolicitud(solicitudId: string): Promise<HistorialSolicitudVacaciones[]> {
     const response = await apiClient.get(`/api/v1/time-off/history/?solicitud_vacaciones=${solicitudId}`)
     return asArray<any>(unwrap(response))
   },
@@ -466,7 +460,7 @@ const timeOffService = {
     ]
   },
 
-  async getResumenPeriodo(empleadoId?: number, periodoId?: number): Promise<ResumenPeriodo | null> {
+  async getResumenPeriodo(empleadoId?: string, periodoId?: string): Promise<ResumenPeriodo | null> {
     const periodos = await this.getPeriodos(empleadoId)
     const periodo = (periodoId ? periodos.find((p) => p.id === periodoId) : periodos[0]) || null
     if (!periodo) return null

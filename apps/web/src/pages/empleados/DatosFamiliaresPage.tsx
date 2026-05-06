@@ -68,7 +68,7 @@ export function DatosFamiliaresPage() {
         const items = response?.data || response?.results || []
         const records = Array.isArray(items) ? items : []
         const familiares = records.map((r: any) => ({
-          id: r.familiar_id,
+          id: r.id,
           nombres: r.nombres_familiar || '',
           apellidos: [r.apellido_paterno, r.apellido_materno].filter(Boolean).join(' '),
           tipo_documento: r.tipo_documento || 'DNI',

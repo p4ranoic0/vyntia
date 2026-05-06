@@ -333,7 +333,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
                 <p className="text-sm text-muted-foreground">No ha agregado certificados aun.</p>
               )}
               {certificados.map((cert: Record<string, unknown>) => (
-                <Card key={cert.academico_id as number} className="border">
+                <Card key={cert.id as string} className="border">
                   <CardHeader className="pb-2">
                     <p className="font-medium text-sm">{cert.institucion as string}</p>
                     <p className="text-xs text-muted-foreground capitalize">
@@ -383,7 +383,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
                 <p className="text-sm text-muted-foreground">No ha agregado cursos aun.</p>
               )}
               {(cursos as Record<string, unknown>[]).map((curso: Record<string, unknown>) => (
-                <Card key={curso.curso_id as number} className="border">
+                <Card key={curso.id as string} className="border">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div>
@@ -397,7 +397,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteCursoMutation.mutate(curso.curso_id as number)}
+                        onClick={() => deleteCursoMutation.mutate(curso.id as string)}
                         disabled={deleteCursoMutation.isPending}
                       >
                         <span className="sr-only">Eliminar</span>
@@ -447,7 +447,7 @@ export function OnboardingTabAcademico({ empleadoId }: OnboardingTabAcademicoPro
                 <p className="text-sm text-muted-foreground">No ha agregado titulos aun.</p>
               )}
               {titulos.map((titulo: Record<string, unknown>) => (
-                <Card key={titulo.academico_id as number} className="border">
+                <Card key={titulo.id as string} className="border">
                   <CardHeader className="pb-2">
                     <p className="font-medium text-sm">{(titulo.carrera as string | undefined) ?? (titulo.institucion as string)}</p>
                     <p className="text-xs text-muted-foreground capitalize">

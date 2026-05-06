@@ -226,7 +226,7 @@ export function UsersManagement() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">ID Usuario</p>
-                    <p className="text-sm font-mono">{user.usuario_id}</p>
+                    <p className="text-sm font-mono">{user.id}</p>
                   </div>
                 </div>
               </CardContent>

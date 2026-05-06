@@ -61,7 +61,7 @@ export default function ConfiguracionUitPage() {
   }, [configs])
 
   const handleEdit = (item: typeof configs[0]) => {
-    setEditingId(item.configuracion_uit_id)
+    setEditingId(item.id)
     setForm({
       anio: String(item.anio),
       valor_uit: String(item.valor_uit),
@@ -126,7 +126,7 @@ export default function ConfiguracionUitPage() {
     })
   }
 
-  const handleActivar = (id: number, anio: number) => {
+  const handleActivar = (id: string, anio: number) => {
     activarMutation.mutate(id, {
       onSuccess: () => {
         toast({
@@ -144,7 +144,7 @@ export default function ConfiguracionUitPage() {
     })
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (!confirm('¿Estás seguro de eliminar esta configuración UIT?')) return
 
     deleteMutation.mutate(id, {
@@ -187,7 +187,7 @@ export default function ConfiguracionUitPage() {
     )
   } else {
     tableContent = configs.map((item) => (
-      <TableRow key={item.configuracion_uit_id}>
+      <TableRow key={item.id}>
         <TableCell className="font-semibold">{item.anio}</TableCell>
         <TableCell className="text-right">S/ {Number(item.valor_uit).toFixed(2)}</TableCell>
         <TableCell className="text-center">{item.tope_renta_cuarta_uit}</TableCell>
@@ -206,7 +206,7 @@ export default function ConfiguracionUitPage() {
                 size="icon"
                 variant="outline"
                 className="border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                onClick={() => handleActivar(item.configuracion_uit_id, item.anio)}
+                onClick={() => handleActivar(item.id, item.anio)}
                 disabled={activarMutation.isPending}
                 title="Activar esta UIT"
               >
@@ -219,7 +219,7 @@ export default function ConfiguracionUitPage() {
             <Button
               size="icon"
               variant="destructive"
-              onClick={() => handleDelete(item.configuracion_uit_id)}
+              onClick={() => handleDelete(item.id)}
               disabled={deleteMutation.isPending}
             >
               <Trash2 className="h-4 w-4" />

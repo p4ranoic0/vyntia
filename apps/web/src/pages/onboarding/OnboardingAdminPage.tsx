@@ -355,10 +355,10 @@ export default function OnboardingAdminPage() {
               ) : (
                 filtered.map((o) => (
                   <OnboardingTableRow
-                    key={o.onboarding_id}
+                    key={o.id}
                     onboarding={o}
                     onView={() => setSelectedOnboarding(o)}
-                    onReenviarEmail={() => handleReenviarEmail(o.onboarding_id)}
+                    onReenviarEmail={() => handleReenviarEmail(o.id)}
                     onRefetch={fetchOnboardings}
                     getEstadoBadge={getEstadoBadge}
                   />
@@ -427,7 +427,7 @@ function OnboardingTableRow({
   const handleValidar = async () => {
     setLoading(true)
     try {
-      await onboardingService.validar(o.onboarding_id, 'aprobar', observaciones)
+      await onboardingService.validar(o.id, 'aprobar', observaciones)
       toast.success('Onboarding aprobado exitosamente')
       setValidateOpen(false)
       onRefetch()
@@ -445,7 +445,7 @@ function OnboardingTableRow({
     }
     setLoading(true)
     try {
-      await onboardingService.validar(o.onboarding_id, 'rechazar', observaciones)
+      await onboardingService.validar(o.id, 'rechazar', observaciones)
       toast.success('Onboarding observado')
       setRejectOpen(false)
       onRefetch()
@@ -607,7 +607,7 @@ function CreateOnboardingDialog({
     correo_personal: '',
   })
   const [submitting, setSubmitting] = useState(false)
-  const [result, setResult] = useState<{ username: string; email_enviado: boolean; onboarding_id?: number; empleado_nombre?: string } | null>(null)
+  const [result, setResult] = useState<{ username: string; email_enviado: boolean; id?: string; empleado_nombre?: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -617,7 +617,7 @@ function CreateOnboardingDialog({
       setResult({
         username: response.username,
         email_enviado: response.email_enviado,
-        onboarding_id: response.onboarding_id,
+        id: response.id,
         empleado_nombre: response.empleado_nombre,
       })
       toast.success(`Onboarding iniciado para ${formData.nombres_empleado}`)
@@ -631,8 +631,8 @@ function CreateOnboardingDialog({
 
   const handleClose = () => {
     const failedInfo =
-      result && !result.email_enviado && result.onboarding_id
-        ? { onboardingId: result.onboarding_id, empleadoNombre: result.empleado_nombre || formData.nombres_empleado }
+      result && !result.email_enviado && result.id
+        ? { onboardingId: result.id, empleadoNombre: result.empleado_nombre || formData.nombres_empleado }
         : null
     setResult(null)
     setFormData({
@@ -771,7 +771,7 @@ function OnboardingDetailDialog({
   const handleValidar = async () => {
     setValidando(true)
     try {
-      await onboardingService.validar(onboarding.onboarding_id, 'aprobar', observaciones)
+      await onboardingService.validar(onboarding.id, 'aprobar', observaciones)
       toast.success('Onboarding validado exitosamente')
       onUpdate()
     } catch {
@@ -788,7 +788,7 @@ function OnboardingDetailDialog({
     }
     setRechazando(true)
     try {
-      await onboardingService.validar(onboarding.onboarding_id, 'rechazar', observaciones)
+      await onboardingService.validar(onboarding.id, 'rechazar', observaciones)
       toast.success('Onboarding observado')
       onUpdate()
     } catch {
@@ -800,7 +800,7 @@ function OnboardingDetailDialog({
 
   const handleReenviarEmail = async () => {
     try {
-      await onboardingService.reenviarEmail(onboarding.onboarding_id)
+      await onboardingService.reenviarEmail(onboarding.id)
       toast.success('Email reenviado exitosamente')
     } catch {
       toast.error('Error al reenviar email')
@@ -809,7 +809,7 @@ function OnboardingDetailDialog({
 
   const handleActualizarEstado = async () => {
     try {
-      await onboardingService.actualizarEstado(onboarding.onboarding_id)
+      await onboardingService.actualizarEstado(onboarding.id)
       toast.success('Estado actualizado')
       onUpdate()
     } catch {
@@ -821,7 +821,7 @@ function OnboardingDetailDialog({
   const handleValidarDocumento = async (docId: number) => {
     try {
       await apiClient.post(
-        `/api/v1/onboarding/processes/${onboarding.onboarding_id}/documentos/${docId}/aprobar/`
+        `/api/v1/onboarding/processes/${onboarding.id}/documentos/${docId}/aprobar/`
       )
       toast.success('Documento aprobado')
       const docs = await legajoService.getByEmpleado(onboarding.empleado)
@@ -836,7 +836,7 @@ function OnboardingDetailDialog({
     setRechazandoDoc(true)
     try {
       await apiClient.post(
-        `/api/v1/onboarding/processes/${onboarding.onboarding_id}/documentos/${rechazarDocId}/rechazar/`,
+        `/api/v1/onboarding/processes/${onboarding.id}/documentos/${rechazarDocId}/rechazar/`,
         { motivo: motivoRechazoDoc }
       )
       toast.success('Documento rechazado y notificacion enviada al empleado')
@@ -915,7 +915,7 @@ function OnboardingDetailDialog({
               ) : (
                 <div className="space-y-2">
                   {documentos.map((doc) => (
-                    <div key={doc.documento_id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3 min-w-0">
                         <div>
                           <p className="text-sm font-medium truncate">{doc.nombre_documento}</p>
@@ -942,7 +942,7 @@ function OnboardingDetailDialog({
                             size="sm"
                             className="text-green-600 cursor-pointer"
                             title="Aprobar documento"
-                            onClick={() => handleValidarDocumento(doc.documento_id)}
+                            onClick={() => handleValidarDocumento(doc.id)}
                           >
                             <ShieldCheck className="h-4 w-4" />
                           </Button>
@@ -953,7 +953,7 @@ function OnboardingDetailDialog({
                             size="sm"
                             className="text-red-600 cursor-pointer"
                             title="Rechazar documento"
-                            onClick={() => { setRechazarDocId(doc.documento_id); setMotivoRechazoDoc('') }}
+                            onClick={() => { setRechazarDocId(doc.id); setMotivoRechazoDoc('') }}
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>

@@ -65,7 +65,7 @@ import { toast } from 'sonner'
 
 // Interfaz que refleja los campos reales del backend
 interface Empleado {
-  empleado_id: number
+  id: string
   nombres_empleado: string
   apellido_paterno: string
   apellido_materno: string
@@ -84,7 +84,7 @@ interface Empleado {
   departamento_domicilio?: string
   ruta_fotografia?: string
   ubicacion_actual?: {
-    area_id: number
+    area_id: string
     area_siglas: string
     area_nombre: string
   } | null
@@ -131,19 +131,19 @@ function EditarEmpleadoDialog({ empleado, open, onClose, onSaved }: EditarEmplea
           </TabsList>
 
           <TabsContent value="personales" className="mt-4">
-            <TabPersonales empleadoId={empleado.empleado_id} initialData={empleado} />
+            <TabPersonales empleadoId={empleado.id} initialData={empleado} />
           </TabsContent>
 
           <TabsContent value="laborales" className="mt-4">
-            <TabLaborales empleadoId={empleado.empleado_id} />
+            <TabLaborales empleadoId={empleado.id} />
           </TabsContent>
 
           <TabsContent value="familiares" className="mt-4">
-            <TabFamiliares empleadoId={empleado.empleado_id} />
+            <TabFamiliares empleadoId={empleado.id} />
           </TabsContent>
 
           <TabsContent value="academicos" className="mt-4">
-            <TabAcademicos empleadoId={empleado.empleado_id} />
+            <TabAcademicos empleadoId={empleado.id} />
           </TabsContent>
         </Tabs>
 
@@ -294,11 +294,11 @@ export function Empleados() {
     setPage(1)
   }, [debouncedSearchTerm, showInactive])
 
-  const handleVerDetalle = (id: number) => {
+  const handleVerDetalle = (id: string) => {
     navigate(`/empleados/reporte/${id}`)
   }
 
-  const handleDescargarPdf = async (id: number, nombre: string) => {
+  const handleDescargarPdf = async (id: string, nombre: string) => {
     try {
       await employeesService.reportes.descargarReporteIntegral(id)
       toast.success(`PDF descargado: ${nombre}`)
@@ -307,14 +307,14 @@ export function Empleados() {
     }
   }
 
-  const handleVerLegajo = (id: number) => {
+  const handleVerLegajo = (id: string) => {
     navigate(`/legajo/${id}`)
   }
 
   const handleGenerarDocumento = async (empleado: Empleado, tipo: 'constancia' | 'certificado') => {
     try {
       await contractsService.generarCertificado({
-        empleado_id: empleado.empleado_id,
+        empleado_id: empleado.id,
         tipo_certificado: tipo === 'certificado' ? 'trabajo' : 'constancia',
         guardar_documento: true,
       })
@@ -482,12 +482,12 @@ export function Empleados() {
                 ) : (
                   empleados.map((emp) => (
                     <TableRow
-                      key={emp.empleado_id}
+                      key={emp.id}
                       className="cursor-pointer hover:bg-accent/50"
-                      onClick={() => handleVerDetalle(emp.empleado_id)}
+                      onClick={() => handleVerDetalle(emp.id)}
                     >
                       <TableCell className="text-xs text-muted-foreground">
-                        {emp.empleado_id}
+                        {emp.id}
                       </TableCell>
                       <TableCell className="font-mono text-sm">
                         {emp.numero_documento}
@@ -557,12 +557,12 @@ export function Empleados() {
                               <Edit className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDescargarPdf(emp.empleado_id, emp.nombre_completo)}>
+                            <DropdownMenuItem onClick={() => handleDescargarPdf(emp.id, emp.nombre_completo)}>
                               <Download className="mr-2 h-4 w-4" />
                               Descargar PDF
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleVerLegajo(emp.empleado_id)}>
+                            <DropdownMenuItem onClick={() => handleVerLegajo(emp.id)}>
                               <FolderOpen className="mr-2 h-4 w-4" />
                               Legajo Digital
                             </DropdownMenuItem>
