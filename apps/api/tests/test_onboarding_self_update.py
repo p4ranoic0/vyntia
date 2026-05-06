@@ -23,13 +23,13 @@ def clear_cache():
 
 
 def _empleado_url(empleado_id):
-    return f"/api/v1/rrhh/empleados/{empleado_id}/"
+    return f"/api/v1/employees/{empleado_id}/"
 
 
 def _familiares_url(pk=None):
     if pk:
-        return f"/api/v1/rrhh/datos-familiares/{pk}/"
-    return "/api/v1/rrhh/datos-familiares/"
+        return f"/api/v1/family-members/{pk}/"
+    return "/api/v1/family-members/"
 
 
 @pytest.mark.django_db

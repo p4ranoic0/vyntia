@@ -2,7 +2,7 @@
 """
 Tests for ONBD-16: EmpleadoUpdateSerializer extension.
 
-Verifies that PATCH /api/v1/rrhh/empleados/{id}/ correctly saves and returns
+Verifies that PATCH /api/v1/employees/{id}/ correctly saves and returns
 the 8 new personal/banking/pension fields added in plan 01.1-01.
 
 Response shape note:
@@ -28,7 +28,7 @@ class TestEmpleadoUpdateV2:
     """Test suite for ONBD-16 serializer extensions."""
 
     def _empleado_url(self, empleado_id):
-        return f"/api/v1/rrhh/empleados/{empleado_id}/"
+        return f"/api/v1/employees/{empleado_id}/"
 
     def test_patch_saves_pension_fields(self, hr_client, onboarding_factory):
         """PATCH with sistema_pensiones+codigo_cuspp+tipo_comision saves all three fields."""
@@ -99,7 +99,7 @@ class TestEmpleadoUpdateV2:
         assert data["departamento_domicilio"] == "Arequipa"
 
     def test_read_serializer_includes_new_fields(self, hr_client, onboarding_factory):
-        """GET /api/v1/rrhh/empleados/{id}/ response keys include sistema_pensiones, numero_cci, codigo_cuspp."""
+        """GET /api/v1/employees/{id}/ response keys include sistema_pensiones, numero_cci, codigo_cuspp."""
         onboarding = onboarding_factory()
         empleado = onboarding.empleado
         url = self._empleado_url(empleado.pk)

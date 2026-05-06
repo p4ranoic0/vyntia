@@ -18,7 +18,7 @@ from apps.employees.models import Employee
 
 @pytest.mark.django_db
 class TestCorregirCorreo:
-    """ONBD-01: POST /api/v1/rrhh/onboarding/{id}/corregir-correo/ — no existe todavía."""
+    """ONBD-01: POST /api/v1/onboarding/processes/{id}/corregir-correo/ — no existe todavía."""
 
     def test_corregir_correo_updates_email(self, hr_client, onboarding_factory):
         """El endpoint corregir-correo debe actualizar Employee.correo_personal.
@@ -28,7 +28,7 @@ class TestCorregirCorreo:
         """
         onboarding = onboarding_factory()
         nuevo_correo = "nuevo.correo@test.com"
-        url = f"/api/v1/rrhh/onboarding/{onboarding.pk}/corregir-correo/"
+        url = f"/api/v1/onboarding/processes/{onboarding.pk}/corregir-correo/"
 
         response = hr_client.post(url, {"correo_personal": nuevo_correo}, format="json")
 
@@ -51,7 +51,7 @@ class TestPhotoUpload:
     """ONBD-03: Subida de foto de perfil crea DigitalDocument con tipo_documento='foto'."""
 
     def test_photo_upload_creates_documento(self, onboarding_client):
-        """POST /api/v1/rrhh/onboarding/subir-foto/ crea DigitalDocument con tipo='foto'
+        """POST /api/v1/onboarding/processes/subir-foto/ crea DigitalDocument con tipo='foto'
         y actualiza ruta_fotografia en el Employee.
         """
         onboarding = onboarding_client._onboarding
@@ -61,7 +61,7 @@ class TestPhotoUpload:
         imagen = io.BytesIO(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
         imagen.name = "foto_perfil.png"
 
-        url = "/api/v1/rrhh/onboarding/subir-foto/"
+        url = "/api/v1/onboarding/processes/subir-foto/"
         response = onboarding_client.post(
             url,
             {"archivo": imagen},
@@ -92,7 +92,7 @@ class TestPhotoUpload:
 
 @pytest.mark.django_db
 class TestOnboardingList:
-    """ONBD-08: GET /api/v1/rrhh/onboarding/ incluye campo 'last_login' en cada item."""
+    """ONBD-08: GET /api/v1/onboarding/processes/ incluye campo 'last_login' en cada item."""
 
     def test_list_includes_last_login(self, hr_client, onboarding_factory):
         """El listado de onboardings debe incluir 'last_login' en cada elemento.
@@ -102,7 +102,7 @@ class TestOnboardingList:
         # Crear al menos un onboarding
         onboarding_factory()
 
-        url = "/api/v1/rrhh/onboarding/"
+        url = "/api/v1/onboarding/processes/"
         response = hr_client.get(url)
 
         assert response.status_code == 200, (
