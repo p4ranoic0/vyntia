@@ -23,7 +23,7 @@ import { useState } from 'react'
 // Progress component no disponible - usando alternativa con div
 // Tabs component no disponible - usando navegación simple
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
-import { AreasLayout } from '@/components/layout/AreasLayout'
+import { AreasLayout } from '@/shared/layout/AreasLayout'
 import { useToast } from '@/shared/ui/use-toast'
 import { Area, departmentsService, AreaStats } from '@/features/organization/services/departmentsService'
 

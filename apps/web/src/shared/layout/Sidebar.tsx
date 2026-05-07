@@ -11,7 +11,7 @@ import { useStaggerAnimation } from '@/shared/hooks/useAnimations'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
 import { Module } from '@/features/auth/services/authService'
-import { menuService, MenuItem as MenuServiceItem } from '@/services/menuService'
+import { menuService, MenuItem as MenuServiceItem } from '@/shared/api/menuService'
 import {
     AlertCircle,
     BarChart3,

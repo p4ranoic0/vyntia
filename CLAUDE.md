@@ -32,7 +32,7 @@ D:\VYNTIA\
 │   │   ├── requirements.txt    # to be replaced by pyproject.toml in L1
 │   │   ├── Makefile, pytest.ini, conftest.py
 │   └── web/              # React 18 + TS + Vite frontend
-│       └── src/{pages, features, services, hooks, lib, ...}
+│       └── src/{pages, features, shared/, hooks/, context/, ...}
 ├── packages/             # empty placeholder for shared libs (design-tokens, types)
 ├── docs/
 │   ├── 00_VYNTIA_MAESTRO.md      # SaaS master plan (read first for product vision)
@@ -179,7 +179,7 @@ const pagination = rawData?.meta?.pagination || {}
 count = pagination.total_items || items.length
 ```
 
-**Data fetching**: React Query v5 (`@tanstack/react-query`). `QueryClientProvider` in `App.tsx`. Custom hooks in `src/hooks/useApi.ts`, `src/hooks/useRemuneraciones.ts`.
+**Data fetching**: React Query v5 (`@tanstack/react-query`). `QueryClientProvider` in `App.tsx`. Custom hooks in `src/hooks/useApi.ts`, `src/features/payroll/hooks/useRemuneraciones.ts`.
 
 **Routing** (`App.tsx`):
 - Unauthenticated → `LoginForm`
@@ -214,10 +214,12 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 | Template service | `apps/api/app_rrhh/services/template_service.py` |
 | HTML templates | `apps/api/templates/` |
 | App routing | `apps/web/src/App.tsx` |
-| Auth context | `apps/web/src/context/AuthContext.tsx` |
+| Auth context | `apps/web/src/features/auth/context/AuthContext.tsx` |
 | API hooks | `apps/web/src/hooks/useApi.ts` |
-| Employees page | `apps/web/src/pages/Empleados.tsx` |
-| HR dashboard | `apps/web/src/pages/HROverviewDashboard.tsx` |
+| Employees page | `apps/web/src/features/employees/pages/Empleados.tsx` |
+| HR dashboard | `apps/web/src/features/employees/pages/HROverviewDashboard.tsx` |
+| Layout components | `apps/web/src/shared/layout/` (AdminLayout, Layout, Sidebar, Header, etc.) |
+| Menu service | `apps/web/src/shared/api/menuService.ts` |
 | **Foundation spec** | `docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md` |
 | **L0 plan (DONE)** | `docs/superpowers/plans/2026-04-25-vyntia-foundation-L0-bootstrap.md` |
 | **Master product vision** | `docs/00_VYNTIA_MAESTRO.md` |
@@ -229,7 +231,7 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 
 | Code | Sub-project | Status | Notes |
 |------|-------------|--------|-------|
-| **A** | Foundation (rebrand + restructure + cleanup) | **L0 done; L1-L5 pending** | This is what we're in |
+| **A** | Foundation (rebrand + restructure + cleanup) | **L0-L4 done; L5 pending** | This is what we're in |
 | C | Multi-tenancy + RLS | not started | Enables SaaS sales |
 | B | Migración funcional Vyntia Core | not started | Needs A + C |
 | D | Vyntia Pay (planilla peruana real) | not started | Starter MVP |
@@ -240,7 +242,7 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 - L1 ✅ Rebrand superficial done (BD `bd_vyntia`, `config/`→`vyntia/`, design tokens VYNTIA, Inter font)
 - L2 ✅ Django 5.2 LTS upgrade done
 - L3 ⏳ Split `app_rrhh` into 8 Django apps (the big one — 11 sub-PRs)
-- L4 ⏳ Reorganize frontend by feature
+- L4 ✅ Reorganize frontend by feature (L4.1–L4.11 complete)
 - L5 ⏳ Cleanup final + docs + CI
 
 ---

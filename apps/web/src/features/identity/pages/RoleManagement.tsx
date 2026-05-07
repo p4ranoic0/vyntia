@@ -28,7 +28,7 @@ import {
   type UserRoleAssignment 
 } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
-import { UsersLayout } from '@/components/layout/UsersLayout'
+import { UsersLayout } from '@/shared/layout/UsersLayout'
 
 export function RoleManagement() {
   const { id } = useParams<{ id: string }>()

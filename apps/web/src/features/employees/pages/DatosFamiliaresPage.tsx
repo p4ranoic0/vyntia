@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from '@/shared/ui/use-toast'
 import { Users, Heart, Baby, Plus, Trash2, Phone, MapPin } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
-import EmployeeLayout from '@/components/layout/EmployeeLayout'
+import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 
 interface Familiar {
   id: number

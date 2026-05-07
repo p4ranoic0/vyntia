@@ -1,5 +1,5 @@
 import { authService, Module, Permission, Role, User } from '@/features/auth/services/authService'
-import { menuService } from '@/services/menuService'
+import { menuService } from '@/shared/api/menuService'
 import React, { useEffect, useState } from 'react'
 import { AuthContext } from './AuthContextInstance'
 import { AuthContextType } from './AuthContextType'
