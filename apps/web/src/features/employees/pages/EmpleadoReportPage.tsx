@@ -451,7 +451,7 @@ export default function EmpleadoReportPage() {
         {/* Footer para impresion */}
         <div className="hidden print:block text-center border-t pt-4 mt-8">
           <p className="text-xs text-muted-foreground">
-            Reporte generado automaticamente por el Sistema de Intranet RRHH | {new Date().toLocaleDateString('es-PE')}
+            Reporte generado automaticamente por VYNTIA | {new Date().toLocaleDateString('es-PE')}
           </p>
           <p className="text-xs text-muted-foreground">Este documento es de uso interno y confidencial.</p>
         </div>

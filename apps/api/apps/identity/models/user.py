@@ -3,7 +3,7 @@
 Modelo User - Gestión de usuarios del sistema
 
 Contiene la definición del modelo User que gestiona los usuarios
-del sistema de intranet y sus permisos de acceso.
+del sistema VYNTIA y sus permisos de acceso.
 """
 
 import uuid

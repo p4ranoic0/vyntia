@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tareas asincronas de Celery para app_rrhh.
-
-Incluye envio de emails y otras tareas que pueden ejecutarse en background.
+Cross-cutting Celery tasks (email, notifications).
 """
 
 import logging

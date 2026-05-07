@@ -138,8 +138,8 @@ class OnboardingService:
         html_content = render_to_string("emails/bienvenida.html", context)
         text_content = render_to_string("emails/bienvenida.txt", context)
 
-        subject = "Bienvenido - Intranet RRHH"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.gob.pe")
+        subject = "Bienvenido a VYNTIA"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@vyntia.pe")
         recipient = empleado.correo_personal if empleado else usuario.email
 
         # En backends de desarrollo no tiene sentido encolar en Celery.
@@ -577,7 +577,7 @@ class OnboardingNotificationService:
         html_content = render_to_string("emails/documento_rechazado.html", context)
         text_content = render_to_string("emails/documento_rechazado.txt", context)
         subject = f"Documento rechazado: {documento.nombre_documento}"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@vyntia.pe")
         OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)
 
     @staticmethod
@@ -595,7 +595,7 @@ class OnboardingNotificationService:
         html_content = render_to_string("emails/onboarding_aprobado.html", context)
         text_content = render_to_string("emails/onboarding_aprobado.txt", context)
         subject = "¡Tu onboarding ha sido aprobado!"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@vyntia.pe")
         OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)
 
     @staticmethod
@@ -614,5 +614,5 @@ class OnboardingNotificationService:
         html_content = render_to_string("emails/onboarding_observado.html", context)
         text_content = render_to_string("emails/onboarding_observado.txt", context)
         subject = "Tu onboarding requiere correcciones"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.pe")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@vyntia.pe")
         OnboardingService._enviar_notificacion(subject, from_email, recipient, text_content, html_content)

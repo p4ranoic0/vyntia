@@ -21,8 +21,7 @@ Owned managers (custom QuerySet methods):
 
 Bounded context boundary: time_off owns the vacation entitlement, request workflow,
 and enjoyment tracking. Personal data lives in `apps.employees`, contract data in
-`apps.contracts`, and approval permissions still go through `app_rrhh.permission_service`
-(deferred legacy module).
+`apps.contracts`, and approval permissions go through `apps.core.permission_service`.
 
 Future split (deferred to L3.10):
 - VacationRequest -> VacationRequest + VacationBalance (model split + data migration)

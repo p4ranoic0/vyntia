@@ -184,7 +184,7 @@ class Command(BaseCommand):
         admin_user, created = User.objects.get_or_create(
             username="admin",
             defaults={
-                "email": "admin@intranet.local",
+                "email": "admin@vyntia.local",
                 "tipo_usuario": "administrador",
                 "nivel_acceso": "total",
                 "is_staff": True,
