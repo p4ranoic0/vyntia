@@ -16,9 +16,7 @@ Owned services (onboarding orchestration):
 
 Bounded context boundary: onboarding owns the new-employee setup workflow and
 its state machine. Personal data lives in `apps.employees`, document storage
-in `apps.documents`. The Celery task `send_email_html_task` lives in
-`app_rrhh.tasks` (deferred legacy module — used by both onboarding_service
-and other email-sending paths; will be relocated in L3.11 cleanup).
+in `apps.documents`. The Celery task `send_email_html_task` lives in `apps.core.tasks`.
 
 Future rename (deferred to L3.10):
 - OnboardingProcess → OnboardingProcess

@@ -119,7 +119,7 @@ CACHES = {
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
-        'KEY_PREFIX': 'intranet_rrhh',
+        'KEY_PREFIX': 'vyntia',
         'TIMEOUT': 300,
     }
 }

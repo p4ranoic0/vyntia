@@ -1,4 +1,4 @@
-"""Configuración de URLs principal para Intranet RRHH."""
+"""Configuración de URLs principal para VYNTIA."""
 
 from django.contrib import admin
 from django.urls import path, include

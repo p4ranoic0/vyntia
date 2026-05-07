@@ -1,5 +1,5 @@
 /**
- * Design Tokens - Sistema de diseño para Intranet RRHH
+ * Design Tokens - Sistema de diseño VYNTIA
  *
  * Centraliza todos los valores de diseño reutilizables del sistema.
  */

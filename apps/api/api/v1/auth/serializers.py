@@ -565,7 +565,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
         
         # Enviar email
-        subject = 'Recuperación de Contraseña - Intranet RRHH'
+        subject = 'VYNTIA — Recuperación de Contraseña'
         message = f"""
         Hola {user.empleado.nombres_empleado if user.empleado else user.username},
         
@@ -578,7 +578,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         Si no solicitaste este cambio, puedes ignorar este email.
         
         Saludos,
-        Equipo de Intranet RRHH
+        Equipo VYNTIA
         """
         
         try:

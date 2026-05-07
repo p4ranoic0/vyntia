@@ -63,7 +63,7 @@ class VacationService:
         }
 
         subject = "Nueva solicitud de vacaciones"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@intranet.gob.pe")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@vyntia.pe")
         text_content = render_to_string("emails/vacaciones_solicitud.txt", context)
         html_content = render_to_string("emails/vacaciones_solicitud.html", context)
 

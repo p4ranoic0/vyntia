@@ -3,7 +3,7 @@
 # DRF Spectacular - OpenAPI 3.0.0
 SPECTACULAR_SETTINGS = {
     # Titles and descriptions
-    "TITLE": "Intranet RRHH API",
+    "TITLE": "VYNTIA API",
     "DESCRIPTION": "API para el sistema integrado de gestión de recursos humanos (RRHH), "
     "nómina, vacaciones y administración corporativa",
     "VERSION": "1.0.0",
@@ -92,7 +92,7 @@ def postprocess_schema_hook(result, generator, request, public):
     if result.get("info"):
         result["info"]["x-logo"] = {
             "url": "https://interno.rrhh/logo.png",
-            "altText": "Intranet RRHH",
+            "altText": "VYNTIA",
         }
 
     # Mejorar descripciones de paths

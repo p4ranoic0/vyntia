@@ -40,7 +40,7 @@ except json.JSONDecodeError:
     pass
 
 # Guardar solo stdout normalizado (el JSON) al archivo
-output_path = r"d:\INTRANET\front\openapi-schema.json"
+output_path = r"d:\VYNTIA\apps\web\openapi-schema.json"
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(normalized_stdout)
 

@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20.x'
+  DJANGO_SETTINGS_MODULE: vyntia.settings.testing
+
+jobs:
+  backend-test:
+    name: Backend — pytest
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: bd_vyntia_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e "apps/api[dev]"
+
+      - name: Run migrations
+        run: |
+          cd apps/api
+          python manage.py migrate --settings=vyntia.settings.testing
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+      - name: Run pytest
+        run: |
+          cd apps/api
+          pytest tests/ -q --tb=short
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+  backend-check:
+    name: Backend — Django system check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e "apps/api[dev]"
+
+      - name: Django system check
+        run: |
+          cd apps/api
+          python manage.py check --settings=vyntia.settings.testing
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+      - name: Check for pending migrations
+        run: |
+          cd apps/api
+          python manage.py makemigrations --dry-run --check --settings=vyntia.settings.testing
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+  frontend-test:
+    name: Frontend — vitest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: cd apps/web && npm ci
+
+      - name: Run vitest
+        run: cd apps/web && npm test -- --run
+
+  frontend-build:
+    name: Frontend — build + typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: cd apps/web && npm ci
+
+      - name: TypeScript check
+        run: cd apps/web && npx tsc --noEmit -p tsconfig.app.json
+
+      - name: Build
+        run: cd apps/web && npm run build
+
+  frontend-lint:
+    name: Frontend — ESLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: cd apps/web && npm ci
+
+      - name: ESLint
+        run: cd apps/web && npm run lint
