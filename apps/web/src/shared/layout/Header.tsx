@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import { Input } from '@/shared/ui/input'
-import { useTheme } from '@/context/ThemeContext'
+import { useTheme } from '@/shared/context/ThemeContext'
 import { useEntranceAnimation, useStaggerAnimation } from '@/shared/hooks/useAnimations'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useScrolled } from '@/shared/hooks/useScrolled'
