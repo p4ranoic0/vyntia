@@ -15,7 +15,7 @@ import {
     usePlanillas,
     usePreviewPlanilla,
     useRegenerarPlanilla,
-} from '@/hooks/useRemuneraciones'
+} from '@/features/payroll/hooks/useRemuneraciones'
 import { Calculator, Check, ChevronLeft, ChevronRight, Eye, FileSpreadsheet, RotateCcw, TrendingUp } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'

@@ -12,7 +12,7 @@ import {
     useDownloadBoletaPdf,
     useGenerarBoletas,
     usePlanillas,
-} from '@/hooks/useRemuneraciones'
+} from '@/features/payroll/hooks/useRemuneraciones'
 import { Download, FileText, Loader2, PackageOpen } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
