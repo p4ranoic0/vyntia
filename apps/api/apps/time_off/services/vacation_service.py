@@ -13,7 +13,7 @@ from ..models import (
     VacationPeriod,
     VacationRequest,
 )
-from app_rrhh.tasks import send_email_html_task
+from apps.core.tasks import send_email_html_task
 from apps.core.exceptions import BusinessLogicError
 from django.conf import settings
 from django.db import transaction
