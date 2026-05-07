@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select'
-import { useAreas } from '@/hooks/useApi'
+import { useAreas } from '@/features/organization/hooks/useDepartments'
 import { employeesService } from '@/features/employees/services/employeesService'
 import { Documento, legajoService } from '@/features/documents/services/legajoService'
 import { Briefcase } from 'lucide-react'

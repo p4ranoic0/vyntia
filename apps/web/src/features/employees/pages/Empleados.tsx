@@ -39,7 +39,7 @@ import {
     TableRow,
 } from '@/shared/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { useEmpleados } from '@/hooks/useApi'
+import { useEmpleados } from '@/features/employees/hooks/useEmployees'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { contractsService } from '@/features/contracts/services/contractsService'
 import { employeesService } from '@/features/employees/services/employeesService'
