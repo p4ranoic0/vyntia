@@ -42,7 +42,7 @@ import {
   TIPO_PLANTILLA_LABELS,
   type PlantillaDocumento,
   type TipoPlantilla,
-} from '@/services/templatesService'
+} from '@/features/documents/services/templatesService'
 
 type TabValue = 'todos' | TipoPlantilla
 

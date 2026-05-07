@@ -1,6 +1,6 @@
 import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/utils/cn'
-import { legajoService, TIPO_DOCUMENTO_LABELS } from '@/services/legajoService'
+import { legajoService, TIPO_DOCUMENTO_LABELS } from '@/features/documents/services/legajoService'
 import { Eye, FileText, Loader2, Trash2, Upload } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'

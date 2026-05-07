@@ -10,7 +10,7 @@ import {
 } from '@/shared/ui/select'
 import { useAreas } from '@/hooks/useApi'
 import { employeesService } from '@/features/employees/services/employeesService'
-import { Documento, legajoService } from '@/services/legajoService'
+import { Documento, legajoService } from '@/features/documents/services/legajoService'
 import { Briefcase } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'

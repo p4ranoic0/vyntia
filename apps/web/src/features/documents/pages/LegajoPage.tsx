@@ -31,7 +31,7 @@ import {
     legajoService,
     type Documento,
     type DocumentoFormData,
-} from '@/services/legajoService'
+} from '@/features/documents/services/legajoService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
     AlertTriangle, ArrowLeft,

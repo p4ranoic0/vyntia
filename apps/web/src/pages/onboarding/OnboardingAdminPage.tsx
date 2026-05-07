@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/shared/ui/table'
 import { DocumentViewer } from '@/shared/components/DocumentViewer'
-import { legajoService, type Documento } from '@/services/legajoService'
+import { legajoService, type Documento } from '@/features/documents/services/legajoService'
 import { apiClient } from '@/shared/api/api'
 import { getErrorMessage } from '@/shared/api/errorUtils'
 import {
