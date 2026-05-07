@@ -21,7 +21,7 @@ import {
     TIPO_CONTRATO_LABELS,
     contractsService,
     type ContratoListItem,
-} from '@/services/contractsService'
+} from '@/features/contracts/services/contractsService'
 import { employeesService } from '@/features/employees/services/employeesService'
 import {
     CATEGORIA_LABELS,

@@ -39,7 +39,7 @@ import {
     type ContratoFilters,
     type ContratoFormData,
     type ContratoListItem,
-} from '@/services/contractsService'
+} from '@/features/contracts/services/contractsService'
 import { employeesService, type Employee } from '@/features/employees/services/employeesService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
