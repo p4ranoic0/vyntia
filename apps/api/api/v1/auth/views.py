@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 
-from app_rrhh.menu_service import MenuService
+from apps.identity.services.menu_service import MenuService
 from apps.identity.models import Module, Permission, Role, User
 from apps.core.decorators import (
     require_admin,
