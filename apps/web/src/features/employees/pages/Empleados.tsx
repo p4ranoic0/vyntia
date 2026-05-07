@@ -1,6 +1,6 @@
 import { Skeleton } from '@/shared/components/LoadingSkeleton'
 import { ProfileImage } from '@/shared/components/ProfileImage'
-import { TabAcademicos, TabFamiliares, TabLaborales, TabPersonales } from '@/components/empleados'
+import { TabAcademicos, TabFamiliares, TabLaborales, TabPersonales } from '@/features/employees/components'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -42,7 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useEmpleados } from '@/hooks/useApi'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { contractsService } from '@/services/contractsService'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 import { OnboardingCreateData, onboardingService } from '@/services/onboardingService'
 import {
     Award,

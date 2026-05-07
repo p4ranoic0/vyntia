@@ -22,7 +22,7 @@ import {
     contractsService,
     type ContratoListItem,
 } from '@/services/contractsService'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 import {
     CATEGORIA_LABELS,
     TIPOS_INSTITUCIONALES,

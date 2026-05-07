@@ -1,9 +1,9 @@
 'use client'
 
-import DatosAcademicosModal from '@/components/modals/DatosAcademicosModal'
-import DatosFamiliaresModal from '@/components/modals/DatosFamiliaresModal'
-import DatosLaboralesModal from '@/components/modals/DatosLaboralesModal'
-import DatosPersonalesModal from '@/components/modals/DatosPersonalesModal'
+import DatosAcademicosModal from '@/features/employees/modals/DatosAcademicosModal'
+import DatosFamiliaresModal from '@/features/employees/modals/DatosFamiliaresModal'
+import DatosLaboralesModal from '@/features/employees/modals/DatosLaboralesModal'
+import DatosPersonalesModal from '@/features/employees/modals/DatosPersonalesModal'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -33,8 +33,8 @@ import {
     TableRow,
 } from '@/shared/ui/table'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
-import { employeesService, type Employee } from '@/services/employeesService'
+import { useEmployeePermissions } from '@/features/employees/hooks/useEmployeePermissions'
+import { employeesService, type Employee } from '@/features/employees/services/employeesService'
 import {
     AlertCircle,
     Briefcase,

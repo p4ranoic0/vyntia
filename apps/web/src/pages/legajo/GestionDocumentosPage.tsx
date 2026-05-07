@@ -20,7 +20,7 @@ import {
   TIPO_DOCUMENTO_LABELS,
   CATEGORIA_LABELS,
 } from '@/services/legajoService'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 
 /* --------------------------------------------------------
    Institutional document types allowed for upload

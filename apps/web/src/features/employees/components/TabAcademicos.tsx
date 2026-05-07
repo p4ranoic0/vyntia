@@ -14,7 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 import { Documento, legajoService } from '@/services/legajoService'
 import { Award, BookOpen, Edit, GraduationCap, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
