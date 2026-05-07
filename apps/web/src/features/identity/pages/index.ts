@@ -13,4 +13,4 @@ export type {
   UserFormData,
   ChangePasswordData,
   UserRoleAssignment
-} from '@/services/usersService'
+} from '@/features/identity/services/usersService'

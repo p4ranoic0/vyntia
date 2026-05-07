@@ -16,10 +16,10 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
 import { apiClient } from '@/shared/api/api'
-import { roleService, permissionService, rolePermissionService } from '@/services/securityService'
+import { roleService, permissionService, rolePermissionService } from '@/features/identity/services/securityService'
 
 // Importar interfaces del servicio
-import { Role, Permission, RolePermission } from '@/services/securityService'
+import { Role, Permission, RolePermission } from '@/features/identity/services/securityService'
 
 export default function RolePermissionsPage() {// Estados
   const [selectedRoleId, setSelectedRoleId] = useState<string>('')

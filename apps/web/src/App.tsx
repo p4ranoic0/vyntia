@@ -39,16 +39,16 @@ import ProcesoPlanillasPage from '@/pages/remuneraciones/ProcesoPlanillasPage'
 import RemuneracionesHomePage from '@/pages/remuneraciones/RemuneracionesHomePage'
 import ReportesRemuneracionesPage from '@/pages/remuneraciones/ReportesRemuneracionesPage'
 import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage'
-import PermissionsPage from '@/pages/security/PermissionsPage'
-import RolePermissionsPage from '@/pages/security/RolePermissionsPage'
-import RolesPage from '@/pages/security/RolesPage'
+import PermissionsPage from '@/features/identity/pages/PermissionsPage'
+import RolePermissionsPage from '@/features/identity/pages/RolePermissionsPage'
+import RolesPage from '@/features/identity/pages/RolesPage'
 import {
     RoleManagement,
     ChangePassword as UsersChangePassword,
     UsersForm,
     UsersList,
     UsersManagement
-} from '@/pages/users'
+} from '@/features/identity/pages'
 import ConfiguracionPage from '@/pages/vacaciones/ConfiguracionPage'
 import NuevaSolicitudPage from '@/pages/vacaciones/NuevaSolicitudPage'
 import PeriodosPage from '@/pages/vacaciones/PeriodosPage'

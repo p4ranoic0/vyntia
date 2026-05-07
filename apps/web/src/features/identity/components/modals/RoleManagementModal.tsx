@@ -32,7 +32,7 @@ import {
   type User, 
   type Role, 
   type UserRoleAssignment 
-} from '@/services/usersService'
+} from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 interface RoleManagementModalProps {

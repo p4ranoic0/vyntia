@@ -27,7 +27,7 @@ import { Textarea } from '@/shared/ui/textarea'
 import { DataTable } from '@/shared/components/DataTable'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
-import { permissionService, type Permission, type PermissionFormData } from '@/services/securityService'
+import { permissionService, type Permission, type PermissionFormData } from '@/features/identity/services/securityService'
 
 export default function PermissionsPage() {
   const [searchTerm, setSearchTerm] = useState('')

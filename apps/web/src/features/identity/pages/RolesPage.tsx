@@ -28,7 +28,7 @@ import { Badge } from '@/shared/ui/badge'
 import { DataTable } from '@/shared/components/DataTable'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
-import { roleService, type Role, type RoleFormData } from '@/services/securityService'
+import { roleService, type Role, type RoleFormData } from '@/features/identity/services/securityService'
 
 export default function RolesPage() {
   const [searchTerm, setSearchTerm] = useState('')
