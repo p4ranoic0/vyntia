@@ -41,7 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useEmpleados } from '@/hooks/useApi'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { contractsService } from '@/services/contractsService'
+import { contractsService } from '@/features/contracts/services/contractsService'
 import { employeesService } from '@/features/employees/services/employeesService'
 import { OnboardingCreateData, onboardingService } from '@/services/onboardingService'
 import {

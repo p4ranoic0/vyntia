@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { apiClient } from '@/shared/api/api'
 import { cn } from '@/shared/utils/cn'
-import { contractsService, TIPO_CONTRATO_LABELS } from '@/services/contractsService'
+import { contractsService, TIPO_CONTRATO_LABELS } from '@/features/contracts/services/contractsService'
 import { useQuery } from '@tanstack/react-query'
 import {
     Activity,
