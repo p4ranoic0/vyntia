@@ -1,5 +1,5 @@
 import React from 'react'
-import ResetPasswordForm from '@/components/auth/ResetPasswordForm'
+import ResetPasswordForm from '@/features/auth/components/ResetPasswordForm'
 
 /**
  * Página para restablecer contraseña usando token

@@ -13,7 +13,7 @@ import {
 import { Input } from '@/shared/ui/input'
 import { useTheme } from '@/context/ThemeContext'
 import { useEntranceAnimation, useStaggerAnimation } from '@/shared/hooks/useAnimations'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useScrolled } from '@/shared/hooks/useScrolled'
 import { cn, getInitials } from '@/shared/utils/cn'
 import { Menu, Moon, Search, Shield, Sun, User } from 'lucide-react'

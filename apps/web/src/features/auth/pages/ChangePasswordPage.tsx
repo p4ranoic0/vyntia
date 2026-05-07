@@ -1,5 +1,5 @@
 import React from 'react'
-import ChangePasswordForm from '@/components/auth/ChangePasswordForm'
+import ChangePasswordForm from '@/features/auth/components/ChangePasswordForm'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 
 /**

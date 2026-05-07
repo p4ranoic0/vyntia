@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { authService, Module } from '@/services/authService'
+import { authService, Module } from '@/features/auth/services/authService'
 import { useAuth } from './useAuth'
 import { useLoading } from '@/shared/components'
 

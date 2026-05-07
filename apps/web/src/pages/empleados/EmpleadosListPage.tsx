@@ -32,7 +32,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/shared/ui/table'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 import { employeesService, type Employee } from '@/services/employeesService'
 import {

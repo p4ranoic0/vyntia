@@ -1,4 +1,4 @@
-import { Module, Permission, Role, User } from "@/services/authService";
+import { Module, Permission, Role, User } from "@/features/auth/services/authService";
 
 /**
  * Tipo de datos para el contexto de autenticación

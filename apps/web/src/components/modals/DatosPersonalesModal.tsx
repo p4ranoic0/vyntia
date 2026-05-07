@@ -26,7 +26,7 @@ import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { User, Calendar, MapPin, Phone, Mail, CreditCard, Lock, AlertCircle, Edit } from 'lucide-react'
 import { employeesService, type DatosPersonales } from '@/services/employeesService'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 
 interface DatosPersonalesModalProps {

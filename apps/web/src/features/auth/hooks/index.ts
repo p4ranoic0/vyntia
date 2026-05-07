@@ -1,1 +1,1 @@
-// Auth Hooks
+export * from './useAuth'

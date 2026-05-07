@@ -1,7 +1,7 @@
 import { LoadingSpinner, Skeleton, useLoading, useLoadingWithDelay } from '@/shared/components'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Building2, Calendar, CalendarDays, FileText, FolderOpen, Landmark, Shield, User, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'

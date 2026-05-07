@@ -27,7 +27,7 @@ import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { GraduationCap, BookOpen, Award, Plus, Trash2, Calendar, Building, Lock, AlertCircle, Edit, Save, X } from 'lucide-react'
 import { employeesService, type DatosAcademicos } from '@/services/employeesService'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 
 interface EstudioAcademico {

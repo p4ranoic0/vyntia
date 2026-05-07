@@ -8,9 +8,9 @@ import {
     TooltipTrigger,
 } from '@/shared/ui/tooltip'
 import { useStaggerAnimation } from '@/shared/hooks/useAnimations'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
-import { Module } from '@/services/authService'
+import { Module } from '@/features/auth/services/authService'
 import { menuService, MenuItem as MenuServiceItem } from '@/services/menuService'
 import {
     AlertCircle,
