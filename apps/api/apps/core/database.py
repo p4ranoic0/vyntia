@@ -11,7 +11,7 @@ class DatabaseRouter:
     """Database router for read/write splitting."""
     
     # Apps that should use the default database
-    route_app_labels = {'app_rrhh', 'auth', 'contenttypes', 'sessions', 'admin'}
+    route_app_labels = {'auth', 'contenttypes', 'sessions', 'admin'}
     
     def db_for_read(self, model: Type[Model], **hints) -> Optional[str]:
         """Suggest the database to read from.

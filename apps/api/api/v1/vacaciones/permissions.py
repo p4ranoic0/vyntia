@@ -1,6 +1,6 @@
 """Permisos personalizados para las APIs de vacaciones."""
 
-from app_rrhh.constants import Roles
+from apps.core.constants import Roles
 from apps.employees.models import Employee
 from apps.time_off.models import (
     VacationConfiguration,
@@ -9,7 +9,7 @@ from apps.time_off.models import (
     VacationPeriod,
     VacationRequest,
 )
-from app_rrhh.permission_service import PermissionService
+from apps.core.permission_service import PermissionService
 from rest_framework import permissions
 
 

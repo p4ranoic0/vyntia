@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List, Optional
 
-from app_rrhh.constants import Roles
-from app_rrhh.permission_service import PermissionService
+from apps.core.constants import Roles
+from apps.core.permission_service import PermissionService
 from apps.identity.models import Permission, Role, User
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions

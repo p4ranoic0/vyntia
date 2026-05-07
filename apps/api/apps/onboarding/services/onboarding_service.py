@@ -7,7 +7,7 @@ from ..models import OnboardingProcess
 from apps.documents.models import DigitalDocument
 from apps.employees.models import Employee
 from apps.identity.models import Role, User, UserRole
-from app_rrhh.tasks import send_email_html_task
+from apps.core.tasks import send_email_html_task
 from django.conf import settings
 from django.db import transaction
 from django.template.loader import render_to_string

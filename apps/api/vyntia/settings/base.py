@@ -40,7 +40,6 @@ LOCAL_APPS = [
     "apps.payroll.apps.PayrollConfig",
     "apps.time_off.apps.TimeOffConfig",
     "apps.onboarding.apps.OnboardingConfig",
-    "app_rrhh",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -280,11 +279,6 @@ LOGGING = {
         "django": {
             "handlers": ["console", "file"],
             "level": "INFO",
-            "propagate": False,
-        },
-        "app_rrhh": {
-            "handlers": ["console", "file"],
-            "level": "DEBUG",
             "propagate": False,
         },
         "api": {

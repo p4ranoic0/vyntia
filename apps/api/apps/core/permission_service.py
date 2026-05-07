@@ -2,7 +2,7 @@
 
 from typing import Iterable, Set
 
-from app_rrhh.constants import Roles
+from apps.core.constants import Roles
 
 
 class PermissionService:
