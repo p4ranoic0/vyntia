@@ -1,7 +1,7 @@
 import { AreaForm } from '@/features/organization/components/AreaForm'
 import { DataTable } from '@/shared/components/DataTable'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
-import { AreasLayout } from '@/components/layout/AreasLayout'
+import { AreasLayout } from '@/shared/layout/AreasLayout'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'

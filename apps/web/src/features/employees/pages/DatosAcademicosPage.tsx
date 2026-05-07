@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from '@/shared/ui/use-toast'
 import { GraduationCap, BookOpen, Award, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
-import EmployeeLayout from '@/components/layout/EmployeeLayout'
+import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 
 interface FormacionAcademica {
   id: number

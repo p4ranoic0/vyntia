@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { usersService, type User, type ChangePasswordData } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
-import { UsersLayout } from '@/components/layout/UsersLayout'
+import { UsersLayout } from '@/shared/layout/UsersLayout'
 
 export function ChangePassword() {
   const { id } = useParams<{ id: string }>()

@@ -1,6 +1,6 @@
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { ProfileImage } from '@/shared/components/ProfileImage'
-import EmployeeLayout from '@/components/layout/EmployeeLayout'
+import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'

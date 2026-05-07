@@ -44,7 +44,7 @@ import { toast } from 'sonner'
 import { usersService, rolesService, type User, type Role } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/ui/alert-dialog'
-import { UsersLayout } from '@/components/layout/UsersLayout'
+import { UsersLayout } from '@/shared/layout/UsersLayout'
 
 // Importar los modales
 import { UserFormModal } from '@/features/identity/components/modals/UserFormModal'

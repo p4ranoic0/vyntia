@@ -21,7 +21,7 @@ import {
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
 import { departmentsService, Area, CreateAreaData } from '@/features/organization/services/departmentsService'
-import { AreasLayout } from '@/components/layout/AreasLayout'
+import { AreasLayout } from '@/shared/layout/AreasLayout'
 import { getErrorMessage } from '@/shared/api/errorUtils'
 
 // Schema de validación

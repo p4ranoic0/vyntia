@@ -1,4 +1,4 @@
-import NotificationsBell from '@/components/notifications/NotificationsBell'
+import NotificationsBell from '@/shared/layout/NotificationsBell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'

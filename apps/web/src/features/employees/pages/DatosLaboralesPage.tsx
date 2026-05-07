@@ -9,7 +9,7 @@ import { Textarea } from '@/shared/ui/textarea'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from '@/shared/ui/use-toast'
 import { Briefcase, DollarSign, Building2, FileText } from 'lucide-react'
-import EmployeeLayout from '@/components/layout/EmployeeLayout'
+import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 import { employeesService } from '@/features/employees/services/employeesService'
 
 interface DatosLaboralesForm {

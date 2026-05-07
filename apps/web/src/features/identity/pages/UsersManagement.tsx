@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { toast } from 'sonner'
 import { usersService, type User } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
-import { UsersLayout } from '@/components/layout/UsersLayout'
+import { UsersLayout } from '@/shared/layout/UsersLayout'
 
 export function UsersManagement() {
   const { id } = useParams<{ id: string }>()
