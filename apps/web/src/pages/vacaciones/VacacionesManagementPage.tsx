@@ -12,7 +12,7 @@ import NotificacionesVacaciones from '@/components/vacaciones/NotificacionesVaca
 import PeriodosManagement from '@/components/vacaciones/PeriodosManagement'
 import ResumenDiasVacaciones from '@/components/vacaciones/ResumenDiasVacaciones'
 import { useToast } from '@/shared/hooks/use-toast'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import timeOffService, {
     EmpleadoDiasVencidos,
     EstadisticasVacaciones as EstadisticasVacacionesType,

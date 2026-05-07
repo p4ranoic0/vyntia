@@ -26,7 +26,7 @@ import { Badge } from '@/shared/ui/badge'
 import { toast } from 'sonner'
 import { Briefcase, Calendar, DollarSign, Building2, Clock, FileText, Lock, AlertCircle } from 'lucide-react'
 import { employeesService, type DatosLaborales } from '@/services/employeesService'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 
 interface DatosLaboralesModalProps {

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import timeOffService, { SolicitudVacaciones } from '@/services/timeOffService'
 import { Bell } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'

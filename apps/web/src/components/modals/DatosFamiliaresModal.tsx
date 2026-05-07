@@ -27,7 +27,7 @@ import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { Users, Heart, Baby, Plus, Trash2, Phone, MapPin, User, Lock, AlertCircle } from 'lucide-react'
 import { employeesService, type DatosFamiliares } from '@/services/employeesService'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
 
 interface Familiar {

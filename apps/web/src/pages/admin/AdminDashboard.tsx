@@ -22,7 +22,7 @@ import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { Progress } from '@/shared/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 // Interfaces para los datos del dashboard

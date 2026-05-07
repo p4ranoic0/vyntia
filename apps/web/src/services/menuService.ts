@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/api/api";
-import { authService } from "./authService";
+import { authService } from "@/features/auth/services/authService";
 
 export interface MenuItem {
   id: string;

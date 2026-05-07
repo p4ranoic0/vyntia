@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { useToast } from '@/shared/ui/use-toast'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Landmark, Loader2, Lock, ShieldCheck, User } from 'lucide-react'
 import { useState } from 'react'
