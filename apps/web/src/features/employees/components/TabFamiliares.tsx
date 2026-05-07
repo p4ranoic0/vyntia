@@ -10,7 +10,7 @@ import {
     SelectValue,
 } from '@/shared/ui/select'
 import { employeesService } from '@/features/employees/services/employeesService'
-import { Documento, legajoService } from '@/services/legajoService'
+import { Documento, legajoService } from '@/features/documents/services/legajoService'
 import { Edit, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'

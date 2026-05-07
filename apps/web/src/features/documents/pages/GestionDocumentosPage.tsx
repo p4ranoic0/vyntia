@@ -19,7 +19,7 @@ import {
   legajoService,
   TIPO_DOCUMENTO_LABELS,
   CATEGORIA_LABELS,
-} from '@/services/legajoService'
+} from '@/features/documents/services/legajoService'
 import { employeesService } from '@/features/employees/services/employeesService'
 
 /* --------------------------------------------------------
