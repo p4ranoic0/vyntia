@@ -1,4 +1,4 @@
-"""Constantes de roles y permisos para evitar strings magicos."""
+"""Role and permission constants — avoid magic strings in authorization code."""
 
 
 class Roles:
