@@ -22,7 +22,7 @@ import {
   onboardingService, getEstadoLabel,
   type OnboardingCreateData,
   type OnboardingStatus as ServiceOnboardingStatus,
-} from '@/services/onboardingService'
+} from '@/features/onboarding/services/onboardingService'
 import { computeAlert } from '@/features/onboarding/types/onboarding'
 import { corregirCorreo } from '@/features/onboarding/services/onboardingUploadService'
 import {
