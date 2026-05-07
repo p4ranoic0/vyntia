@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import timeOffService, { SolicitudVacaciones } from '@/services/timeOffService'
+import timeOffService, { SolicitudVacaciones } from '@/features/time-off/services/timeOffService'
 import { Bell } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

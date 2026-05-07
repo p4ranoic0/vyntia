@@ -13,7 +13,7 @@ import timeOffService, {
     EmpleadoDiasVencidos,
     EstadisticasVacaciones as EstadisticasVacacionesType,
     SolicitudVacaciones
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { format } from 'date-fns'
 import {
     AlertTriangle,

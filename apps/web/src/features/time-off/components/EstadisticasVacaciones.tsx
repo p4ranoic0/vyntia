@@ -12,7 +12,7 @@ import {
   TrendingDown,
   Minus
 } from 'lucide-react'
-import { EstadisticasVacaciones as EstadisticasType } from '@/services/timeOffService'
+import { EstadisticasVacaciones as EstadisticasType } from '@/features/time-off/services/timeOffService'
 
 interface EstadisticasVacacionesProps {
   estadisticas: EstadisticasType

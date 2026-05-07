@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Separator } from '@/shared/ui/separator'
 import { Settings, Save, RefreshCw, AlertTriangle, CheckCircle, Calendar, Users, Clock } from 'lucide-react'
 import { useToast } from '@/shared/hooks/use-toast'
-import timeOffService, { ConfiguracionVacaciones } from '@/services/timeOffService'
+import timeOffService, { ConfiguracionVacaciones } from '@/features/time-off/services/timeOffService'
 
 interface ConfiguracionPanelProps {
   onConfiguracionUpdated?: () => void

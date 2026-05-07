@@ -1,0 +1,7 @@
+export { default as CalendarioVacaciones } from './CalendarioVacaciones'
+export { default as ConfiguracionPanel } from './ConfiguracionPanel'
+export { default as EstadisticasVacaciones } from './EstadisticasVacaciones'
+export { default as HistorialSolicitudes } from './HistorialSolicitudes'
+export { default as NotificacionesVacaciones } from './NotificacionesVacaciones'
+export { default as PeriodosManagement } from './PeriodosManagement'
+export { default as ResumenDiasVacaciones } from './ResumenDiasVacaciones'

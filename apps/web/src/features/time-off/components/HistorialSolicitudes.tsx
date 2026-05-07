@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { HistorialSolicitudVacaciones } from '@/services/timeOffService'
+import { HistorialSolicitudVacaciones } from '@/features/time-off/services/timeOffService'
 
 interface HistorialSolicitudesProps {
   solicitudes: HistorialSolicitudVacaciones[]

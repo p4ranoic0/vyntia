@@ -27,8 +27,8 @@ import { format,
   parseISO
 } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { SolicitudVacaciones } from '@/services/timeOffService'
-import timeOffService from '@/services/timeOffService'
+import { SolicitudVacaciones } from '@/features/time-off/services/timeOffService'
+import timeOffService from '@/features/time-off/services/timeOffService'
 import { useToast } from '@/shared/hooks/use-toast'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 

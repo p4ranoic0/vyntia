@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Calendar, Users, Clock, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/shared/hooks/use-toast'
-import timeOffService, { PeriodoVacacional } from '@/services/timeOffService'
+import timeOffService, { PeriodoVacacional } from '@/features/time-off/services/timeOffService'
 
 interface PeriodosManagementProps {
   onPeriodoCreated?: () => void

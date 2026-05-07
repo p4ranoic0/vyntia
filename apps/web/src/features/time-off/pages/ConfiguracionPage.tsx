@@ -15,7 +15,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import timeOffService, {
     ConfiguracionVacaciones,
     PeriodoVacacional
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'

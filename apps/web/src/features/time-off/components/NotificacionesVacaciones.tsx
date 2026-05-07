@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import { es } from 'date-fns/locale'
-import timeOffService, { EstadisticasVacaciones as EstadisticasVacacionesType, EmpleadoDiasVencidos } from '@/services/timeOffService'
+import timeOffService, { EstadisticasVacaciones as EstadisticasVacacionesType, EmpleadoDiasVencidos } from '@/features/time-off/services/timeOffService'
 
 interface Notificacion {
   id: string

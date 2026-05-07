@@ -15,7 +15,7 @@ import timeOffService, {
     AprobacionSolicitudForm,
     SolicitudesFilter,
     SolicitudVacaciones
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {

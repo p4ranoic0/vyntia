@@ -49,12 +49,12 @@ import {
     UsersList,
     UsersManagement
 } from '@/features/identity/pages'
-import ConfiguracionPage from '@/pages/vacaciones/ConfiguracionPage'
-import NuevaSolicitudPage from '@/pages/vacaciones/NuevaSolicitudPage'
-import PeriodosPage from '@/pages/vacaciones/PeriodosPage'
-import ReportesPage from '@/pages/vacaciones/ReportesPage'
-import SolicitudesPage from '@/pages/vacaciones/SolicitudesPage'
-import VacacionesManagementPage from '@/pages/vacaciones/VacacionesManagementPage'
+import ConfiguracionPage from '@/features/time-off/pages/ConfiguracionPage'
+import NuevaSolicitudPage from '@/features/time-off/pages/NuevaSolicitudPage'
+import PeriodosPage from '@/features/time-off/pages/PeriodosPage'
+import ReportesPage from '@/features/time-off/pages/ReportesPage'
+import SolicitudesPage from '@/features/time-off/pages/SolicitudesPage'
+import VacacionesManagementPage from '@/features/time-off/pages/VacacionesManagementPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
