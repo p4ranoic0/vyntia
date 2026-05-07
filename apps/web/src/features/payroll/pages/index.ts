@@ -1,0 +1,8 @@
+export { default as BoletasPagoPage } from './BoletasPagoPage'
+export { default as ConfiguracionRemuneracionesPage } from './ConfiguracionRemuneracionesPage'
+export { default as ConfiguracionUitPage } from './ConfiguracionUitPage'
+export { default as DescuentosMasivosPage } from './DescuentosMasivosPage'
+export { default as PlanillasMensualesPage } from './PlanillasMensualesPage'
+export { default as ProcesoPlanillasPage } from './ProcesoPlanillasPage'
+export { default as RemuneracionesHomePage } from './RemuneracionesHomePage'
+export { default as ReportesRemuneracionesPage } from './ReportesRemuneracionesPage'

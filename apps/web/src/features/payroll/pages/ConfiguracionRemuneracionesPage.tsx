@@ -15,7 +15,7 @@ import {
     ConfiguracionAfpPayload,
     TipoConceptoRemuneracion,
     payrollService,
-} from '@/services/payrollService'
+} from '@/features/payroll/services/payrollService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'

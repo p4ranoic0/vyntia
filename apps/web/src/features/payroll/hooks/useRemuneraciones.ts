@@ -15,7 +15,7 @@ import {
   type ModalidadContrato,
   type PlanillaMensualPayload,
   type VistaPreviaPlanilla,
-} from "@/services/payrollService";
+} from "@/features/payroll/services/payrollService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ========== Configuración AFP ==========

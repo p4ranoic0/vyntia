@@ -12,8 +12,8 @@ import {
   useCreateUit,
   useDeleteUit,
   useUpdateUit,
-} from '@/hooks/useRemuneraciones'
-import { ConfiguracionUitPayload } from '@/services/payrollService'
+} from '@/features/payroll/hooks/useRemuneraciones'
+import { ConfiguracionUitPayload } from '@/features/payroll/services/payrollService'
 import { CheckCircle2, Landmark, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 
