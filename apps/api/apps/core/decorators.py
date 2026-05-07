@@ -3,7 +3,7 @@
 from functools import wraps
 from typing import Any, Callable, List, Union
 
-from app_rrhh.constants import Roles
+from apps.core.constants import Roles
 from app_rrhh.permission_service import PermissionService
 from apps.identity.models import User
 from django.contrib.auth.models import AnonymousUser

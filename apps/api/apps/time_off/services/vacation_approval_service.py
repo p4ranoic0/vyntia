@@ -3,7 +3,7 @@
 import logging
 from typing import List
 
-from app_rrhh.constants import Roles
+from apps.core.constants import Roles
 from apps.employees.models import Employee
 from apps.identity.models import User
 from ..models import VacationRequestHistory, VacationRequest
