@@ -8,7 +8,7 @@ from apps.time_off.models import (
     VacationConfiguration, VacationPeriod,
     VacationRequest, VacationGrant
 )
-from app_rrhh.validators import VacacionesValidator, VacacionesBusinessRules
+from apps.time_off.validators import VacacionesValidator, VacacionesBusinessRules
 
 
 class VacacionesAPIValidator:
