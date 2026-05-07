@@ -21,7 +21,7 @@ import { Badge } from '@/shared/ui/badge'
 import { Separator } from '@/shared/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { toast } from 'sonner'
-import { usersService, type User } from '@/services/usersService'
+import { usersService, type User } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 

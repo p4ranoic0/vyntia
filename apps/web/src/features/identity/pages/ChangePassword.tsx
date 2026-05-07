@@ -8,7 +8,7 @@ import { Label } from '@/shared/ui/label'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
-import { usersService, type User, type ChangePasswordData } from '@/services/usersService'
+import { usersService, type User, type ChangePasswordData } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 

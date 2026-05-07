@@ -41,16 +41,16 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { toast } from 'sonner'
-import { usersService, rolesService, type User, type Role } from '@/services/usersService'
+import { usersService, rolesService, type User, type Role } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/ui/alert-dialog'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 
 // Importar los modales
-import { UserFormModal } from '@/components/users/modals/UserFormModal'
-import { ChangePasswordModal } from '@/components/users/modals/ChangePasswordModal'
-import { RoleManagementModal } from '@/components/users/modals/RoleManagementModal'
-import { UserDetailsModal } from '@/components/users/modals/UserDetailsModal'
+import { UserFormModal } from '@/features/identity/components/modals/UserFormModal'
+import { ChangePasswordModal } from '@/features/identity/components/modals/ChangePasswordModal'
+import { RoleManagementModal } from '@/features/identity/components/modals/RoleManagementModal'
+import { UserDetailsModal } from '@/features/identity/components/modals/UserDetailsModal'
 
 export function UsersList() {
   const [users, setUsers] = useState<User[]>([])

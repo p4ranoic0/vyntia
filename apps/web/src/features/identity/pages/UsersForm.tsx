@@ -15,7 +15,7 @@ import {
 } from '@/shared/ui/select'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { toast } from 'sonner'
-import { usersService, rolesService, type UserFormData, type Role } from '@/services/usersService'
+import { usersService, rolesService, type UserFormData, type Role } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/components/layout/UsersLayout'
 
