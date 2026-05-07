@@ -157,11 +157,6 @@ LOGGING.update({
             'level': 'INFO',
             'propagate': False,
         },
-        'app_rrhh': {
-            'handlers': ['file', 'error_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
     },
 })
 
