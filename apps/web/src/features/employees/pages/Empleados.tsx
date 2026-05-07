@@ -43,7 +43,7 @@ import { useEmpleados } from '@/hooks/useApi'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { contractsService } from '@/features/contracts/services/contractsService'
 import { employeesService } from '@/features/employees/services/employeesService'
-import { OnboardingCreateData, onboardingService } from '@/services/onboardingService'
+import { OnboardingCreateData, onboardingService } from '@/features/onboarding/services/onboardingService'
 import {
     Award,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,

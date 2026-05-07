@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { onboardingService } from '@/services/onboardingService'
+import { onboardingService } from '@/features/onboarding/services/onboardingService'
 import { apiClient } from '@/shared/api/api'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import { Skeleton } from '@/shared/ui/skeleton'
