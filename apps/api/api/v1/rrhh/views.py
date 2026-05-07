@@ -5,7 +5,6 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from app_rrhh import services
 from apps.onboarding.models import OnboardingProcess
 from apps.payroll.models import AfpConfiguration, CompensationConfiguration
 from apps.contracts.models import EmploymentData
@@ -302,7 +301,11 @@ class AreaViewSet(viewsets.ModelViewSet):
         """Get area statistics."""
         try:
             area = self.get_object()
-            stats = services.AreaService.get_area_statistics(area.pk)
+            stats = {
+                "total_empleados": EmploymentData.objects.filter(
+                    area_id=area.pk, estado_datos="activo"
+                ).values("empleado").distinct().count(),
+            }
 
             return APIResponse.success(
                 data=stats, message="Estadísticas del área obtenidas exitosamente"
@@ -331,7 +334,17 @@ class AreaViewSet(viewsets.ModelViewSet):
     def resumen(self, request):
         """Get summary of all areas."""
         try:
-            areas_summary = services.AreaService.get_areas_summary()
+            areas_summary = [
+                {
+                    "id": str(dept.pk),
+                    "nombre": dept.nombre_unidad_organica,
+                    "siglas": dept.siglas_area,
+                    "total_empleados": EmploymentData.objects.filter(
+                        area=dept, estado_datos="activo"
+                    ).values("empleado").distinct().count(),
+                }
+                for dept in Department.objects.all().order_by("nombre_unidad_organica")
+            ]
 
             return APIResponse.success(
                 data=areas_summary, message="Resumen de áreas obtenido exitosamente"
@@ -863,14 +876,9 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     def datos_completos(self, request, pk=None):
         """Get complete employee data including family and academic info."""
         try:
-            empleado = self.get_object()
-            complete_data = services.EmpleadoService.get_complete_employee_data(
-                empleado.pk
-            )
-
-            return APIResponse.success(
-                data=complete_data,
-                message="Datos completos del empleado obtenidos exitosamente",
+            return APIResponse.error(
+                message="Endpoint not yet implemented — use individual /datos-personales, /datos-laborales, /datos-familiares endpoints",
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
             )
         except Exception as e:
             logger.error(
@@ -901,10 +909,10 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Use service to handle transfer
-            services.EmpleadoService.transferir_empleado(
-                empleado.pk, area_destino_id, fecha_inicio
-            )
+            # Update active employment data with new area
+            EmploymentData.objects.filter(
+                empleado_id=empleado.pk, estado_datos="activo"
+            ).update(area_id=area_destino_id)
 
             logger.info(
                 f"Employee transferido: {empleado.nombre_completo}",
@@ -945,7 +953,12 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     def estadisticas(self, request):
         """Get employee statistics."""
         try:
-            stats = services.EmpleadoService.get_employee_statistics()
+            stats = {
+                "total": Employee.objects.count(),
+                "activos": Employee.objects.filter(estado_empleado="activo").count(),
+                "inactivos": Employee.objects.filter(estado_empleado="inactivo").count(),
+                "cesados": Employee.objects.filter(estado_empleado="cesado").count(),
+            }
             return APIResponse.success(
                 data=stats, message="Estadísticas de empleados obtenidas exitosamente"
             )
@@ -978,7 +991,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def reporte_integral(self, request, pk=None):
         """Genera y devuelve el reporte integral del empleado en PDF."""
-        from app_rrhh.services.empleado_report_service import EmpleadoReportService
+        from apps.employees.services.employee_report_service import EmpleadoReportService
 
         try:
             service = EmpleadoReportService()
@@ -996,7 +1009,7 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     @require_authenticated()
     def reporte_seccion(self, request, pk=None):
         """Genera un reporte PDF de una seccion del empleado."""
-        from app_rrhh.services.empleado_report_service import EmpleadoReportService
+        from apps.employees.services.employee_report_service import EmpleadoReportService
 
         seccion = request.query_params.get("seccion", "todos")
         if seccion not in ["todos", "personal", "laboral", "academico", "familiar"]:
@@ -1613,7 +1626,11 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         """Get users without recent login."""
         try:
             dias = int(request.query_params.get("dias", 30))
-            usuarios = services.UsuarioService.usuarios_sin_login_reciente(dias)
+            threshold = timezone.now() - timedelta(days=dias)
+            usuarios = User.objects.filter(
+                is_active=True,
+                last_login__lt=threshold,
+            ).order_by("last_login")
 
             serializer = self.get_serializer(usuarios, many=True)
             return APIResponse.success(
