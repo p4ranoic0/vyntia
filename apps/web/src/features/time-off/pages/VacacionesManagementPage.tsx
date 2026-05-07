@@ -4,13 +4,13 @@ import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import CalendarioVacaciones from '@/components/vacaciones/CalendarioVacaciones'
-import ConfiguracionPanel from '@/components/vacaciones/ConfiguracionPanel'
-import EstadisticasVacaciones from '@/components/vacaciones/EstadisticasVacaciones'
-import HistorialSolicitudes from '@/components/vacaciones/HistorialSolicitudes'
-import NotificacionesVacaciones from '@/components/vacaciones/NotificacionesVacaciones'
-import PeriodosManagement from '@/components/vacaciones/PeriodosManagement'
-import ResumenDiasVacaciones from '@/components/vacaciones/ResumenDiasVacaciones'
+import CalendarioVacaciones from '@/features/time-off/components/CalendarioVacaciones'
+import ConfiguracionPanel from '@/features/time-off/components/ConfiguracionPanel'
+import EstadisticasVacaciones from '@/features/time-off/components/EstadisticasVacaciones'
+import HistorialSolicitudes from '@/features/time-off/components/HistorialSolicitudes'
+import NotificacionesVacaciones from '@/features/time-off/components/NotificacionesVacaciones'
+import PeriodosManagement from '@/features/time-off/components/PeriodosManagement'
+import ResumenDiasVacaciones from '@/features/time-off/components/ResumenDiasVacaciones'
 import { useToast } from '@/shared/hooks/use-toast'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import timeOffService, {
@@ -18,7 +18,7 @@ import timeOffService, {
     EstadisticasVacaciones as EstadisticasVacacionesType,
     PeriodoVacacional,
     SolicitudVacaciones
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { AlertTriangle, Calendar, Clock, FileText, Plus } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 

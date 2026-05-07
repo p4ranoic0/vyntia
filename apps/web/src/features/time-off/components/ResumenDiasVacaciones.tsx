@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { ResumenPeriodo } from '@/services/timeOffService'
+import { ResumenPeriodo } from '@/features/time-off/services/timeOffService'
 
 interface ResumenDiasVacacionesProps {
   resumen: ResumenPeriodo

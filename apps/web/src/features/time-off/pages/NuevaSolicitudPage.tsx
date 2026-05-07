@@ -15,7 +15,7 @@ import timeOffService, {
     PeriodoVacacional,
     ResumenPeriodo,
     SolicitudVacacionesForm
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addDays, differenceInDays, format, isWeekend } from 'date-fns'
 import { es } from 'date-fns/locale'

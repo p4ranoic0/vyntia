@@ -1,0 +1,6 @@
+export { default as ConfiguracionPage } from './ConfiguracionPage'
+export { default as NuevaSolicitudPage } from './NuevaSolicitudPage'
+export { default as PeriodosPage } from './PeriodosPage'
+export { default as ReportesPage } from './ReportesPage'
+export { default as SolicitudesPage } from './SolicitudesPage'
+export { default as VacacionesManagementPage } from './VacacionesManagementPage'

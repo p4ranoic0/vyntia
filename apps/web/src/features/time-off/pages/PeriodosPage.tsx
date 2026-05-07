@@ -14,7 +14,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import timeOffService, {
     PeriodoVacacional,
     ResumenPeriodo
-} from '@/services/timeOffService'
+} from '@/features/time-off/services/timeOffService'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
