@@ -9,7 +9,7 @@ from apps.time_off.models import (
     VacationPeriod,
     VacationRequest,
 )
-from app_rrhh.permission_service import PermissionService
+from apps.core.permission_service import PermissionService
 from rest_framework import permissions
 
 

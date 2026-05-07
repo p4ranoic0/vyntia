@@ -7,7 +7,7 @@ from apps.core.constants import Roles
 from apps.employees.models import Employee
 from apps.identity.models import User
 from ..models import VacationRequestHistory, VacationRequest
-from app_rrhh.permission_service import PermissionService
+from apps.core.permission_service import PermissionService
 from apps.core.exceptions import BusinessLogicError
 from django.db import transaction
 from django.utils import timezone

@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional, Set
 
-from app_rrhh.permission_service import PermissionService
+from apps.core.permission_service import PermissionService
 from apps.identity.models import Module
 from django.db.models import Prefetch
 
