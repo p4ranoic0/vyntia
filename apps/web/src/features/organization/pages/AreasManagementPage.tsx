@@ -25,7 +25,7 @@ import { useState } from 'react'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AreasLayout } from '@/components/layout/AreasLayout'
 import { useToast } from '@/shared/ui/use-toast'
-import { Area, departmentsService, AreaStats } from '@/services/departmentsService'
+import { Area, departmentsService, AreaStats } from '@/features/organization/services/departmentsService'
 
 export function AreasManagementPage() {
   const { toast } = useToast()

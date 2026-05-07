@@ -7,7 +7,7 @@ import { Label } from '@/shared/ui/label'
 import { Separator } from '@/shared/ui/separator'
 import { Building2, Save, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { companyService, type ConfiguracionEmpresa } from '@/services/companyService'
+import { companyService, type ConfiguracionEmpresa } from '@/features/organization/services/companyService'
 
 export default function ConfiguracionEmpresaPage() {
   const queryClient = useQueryClient()
