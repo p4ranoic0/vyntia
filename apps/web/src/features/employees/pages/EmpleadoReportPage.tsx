@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { apiClient } from '@/shared/api/api'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 import {
     ArrowLeft,
     Briefcase,

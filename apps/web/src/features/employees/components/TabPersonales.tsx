@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select'
-import { employeesService } from '@/services/employeesService'
+import { employeesService } from '@/features/employees/services/employeesService'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 

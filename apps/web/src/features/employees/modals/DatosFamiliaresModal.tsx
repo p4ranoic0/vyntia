@@ -26,9 +26,9 @@ import { LoadingSpinner } from '@/shared/ui/loading-spinner'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
 import { Users, Heart, Baby, Plus, Trash2, Phone, MapPin, User, Lock, AlertCircle } from 'lucide-react'
-import { employeesService, type DatosFamiliares } from '@/services/employeesService'
+import { employeesService, type DatosFamiliares } from '@/features/employees/services/employeesService'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useEmployeePermissions } from '@/hooks/useEmployeePermissions'
+import { useEmployeePermissions } from '@/features/employees/hooks/useEmployeePermissions'
 
 interface Familiar {
   id: number

@@ -1,0 +1,8 @@
+export { Empleados } from './Empleados'
+export { default as HROverviewDashboard } from './HROverviewDashboard'
+export * from './DatosAcademicosPage'
+export * from './DatosFamiliaresPage'
+export * from './DatosLaboralesPage'
+export * from './DatosPersonalesPage'
+export { default as EmpleadoReportPage } from './EmpleadoReportPage'
+export { default as EmpleadosListPage } from './EmpleadosListPage'

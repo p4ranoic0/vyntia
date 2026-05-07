@@ -40,7 +40,7 @@ import {
     type ContratoFormData,
     type ContratoListItem,
 } from '@/services/contractsService'
-import { employeesService, type Employee } from '@/services/employeesService'
+import { employeesService, type Employee } from '@/features/employees/services/employeesService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
     AlertTriangle,
