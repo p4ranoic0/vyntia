@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog'
 import { Loader2 } from 'lucide-react'
-import { Area } from '@/services/departmentsService'
+import { Area } from '@/features/organization/services/departmentsService'
 
 const areaSchema = z.object({
   nombre_organo: z.string().min(1, 'El órgano es requerido'),
