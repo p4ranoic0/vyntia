@@ -89,7 +89,15 @@ class Employee(models.Model):
 
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    numero_documento = models.CharField(max_length=20, unique=True)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
+    numero_documento = models.CharField(max_length=20)
     tipo_documento = models.CharField(
         max_length=10, choices=TIPO_DOCUMENTO_CHOICES, default="DNI"
     )
@@ -191,6 +199,12 @@ class Employee(models.Model):
             models.Index(fields=["tipo_sangre"]),
             models.Index(fields=["es_padre_familia"]),
             models.Index(fields=["es_militar"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "numero_documento"],
+                name="unique_employee_doc_per_tenant",
+            ),
         ]
 
     def __str__(self):

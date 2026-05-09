@@ -65,6 +65,14 @@ class AcademicRecord(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'Employee',
         on_delete=models.CASCADE,
@@ -152,7 +160,7 @@ class AcademicRecord(models.Model):
             models.Index(fields=['verificado_sunedu']),
             models.Index(fields=['estado_registro']),
         ]
-        unique_together = [['empleado', 'nivel_educativo', 'nombre_carrera', 'nombre_institucion']]
+        unique_together = [['tenant', 'empleado', 'nivel_educativo', 'nombre_carrera', 'nombre_institucion']]
     
     def __str__(self):
         return f"{self.empleado.nombre_completo} - {self.nivel_educativo_texto}: {self.nombre_carrera}"

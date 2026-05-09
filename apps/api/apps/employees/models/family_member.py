@@ -77,6 +77,14 @@ class FamilyMember(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'Employee',
         on_delete=models.CASCADE,
@@ -151,7 +159,7 @@ class FamilyMember(models.Model):
             models.Index(fields=['genero_familiar']),
             models.Index(fields=['tipo_documento']),
         ]
-        unique_together = [['empleado', 'numero_documento']]
+        unique_together = [['tenant', 'empleado', 'numero_documento']]
     
     def __str__(self):
         return f"{self.nombre_completo} - {self.parentesco_texto} de {self.empleado.nombre_completo}"

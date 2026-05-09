@@ -16,6 +16,14 @@ class AfpConfiguration(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     afp_nombre = models.CharField(max_length=80)
     vigencia_mes = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     aporte_obligatorio_pct = models.DecimalField(
@@ -44,8 +52,8 @@ class AfpConfiguration(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["afp_nombre", "vigencia_mes"],
-                name="uniq_config_afp_nombre_vigencia",
+                fields=["tenant", "afp_nombre", "vigencia_mes"],
+                name="uniq_config_afp_nombre_vigencia_per_tenant",
             ),
         ]
         ordering = ["-vigencia_mes", "afp_nombre"]
@@ -72,6 +80,14 @@ class CompensationConfiguration(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     codigo = models.CharField(max_length=30)
     nombre = models.CharField(max_length=120)
@@ -98,8 +114,8 @@ class CompensationConfiguration(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["tipo", "codigo"],
-                name="uniq_config_remuneracion_tipo_codigo",
+                fields=["tenant", "tipo", "codigo"],
+                name="uniq_config_remuneracion_tipo_codigo_per_tenant",
             ),
         ]
         ordering = ["tipo", "orden", "nombre"]
@@ -133,6 +149,14 @@ class MonthlyPayroll(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     periodo = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     modalidad = models.CharField(max_length=30, choices=MODALIDAD_CHOICES)
     meta_presupuestal = models.CharField(max_length=100, null=True, blank=True)
@@ -194,8 +218,8 @@ class MonthlyPayroll(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["periodo", "modalidad", "meta_presupuestal"],
-                name="uniq_planilla_periodo_modalidad_meta",
+                fields=["tenant", "periodo", "modalidad", "meta_presupuestal"],
+                name="uniq_planilla_periodo_modalidad_meta_per_tenant",
             ),
         ]
         ordering = ["-periodo", "modalidad"]
@@ -218,6 +242,14 @@ class PayrollDetail(models.Model):
     """Detalle de planilla mensual por empleado."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     planilla = models.ForeignKey(
         MonthlyPayroll,
         on_delete=models.CASCADE,
@@ -352,8 +384,8 @@ class PayrollDetail(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["planilla", "empleado"],
-                name="uniq_detalle_planilla_empleado",
+                fields=["tenant", "planilla", "empleado"],
+                name="uniq_detalle_planilla_empleado_per_tenant",
             ),
         ]
         ordering = ["area_nombre", "empleado__apellido_paterno"]
@@ -371,6 +403,14 @@ class PayrollConcept(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     detalle_planilla = models.ForeignKey(
         PayrollDetail,
         on_delete=models.CASCADE,
@@ -412,6 +452,14 @@ class MassDeduction(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     periodo = models.CharField(max_length=7, help_text="Formato YYYY-MM")
     configuracion_concepto = models.ForeignKey(
         CompensationConfiguration,
@@ -467,6 +515,14 @@ class PaySlip(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     detalle_planilla = models.OneToOneField(
         PayrollDetail,
         on_delete=models.CASCADE,
@@ -516,6 +572,14 @@ class PaymentSchedule(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     planilla = models.ForeignKey(
         MonthlyPayroll,
         on_delete=models.CASCADE,

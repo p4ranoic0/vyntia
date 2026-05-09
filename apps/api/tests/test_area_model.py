@@ -65,13 +65,41 @@ class AreaModelTest(TestCase):
         self.assertIsNotNone(area.updated_at)
 
     def test_campos_obligatorios(self):
-        """Test de validación de campos obligatorios."""
-        # Test con siglas_area duplicadas (unique=True)
+        """Test de validación de unicidad de siglas_area por tenant.
+
+        Post C.1: siglas_area is no longer globally unique — uniqueness is
+        scoped to (tenant, siglas_area). Two Departments with the same siglas
+        and the same non-null tenant must conflict.
+        """
+        from apps.tenancy.models import Tenant
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        staff_user = User.objects.create_user(
+            username="area_test_staff",
+            email="area_test@vyntia.pe",
+            password="testpass123",
+        )
+        tenant = Tenant.objects.create(
+            slug="t-area-test",
+            name="T Area Test",
+            ruc="20123456789",
+            plan="starter",
+            status="trial",
+            created_by=staff_user,
+        )
+        Department.objects.create(
+            nombre_organo="Existing",
+            nombre_unidad_organica="Existing",
+            siglas_area="DUPE",
+            tenant=tenant,
+        )
         with self.assertRaises(IntegrityError):
             Department.objects.create(
                 nombre_organo="Test",
                 nombre_unidad_organica="Test",
-                siglas_area="RRHH",  # Ya existe
+                siglas_area="DUPE",  # Mismo tenant + siglas → conflicto
+                tenant=tenant,
             )
 
     def test_valores_por_defecto(self):

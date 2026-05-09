@@ -74,11 +74,19 @@ class Contract(models.Model):
         related_name='contratos_adendas_area',
         help_text='Área donde se ejecuta el contrato'
     )
-    
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
+
     # Información del documento
     numero_contrato = models.CharField(
         max_length=50,
-        unique=True,
         help_text='Número del contrato principal'
     )
 
@@ -223,6 +231,12 @@ class Contract(models.Model):
             models.Index(fields=['tipo_documento']),
             models.Index(fields=['fecha_inicio']),
             models.Index(fields=['created_by']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "numero_contrato"],
+                name="unique_contract_number_per_tenant",
+            ),
         ]
         ordering = ['-created_at']
         verbose_name = 'Contrato/Adenda'

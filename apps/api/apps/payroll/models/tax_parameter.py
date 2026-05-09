@@ -18,6 +18,14 @@ class TaxParameter(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     anio = models.PositiveIntegerField(help_text="Año fiscal (YYYY)")
     valor_uit = models.DecimalField(
         max_digits=10,
@@ -58,7 +66,7 @@ class TaxParameter(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["anio"], name="uniq_configuracion_uit_anio"
+                fields=["tenant", "anio"], name="uniq_configuracion_uit_anio_per_tenant"
             ),
         ]
         ordering = ["-anio"]

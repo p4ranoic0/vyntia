@@ -2858,7 +2858,7 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
         from apps.organization.models import Company
 
-        cfg = Company.get_config()
+        cfg = Company.get_config(tenant=getattr(request, 'tenant', None))
         serializer = ConfiguracionEmpresaSerializer(cfg, context={"request": request})
         return APIResponse.success(data=serializer.data)
 
@@ -2868,7 +2868,7 @@ class ConfiguracionEmpresaViewSet(viewsets.ViewSet):
         from api.v1.rrhh.serializers import ConfiguracionEmpresaSerializer
         from apps.organization.models import Company
 
-        cfg = Company.get_config()
+        cfg = Company.get_config(tenant=getattr(request, 'tenant', None))
         serializer = ConfiguracionEmpresaSerializer(
             cfg, data=request.data, partial=True, context={"request": request}
         )

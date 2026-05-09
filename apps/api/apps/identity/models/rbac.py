@@ -182,12 +182,20 @@ class RolePermission(models.Model):
         blank=True,
         db_column="asignado_por_usuario_id",
     )
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     # objects = RolPermisosManager()  # Comentado temporalmente para migraciones
 
     class Meta:
         db_table = "rol_permisos"
-        unique_together = ["rol", "permiso"]
+        unique_together = ["tenant", "rol", "permiso"]
         indexes = [
             models.Index(fields=["rol"]),
             models.Index(fields=["permiso"]),
@@ -254,10 +262,18 @@ class ModulePermission(models.Model):
         db_column="permiso_id",
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     class Meta:
         db_table = "modulo_permisos"
-        unique_together = ["modulo", "permiso"]
+        unique_together = ["tenant", "modulo", "permiso"]
         indexes = [
             models.Index(fields=["modulo"]),
             models.Index(fields=["permiso"]),
@@ -297,12 +313,20 @@ class UserRole(models.Model):
     estado_asignacion = models.CharField(
         max_length=15, choices=ESTADO_ASIGNACION_CHOICES, default="activo"
     )
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     # objects = UsuarioRolesManager()  # Comentado temporalmente para migraciones
 
     class Meta:
         db_table = "usuario_roles"  # Nombre real de la tabla en MySQL
-        unique_together = ["usuario", "rol"]
+        unique_together = ["tenant", "usuario", "rol"]
         indexes = [
             models.Index(fields=["usuario"]),
             models.Index(fields=["rol"]),

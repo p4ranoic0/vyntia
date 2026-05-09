@@ -43,6 +43,14 @@ class VacationConfiguration(models.Model):
     tipo_configuracion = models.CharField(max_length=15, choices=TIPO_CONFIGURACION_CHOICES)
     
     # Relaciones opcionales
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     area = models.ForeignKey(
         'organization.Department',
         on_delete=models.CASCADE,
@@ -148,7 +156,7 @@ class VacationConfiguration(models.Model):
             models.Index(fields=['fecha_inicio_vigencia']),
             models.Index(fields=['fecha_fin_vigencia']),
         ]
-        unique_together = [['tipo_configuracion', 'area', 'empleado', 'fecha_inicio_vigencia']]
+        unique_together = [['tenant', 'tipo_configuracion', 'area', 'empleado', 'fecha_inicio_vigencia']]
     
     def __str__(self):
         if self.tipo_configuracion == 'area' and self.area:
@@ -171,6 +179,14 @@ class VacationPeriod(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -265,7 +281,7 @@ class VacationPeriod(models.Model):
             models.Index(fields=['fecha_inicio_periodo']),
             models.Index(fields=['fecha_fin_periodo']),
         ]
-        unique_together = [['empleado', 'ano_periodo', 'contrato']]
+        unique_together = [['tenant', 'empleado', 'ano_periodo', 'contrato']]
     
     def __str__(self):
         return f"{self.empleado.nombre_completo} - Período {self.ano_periodo}"
@@ -316,6 +332,14 @@ class VacationRequest(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
@@ -453,6 +477,14 @@ class VacationGrant(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     solicitud_vacaciones = models.OneToOneField(
         VacationRequest,
         on_delete=models.CASCADE,
@@ -576,6 +608,14 @@ class VacationRequestHistory(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     solicitud_vacaciones = models.ForeignKey(
         VacationRequest,
         on_delete=models.CASCADE,

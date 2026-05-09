@@ -20,6 +20,16 @@ class OnboardingProcess(models.Model):
     # Primary key
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
+    # Tenant FK (C.1 — null=True transitional, will become NOT NULL in C.3)
+    tenant = models.ForeignKey(
+        'tenancy.Tenant',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name='+',
+    )
+
     # Relaciones principales
     empleado = models.OneToOneField(
         'employees.Employee',

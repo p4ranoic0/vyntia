@@ -13,7 +13,7 @@ class Role(models.Model):
 
     # Campos principales de la tabla roles
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    nombre_rol = models.CharField(max_length=100, unique=True)
+    nombre_rol = models.CharField(max_length=100)
     descripcion_rol = models.TextField(null=True, blank=True)
     nivel_jerarquico = models.IntegerField(default=1)
     es_rol_sistema = models.BooleanField(default=False)
@@ -22,6 +22,14 @@ class Role(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
     updated_at = models.DateTimeField(auto_now=True, db_column="fecha_actualizacion")
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     # objects = RolManager()  # Comentado temporalmente para migraciones
 
@@ -32,6 +40,12 @@ class Role(models.Model):
             models.Index(fields=["estado_rol"]),
             models.Index(fields=["nivel_jerarquico"]),
             models.Index(fields=["es_rol_sistema"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "nombre_rol"],
+                name="unique_role_per_tenant",
+            ),
         ]
 
     def __str__(self):
@@ -122,6 +136,14 @@ class Permission(models.Model):
         max_length=10, choices=ESTADO_PERMISO_CHOICES, default="activo"
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     class Meta:
         db_table = "permiso"  # Nombre real de la tabla en MySQL
