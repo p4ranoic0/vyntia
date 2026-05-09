@@ -1,10 +1,33 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 
+import { decodeJwtClaims } from "@/shared/tenant/jwtClaims";
+import { resolveTenantFromHost } from "@/shared/tenant/tenantContext";
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 // Mock mode for development when backend is not available
 const MOCK_MODE = false; // Conectar directamente con el backend
+
+/**
+ * Returns true if the JWT's tenant_slug claim matches the current host's
+ * tenant subdomain — or if the token has no tenant claim (legacy/admin/exchange).
+ * Used by the request interceptor to defend against stale tokens after
+ * cross-subdomain hops.
+ */
+function isTokenForCurrentTenant(token: string): boolean {
+  const claims = decodeJwtClaims(token);
+  // Token without tenant_slug claim (legacy/admin/exchange tokens) is permissive
+  if (!claims?.tenant_slug) return true;
+  const host = resolveTenantFromHost(globalThis.location.host);
+  // On a tenant subdomain, claim must match
+  if (host.type === "tenant") {
+    return claims.tenant_slug === host.slug;
+  }
+  // On reserved hosts (admin/app/etc), tenant tokens are not relevant — they shouldn't be sent
+  // but we don't reject (legacy compatibility)
+  return true;
+}
 
 export interface Role {
   id: string;
@@ -139,7 +162,13 @@ class ApiClient {
 
         // Si existe token y no es una petición de login, agregar header de autorización
         if (token && !config.url?.includes("/auth/login/")) {
-          config.headers.Authorization = `Bearer ${token}`;
+          if (isTokenForCurrentTenant(token)) {
+            config.headers.Authorization = `Bearer ${token}`;
+          } else {
+            // Stale token from a different tenant subdomain — clear and let 401 path redirect
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+          }
         }
 
         // Si el body es FormData, eliminar Content-Type para que Axios
