@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-app_name = "admin"
+app_name = "api_admin"
 
 urlpatterns = [
     path("tenants/", include("api.admin.tenants.urls")),
