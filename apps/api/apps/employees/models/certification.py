@@ -15,6 +15,14 @@ class Certification(models.Model):
     """Modelo para gestionar cursos y certificaciones de los empleados."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'Employee', on_delete=models.CASCADE, related_name='cursos_certificaciones'
     )
@@ -36,7 +44,7 @@ class Certification(models.Model):
 
     class Meta:
         db_table = 'cursos_certificaciones'
-        unique_together = [['empleado', 'nombre_curso', 'institucion', 'fecha_inicio']]
+        unique_together = [['tenant', 'empleado', 'nombre_curso', 'institucion', 'fecha_inicio']]
 
     def __str__(self):
         return f"{self.nombre_curso} — {self.institucion}"
