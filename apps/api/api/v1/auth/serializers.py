@@ -780,3 +780,9 @@ class ActivateSerializer(serializers.Serializer):
     token = serializers.CharField(required=True)
     name = serializers.CharField(required=True, max_length=200)
     password = serializers.CharField(required=True, min_length=8, write_only=True)
+
+
+class AuthExchangeSerializer(serializers.Serializer):
+    """Validates the auth/exchange request payload."""
+
+    exchange_token = serializers.CharField(required=True)

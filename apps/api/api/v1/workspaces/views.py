@@ -38,3 +38,42 @@ class WorkspacesListView(APIView):
             for m in memberships
         ]
         return APIResponse.success(data=data, message="Workspaces obtenidos.")
+
+
+class WorkspaceExchangeView(APIView):
+    """Issue a short-lived exchange token for a cross-subdomain redirect.
+
+    POST /api/v1/workspaces/<slug>/exchange/
+
+    The user must have an active membership in <slug>. Returns a token to be
+    forwarded to <slug>.vyntia.pe/auth/exchange?token=<token>.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, slug):
+        from apps.tenancy.auth.exchange_token import issue_exchange_token
+        from apps.tenancy.models import Tenant, TenantMembership
+
+        try:
+            tenant = Tenant.objects.get(slug=slug, status__in=["trial", "active"])
+        except Tenant.DoesNotExist:
+            return APIResponse.error(message="Workspace no encontrado.", status_code=404)
+
+        has_membership = TenantMembership.objects.filter(
+            tenant=tenant, user=request.user, status="active"
+        ).exists()
+        if not has_membership:
+            return APIResponse.error(
+                message="No tienes membresía activa en este workspace.",
+                status_code=403,
+            )
+
+        token = issue_exchange_token(user_id=request.user.id, tenant_id=tenant.id)
+        return APIResponse.success(
+            data={
+                "exchange_token": token,
+                "redirect_url": f"https://{slug}.vyntia.pe/auth/exchange?token={token}",
+            },
+            message="Token de intercambio emitido.",
+        )

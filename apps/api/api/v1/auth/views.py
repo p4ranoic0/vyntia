@@ -775,3 +775,73 @@ class ActivateAPIView(APIView):
             },
             message="Activación exitosa.",
         )
+
+
+class AuthExchangeAPIView(APIView):
+    """Consume an exchange token issued by app.vyntia.pe and mint a session JWT.
+
+    POST /api/v1/auth/exchange/
+    Body: { exchange_token }
+
+    The current request must be on the target tenant's subdomain (request.tenant
+    is set by TenantMiddleware). The exchange token's tenant_id claim must match
+    request.tenant.id.
+    """
+
+    permission_classes = []
+    authentication_classes = []  # Public — exchange token is the auth
+
+    def post(self, request):
+        from api.v1.auth.serializers import (
+            AuthExchangeSerializer,
+            CustomTokenObtainPairSerializer,
+        )
+        from apps.core.responses import APIResponse
+        from apps.tenancy.auth.exchange_token import (
+            InvalidExchangeToken,
+            verify_exchange_token,
+        )
+        from apps.tenancy.context import tenant_context
+        from django.contrib.auth import get_user_model
+
+        if not getattr(request, "tenant", None):
+            return APIResponse.error(
+                message="Exchange must be invoked on a tenant subdomain.",
+                status_code=400,
+            )
+
+        serializer = AuthExchangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exchange_token = serializer.validated_data["exchange_token"]
+
+        try:
+            user_id = verify_exchange_token(
+                exchange_token, expected_tenant_id=request.tenant.id
+            )
+        except InvalidExchangeToken as exc:
+            return APIResponse.error(message=str(exc), status_code=400)
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            return APIResponse.error(message="User not found.", status_code=400)
+
+        # Issue a normal session JWT in this tenant's context
+        with tenant_context(request.tenant):
+            token = CustomTokenObtainPairSerializer.get_token(user)
+            access = str(token.access_token)
+            refresh = str(token)
+
+        return APIResponse.success(
+            data={
+                "access": access,
+                "refresh": refresh,
+                "tenant": {
+                    "slug": request.tenant.slug,
+                    "name": request.tenant.name,
+                },
+                "user": {"id": str(user.id), "email": user.email},
+            },
+            message="Sesión iniciada.",
+        )
