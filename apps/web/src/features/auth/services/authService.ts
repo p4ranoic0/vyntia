@@ -17,6 +17,7 @@ interface User {
   tipo_usuario: string;
   nivel_acceso: string;
   is_active: boolean;
+  is_vyntia_staff?: boolean;
   is_staff?: boolean;
   is_superuser?: boolean;
   es_admin_rrhh?: boolean;
@@ -124,6 +125,7 @@ class AuthService {
       tipo_usuario: raw.tipo_usuario ?? "",
       nivel_acceso: raw.nivel_acceso ?? "",
       is_active: raw.is_active ?? true,
+      is_vyntia_staff: raw.is_vyntia_staff ?? false,
       is_staff: raw.is_staff ?? raw.staff ?? false,
       is_superuser: raw.is_superuser ?? false,
       es_admin_rrhh: raw.es_admin_rrhh ?? false,
