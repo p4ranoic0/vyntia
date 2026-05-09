@@ -161,3 +161,64 @@ jobs:
 
       - name: ESLint
         run: cd apps/web && npm run lint
+
+  rls-policy-audit:
+    name: Backend — RLS policy audit
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: bd_vyntia_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e "apps/api[dev]"
+
+      - name: Run migrations
+        run: |
+          cd apps/api
+          python manage.py migrate --settings=vyntia.settings.development
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+      - name: Apply RLS policies (setup_rls)
+        run: |
+          cd apps/api
+          python manage.py setup_rls --settings=vyntia.settings.development
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+
+      - name: Verify RLS policies (setup_rls --check)
+        run: |
+          cd apps/api
+          python manage.py setup_rls --check --settings=vyntia.settings.development
+        env:
+          DB_NAME: bd_vyntia_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
