@@ -77,3 +77,46 @@ class TenantMiddleware:
             )
         except Tenant.DoesNotExist:
             return None
+
+
+class RLSMiddleware:
+    """Set PostgreSQL session variables for RLS enforcement.
+
+    For each request:
+    - If request.tenant is set → SET LOCAL app.tenant_id
+    - If request.user is authenticated → SET LOCAL app.user_id
+
+    Both are SET LOCAL → reset at end of transaction (request boundary).
+    Safe even on SQLite or other backends — silently skipped.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Only PostgreSQL supports current_setting() / SET LOCAL.
+        # On SQLite (tests), skip this entirely.
+        if connection.vendor != "postgresql":
+            return self.get_response(request)
+
+        tenant = getattr(request, "tenant", None)
+        user = getattr(request, "user", None)
+        user_id = user.id if (user is not None and user.is_authenticated) else None
+
+        if tenant is None and user_id is None:
+            return self.get_response(request)
+
+        with connection.cursor() as cur:
+            if tenant is not None:
+                cur.execute("SELECT set_config('app.tenant_id', %s, true)", [str(tenant.id)])
+            if user_id is not None:
+                cur.execute("SELECT set_config('app.user_id', %s, true)", [str(user_id)])
+
+        # Also propagate to the user_id ContextVar so managers can read it
+        if user_id is not None:
+            user_token = set_current_user_id(user_id)
+            try:
+                return self.get_response(request)
+            finally:
+                _current_user_id.reset(user_token)
+        return self.get_response(request)
