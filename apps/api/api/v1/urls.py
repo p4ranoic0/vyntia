@@ -20,6 +20,9 @@ urlpatterns = [
     # Authentication
     path('auth/', include('api.v1.auth.urls')),
 
+    # Workspaces (cross-tenant listing + exchange)
+    path('workspaces/', include('api.v1.workspaces.urls')),
+
     # Canonical URLs (English paths) per spec § 3.4
     path('identity/', include('api.v1.identity.urls')),
     path('organization/', include('api.v1.organization.urls')),
