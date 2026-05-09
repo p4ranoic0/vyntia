@@ -58,8 +58,10 @@ import VacacionesManagementPage from '@/features/time-off/pages/VacacionesManage
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
-import { isAdminHost } from '@/shared/utils/isAdminHost'
 import { AdminApp } from '@/features/admin'
+import { TenantProvider, useTenant } from '@/shared/tenant'
+import { ActivationPage, ImpersonationBanner } from '@/features/tenancy'
+import { WorkspacesPage } from '@/features/workspace-switcher'
 
 
 const queryClient = new QueryClient({
@@ -128,11 +130,29 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth()
+  const tenant = useTenant()
 
-  // Admin host (admin.vyntia.pe) gets a completely separate routes tree.
-  // Providers (QueryClient/Theme/Auth/Router) remain shared from App().
-  if (isAdminHost()) {
+  // Branch by tenant host type (unified replacement for the C.7 isAdminHost()
+  // early return). Providers (QueryClient/Theme/Tenant/Auth/Router) remain
+  // shared from App().
+  if (tenant.type === 'admin') {
     return <AdminApp />
+  }
+  if (tenant.type === 'app') {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="*" element={<WorkspacesPage />} />
+      </Routes>
+    )
+  }
+  if (tenant.type === 'www') {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-semibold">VYNTIA</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Inicia sesión en tu workspace.</p>
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -142,6 +162,7 @@ function AppRoutes() {
   if (!isAuthenticated) {
     return (
       <Routes>
+        <Route path="/activate" element={<ActivationPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<LoginForm />} />
       </Routes>
@@ -152,6 +173,7 @@ function AppRoutes() {
   if (user?.requiere_cambio_password) {
     return (
       <Layout>
+        <ImpersonationBanner />
         <Routes>
           <Route path="/cambiar-password" element={<ChangePasswordPage />} />
           <Route path="*" element={<Navigate to="/cambiar-password" replace />} />
@@ -162,7 +184,11 @@ function AppRoutes() {
 
   return (
     <Layout>
+      <ImpersonationBanner />
       <Routes>
+        {/* Activacion de invitaciones (tambien accesible autenticado) */}
+        <Route path="/activate" element={<ActivationPage />} />
+
         {/* --- Rutas comunes (todos los usuarios autenticados) --- */}
         <Route path="/" element={<OnboardingRoute><Dashboard /></OnboardingRoute>} />
         <Route path="/dashboard" element={<OnboardingRoute><Dashboard /></OnboardingRoute>} />
@@ -323,13 +349,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="hr-system-theme">
-        <AuthProvider>
-          <Router>
-            <AppRoutes />
-            <Toaster />
-            <SonnerToaster richColors position="top-right" />
-          </Router>
-        </AuthProvider>
+        <TenantProvider>
+          <AuthProvider>
+            <Router>
+              <AppRoutes />
+              <Toaster />
+              <SonnerToaster richColors position="top-right" />
+            </Router>
+          </AuthProvider>
+        </TenantProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )
