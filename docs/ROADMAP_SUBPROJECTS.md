@@ -1,7 +1,7 @@
 # VYNTIA — Sub-Projects Roadmap
 
 > Source of truth for the post-Foundation build plan. Derived from Foundation Design Spec § 6 (2026-04-25).
-> **Foundation (sub-project A) is complete.** Start from row 2.
+> **Foundation (sub-project A) and Multi-tenancy (sub-project C) are complete.** Start from row 3 (B).
 
 | # | Code | Sub-project | Needs before | Tier unlocked |
 |---|------|-------------|--------------|---------------|
