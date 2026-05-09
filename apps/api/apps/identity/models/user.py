@@ -72,6 +72,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    # Vyntia internal staff — can access admin.vyntia.pe panel (C.5)
+    is_vyntia_staff = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Vyntia employee with access to the super-admin panel.",
+    )
     estado_usuario = models.CharField(
         max_length=15, choices=ESTADO_USUARIO_CHOICES, default="activo"
     )
