@@ -96,6 +96,8 @@ class LoginAPIView(TokenObtainPairView):
         Returns:
             Response with user data and tokens in JSON format
         """
+        from rest_framework.exceptions import PermissionDenied
+
         serializer = self.get_serializer(data=request.data)
 
         try:
@@ -116,6 +118,14 @@ class LoginAPIView(TokenObtainPairView):
                 status_code=status.HTTP_200_OK,
             )
 
+        except PermissionDenied as e:
+            # C.4: User authenticated but has no active TenantMembership for
+            # the tenant resolved from the subdomain — return 403, not 401.
+            return APIResponse.error(
+                message="Acceso denegado al workspace",
+                errors={"detail": str(e.detail) if hasattr(e, "detail") else str(e)},
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         except Exception as e:
             return APIResponse.error(
                 message="Error en el inicio de sesion",
@@ -705,3 +715,133 @@ class PermissionsStructureAPIView(APIView):
                 errors={"detail": str(e)},
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class ActivateAPIView(APIView):
+    """Accepts a TenantInvitation token and activates the user account.
+
+    POST /api/v1/auth/activate/
+    Body: { token, name, password }
+
+    On success: creates User + active TenantMembership + invalidates the invitation,
+    then issues a session JWT (with tenant claims).
+    """
+
+    permission_classes = []
+    authentication_classes = []  # Public endpoint — anyone with the token can activate
+
+    def post(self, request):
+        from api.v1.auth.serializers import ActivateSerializer, CustomTokenObtainPairSerializer
+        from apps.core.responses import APIResponse
+        from apps.tenancy.auth.activation import (
+            InvalidInvitationToken,
+            accept_invitation,
+        )
+        from apps.tenancy.context import tenant_context
+
+        serializer = ActivateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated = serializer.validated_data
+
+        try:
+            user, membership = accept_invitation(
+                token=validated["token"],
+                name=validated["name"],
+                password=validated["password"],
+            )
+        except InvalidInvitationToken as exc:
+            return APIResponse.error(message=str(exc), status_code=400)
+
+        # Issue a JWT in the membership's tenant context (so claims are populated)
+        with tenant_context(membership.tenant):
+            token = CustomTokenObtainPairSerializer.get_token(user)
+            access = str(token.access_token)
+            refresh = str(token)
+
+        return APIResponse.success(
+            data={
+                "access": access,
+                "refresh": refresh,
+                "tenant": {
+                    "slug": membership.tenant.slug,
+                    "name": membership.tenant.name,
+                },
+                "user": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "username": user.username,
+                },
+                "role": membership.role,
+            },
+            message="Activación exitosa.",
+        )
+
+
+class AuthExchangeAPIView(APIView):
+    """Consume an exchange token issued by app.vyntia.pe and mint a session JWT.
+
+    POST /api/v1/auth/exchange/
+    Body: { exchange_token }
+
+    The current request must be on the target tenant's subdomain (request.tenant
+    is set by TenantMiddleware). The exchange token's tenant_id claim must match
+    request.tenant.id.
+    """
+
+    permission_classes = []
+    authentication_classes = []  # Public — exchange token is the auth
+
+    def post(self, request):
+        from api.v1.auth.serializers import (
+            AuthExchangeSerializer,
+            CustomTokenObtainPairSerializer,
+        )
+        from apps.core.responses import APIResponse
+        from apps.tenancy.auth.exchange_token import (
+            InvalidExchangeToken,
+            verify_exchange_token,
+        )
+        from apps.tenancy.context import tenant_context
+        from django.contrib.auth import get_user_model
+
+        if not getattr(request, "tenant", None):
+            return APIResponse.error(
+                message="Exchange must be invoked on a tenant subdomain.",
+                status_code=400,
+            )
+
+        serializer = AuthExchangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exchange_token = serializer.validated_data["exchange_token"]
+
+        try:
+            user_id = verify_exchange_token(
+                exchange_token, expected_tenant_id=request.tenant.id
+            )
+        except InvalidExchangeToken as exc:
+            return APIResponse.error(message=str(exc), status_code=400)
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            return APIResponse.error(message="User not found.", status_code=400)
+
+        # Issue a normal session JWT in this tenant's context
+        with tenant_context(request.tenant):
+            token = CustomTokenObtainPairSerializer.get_token(user)
+            access = str(token.access_token)
+            refresh = str(token)
+
+        return APIResponse.success(
+            data={
+                "access": access,
+                "refresh": refresh,
+                "tenant": {
+                    "slug": request.tenant.slug,
+                    "name": request.tenant.name,
+                },
+                "user": {"id": str(user.id), "email": user.email},
+            },
+            message="Sesión iniciada.",
+        )

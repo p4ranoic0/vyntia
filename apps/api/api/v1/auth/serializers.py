@@ -17,32 +17,94 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer with additional user data."""
-    
+
     # Override the username field to use nombre_usuario
     username_field = User.USERNAME_FIELD
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Keep the username field as is since the model uses 'username'
-    
+
+    @classmethod
+    def get_token(cls, user):
+        """Mint an access token, injecting tenant claims when a tenant context is active.
+
+        Called by the parent `validate()` during login. We read the active tenant
+        from the ContextVar (set by TenantMiddleware) and the user's membership in
+        that tenant; both go into the JWT payload so RLSMiddleware and
+        TenantAuthMiddleware can validate downstream requests.
+
+        Defensive: omits claims if context is missing or membership doesn't exist.
+        Login enforcement (Task 2) ensures membership exists before this is called
+        in production paths.
+        """
+        token = super().get_token(user)
+
+        from apps.tenancy.context import get_current_tenant
+
+        tenant = get_current_tenant()
+        if tenant is not None:
+            token["tenant_id"] = str(tenant.id)
+            token["tenant_slug"] = tenant.slug
+
+            # Lookup the user's membership in this tenant — emit role claim if present
+            from apps.tenancy.models import TenantMembership
+
+            membership = (
+                TenantMembership.objects.filter(
+                    tenant=tenant, user=user, status="active"
+                )
+                .only("role")
+                .first()
+            )
+            if membership is not None:
+                token["membership_role"] = membership.role
+
+        return token
+
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Validate credentials and return token with user data.
-        
+
         Args:
             attrs: Authentication credentials
-            
+
         Returns:
             Dict containing tokens and user information
-            
+
         Raises:
             ValidationError: If credentials are invalid
+            PermissionDenied: If on a tenant subdomain and user has no active
+                TenantMembership for that workspace.
         """
         # The parent class will use the username_field we set
         data = super().validate(attrs)
-        
+
         # Add user information to response
         # self.user is already a User instance due to AUTH_USER_MODEL
         usuario = self.user
+
+        # ---- C.4: enforce TenantMembership when request.tenant is set ----
+        # When the request comes in on a tenant subdomain (e.g. acme.vyntia.pe),
+        # TenantMiddleware populates request.tenant. In that case the user MUST
+        # have an active membership for that tenant — otherwise we refuse with
+        # 403 (PermissionDenied). When request.tenant is None (testserver,
+        # admin.vyntia.pe, app.vyntia.pe, localhost), legacy behavior is
+        # preserved: no membership check is performed.
+        request = self.context.get("request")
+        tenant = getattr(request, "tenant", None) if request is not None else None
+        if tenant is not None:
+            from apps.tenancy.models import TenantMembership
+
+            has_membership = TenantMembership.objects.filter(
+                tenant=tenant, user=usuario, status="active"
+            ).exists()
+            if not has_membership:
+                from rest_framework.exceptions import PermissionDenied
+
+                raise PermissionDenied(
+                    detail=f"No active membership in workspace '{tenant.slug}'."
+                )
+
         
         data.update({
             'user': {
@@ -710,3 +772,17 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 'Este email ya está en uso por otro usuario.'
             )
         return value
+
+
+class ActivateSerializer(serializers.Serializer):
+    """Validates the activation request payload."""
+
+    token = serializers.CharField(required=True)
+    name = serializers.CharField(required=True, max_length=200)
+    password = serializers.CharField(required=True, min_length=8, write_only=True)
+
+
+class AuthExchangeSerializer(serializers.Serializer):
+    """Validates the auth/exchange request payload."""
+
+    exchange_token = serializers.CharField(required=True)
