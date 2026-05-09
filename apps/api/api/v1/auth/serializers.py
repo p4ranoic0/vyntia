@@ -17,14 +17,51 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer with additional user data."""
-    
+
     # Override the username field to use nombre_usuario
     username_field = User.USERNAME_FIELD
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Keep the username field as is since the model uses 'username'
-    
+
+    @classmethod
+    def get_token(cls, user):
+        """Mint an access token, injecting tenant claims when a tenant context is active.
+
+        Called by the parent `validate()` during login. We read the active tenant
+        from the ContextVar (set by TenantMiddleware) and the user's membership in
+        that tenant; both go into the JWT payload so RLSMiddleware and
+        TenantAuthMiddleware can validate downstream requests.
+
+        Defensive: omits claims if context is missing or membership doesn't exist.
+        Login enforcement (Task 2) ensures membership exists before this is called
+        in production paths.
+        """
+        token = super().get_token(user)
+
+        from apps.tenancy.context import get_current_tenant
+
+        tenant = get_current_tenant()
+        if tenant is not None:
+            token["tenant_id"] = str(tenant.id)
+            token["tenant_slug"] = tenant.slug
+
+            # Lookup the user's membership in this tenant — emit role claim if present
+            from apps.tenancy.models import TenantMembership
+
+            membership = (
+                TenantMembership.objects.filter(
+                    tenant=tenant, user=user, status="active"
+                )
+                .only("role")
+                .first()
+            )
+            if membership is not None:
+                token["membership_role"] = membership.role
+
+        return token
+
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Validate credentials and return token with user data.
         
