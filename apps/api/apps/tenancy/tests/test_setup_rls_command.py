@@ -94,3 +94,23 @@ class TestSetupRLSApply:
         out2 = StringIO()
         call_command("setup_rls", stdout=out2)
         assert "applied roles + policies" in out2.getvalue()
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSetupRLSCheck:
+    def test_check_passes_after_apply(self):
+        """After setup_rls runs, --check should report all tables have policies."""
+        call_command("setup_rls")
+        out = StringIO()
+        call_command("setup_rls", "--check", stdout=out)
+        result = out.getvalue()
+        assert "all" in result and "policies" in result
+
+    def test_check_fails_when_policy_dropped(self):
+        """If any tenant-scoped table loses its policy, --check exits 1."""
+        call_command("setup_rls")
+        with connection.cursor() as cur:
+            cur.execute("DROP POLICY IF EXISTS tenant_isolation ON empleado;")
+        with pytest.raises(SystemExit) as exc_info:
+            call_command("setup_rls", "--check")
+        assert exc_info.value.code == 1

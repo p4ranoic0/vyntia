@@ -111,7 +111,35 @@ class Command(BaseCommand):
         """
         return [s.strip() for s in sql.split(";") if s.strip()]
 
-    # --- check mode (Task 5 fills in) ---
+    # --- check mode ---
 
     def _handle_check(self):
-        self.stdout.write(self.style.NOTICE("setup_rls --check: not yet implemented (Task 5)"))
+        """Verify every tenant-scoped table has its RLS policy. Exit 1 on failure."""
+        import sys
+
+        models = get_tenant_scoped_models()
+        missing = []
+        with connection.cursor() as cur:
+            for model in models:
+                table = model._meta.db_table
+                expected_policy = (
+                    "membership_isolation" if table in DUAL_CLAUSE_TABLES else "tenant_isolation"
+                )
+                cur.execute(
+                    "SELECT 1 FROM pg_catalog.pg_policies "
+                    "WHERE tablename = %s AND policyname = %s",
+                    [table, expected_policy],
+                )
+                if cur.fetchone() is None:
+                    missing.append(f"{table} -> missing policy '{expected_policy}'")
+
+        if missing:
+            self.stdout.write(self.style.ERROR(
+                f"setup_rls --check: {len(missing)} tables missing RLS policy:"
+            ))
+            for line in missing:
+                self.stdout.write(self.style.ERROR(f"  - {line}"))
+            sys.exit(1)
+        self.stdout.write(self.style.SUCCESS(
+            f"setup_rls --check: all {len(models)} tenant-scoped tables have policies."
+        ))
