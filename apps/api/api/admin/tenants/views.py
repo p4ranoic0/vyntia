@@ -114,3 +114,65 @@ class TenantDetailView(APIView):
             data=TenantAdminSerializer(tenant).data,
             message="Tenant actualizado.",
         )
+
+
+class TenantSuspendView(APIView):
+    permission_classes = [IsAuthenticated, IsVyntiaStaff]
+
+    def post(self, request, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id)
+        if tenant.status == "cancelled":
+            return APIResponse.error(message="No se puede suspender un tenant cancelado.", status_code=400)
+        tenant.status = "suspended"
+        tenant.save(update_fields=["status", "updated_at"])
+        return APIResponse.success(
+            data=TenantAdminSerializer(tenant).data,
+            message="Tenant suspendido.",
+        )
+
+
+class TenantCancelView(APIView):
+    permission_classes = [IsAuthenticated, IsVyntiaStaff]
+
+    def post(self, request, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id)
+        tenant.status = "cancelled"
+        tenant.cancelled_at = timezone.now()
+        tenant.save(update_fields=["status", "cancelled_at", "updated_at"])
+        return APIResponse.success(
+            data=TenantAdminSerializer(tenant).data,
+            message="Tenant cancelado.",
+        )
+
+
+class TenantReinviteView(APIView):
+    """Re-issue an invitation if the original one expired or was lost."""
+
+    permission_classes = [IsAuthenticated, IsVyntiaStaff]
+
+    def post(self, request, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id)
+        email = request.data.get("email")
+        role = request.data.get("role", "owner")
+        if not email:
+            return APIResponse.error(message="email is required.", status_code=400)
+
+        token = secrets.token_urlsafe(48)
+        invitation = TenantInvitation.objects.create(
+            tenant=tenant,
+            email=email,
+            token=token,
+            role=role,
+            expires_at=timezone.now() + timedelta(days=7),
+            created_by=request.user,
+        )
+        return APIResponse.success(
+            data={
+                "id": str(invitation.id),
+                "email": invitation.email,
+                "expires_at": invitation.expires_at.isoformat(),
+                "activation_url": f"https://{tenant.slug}.vyntia.pe/activate?token={token}",
+            },
+            message="Invitación re-enviada.",
+            status_code=http_status.HTTP_201_CREATED,
+        )
