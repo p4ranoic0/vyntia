@@ -40,6 +40,7 @@ LOCAL_APPS = [
     "apps.payroll.apps.PayrollConfig",
     "apps.time_off.apps.TimeOffConfig",
     "apps.onboarding.apps.OnboardingConfig",
+    "apps.tenancy.apps.TenancyConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
