@@ -14,7 +14,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'bd_vyntia'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
+        # Production app connects as vyntia_app (NO BYPASSRLS — RLS is enforced).
+        # Migrations run separately as vyntia_admin or postgres (see docs/operations/rls-setup.md).
+        'USER': os.environ.get('DB_USER', 'vyntia_app'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
@@ -33,7 +35,7 @@ DATABASES = {
     'read_replica': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_READ_NAME', os.environ.get('DB_NAME', 'bd_vyntia')),
-        'USER': os.environ.get('DB_READ_USER', os.environ.get('DB_USER', 'postgres')),
+        'USER': os.environ.get('DB_READ_USER', os.environ.get('DB_USER', 'vyntia_app')),
         'PASSWORD': os.environ.get('DB_READ_PASSWORD', os.environ.get('DB_PASSWORD')),
         'HOST': os.environ.get('DB_READ_HOST', os.environ.get('DB_HOST', 'localhost')),
         'PORT': os.environ.get('DB_READ_PORT', os.environ.get('DB_PORT', '5432')),
