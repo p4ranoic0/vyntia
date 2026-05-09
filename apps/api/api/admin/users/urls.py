@@ -1,10 +1,10 @@
 from django.urls import path
 
-from api.admin.users.views import UsersSearchView
+from api.admin.users.views import ImpersonateView, UsersSearchView
 
 app_name = "admin_users"
 
 urlpatterns = [
     path("", UsersSearchView.as_view(), name="search"),
-    # impersonate/ added in Task 6
+    path("<uuid:user_id>/impersonate/", ImpersonateView.as_view(), name="impersonate"),
 ]
