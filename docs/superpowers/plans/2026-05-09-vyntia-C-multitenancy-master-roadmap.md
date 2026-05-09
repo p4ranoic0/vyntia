@@ -40,7 +40,7 @@ The 9-sub-layer approach mirrors Foundation's L3 (Django app split into 11 sub-P
 | **C.5** | `vyntia/C5-admin-api` | Backend (Admin) | `/api/admin/tenants/*` endpoints behind `is_vyntia_staff` permission. `setup_tenant_seed` helper (default Roles + Permissions + Module bindings per plan). Impersonation flow + `SupportSession` audit log. | `2026-05-09-vyntia-C5-admin-api.md` ✅ merged 2026-05-09 |
 | **C.6** | `vyntia/C6-frontend-tenant` | Frontend | `TenantProvider` (boot-time slug resolution), `WorkspaceSwitcher` (app.vyntia.pe), `ActivationPage` (/activate?token=...), `TenantSettingsPage`, `MembershipsPage`, `ImpersonationBanner`, `TenantBadge`. Updated `apiClient` with token-tenant validation. | `2026-05-09-vyntia-C6-frontend-tenant.md` ✅ merged 2026-05-09 |
 | **C.7** | `vyntia/C7-admin-panel-frontend` | Frontend | `admin.vyntia.pe` UI: `TenantsListPage`, `TenantDetailPage`, `CreateTenantPage`, `ImpersonationLogPage`. Branched routing in `App.tsx` based on subdomain. | `2026-05-09-vyntia-C7-admin-panel-frontend.md` ✅ merged 2026-05-09 |
-| **C.8** | `vyntia/C8-isolation-tests-docs` | Tests + Docs | `tests/test_tenant_isolation.py` (ORM, RLS raw-SQL, JWT cross-tenant). Playwright e2e `tests/e2e/tenant-isolation.test.js`. Runbooks (`docs/operations/{provision,suspend,impersonate,restore}.md`). CI `rls-policy-audit` job. | TBD after C.7 merges |
+| **C.8** | `vyntia/C8-isolation-tests-docs` | Tests + Docs | `tests/test_tenant_isolation.py` (ORM, RLS raw-SQL, JWT cross-tenant). Playwright e2e `tests/e2e/tenant-isolation.test.js`. Runbooks (`docs/operations/{provision,suspend,impersonate,restore}.md`). CI `rls-policy-audit` job. | `2026-05-09-vyntia-C8-isolation-tests-docs.md` ✅ merged 2026-05-09 |
 
 ---
 

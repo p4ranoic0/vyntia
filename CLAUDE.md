@@ -10,7 +10,7 @@
 
 **Tagline:** *Donde el talento se convierte en valor.*
 
-**Active sub-project:** **Next: C — Multi-tenancy + RLS** (Foundation sub-project A is COMPLETE)
+**Active sub-project:** **Next: B — Migración funcional Vyntia Core** (Sub-projects A + C COMPLETE)
 - Foundation spec: `docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md`
 - Sub-projects roadmap: `docs/ROADMAP_SUBPROJECTS.md`
 
@@ -243,8 +243,8 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 | Code | Sub-project | Status | Notes |
 |------|-------------|--------|-------|
 | **A** | Foundation (rebrand + restructure + cleanup) | **✅ COMPLETE (L0-L5 done)** | All layers merged |
-| **C** | Multi-tenancy + RLS | **NEXT** | Enables SaaS sales |
-| B | Migración funcional Vyntia Core | not started | Needs A + C |
+| **C** | Multi-tenancy + RLS | **✅ COMPLETE (C.0-C.8 done)** | Enables SaaS sales |
+| **B** | Migración funcional Vyntia Core | **NEXT** | Needs A + C |
 | D | Vyntia Pay (planilla peruana real) | not started | Starter MVP |
 | ~20 más | See `docs/ROADMAP_SUBPROJECTS.md` | — | Each = own brainstorm + spec + plan |
 
