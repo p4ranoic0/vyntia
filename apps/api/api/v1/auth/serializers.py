@@ -112,6 +112,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 'username': usuario.username,
                 'email': usuario.email,
                 'is_active': usuario.is_active,
+                'is_vyntia_staff': usuario.is_vyntia_staff,
                 'id': usuario.pk,
                 'tipo_usuario': usuario.tipo_usuario,
                 'nivel_acceso': usuario.nivel_acceso,
