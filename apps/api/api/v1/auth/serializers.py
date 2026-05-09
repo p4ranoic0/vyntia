@@ -64,22 +64,47 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Validate credentials and return token with user data.
-        
+
         Args:
             attrs: Authentication credentials
-            
+
         Returns:
             Dict containing tokens and user information
-            
+
         Raises:
             ValidationError: If credentials are invalid
+            PermissionDenied: If on a tenant subdomain and user has no active
+                TenantMembership for that workspace.
         """
         # The parent class will use the username_field we set
         data = super().validate(attrs)
-        
+
         # Add user information to response
         # self.user is already a User instance due to AUTH_USER_MODEL
         usuario = self.user
+
+        # ---- C.4: enforce TenantMembership when request.tenant is set ----
+        # When the request comes in on a tenant subdomain (e.g. acme.vyntia.pe),
+        # TenantMiddleware populates request.tenant. In that case the user MUST
+        # have an active membership for that tenant — otherwise we refuse with
+        # 403 (PermissionDenied). When request.tenant is None (testserver,
+        # admin.vyntia.pe, app.vyntia.pe, localhost), legacy behavior is
+        # preserved: no membership check is performed.
+        request = self.context.get("request")
+        tenant = getattr(request, "tenant", None) if request is not None else None
+        if tenant is not None:
+            from apps.tenancy.models import TenantMembership
+
+            has_membership = TenantMembership.objects.filter(
+                tenant=tenant, user=usuario, status="active"
+            ).exists()
+            if not has_membership:
+                from rest_framework.exceptions import PermissionDenied
+
+                raise PermissionDenied(
+                    detail=f"No active membership in workspace '{tenant.slug}'."
+                )
+
         
         data.update({
             'user': {

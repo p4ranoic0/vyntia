@@ -96,6 +96,8 @@ class LoginAPIView(TokenObtainPairView):
         Returns:
             Response with user data and tokens in JSON format
         """
+        from rest_framework.exceptions import PermissionDenied
+
         serializer = self.get_serializer(data=request.data)
 
         try:
@@ -116,6 +118,14 @@ class LoginAPIView(TokenObtainPairView):
                 status_code=status.HTTP_200_OK,
             )
 
+        except PermissionDenied as e:
+            # C.4: User authenticated but has no active TenantMembership for
+            # the tenant resolved from the subdomain — return 403, not 401.
+            return APIResponse.error(
+                message="Acceso denegado al workspace",
+                errors={"detail": str(e.detail) if hasattr(e, "detail") else str(e)},
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
         except Exception as e:
             return APIResponse.error(
                 message="Error en el inicio de sesion",
