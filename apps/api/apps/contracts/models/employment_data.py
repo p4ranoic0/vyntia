@@ -78,6 +78,15 @@ class EmploymentData(models.Model):
         on_delete=models.PROTECT,
         related_name='empleados_laborales'
     )
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     
     # Información del puesto
     cargo_empleado = models.CharField(max_length=100)

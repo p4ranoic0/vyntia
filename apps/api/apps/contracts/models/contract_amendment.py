@@ -48,6 +48,15 @@ class ContractAmendment(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
+
     parent_contract = models.ForeignKey(
         'contracts.Contract',
         on_delete=models.CASCADE,
