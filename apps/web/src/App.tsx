@@ -58,6 +58,8 @@ import VacacionesManagementPage from '@/features/time-off/pages/VacacionesManage
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import { isAdminHost } from '@/shared/utils/isAdminHost'
+import { AdminApp } from '@/features/admin'
 
 
 const queryClient = new QueryClient({
@@ -126,6 +128,12 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth()
+
+  // Admin host (admin.vyntia.pe) gets a completely separate routes tree.
+  // Providers (QueryClient/Theme/Auth/Router) remain shared from App().
+  if (isAdminHost()) {
+    return <AdminApp />
+  }
 
   if (isLoading) {
     return <LoadingSpinner />
