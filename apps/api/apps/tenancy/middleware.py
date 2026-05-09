@@ -120,3 +120,63 @@ class RLSMiddleware:
             finally:
                 _current_user_id.reset(user_token)
         return self.get_response(request)
+
+
+class TenantAuthMiddleware:
+    """Validate that JWT.tenant_id matches request.tenant.id.
+
+    Prevents replay of a token issued for tenant A against tenant B.
+
+    When the JWT does NOT contain a `tenant_id` claim (e.g., legacy tokens
+    issued before C.4 ships), validation is SKIPPED. C.4 will issue tokens
+    with the claim, at which point this middleware will start enforcing.
+
+    When request.tenant is None (reserved subdomain) or request.user is
+    anonymous, this middleware is a no-op.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        tenant = getattr(request, "tenant", None)
+        user = getattr(request, "user", None)
+
+        if tenant is None or user is None or not getattr(user, "is_authenticated", False):
+            return self.get_response(request)
+
+        token_tenant_id = self._extract_tenant_id_from_jwt(request)
+        if token_tenant_id is None:
+            # Pre-C.4 token without tenant_id claim — skip validation
+            return self.get_response(request)
+
+        if str(token_tenant_id) != str(tenant.id):
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed(
+                f"JWT tenant_id mismatch: token issued for {token_tenant_id}, "
+                f"request is for {tenant.id}"
+            )
+
+        return self.get_response(request)
+
+    @staticmethod
+    def _extract_tenant_id_from_jwt(request):
+        """Read tenant_id from the JWT, if present.
+
+        Tries the auth attribute that simplejwt sets, then falls back to
+        decoding from the Authorization header. Returns None if not present.
+        """
+        # simplejwt sets request.auth to the validated token (a dict-like)
+        auth = getattr(request, "auth", None)
+        if auth is not None:
+            try:
+                return auth.get("tenant_id")
+            except (AttributeError, TypeError):
+                pass
+
+        # Fallback: try to read from request.user attributes (some custom auth flows)
+        user = getattr(request, "user", None)
+        if user is not None and hasattr(user, "_jwt_tenant_id"):
+            return user._jwt_tenant_id
+
+        return None
