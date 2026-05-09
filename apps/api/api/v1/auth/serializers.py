@@ -772,3 +772,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 'Este email ya está en uso por otro usuario.'
             )
         return value
+
+
+class ActivateSerializer(serializers.Serializer):
+    """Validates the activation request payload."""
+
+    token = serializers.CharField(required=True)
+    name = serializers.CharField(required=True, max_length=200)
+    password = serializers.CharField(required=True, min_length=8, write_only=True)

@@ -715,3 +715,63 @@ class PermissionsStructureAPIView(APIView):
                 errors={"detail": str(e)},
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class ActivateAPIView(APIView):
+    """Accepts a TenantInvitation token and activates the user account.
+
+    POST /api/v1/auth/activate/
+    Body: { token, name, password }
+
+    On success: creates User + active TenantMembership + invalidates the invitation,
+    then issues a session JWT (with tenant claims).
+    """
+
+    permission_classes = []
+    authentication_classes = []  # Public endpoint — anyone with the token can activate
+
+    def post(self, request):
+        from api.v1.auth.serializers import ActivateSerializer, CustomTokenObtainPairSerializer
+        from apps.core.responses import APIResponse
+        from apps.tenancy.auth.activation import (
+            InvalidInvitationToken,
+            accept_invitation,
+        )
+        from apps.tenancy.context import tenant_context
+
+        serializer = ActivateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated = serializer.validated_data
+
+        try:
+            user, membership = accept_invitation(
+                token=validated["token"],
+                name=validated["name"],
+                password=validated["password"],
+            )
+        except InvalidInvitationToken as exc:
+            return APIResponse.error(message=str(exc), status_code=400)
+
+        # Issue a JWT in the membership's tenant context (so claims are populated)
+        with tenant_context(membership.tenant):
+            token = CustomTokenObtainPairSerializer.get_token(user)
+            access = str(token.access_token)
+            refresh = str(token)
+
+        return APIResponse.success(
+            data={
+                "access": access,
+                "refresh": refresh,
+                "tenant": {
+                    "slug": membership.tenant.slug,
+                    "name": membership.tenant.name,
+                },
+                "user": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "username": user.username,
+                },
+                "role": membership.role,
+            },
+            message="Activación exitosa.",
+        )

@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .test_views import test_permisos_debug
 from .views import (
+    ActivateAPIView,
     ChangePasswordAPIView,
     ForgotPasswordAPIView,
     LoginAPIView,
@@ -20,6 +21,7 @@ app_name = "auth"
 
 urlpatterns = [
     path("login/", LoginAPIView.as_view(), name="login"),
+    path("activate/", ActivateAPIView.as_view(), name="activate"),
     path("logout/", LogoutAPIView.as_view(), name="logout"),
     path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("profile/", UserProfileAPIView.as_view(), name="user_profile"),
