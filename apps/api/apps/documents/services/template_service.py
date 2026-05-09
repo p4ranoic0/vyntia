@@ -321,7 +321,7 @@ class TemplateService:
             Dict: Datos de la institución
         """
         from apps.organization.models import Company
-        cfg = Company.get_config()
+        cfg = Company.get_config(tenant=None)  # TODO(C.3): pass tenant from service caller once middleware ships
         return {
             'nombre': cfg.nombre,
             'ruc': cfg.ruc,

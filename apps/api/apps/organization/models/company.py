@@ -3,7 +3,16 @@ from django.db import models
 
 
 class Company(models.Model):
-    """Configuración de datos institucionales (singleton: solo una fila)."""
+    """Configuración de datos institucionales (per-tenant during C.x migration)."""
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
 
     nombre = models.CharField(max_length=300, default='Institución Pública', help_text='Nombre de la institución')
     ruc = models.CharField(max_length=20, default='20000000000', help_text='RUC de la institución')
@@ -23,12 +32,26 @@ class Company(models.Model):
     class Meta:
         db_table = 'configuracion_empresa'
         verbose_name = 'Configuración de Empresa'
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant"],
+                condition=models.Q(tenant__isnull=False),
+                name="unique_company_per_tenant",
+            ),
+        ]
 
     def __str__(self):
         return self.nombre
 
     @classmethod
-    def get_config(cls):
-        """Obtiene o crea la configuración (singleton)."""
-        obj, _ = cls.objects.get_or_create(pk=1)
-        return obj
+    def get_config(cls, tenant=None):
+        """Returns the Company config for the given tenant.
+
+        Backward-compat: if tenant is None, falls back to the legacy singleton
+        (pk=1). This fallback will be removed in C.3 once middleware ensures
+        every authenticated request has a tenant context.
+        """
+        if tenant is None:
+            obj, _ = cls.objects.get_or_create(pk=1)
+            return obj
+        return cls.objects.filter(tenant=tenant).first()

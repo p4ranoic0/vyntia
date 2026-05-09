@@ -24,11 +24,20 @@ class Department(models.Model):
     
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
+
     # Información organizacional
     nombre_organo = models.CharField(max_length=150, default='SIN ESPECIFICAR')
     nombre_unidad_organica = models.CharField(max_length=150, default='SIN ESPECIFICAR')
-    siglas_area = models.CharField(max_length=20, unique=True, default='TEMP')
+    siglas_area = models.CharField(max_length=20, default='TEMP')
     descripcion_area = models.TextField(null=True, blank=True)
     jefe_area = models.CharField(max_length=150, null=True, blank=True)
     
@@ -68,6 +77,12 @@ class Department(models.Model):
             models.Index(fields=['nivel_jerarquico']),
             models.Index(fields=['codigo_presupuestal']),
             models.Index(fields=['total_empleados']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "siglas_area"],
+                name="unique_department_siglas_per_tenant",
+            ),
         ]
     
     def __str__(self):

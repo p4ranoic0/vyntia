@@ -39,6 +39,14 @@ class LocationHistory(models.Model):
         editable=False,
         help_text='ID único del registro de ubicación'
     )
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        db_index=True,
+        related_name="+",
+    )
     empleado = models.ForeignKey(
         'employees.Employee',
         on_delete=models.CASCADE,
