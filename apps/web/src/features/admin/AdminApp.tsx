@@ -2,9 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { AdminLayout } from './components/AdminLayout'
 import { AdminLoginGate } from './components/AdminLoginGate'
+import { TenantsListPage } from './pages/TenantsListPage'
 
 // Page imports — added in Tasks 4-6 (placeholders OK in Task 3)
-const TenantsListPage = () => <div>Tenants list (C.7 Task 4)</div>
 const CreateTenantPage = () => <div>Create tenant (C.7 Task 5)</div>
 const TenantDetailPage = () => <div>Tenant detail (C.7 Task 5)</div>
 const SupportSessionsListPage = () => <div>Support sessions (C.7 Task 6)</div>
