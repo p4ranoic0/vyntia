@@ -53,8 +53,11 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "apps.tenancy.middleware.TenantMiddleware",          # C.3: subdomain → request.tenant
     "apps.core.middleware.JWTCookieMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.tenancy.middleware.TenantAuthMiddleware",      # C.3: validate JWT.tenant_id
+    "apps.tenancy.middleware.RLSMiddleware",             # C.3: SET LOCAL app.tenant_id/user_id
     "apps.core.middleware.RequestLoggingMiddleware",
     "apps.core.middleware.PerformanceMonitoringMiddleware",
     "apps.core.middleware.AuditMiddleware",
