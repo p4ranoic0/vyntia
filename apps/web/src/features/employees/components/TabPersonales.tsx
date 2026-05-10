@@ -99,6 +99,7 @@ export function TabPersonales({ empleadoId, initialData }: TabPersonalesProps) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend employee detail response shape varies
     employeesService.getById(empleadoId).then((data: any) => {
       const d = data?.data ?? data
       setForm(f => ({
@@ -155,6 +156,7 @@ export function TabPersonales({ empleadoId, initialData }: TabPersonalesProps) {
         tipo_comision: isAfpSelected ? form.tipo_comision : '',
         codigo_cuspp: isAfpSelected ? form.codigo_cuspp : '',
         estado_empleado: form.estado_empleado,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload
       } as any)
       toast.success('Datos personales guardados')
     } catch (err) {

@@ -10,7 +10,6 @@ import { Textarea } from '@/shared/ui/textarea'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from '@/shared/ui/use-toast'
 import { GraduationCap, BookOpen, Award, Plus, Trash2 } from 'lucide-react'
-import { Badge } from '@/shared/ui/badge'
 import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 
 interface FormacionAcademica {
@@ -64,9 +63,11 @@ export function DatosAcademicosPage() {
     const empleadoId = parseInt(id)
 
     employeesService.datosAcademicos.getAll(empleadoId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend response shape varies across API versions
       .then((response: any) => {
         const items = response?.data || response?.results || []
         const records = Array.isArray(items) ? items : []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw backend record shape
         const formacion = records.map((r: any) => ({
           id: r.id,
           nivel_educativo: r.nivel_educativo || r.tipo_formacion || '',
@@ -109,6 +110,7 @@ export function DatosAcademicosPage() {
                 fecha_termino_estudios: f.fecha_fin,
                 estado_estudios: f.estado,
                 titulo_obtenido: f.titulo_obtenido,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload, service accepts any
               } as any)
             : employeesService.datosAcademicos.create(empleadoId, {
                 nivel_educativo: f.nivel_educativo,
@@ -118,6 +120,7 @@ export function DatosAcademicosPage() {
                 fecha_termino_estudios: f.fecha_fin,
                 estado_estudios: f.estado,
                 titulo_obtenido: f.titulo_obtenido,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- create payload, service accepts any
               } as any)
         )
       )
@@ -126,7 +129,7 @@ export function DatosAcademicosPage() {
         description: 'Los datos académicos han sido actualizados correctamente.',
       })
       setIsEditing(false)
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'No se pudieron guardar los datos. Inténtalo de nuevo.',

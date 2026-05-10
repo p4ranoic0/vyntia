@@ -22,9 +22,12 @@ interface TabLaboralesProps {
 
 export function TabLaborales({ empleadoId }: TabLaboralesProps) {
   const { data: areasData } = useAreas()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- areas response shape varies (wrapped/unwrapped)
   const areasRaw: any = (areasData as any)?.data ?? areasData
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- items can come as results[] or plain array
   const areas: any[] = areasRaw?.results ?? (Array.isArray(areasRaw) ? areasRaw : [])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend laboral record shape not typed yet
   const [laboral, setLaboral] = useState<any>(null)
   const [form, setForm] = useState({
     area_id: '',
@@ -41,6 +44,7 @@ export function TabLaborales({ empleadoId }: TabLaboralesProps) {
 
   useEffect(() => {
     setFetching(true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend returns varied paginated/plain shapes
     employeesService.datosLaborales.get(empleadoId).then((data: any) => {
       const raw = data?.data?.results ?? data?.results ?? data?.data ?? data
       const record = Array.isArray(raw) ? raw[0] : raw
@@ -85,6 +89,7 @@ export function TabLaborales({ empleadoId }: TabLaboralesProps) {
         modalidad_trabajo: form.modalidad_trabajo,
         sueldo_basico: form.salario_base ? Number(form.salario_base) : undefined,
         jornada_laboral: form.horario_trabajo || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload
       } as any)
       toast.success('Datos laborales guardados')
     } catch (err) {
@@ -107,6 +112,7 @@ export function TabLaborales({ empleadoId }: TabLaboralesProps) {
           <Select value={form.area_id} onValueChange={(v) => setForm(s => ({ ...s, area_id: v }))}>
             <SelectTrigger><SelectValue placeholder="Seleccionar area" /></SelectTrigger>
             <SelectContent>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped area record */}
               {areas.map((a: any) => (
                 <SelectItem key={a.area_id ?? a.id} value={String(a.area_id ?? a.id)}>
                   {a.siglas_area ?? a.siglas} — {a.nombre_unidad_organica ?? a.nombre}

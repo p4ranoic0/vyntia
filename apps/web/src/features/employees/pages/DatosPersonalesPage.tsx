@@ -135,6 +135,7 @@ export function DatosPersonalesPage() {
         numero_cci: empleado.numero_cci,
         sistema_pensiones: empleado.sistema_pensiones,
         numero_ruc: empleado.numero_ruc,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- service update method accepts any employee patch shape
       } as any)
       toast.success('Datos personales actualizados correctamente')
       setIsEditing(false)

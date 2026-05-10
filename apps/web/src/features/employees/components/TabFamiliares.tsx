@@ -54,6 +54,7 @@ interface TabFamiliaresProps {
 }
 
 export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend familiar record shape not typed yet
   const [familiares, setFamiliares] = useState<any[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -65,6 +66,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
 
   const reload = useCallback(() => {
     setFetching(true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend returns varied paginated/plain shapes
     employeesService.datosFamiliares.getAll(empleadoId).then((data: any) => {
       const raw = data?.data?.results ?? data?.results ?? data?.data ?? data
       setFamiliares(Array.isArray(raw) ? raw : [])
@@ -87,6 +89,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
 
   useEffect(() => { reload(); loadDocs() }, [reload, loadDocs])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped familiar record from state
   const startEdit = (fam: any) => {
     setEditingId(fam.id)
     setFormData({
@@ -117,9 +120,11 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
     setLoading(true)
     try {
       if (editingId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload
         await employeesService.datosFamiliares.update(empleadoId, editingId, formData as any)
         toast.success('Familiar actualizado')
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- create payload
         await employeesService.datosFamiliares.create(empleadoId, formData as any)
         toast.success('Familiar agregado')
       }
@@ -156,6 +161,7 @@ export function TabFamiliares({ empleadoId }: TabFamiliaresProps) {
 
       {familiares.length > 0 && (
         <div className="space-y-2">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped familiar record */}
           {familiares.map((fam: any) => {
             const famId = fam.id
             const requiredDocs = getRequiredDocTypes(fam.parentesco || '')

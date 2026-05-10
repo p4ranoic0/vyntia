@@ -44,10 +44,10 @@ export function DatosLaboralesModal({
   isReadOnly = false,
   title = 'Datos Laborales'
 }: DatosLaboralesModalProps) {
-  const { user } = useAuth()
-  const { 
-    canEditEmployeeData, 
-    canAccessEmployeeData, 
+  useAuth()
+  const {
+    canEditEmployeeData,
+    canAccessEmployeeData,
     getViewMode,
     currentEmployeeId,
     isEmployee,
@@ -70,6 +70,7 @@ export function DatosLaboralesModal({
     if (open && empleadoId) {
       checkAccessAndLoadDatos()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checkAccessAndLoadDatos is defined below; adding it would cause infinite loop
   }, [open, empleadoId])
 
   const checkAccessAndLoadDatos = async () => {

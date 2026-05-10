@@ -45,6 +45,7 @@ interface TabAcademicosProps {
 }
 
 export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend academic record shape is not typed yet
   const [academicos, setAcademicos] = useState<any[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -55,6 +56,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
 
   const reload = useCallback(() => {
     setFetching(true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend returns varied paginated/plain shapes
     employeesService.datosAcademicos.getAll(empleadoId).then((data: any) => {
       const raw = data?.data?.results ?? data?.results ?? data?.data ?? data
       setAcademicos(Array.isArray(raw) ? raw : [])
@@ -73,6 +75,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
 
   useEffect(() => { reload(); loadDocs() }, [reload, loadDocs])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped academic record from state
   const startEdit = (acad: any) => {
     setEditingId(acad.id)
     setFormData({
@@ -100,9 +103,11 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
     setLoading(true)
     try {
       if (editingId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload
         await employeesService.datosAcademicos.update(empleadoId, editingId, formData as any)
         toast.success('Formacion actualizada')
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- create payload
         await employeesService.datosAcademicos.create(empleadoId, formData as any)
         toast.success('Formacion agregada')
       }
@@ -167,6 +172,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
               <p className="text-xs text-muted-foreground py-2">Sin registros</p>
             ) : (
               <div className="space-y-2">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped academic record */}
                 {certificados.map((acad: any) => {
                   const acadId = acad.id
                   const existingDoc = findDoc('certificado_estudios', acad.nombre_institucion)
@@ -223,6 +229,7 @@ export function TabAcademicos({ empleadoId }: TabAcademicosProps) {
               <p className="text-xs text-muted-foreground py-2">Sin registros</p>
             ) : (
               <div className="space-y-2">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped academic record */}
                 {postgrados.map((acad: any) => {
                   const acadId = acad.id
                   const existingDoc = findDoc('titulo_profesional', acad.nombre_institucion)

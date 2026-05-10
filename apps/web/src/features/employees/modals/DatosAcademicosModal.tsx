@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Textarea } from '@/shared/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
@@ -82,10 +82,10 @@ export function DatosAcademicosModal({
   isReadOnly = false,
   title = 'Datos Académicos'
 }: DatosAcademicosModalProps) {
-  const { user } = useAuth()
-  const { 
-    canEditEmployeeData, 
-    canAccessEmployeeData, 
+  useAuth()
+  const {
+    canEditEmployeeData,
+    canAccessEmployeeData,
     getViewMode,
     currentEmployeeId,
     isEmployee
@@ -106,6 +106,7 @@ export function DatosAcademicosModal({
     if (open && empleadoId) {
       checkAccessAndLoadDatos()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checkAccessAndLoadDatos is defined below; adding it would cause infinite loop
   }, [open, empleadoId])
 
   const checkAccessAndLoadDatos = async () => {

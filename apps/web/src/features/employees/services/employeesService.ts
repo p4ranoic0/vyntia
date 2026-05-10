@@ -111,13 +111,16 @@ export const employeesService = {
   /**
    * Obtener lista de empleados con filtros opcionales
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- filter params are open-ended; caller controls shape
   async getAll(params?: Record<string, any>) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw paginated response from DRF
       const response = await apiClient.get<any>("/api/v1/employees/", {
         params,
       });
 
       const employees = extractCollection(response.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- normalizeEmployee maps raw backend shape
       return employees.map((employee: any) => normalizeEmployee(employee));
     } catch (error) {
       // Error fetching employees

@@ -64,6 +64,7 @@ interface EmpleadoDetalle {
     area_nombre?: string
     es_activo?: boolean
     tiempo_servicio?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend may return additional dynamic fields
     [key: string]: any
   } | null
   familiares?: Array<{
@@ -83,6 +84,7 @@ interface EmpleadoDetalle {
     edad?: number
     es_menor_edad?: boolean
     telefono_familiar?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend may return additional dynamic fields
     [key: string]: any
   }>
   formacion?: Array<{
@@ -95,6 +97,7 @@ interface EmpleadoDetalle {
     fecha_termino_estudios?: string
     estado_estudios: string
     nivel_educativo: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend may return additional dynamic fields
     [key: string]: any
   }>
 }
