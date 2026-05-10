@@ -159,10 +159,10 @@ class LocationHistory(models.Model):
     
     @property
     def movimiento_completo(self):
-        """Retorna la descripción completa del movimiento."""
-        origen = self.area_origen.nombre_area if self.area_origen else "Sin área origen"
-        destino = self.area_destino.nombre_area if self.area_destino else "Sin área destino"
-        
+        """Retorna la descripción completa del movimiento (#53: was using non-existent nombre_area)."""
+        origen = self.area_origen.nombre_unidad_organica if self.area_origen else "Sin área origen"
+        destino = self.area_destino.nombre_unidad_organica if self.area_destino else "Sin área destino"
+
         return f"{self.get_tipo_movimiento_display()}: {origen} → {destino}"
     
     @property
@@ -218,13 +218,15 @@ class LocationHistory(models.Model):
     
     @property
     def codigo_movimiento(self):
-        """Genera un código único para el movimiento."""
-        # Generar código automático basado en el movimiento
+        """Genera un código único para el movimiento (#53: was using non-existent codigo_area)."""
         tipo_codigo = self.tipo_movimiento[:3].upper()
-        area_destino_codigo = self.area_destino.codigo_area[:3].upper() if self.area_destino.codigo_area else 'GEN'
+        if self.area_destino and self.area_destino.siglas_area:
+            area_destino_codigo = self.area_destino.siglas_area[:3].upper()
+        else:
+            area_destino_codigo = 'GEN'
         movimiento_id = str(self.id).zfill(4)
         fecha_codigo = self.fecha_inicio.strftime('%y%m')
-        
+
         return f"{tipo_codigo}-{area_destino_codigo}-{fecha_codigo}-{movimiento_id}"
     
     def finalizar_movimiento(self, fecha_termino=None, observaciones=None):

@@ -25,7 +25,7 @@ import { useState } from 'react'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { AreasLayout } from '@/shared/layout/AreasLayout'
 import { useToast } from '@/shared/ui/use-toast'
-import { Area, departmentsService, AreaStats } from '@/features/organization/services/departmentsService'
+import { Area, departmentsService } from '@/features/organization/services/departmentsService'
 
 export function AreasManagementPage() {
   const { toast } = useToast()
@@ -38,19 +38,18 @@ export function AreasManagementPage() {
     queryFn: () => departmentsService.getAreas(),
   })
 
-  const { data: statsData, isLoading: isLoadingStats } = useQuery({
-    queryKey: ['areas-stats'],
-    queryFn: () => departmentsService.getAreasStats(),
-  })
-
   const areas = areasData?.data || []
-  const stats: AreaStats = statsData || {
-    total_areas: 0,
-    areas_activas: 0,
-    areas_inactivas: 0,
-    total_empleados: 0,
+
+  // Derive stats locally from areas list (no dedicated stats endpoint on backend)
+  const stats = {
+    total_areas: areas.length,
+    areas_activas: areas.filter((a: Area) => a.estado_area === 'activo').length,
+    areas_inactivas: areas.filter((a: Area) => a.estado_area === 'inactivo').length,
+    total_empleados: areas.reduce((sum: number, a: Area) => sum + (a.empleados_activos_count || 0), 0),
     areas_sin_jefe: 0,
-    promedio_empleados_por_area: 0
+    promedio_empleados_por_area: areas.length > 0
+      ? areas.reduce((sum: number, a: Area) => sum + (a.empleados_activos_count || 0), 0) / areas.length
+      : 0,
   }
 
   // Filtrar áreas
@@ -76,18 +75,6 @@ export function AreasManagementPage() {
       description: `Generando reporte en formato ${format.toUpperCase()}...`,
     })
     // Aquí iría la lógica de exportación
-  }
-
-  // Datos para gráficos
-  const chartData = {
-    areasPorOrgano: organosUnicos.map(organo => ({
-      organo,
-      cantidad: areas.filter((area: Area) => area.nombre_organo === organo).length
-    })),
-    empleadosPorArea: areas.map((area: Area) => ({
-      area: area.siglas_area,
-      empleados: area.empleados_activos_count || 0
-    })).sort((a, b) => b.empleados - a.empleados).slice(0, 10)
   }
 
   if (isLoading) {

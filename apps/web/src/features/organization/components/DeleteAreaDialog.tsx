@@ -41,7 +41,7 @@ export function DeleteAreaDialog({
     try {
       await onConfirm()
       onOpenChange(false)
-    } catch (error) {
+    } catch {
       // Error handling is done in the parent component
     }
   }

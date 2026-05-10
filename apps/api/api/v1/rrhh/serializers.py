@@ -68,12 +68,17 @@ class AreaSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.IntegerField())
     def get_empleados_activos_count(self, obj) -> int:
         """Get count of active employees."""
-        return obj.get_empleados_activos_count()
+        return obj.empleados_activos_count()
 
     def validate_siglas_area(self, value):
-        """Validate siglas uniqueness."""
+        """Validate siglas uniqueness within the current tenant (#55)."""
         if value:
+            from apps.tenancy.context import get_current_tenant
+
+            tenant = get_current_tenant()
             queryset = Department.objects.filter(siglas_area__iexact=value)
+            if tenant is not None:
+                queryset = queryset.filter(tenant=tenant)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():

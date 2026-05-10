@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -20,7 +20,7 @@ import {
 // Form components no disponibles - usando formularios HTML nativos
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
-import { departmentsService, Area, CreateAreaData } from '@/features/organization/services/departmentsService'
+import { departmentsService } from '@/features/organization/services/departmentsService'
 import { AreasLayout } from '@/shared/layout/AreasLayout'
 import { getErrorMessage } from '@/shared/api/errorUtils'
 
@@ -89,7 +89,7 @@ export function AreaFormPage() {
       })
       navigate('/areas')
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: getErrorMessage(error, 'No se pudo crear el área.'),
@@ -110,7 +110,7 @@ export function AreaFormPage() {
       })
       navigate('/areas')
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: getErrorMessage(error, 'No se pudo actualizar el área.'),

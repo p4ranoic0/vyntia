@@ -45,13 +45,26 @@ class Company(models.Model):
 
     @classmethod
     def get_config(cls, tenant=None):
-        """Returns the Company config for the given tenant.
+        """Return the Company config for a tenant.
 
-        Backward-compat: if tenant is None, falls back to the legacy singleton
-        (pk=1). This fallback will be removed in C.3 once middleware ensures
-        every authenticated request has a tenant context.
+        Resolution:
+        1. Use the explicit `tenant` argument if provided.
+        2. Otherwise, resolve from the active tenant context.
+        3. If neither is available, return None — do NOT fall back to a
+           shared singleton, which would leak across tenants (B.3 #54).
+
+        Callers must handle a None return (typically: refuse to operate
+        on company-level data when no tenant is resolvable).
         """
         if tenant is None:
-            obj, _ = cls.objects.get_or_create(pk=1)
-            return obj
+            from apps.tenancy.context import get_current_tenant
+            tenant = get_current_tenant()
+
+        if tenant is None:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Company.get_config called with no tenant context — returning None"
+            )
+            return None
+
         return cls.objects.filter(tenant=tenant).first()
