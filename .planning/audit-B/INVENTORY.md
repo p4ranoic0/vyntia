@@ -1367,4 +1367,121 @@ VYNTIA inherits the same gap — `EmploymentData` model still uses string `cargo
 
 ## Maestro gaps — Module 03 (Employment lifecycle)
 
-(Filled by Task 11.)
+Module 03 has 7 sub-procesos covering SERVIR procesos 5-13 (excluyendo 10 asistencia → M08 y 12 disciplinario → M09). Status of each in VYNTIA + legacy:
+
+| Sub-proceso | Maestro § | VYNTIA | Legacy | Phase |
+|-------------|-----------|:------:|:------:|:-----:|
+| 03.1 Selección | proceso con fases, criterios, evaluaciones | ❌ | ❌ | B.9 |
+| 03.2 Vinculación | contrato + firma electrónica + T-Registro SUNAT | ⚠️ Contract existe; T-Registro y firma faltan | partial (Contract sí; sin T-Registro) | B.10 |
+| 03.3 Inducción | plan general + específica RPE 265-2017-SERVIR-PE | ⚠️ OnboardingProcess existe; compliance RPE 265 sin verificar | partial | B.11 |
+| 03.4 Período de prueba | seguimiento, extensión, evaluación | ❌ Sin model de probation | ❌ | B.11 |
+| 03.5 Legajos | expediente digital con índice / búsqueda / retención / control de acceso granular | ⚠️ DocumentFile existe; full legajo (13 secciones obligatorias) missing | partial | B.12 |
+| 03.6 Desplazamiento | rotación, encargatura, destaque, comisión, permuta, designación, transferencia | ❌ | ❌ | B.13 |
+| 03.7 Desvinculación | renuncia, cese, despido, liquidación de beneficios sociales | ❌ | ❌ (no models de cese; legacy nunca lo construyó) | B.14 |
+
+### Sub-proceso details
+
+#### 03.1 Selección (B.9)
+**Maestro requirement (§ 2):** proceso de selección con fases, criterios, evaluaciones, convocatoria pública (sector público) con bases oficiales y plazos de transparencia.
+**Required entities:** `PersonnelRequisition`, `JobPosting`, `JobApplication`, `Candidate`, `SelectionStage`, `CandidateEvaluation`, `MeritRanking`.
+**Sector público SERVIR flow:** 13 pasos obligatorios (publicación 7 días hábiles mínimo, evaluación curricular eliminatoria, prueba de conocimientos nota mínima 14/20, etc.) — ver maestro § 2.3.
+**Estimated work:** ~2 weeks (7 models + flow + UI).
+**Dependencies:** **B.6 Position is hard dependency** (a selection process is for a specific Position). B.7 SalaryBand is soft dependency (for advertised salary range).
+**Note on Module 11 (ATS avanzado):** B.9 implements the basic SERVIR-compliant selección. M11 ATS is a separate Pro-tier module deferred to a later sub-project.
+
+#### 03.2 Vinculación + T-Registro (B.10)
+**Maestro requirement (§ 3):** generación automática de contrato según régimen + tipo, firma electrónica, registro T-Registro SUNAT, EsSalud, AFP/ONP, entrega de documentos obligatorios (RIT, Reglamento SST, Código de ética, política de protección de datos con consentimiento expreso, manual de funciones).
+**Current VYNTIA state:** Contract model exists (per Task 4); no T-Registro integration; no e-signature; no automated document bundle on hire.
+**Required new work:**
+- T-Registro API client (SUNAT integration) — archivo de texto plano según Anexo 3 SUNAT, validación con PVS, plazo: hasta el primer día de prestación efectiva
+- `TRegistroDeclaration` model linked to Contract
+- DocumentSignature model + signature flow UI
+- Hiring document bundle automation (asignar RIT, Reglamento SST, etc. con acuse)
+- Validación de **desnaturalización** Art. 77 LPCL (tope conjunto 5 años contratos modales → indeterminado)
+**ADR addition needed:** **T-Registro API integration design** — sandbox vs producción, rate limits, error retry, manejo de validaciones SUNAT, almacenamiento del archivo .txt generado.
+**Estimated work:** ~2 weeks.
+**Dependencies:** B.5 polish-contracts done, B.6 Position done.
+
+#### 03.3 Inducción + 03.4 Período de prueba (B.11)
+**Maestro requirement 03.3 (§ 4):** plan de inducción general + específica + técnica según **RPE 265-2017-SERVIR-PE**. Material multimedia, asignación de buddy/mentor, evaluación post-inducción, certificado de finalización. Sector público: inducción puede ser en lengua originaria.
+**Maestro requirement 03.4 (§ 5):** seguimiento, extensión, evaluación de período de prueba con plazos por régimen:
+- 728 común: 3 meses
+- 728 calificado: 6 meses (con pacto escrito)
+- 728 dirección/confianza: 12 meses (con pacto escrito)
+- MYPE pequeña: 3 meses
+- CAS: no aplica
+- 276: 3 años para Carrera (concurso previo)
+
+**Current VYNTIA state:** `OnboardingProcess` covers some of 03.3 but compliance with RPE 265 NOT verified (missing fields likely: certificado de finalización, plan general vs específica explícitos, fechas obligatorias, mentor assignment, evaluación post-inducción). Nothing for 03.4 — no Probation model, no alertas de vencimiento, no evaluación, no flujo de ratificación / no renovación.
+**Required new work:**
+- `InductionPlan`, `InductionTask`, `InductionMaterial`, `InductionMentor`, `InductionEvaluation` (extender OnboardingProcess o reemplazar)
+- `ProbationPeriod` model with régimen, fecha inicio, plazo, evaluación, decisión (ratificación / no renovación), notificación
+- Alertas configurables (30 días antes, 15 días antes de vencer)
+- RPE 265 compliance fields auditables
+**Estimated work:** ~1.5 weeks.
+**Dependencies:** B.10 done (Probation triggers from Vinculación).
+
+#### 03.5 Legajos (B.12)
+**Maestro requirement (§ 6):** expediente digital con **13 secciones obligatorias** (datos personales, académicos, experiencia laboral, contrato + addendas, declaraciones juradas, identidad + CUSPP, historial de puestos, evaluaciones, capacitaciones, reconocimientos, sanciones, licencias, exámenes médicos *acceso restringido permlevel 9*, accidentes laborales *acceso restringido*, documentos de cese). Upload con OCR, clasificación automática, firma electrónica, versionado, **control de acceso granular por tipo de documento**, búsqueda full-text, exportación consolidada PDF, retención mínima 5 años post-cese. Cumplimiento Ley 29733 (cifrado AES-256 datos sensibles, ANPD, ARCO, portabilidad).
+**Current VYNTIA state:** `DocumentFile` model exists (per Task 5) but it's un upload simple sin estructura de legajo. No 13-section index, no permission levels granulares por tipo, no retention policy, no audit trail de acceso, no full-text search, no exportación consolidada.
+**Required new work:**
+- `DigitalDossier` (unique per employee), `DossierSection` (13 secciones predefinidas + extensibles por tenant), `DossierDocument` con metadata
+- `DocumentAccessLog` (audit trail — usa **ADR-B.2** decisión de auditoría)
+- Permission level enforcement (ADR-B.3 workflows — algunos docs requieren approval para visualizar)
+- Retention policy enforcement (5 años mínimo post-cese, ANPD compliance)
+- Full-text search (PostgreSQL `tsvector` o Elasticsearch — decisión de implementación en plan)
+- Exportación consolidada (PDF unificado) — reusa el PDFGenerator existente
+- Cifrado AES-256 para sub-secciones marcadas como sensibles (médicos, accidentes)
+**Estimated work:** ~1.5 weeks.
+**Dependencies:** B.5 polish-documents done, ADR-B.2 (audit trail) decided, ADR-B.4 (storage) decided.
+
+#### 03.6 Desplazamiento (B.13)
+**Maestro requirement (§ 7):** rotación, encargatura, destaque, comisión de servicios, permuta, designación, transferencia (D.Leg. 276 y normas SERVIR). Cada tipo con duración, remuneración, plazo, prórroga; resolución administrativa generada automáticamente; flujo aprobaciones (jefe directo → RRHH → titular); notificación a Tesorería si afecta planilla.
+**Current VYNTIA state:** ❌ Nothing.
+**Required new work:**
+- `Displacement` model with `tipo` enum (los 7 tipos), `DisplacementOrigin` (puesto / entidad), `DisplacementDestination` (puesto / entidad), `DisplacementResolution`, `DisplacementExtension`
+- Approval flow (uses **ADR-B.3** workflow engine — tercer reuso)
+- Generación automática de resolución administrativa PDF
+- Cálculo de afectación remunerativa (encargatura asume puesto encargado, destaque origen asume + viáticos, designación asume cargo designado)
+- Notificación a payroll (M04) si afecta planilla
+**Sector note:** Designación + Encargatura + Destaque + Comisión + Transferencia son **principalmente sector público SERVIR** (Ley 30057). Permuta y Rotación aplican a ambos sectores. UI gated by `tenant.sector === 'public'` para los públicos exclusivos (**ADR-B.6**).
+**Estimated work:** ~2 weeks.
+**Dependencies:** B.6 Position done (los desplazamientos referencian Position origen y destino).
+
+#### 03.7 Desvinculación + liquidación (B.14)
+**Maestro requirement (§ 8):** registro de cese con causal y fecha, motor de liquidación automática, generación de documentos (carta aceptación renuncia, Liquidación BBSS, **Certificado de Trabajo obligatorio Art. 45 LPCL**, constancia no adeudo), bloqueo de accesos, recepción entregables, pago en plazo legal **48 horas máximo**, baja T-Registro, baja EsSalud, comunicación AFP, archivo legajo CERRADO (retención 5 años).
+**Causales por régimen:**
+- 728: renuncia voluntaria, mutuo disenso, cumplimiento de plazo, fallecimiento, invalidez absoluta, jubilación, despido (causa justa), **despido arbitrario** (1.5 rem/año, tope 12 rem), despido por falta grave
+- 276: renuncia, fallecimiento, jubilación, cese justificado (PAD), destitución (PAD), incapacidad permanente, inhabilitación
+- CAS: no renovación, resolución por causa grave, mutuo acuerdo, fallecimiento
+
+**Current VYNTIA state:** ❌ Nothing. Confirmed via grep — no Cese / Liquidación / Termination / Severance / Despido / Renuncia models in VYNTIA. Legacy is also empty (only string matches in unrelated contexts).
+**Required new work:**
+- `Termination` model with type enum + causal + régimen + fecha
+- `SeveranceSettlement` model with cálculo automático **mínimo legal** per **ADR-B.9**:
+  - **CTS proporcional** (1 sueldo/año, prorrateo último periodo)
+  - **Vacaciones truncas** (días no gozados × jornal)
+  - **Gratificación trunca** (proporcional al semestre, fiestas patrias / navidad)
+  - **Indemnización por despido arbitrario** (1.5 sueldos / año, tope 12 sueldos)
+- `WorkCertificate` con generación automática Art. 45 LPCL (sin información desfavorable, sin calificaciones subjetivas, sin motivos de cese)
+- `ExitInterview`, `HandoverChecklist`, `SystemsOffboarding` (integración IT)
+- Baja T-Registro (reusa cliente del B.10)
+- Pago en plazo legal 48h con alerta SLA
+**Sub-proyecto D extends with:** AFP/ONP detraction completa, Renta 5ta, multi-régimen 728/CAS/276/MYPE/Agrario/Microempresa, integración full payroll (motor multi-régimen Strategy Pattern). B.14 entrega cálculo mínimo legal; D entrega motor de planilla peruano completo.
+**Estimated work:** ~2 weeks (model + minimum calc + UI).
+**Dependencies:** B.5 polish-contracts done, B.10 done (T-Registro client reuse), B.12 done (legajo se cierra al cese).
+
+### Total estimated work for Module 03
+**~11-13 weeks across 6 phases (B.9-B.14).** Largest module in B by far. Plan B carga aproximadamente 60% de su esfuerzo en Module 03; el resto se reparte entre Module 01 (B.15) y Module 02 (B.6-B.8).
+
+### Cross-cutting research items (raised here, deferred to ADRs or follow-up)
+- **T-Registro API integration design** — drafted in B.10 plan, may require new ADR (call it ADR-B.10)
+- **RPE 265-2017-SERVIR-PE compliance specifics** — legal review during B.11 plan
+- **Severance B-vs-D demarcation** — captured in **ADR-B.9** (drafts in Task 14c)
+- **Sector-specific UI handling** for desplazamiento types — covered by **ADR-B.6**
+- **Workflow engine reuse** across vinculación, desplazamiento, policies (B.10 / B.13 / B.15) — covered by **ADR-B.3**
+- **Document audit trail** for legajo accesos — covered by **ADR-B.2**
+- **Versioning of contract amendments and dossier sections** — covered by **ADR-B.7**
+
+### Module 11 ATS — out of B scope
+Maestro Module 11 (Reclutamiento ATS avanzado, multiposting) is referenced in 03.1 but is a **separate Pro-tier module** deferred to a future sub-project. B.9 only implements the SERVIR-compliant selección base + integración con Module 02 Position. ATS avanzado (multiposting, scoring algorítmico, scheduling, video-entrevista) NO está en B.
