@@ -763,7 +763,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email']
+        fields = ['email', 'nombres_usuario', 'apellidos_usuario']
 
     def validate_email(self, value: str) -> str:
         """Validate email uniqueness."""
