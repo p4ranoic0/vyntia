@@ -975,7 +975,188 @@ Sin errores TS para `features/documents` (verificado con `tsc --noEmit -p tsconf
 
 ## App: onboarding
 
-(Filled by Task 7.)
+### Estado actual en VYNTIA (post-A+C)
+
+#### Modelos
+- `OnboardingProcess` (file: `apps/api/apps/onboarding/models/onboarding_process.py:9`, 186 líneas) — proceso de incorporación de un nuevo empleado, OneToOne con `Employee` y `User`. db_table preservada del legacy: `onboarding_empleado`.
+  - Campos clave: `id` UUID PK (line 21); `tenant` FK→`tenancy.Tenant` (line 24, **null=True** transitorio C.1, pendiente NOT NULL en C.3 — ver tenant-readiness); `empleado` OneToOne→`employees.Employee` cascade (line 34); `usuario` OneToOne→`identity.User` cascade (line 39); `estado_onboarding` choices (`pendiente_datos`/`pendiente_documentos`/`pendiente_validacion`/`observado`/`completado`, line 46); 7 booleans de checklist (`datos_personales_completos`, `datos_laborales_completos`, `dni_subido`, `declaraciones_juradas_subidas`, `certificados_academicos_subidos`, `certificados_trabajo_subidos`, `documentos_familiares_subidos`, lines 53-59); validación RRHH (`validado_por`, `fecha_validacion`, `observaciones`, lines 62-70); branding email (`email_bienvenida_enviado`, `fecha_email_bienvenida`, lines 73-74); timestamps (`fecha_inicio`, `fecha_completado`, `updated_at` con db_column legacy `fecha_actualizacion`, lines 77-79).
+  - Tenant FK: ⚠️ presente pero **null=True** y **`related_name='+'`** (sin reverse accessor) — la migración 0002 no agregó constraint NOT NULL ni unique-per-tenant. Sin migración de backfill detectada.
+  - Manager: default `objects` (no `TenantManager`).
+  - Properties calculadas:
+    - `progreso_porcentaje` (line 94) — % completitud sobre los 7 booleans.
+    - `progreso_aprobado` (line 109) — % de `DigitalDocument` aprobados por RRHH (queries `apps.documents.models.DigitalDocument`).
+    - `items_pendientes` (line 130) — lista de strings legibles.
+    - `esta_completo` (line 149).
+  - Métodos: `marcar_completado(validado_por)` (line 161), `marcar_observado(observaciones)` (line 169), `actualizar_estado()` (line 175 — recalcula estado según booleans).
+
+#### Servicios
+- `OnboardingService` (file: `apps/api/apps/onboarding/services/onboarding_service.py:65`) — orquestador de flujo completo. Statics:
+  - `generar_username(nombres, apellido)` (line 86) — primera-letra-nombre + apellido_paterno con anti-colisión global (NOT tenant-scoped, ver tenant-readiness).
+  - `generar_password_temporal()` (line 110) — 12 chars, alfabeto restringido sin caracteres ambiguos.
+  - `enviar_email_bienvenida(usuario, password_temporal)` (line 119) — render `emails/bienvenida.{html,txt}`, dispatch via Celery `send_email_html_task` con fallback síncrono cuando `EMAIL_BACKEND` es console/locmem/filebased o cuando Celery no está disponible. Subject: `"Bienvenido a VYNTIA"` (line 141, OK), from_email: `settings.DEFAULT_FROM_EMAIL` con default `noreply@vyntia.pe`. **El template HTML/TXT renderizado todavía dice "Intranet" — ver bugs.**
+  - `crear_onboarding_completo(empleado_data, created_by)` (line 209, `@transaction.atomic`) — crea Employee → User → asigna rol `Employee/empleado` → crea OnboardingProcess → envía email. **NO inyecta `tenant` en ninguno de los modelos creados** (Employee, User, OnboardingProcess) — ver tenant-readiness.
+  - `actualizar_estado_onboarding(empleado_id)` (line 303) — recalcula los 7 booleans inspeccionando `DigitalDocument` activos del empleado, llama `actualizar_estado()`, protege estados avanzados (`pendiente_validacion`/`en_revision`/`observado`) de retroceder. Acepta indistintamente `empleado_id` o `onboarding_id` (PK) — ambigüedad documentada en docstring.
+  - `obtener_documentos_pendientes(empleado_id)` (line 422) — devuelve lista de tipos faltantes según diccionario `DOCUMENTOS_REQUERIDOS` (lines 20-62).
+  - `corregir_correo_personal(onboarding_id, nuevo_correo)` (line 458) — actualiza `Employee.correo_personal` + `User.email`.
+  - `reenviar_email_bienvenida(onboarding_id, nuevo_password=True)` (line 480) — opcionalmente regenera password. **Bug:** usa `.get(onboarding_id=onboarding_id)` en línea 488, pero el modelo VYNTIA usa `id` UUID (no `onboarding_id`) — heredado del legacy y no actualizado en L3. Verificable por test fallido.
+  - `validar_onboarding(onboarding_id, validado_por, observaciones="")` (line 525) — aprueba todos los `DigitalDocument` `pendiente_revision`, activa el User (de `pendiente`→`activo`), marca completado.
+- `OnboardingNotificationService` (mismo archivo, line 560) — envía emails transaccionales:
+  - `notificar_documento_rechazado(onboarding, documento, motivo)` (line 564) — render `emails/documento_rechazado.{html,txt}`. Subject: `f"Documento rechazado: {documento.nombre_documento}"` (sin marca VYNTIA en subject — OK funcionalmente).
+  - `notificar_onboarding_aprobado(onboarding)` (line 583) — render `emails/onboarding_aprobado.{html,txt}`. Subject: `"¡Tu onboarding ha sido aprobado!"`.
+  - `notificar_onboarding_observado(onboarding, observaciones)` (line 601) — render `emails/onboarding_observado.{html,txt}`. Subject: `"Tu onboarding requiere correcciones"`.
+  - Las 3 funciones delegan en `OnboardingService._enviar_notificacion()` (line 515) que intenta Celery con fallback síncrono inmediato, **silenciando excepciones** (try/except sin log) — riesgo silencioso si Celery falla y el SMTP también.
+- ❌ **NO existe `apps/onboarding/services/onboarding_notification_service.py`** como archivo separado — `OnboardingNotificationService` vive dentro de `onboarding_service.py`. La importación `from apps.onboarding.services import OnboardingNotificationService` funciona porque `services/__init__.py` re-exporta ambas clases.
+
+#### Endpoints REST
+Routed at `/api/v1/onboarding/processes/` via `apps/api/api/v1/onboarding/urls.py` (16 líneas) — registra `OnboardingViewSet` que **vive en `api/v1/rrhh/views.py:2337`** (no en `api/v1/onboarding/views.py`, que **no existe**). Esto es un L3.x deuda — el bounded context `onboarding` aún importa la ViewSet del módulo legacy `rrhh/views.py` (~510 líneas dedicadas a onboarding ahí). Lo mismo aplica para serializers (en `api/v1/rrhh/serializers.py:1213-1319`). Ver Notas.
+- `GET /api/v1/onboarding/processes/` — list (RRHH-gated via `RRHHPermission` + `@require_hr()` line 2384).
+- `POST /api/v1/onboarding/processes/` — `OnboardingIniciarSerializer` (serializers.py:1271) → `crear_onboarding_completo`.
+- `GET /api/v1/onboarding/processes/{id}/` — retrieve, autenticado; non-HR solo ve el suyo (line 2417 — manual ownership check, no `tenant` filter).
+- `GET /api/v1/onboarding/processes/mi-onboarding/` — `mi_onboarding` action (line 2434, `@require_authenticated()`) — devuelve onboarding del request.user, recalcula estado al vuelo.
+- `POST /api/v1/onboarding/processes/{id}/validar/` — `validar` action (line 2462) — accepts `accion=aprobar|rechazar` + `observaciones`. Dispara notificación `OnboardingNotificationService` envuelto en try/except silente.
+- `POST /api/v1/onboarding/processes/{id}/documentos/{doc_id}/aprobar/` — `aprobar_documento` (line 2510). HR-only.
+- `POST /api/v1/onboarding/processes/{id}/documentos/{doc_id}/rechazar/` — `rechazar_documento` (line 2539). Requiere `motivo` no vacío.
+- `POST /api/v1/onboarding/processes/{id}/reenviar_email/` — `reenviar_email` (line 2584). **Llama `OnboardingService.reenviar_email_bienvenida(onboarding.pk)` que internamente busca por `onboarding_id=...` (campo inexistente) → causa 404. Bug L3.x.**
+- `POST /api/v1/onboarding/processes/{id}/corregir-correo/` — `corregir_correo` (line 2607) — actualiza correo + reenvía email. (Test in red, ver bugs.)
+- `POST /api/v1/onboarding/processes/{id}/actualizar-estado/` — `actualizar_estado` (line 2637).
+- `POST /api/v1/onboarding/processes/subir-foto/` — `subir_foto` (line 2658, MultiPart) — empleado en onboarding sube foto JPG/PNG; ruta_fotografia se actualiza en Employee.
+- `POST /api/v1/onboarding/processes/subir-documento/` — `subir_documento` (line 2724, MultiPart) — PDF only, mapping interno `_TIPO_CATEGORIA_MAP` (line 2735) cubre 17 tipos. Crea o versiona `DigitalDocument` con estado `pendiente_revision`.
+
+#### UI (frontend)
+- **Páginas** (`apps/web/src/features/onboarding/pages/`):
+  - `OnboardingAdminPage.tsx` (1047 líneas) — vista RRHH: lista de onboardings, drilldown de un proceso, aprobar/rechazar documentos, validar onboarding, reenviar email, corregir correo. Componente monolítico — candidato a refactor en B.5.
+  - `OnboardingEmployeePage.tsx` (113 líneas) — vista del empleado en onboarding: tabs personal/familiar/académico/laboral con upload zones.
+  - `OnboardingPage.tsx` (5 líneas) — wrapper que renderiza `OnboardingEmployeePage`.
+- **Componentes** (`apps/web/src/features/onboarding/components/`):
+  - `DocumentPreviewModal.tsx`, `DocumentUploadZone.tsx` — UI de upload + preview.
+  - `OnboardingCompleteBanner.tsx`, `OnboardingProgressBar.tsx`, `OnboardingSectionStatus.tsx` — estado visual.
+  - `OnboardingTabPersonal.tsx`, `OnboardingTabFamiliar.tsx`, `OnboardingTabAcademico.tsx`, `OnboardingTabLaboral.tsx` — tabs por sección.
+  - `__tests__/` — tests vitest.
+- **Servicios** (`apps/web/src/features/onboarding/services/`):
+  - `onboardingService.ts` (124 líneas) — `getMiOnboarding`, `getAll`, `getById`, `crear`, `validar`, `reenviarEmail`, `actualizarEstado`. Endpoint `/api/v1/onboarding/processes/{id}/reenviar_email/` usa `_` (underscore) mientras que el backend lo expone con guion bajo en route name (DRF default — OK).
+  - `onboardingDataService.ts` — wrappers para `family-members`, `academic-records`, `certifications` y `documents/documents` (consume endpoints de `employees` y `documents`).
+  - `onboardingUploadService.ts` (54 líneas) — `uploadFoto`, `uploadDocument`, `subirDocumento` (tres funciones que apuntan al **mismo** endpoint `/subir-documento/` con firmas distintas — duplicación, ver bugs); incluye `corregirCorreo`.
+- **Tipos** (`apps/web/src/features/onboarding/types/onboarding.ts`): `EstadoOnboarding`, 15 valores de `TipoDocumento`, `OnboardingStatus`, `UploadDocumentResponse`, `SectionStatus`. Helper `computeAlert()` (alerta cuando `last_login` null y `fecha_email_bienvenida` ≥ 5 días).
+- `index.ts` re-exporta todo (`components/`, `pages/`, `services/`, `types/`).
+
+#### Tests
+- ❌ **NO existe `apps/api/apps/onboarding/tests/`** — sin tests in-app del bounded context.
+- Los tests viven en el directorio root `apps/api/tests/`:
+  - `tests/test_onboarding_api.py` — endpoint coverage (validar, corregir-correo, subir-foto/documento, aprobar/rechazar, mi-onboarding). **2 tests fallan (ver bugs).**
+  - `tests/test_onboarding_service.py` — service-level (crear_onboarding_completo, actualizar_estado_onboarding, validar_onboarding, generar_username con colisiones, password temporal).
+  - `tests/test_onboarding_self_update.py` — empleado actualizando sus propios datos. **1 test falla — empleado puede patchear campos restringidos (security bug).**
+  - `tests/test_documentos_digitales_onboarding.py` — flujo completo upload → estado → aprobación.
+- Resultado pytest scoped: **28 passed, 2 failed**.
+
+### Gaps vs INTRANET legacy
+
+VYNTIA portó el código de onboarding desde INTRANET de forma básicamente paritaria — el modelo es idéntico (`db_table='onboarding_empleado'` preservada, mismos campos, mismos métodos). El servicio `OnboardingService` legacy tiene 622 líneas vs 618 en VYNTIA — diferencias menores (rutas de import, nombres de modelos EN). Los 8 templates de email son idénticos byte-a-byte salvo el nombre de subject "Bienvenido a VYNTIA" (que se setea en código, no en template).
+
+| Feature legacy | Ubicación legacy | Estado en VYNTIA | Tipo | Prioridad propuesta | Nota |
+|---|---|---|:---:|:---:|---|
+| Modelo `OnboardingEmpleado` con AutoField PK | `D:/INTRANET/back/app_rrhh/models/onboarding.py:7` | Renombrado a `OnboardingProcess` con UUID PK + `tenant` FK | done | — | Paridad funcional total. |
+| `db_table = 'onboarding_empleado'` legacy | line 70 | Preservada (line 82) | done | — | OK para BC. |
+| `progreso_aprobado` query a DigitalDocument | line 96 | Replicado (line 109) con import EN-renamed (`apps.documents.models.DigitalDocument`) | done | — | OK. |
+| Servicio `OnboardingService` con 622 líneas | `D:/INTRANET/back/app_rrhh/services/onboarding_service.py` | Replicado en `apps/api/apps/onboarding/services/onboarding_service.py` (618 líneas) | done | — | Paridad casi total. |
+| `OnboardingViewSet` en legacy `api/v1/rrhh/views.py:2319` | legacy mismo path | Conservada en `apps/api/api/v1/rrhh/views.py:2337` (no migrada a `api/v1/onboarding/views.py`) | partial | P1 | L3.x consumer move pendiente — el bounded context `onboarding` no es self-contained. |
+| Templates de email `bienvenida/documento_rechazado/onboarding_aprobado/onboarding_observado` (HTML+TXT) | `D:/INTRANET/back/templates/emails/` | **Copiados sin rebrand** a `apps/api/templates/emails/` | bug | **P0** | 11 strings "Intranet" en templates VYNTIA — ver branding. |
+| Tests legacy `tests/test_onboarding_*.py` | `D:/INTRANET/back/tests/` | Migrados a `apps/api/tests/test_onboarding_*.py` | done | — | 2 fallan en VYNTIA (ver bugs). |
+| Endpoint `/api/v1/onboarding/processes/{id}/corregir-correo/` | (no existía explícitamente como test rojo en legacy) | Implementado en VYNTIA pero el test `TestCorregirCorreo::test_corregir_correo_updates_email` falla con 400 | bug | P0 | Validación rechaza el body, no responde 200. |
+| Permitir empleado actualizar sus propios datos restringidos | (legacy también vulnerable) | `test_employee_cannot_patch_restricted_fields` falla con 200 (debe ser 403) | bug security | **P0** | Empleado en onboarding puede patchear `nombres_empleado`, `apellido_paterno` — backend no bloquea. |
+
+### Gaps vs maestro
+
+Maestro § 3 módulo 03.3 (Inducción) — RPE 265-2017-SERVIR-PE — cubre el plan de inducción **general + específica** para sector público con seguimiento de asistencia y certificados. **Esta auditoría se limita al `OnboardingProcess` existente.** El gap completo (inducción formal, plan general/específico, certificados de finalización, registro de asistencia) se evalúa en Task 11 (Maestro gaps — Module 03).
+
+Sin embargo, vale notar lo que el modelo actual **no captura**:
+- ❌ No hay concepto de "plan de inducción" — solo checklist de documentos.
+- ❌ No hay tracking de asistencia a sesiones.
+- ❌ No hay generación de certificado de inducción (RPE 265-2017 lo exige).
+- ❌ No hay distinción entre inducción general (institución) e inducción específica (puesto).
+- ❌ No hay retención obligatoria del expediente de inducción (legajo SERVIR).
+
+VYNTIA `OnboardingProcess` es funcionalmente un **checklist de documentos administrativos pre-incorporación**, no un proceso de inducción en sentido SERVIR. La distinción es importante para el discovery del módulo 03.3 en B.11.
+
+### Bugs y deuda técnica conocidos
+
+**Tests fallidos (2):**
+
+| Test | Síntoma | Causa raíz | Prioridad | Fase propuesta |
+|---|---|---|:---:|:---:|
+| `tests/test_onboarding_api.py::TestCorregirCorreo::test_corregir_correo_updates_email` | Esperaba 200/201, recibió 400 | El endpoint `corregir-correo` retorna 400 — probablemente el `try/except` exterior captura una excepción interna (el viewset llama directamente `onboarding.empleado.save()` y luego `OnboardingService.reenviar_email_bienvenida(onboarding.pk)` que **internamente filtra por `onboarding_id` — campo que no existe en el modelo VYNTIA** (es `id`); raises `OnboardingProcess.DoesNotExist` → returns None → endpoint responde error 500 que se mapea a 400 vía `APIResponse.error`). | P0 | B.5 |
+| `tests/test_onboarding_self_update.py::TestEmpleadoSelfUpdate::test_employee_cannot_patch_restricted_fields` | Esperaba 403, recibió 200 | El employee endpoint permite que un empleado patchee `nombres_empleado`/`apellido_paterno` durante onboarding — falta restricción de campos editables por el self (debería bloquear identidad inmutable). Bug security. | **P0 security** | B.5 |
+
+**Bugs latentes (no cubiertos por test):**
+
+1. 🐛 **`OnboardingService.reenviar_email_bienvenida`** (line 488) usa `.get(onboarding_id=onboarding_id)` pero el modelo VYNTIA tiene PK `id` UUID — heredado del legacy `OnboardingEmpleado.onboarding_id`. **Cualquier llamada al endpoint `/reenviar_email/` o `/corregir-correo/` que dependa de esto silenciosamente retorna None.** — P0, B.5.
+2. 🐛 **Email branding incompleto** — los 4 templates HTML + 1 TXT contienen 11 ocurrencias de "Intranet" / "Intranet RRHH":
+   - `bienvenida.html` lines 6, 29, 35, 71
+   - `bienvenida.txt` lines 1, 6, 36
+   - `documento_rechazado.html` line 39
+   - `onboarding_aprobado.html` line 36
+   - `onboarding_observado.html` line 38
+   El subject está rebrandado en código (`"Bienvenido a VYNTIA"`) pero el cuerpo del email que llega al empleado dice "Bienvenido a la Intranet — Sistema de Recursos Humanos". **Daño de marca directo en el primer touchpoint del empleado.** — **P0**, B.5.
+3. 🐛 **Generación de username NO es tenant-scoped** (line 104): `User.objects.filter(username=username).exists()` busca en todo el sistema. Si dos tenants tienen empleados llamados igual, el segundo recibe `jdoe1`, `jdoe2`, etc. — username "fugitivo" entre tenants, y peor: **un atacante puede enumerar usuarios de otros tenants** observando el sufijo asignado. — P1, B.2 (identity polish) o B.5.
+4. 🐛 **`OnboardingNotificationService` silencia excepciones** (line 522): el `try/except Exception: ...` en `_enviar_notificacion` cae a síncrono pero **no loguea** si SMTP también falla — pérdida silenciosa de notificaciones. — P1, B.5.
+5. 🐛 **Polimorfismo de `actualizar_estado_onboarding`** (line 303): acepta `empleado_id` o `onboarding_id` indistintamente con doble try/except. Sospechoso — facilita bugs de lookup. Refactor a dos métodos separados. — P2, B.5.
+6. 🐛 **Frontend `onboardingUploadService.ts` tiene 3 funciones (`uploadDocument`, `subirDocumento`, `uploadFoto`) que apuntan al mismo endpoint `/subir-documento/`** con firmas y semánticas diferentes. Duplicación + confusión. — P2, B.5.
+7. 🐛 **`OnboardingAdminPage.tsx` 1047 líneas** — componente monolítico con 5 `any` lints (lines 87, 424, 624, 870, 887 + import de `CardHeader`/`CardTitle` no usados). — P2, B.5.
+
+**Lint warnings/errors específicos** (de `npm run lint`):
+
+| Archivo | Severidad | Mensaje | Línea | Fase |
+|---|---|---|---|---|
+| `OnboardingAdminPage.tsx` | error | `'CardHeader' / 'CardTitle' is defined but never used` | 3:29, 3:41 | B.5 |
+| `OnboardingAdminPage.tsx` | error | `Unexpected any. Specify a different type` (×5) | 87:117, 424:23, 624:19, 870:79, 887:68 | B.5 |
+| `onboardingService.ts` | error | `Unexpected any. Specify a different type` | 76:29 | B.5 |
+| `OnboardingSectionStatus.tsx` | warning | `Fast refresh only works when a file only exports components` | 11:17 | B.5 |
+
+**tsc:** 0 errores en `features/onboarding`.
+
+### Tenant-readiness
+
+| Concern | Status | Comment |
+|---|:---:|---|
+| `OnboardingProcess.tenant` FK | ⚠️ | Presente (line 24) pero **null=True, related_name='+'** — sin enforcement NOT NULL ni unique-per-tenant. Migración 0002 no agrega backfill. |
+| ViewSet `get_queryset` filtra por tenant | ❌ | `OnboardingViewSet.get_queryset()` (rrhh/views.py:2377) **NO filtra por `request.tenant`** — solo aplica filtro por `estado`. Un usuario RRHH del tenant A puede listar onboardings del tenant B si tiene la URL/PK. |
+| ViewSet `perform_create` injecta tenant | ❌ | `OnboardingViewSet` **no define** `perform_create`/`perform_update`. La creación pasa por `OnboardingService.crear_onboarding_completo()` que **tampoco** asigna `tenant` ni a Employee ni a User ni a OnboardingProcess. Cross-tenant leak risk en C.3+. |
+| `retrieve` ownership check | ⚠️ | Manual (line 2417): rechaza si `onboarding.usuario_id != user.pk`. **No verifica que `onboarding.tenant == request.tenant`.** Un superadmin cross-tenant podría ver onboardings de otro tenant. |
+| Username generation cross-tenant | 🐛 | `User.objects.filter(username=username).exists()` (line 104) **no acota por tenant** → enumeración cross-tenant. Ver bug #3. |
+| Notificaciones — tenant en email | ❌ | `from_email` viene de `settings.DEFAULT_FROM_EMAIL` (global), no por-tenant. `frontend_url` viene de `settings.FRONTEND_URL` — debería ser `https://{tenant.subdomain}.vyntia.pe/login` para deep-linking correcto post-C.4 (subdomain routing). |
+| Email branding rebrand | 🐛 | 11 strings "Intranet" en 5 archivos de template — cruza branding de proyecto. Ver bug #2. |
+| Asignación de rol `Employee/empleado` | ⚠️ | `crear_onboarding_completo` (line 262) busca el Role globalmente con `Role.objects.filter(nombre_rol__in=["Employee","empleado"])`; con `Role.tenant` FK, podría asignar el rol del **tenant equivocado**. Sin verificación de tenant en el filtro. |
+| Documentos linkados (DigitalDocument) | inherit | Todas las queries de documentos (`progreso_aprobado`, `actualizar_estado_onboarding`, `validar_onboarding`) filtran sólo por `empleado=...` — heredan el tenant scoping (o falta del mismo) del app `documents`. Ver capítulo `documents`: filesystem cross-tenant leak risk aplica a uploads de onboarding. |
+
+**Resumen tenant-readiness:** ❌ **No tenant-ready**. Tareas mínimas para B.5:
+1. Tenant FK NOT NULL + backfill (alinear con C.3 cuando suceda).
+2. ViewSet `get_queryset` filter por `request.tenant`.
+3. ViewSet `perform_create` injecta `request.tenant` en Employee, User, OnboardingProcess.
+4. Username uniqueness scoped a `(tenant, username)` (también afecta a User model — coordinar con identity B.2).
+5. Role lookup filtrado por `tenant`.
+6. `frontend_url` por-tenant (subdominio).
+7. Rebrand templates VYNTIA (bug #2).
+
+### Notas
+
+- **Decisión heredada de A+C:** `OnboardingViewSet` y sus serializers todavía residen en `api/v1/rrhh/views.py` y `api/v1/rrhh/serializers.py` — el split L3.x del bounded context onboarding **no se completó del lado API**. El módulo `api/v1/onboarding/` solo tiene `urls.py` que importa la ViewSet desde rrhh. Esto es exactamente el mismo patrón que documents (DocumentGenerationViewSet) y contracts (L3.10.3 stale consumers) — un "L3.x consumer audit" acumulado para B.5.
+
+- **Riesgo de tocar onboarding en B.5:** el flujo `crear_onboarding_completo` toca **3 modelos cross-app** (Employee, User, OnboardingProcess) en una transacción atómica, además de envío de email. Cualquier cambio de tenant scoping requiere migrar los 3 sin romper el rollback. Recomendación: probar en staging con datos sintéticos antes de tocar producción.
+
+- **Notification flow documentado:**
+  ```
+  RRHH dispatcha acción (validar/rechazar/upload) →
+    OnboardingViewSet action (rrhh/views.py) →
+      [opcional] OnboardingService.actualizar_estado_onboarding →
+      OnboardingNotificationService.notificar_* →
+        OnboardingService._enviar_notificacion →
+          Celery send_email_html_task.apply_async() (async)
+            └─ fallback: EmailMultiAlternatives.send() (síncrono, mismo request)
+  ```
+  Templates: `apps/api/templates/emails/{bienvenida,documento_rechazado,onboarding_aprobado,onboarding_observado}.{html,txt}`.
+
+- **Pasos rastreados en OnboardingProcess:** datos personales (Employee fields completos), datos laborales (DatosLaborales activo via cross-app FK), upload DNI, declaraciones juradas, certificados académicos, certificados de trabajo, documentos familiares, validación final RRHH (manual, valida toda la pila de DigitalDocument `pendiente_revision`). **No incluye:** capacitación (RPE 265-2017), firma electrónica de bienvenida, asignación de equipo/usuario AD, onboarding de manager (assignar mentor), tareas de período de prueba (B.11).
+
+- **Cobertura de test razonable** (28 passed) — el dominio onboarding es de los mejor cubiertos en VYNTIA. Los 2 fallos son específicos y reproducibles. Sin embargo, la ausencia de `apps/onboarding/tests/` significa que los tests no migraron al bounded context (tech debt cross-app, B.5).
 
 ## Cross-cutting deuda técnica
 
