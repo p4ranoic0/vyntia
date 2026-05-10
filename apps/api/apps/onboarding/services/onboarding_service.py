@@ -208,7 +208,7 @@ class OnboardingService:
 
     @staticmethod
     @transaction.atomic
-    def crear_onboarding_completo(empleado_data, created_by):
+    def crear_onboarding_completo(empleado_data, created_by, *, tenant=None):
         """
         Crea el flujo completo de onboarding:
         1. Crea el registro de Employee
@@ -220,12 +220,15 @@ class OnboardingService:
         Args:
             empleado_data: dict con datos del empleado (nombres, apellidos, DNI, email, etc.)
             created_by: User que inicia el onboarding (RRHH)
+            tenant: Tenant instance (keyword-only). When provided, propagated to
+                Employee and OnboardingProcess (both are tenant-scoped). User is
+                cross-tenant (identity), so it does NOT receive tenant injection.
 
         Returns:
             dict con onboarding, empleado, usuario y password_temporal
         """
         # 1. Crear Employee
-        empleado = Employee.objects.create(
+        employee_kwargs = dict(
             nombres_empleado=empleado_data["nombres_empleado"],
             apellido_paterno=empleado_data["apellido_paterno"],
             apellido_materno=empleado_data.get("apellido_materno", ""),
@@ -235,6 +238,10 @@ class OnboardingService:
             fecha_nacimiento=empleado_data.get("fecha_nacimiento"),
             estado_empleado="activo",
         )
+        # B.1 (#15): inject tenant into Employee when available
+        if tenant is not None:
+            employee_kwargs["tenant"] = tenant
+        empleado = Employee.objects.create(**employee_kwargs)
 
         # 2. Generar credenciales
         username = OnboardingService.generar_username(
@@ -272,11 +279,15 @@ class OnboardingService:
             logger.warning(f"No se pudo asignar rol de empleado: {e}")
 
         # 4. Crear OnboardingProcess
-        onboarding = OnboardingProcess.objects.create(
+        # B.1 (#15): inject tenant into OnboardingProcess when available
+        process_kwargs = dict(
             empleado=empleado,
             usuario=usuario,
             estado_onboarding="pendiente_datos",
         )
+        if tenant is not None:
+            process_kwargs["tenant"] = tenant
+        onboarding = OnboardingProcess.objects.create(**process_kwargs)
 
         # 5. Enviar email de bienvenida
         email_enviado = OnboardingService.enviar_email_bienvenida(

@@ -12,6 +12,7 @@ from apps.core.decorators import (
 )
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse
+from apps.core.viewsets import TenantAwareViewSetMixin
 from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -31,7 +32,7 @@ from .contratos_serializers import (
 )
 
 
-class ContratosAdendasViewSet(viewsets.ModelViewSet):
+class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet para gestión de contratos y adendas.
 
@@ -123,7 +124,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
 
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     # @extend_schema(
     #     description="Obtiene contratos próximos a vencer",
@@ -400,7 +401,11 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             )
 
             if serializer.is_valid():
-                nuevo_contrato = serializer.save(created_by=request.user)
+                save_kwargs = {"created_by": request.user}
+                tenant = getattr(request, "tenant", None)
+                if tenant is not None:
+                    save_kwargs["tenant"] = tenant
+                nuevo_contrato = serializer.save(**save_kwargs)
 
                 # Activar el nuevo contrato
                 nuevo_contrato.status = "ACTIVO"
@@ -434,7 +439,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             )
 
 
-class ContractAmendmentViewSet(viewsets.ModelViewSet):
+class ContractAmendmentViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet para CRUD de adendas contractuales."""
 
     queryset = ContractAmendment.objects.select_related(
@@ -445,6 +450,7 @@ class ContractAmendmentViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        # super() calls TenantAwareViewSetMixin.get_queryset() which applies tenant filter
         qs = super().get_queryset()
         parent_contract_id = self.request.query_params.get('parent_contract')
         if parent_contract_id:
@@ -453,3 +459,33 @@ class ContractAmendmentViewSet(viewsets.ModelViewSet):
         if empleado_id:
             qs = qs.filter(parent_contract__empleado_id=empleado_id)
         return qs.order_by('-created_at')
+
+    @require_authenticated()
+    def list(self, request, *args, **kwargs):
+        """Listar adendas contractuales - requiere autenticación."""
+        return super().list(request, *args, **kwargs)
+
+    @require_authenticated()
+    def retrieve(self, request, *args, **kwargs):
+        """Obtener adenda específica - requiere autenticación."""
+        return super().retrieve(request, *args, **kwargs)
+
+    @require_hr()
+    def create(self, request, *args, **kwargs):
+        """Crear adenda contractual - requiere rol RRHH."""
+        return super().create(request, *args, **kwargs)
+
+    @require_hr()
+    def update(self, request, *args, **kwargs):
+        """Actualizar adenda contractual - requiere rol RRHH."""
+        return super().update(request, *args, **kwargs)
+
+    @require_hr()
+    def partial_update(self, request, *args, **kwargs):
+        """Actualizar adenda parcialmente - requiere rol RRHH."""
+        return super().partial_update(request, *args, **kwargs)
+
+    @require_admin()
+    def destroy(self, request, *args, **kwargs):
+        """Eliminar adenda contractual - requiere rol administrador."""
+        return super().destroy(request, *args, **kwargs)

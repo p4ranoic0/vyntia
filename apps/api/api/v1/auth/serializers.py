@@ -76,12 +76,37 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             PermissionDenied: If on a tenant subdomain and user has no active
                 TenantMembership for that workspace.
         """
+        from rest_framework.exceptions import AuthenticationFailed
+
         # The parent class will use the username_field we set
-        data = super().validate(attrs)
+        # ---- B.1 (#2): Wrap super().validate to catch bad-credential failures ----
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed:
+            username = attrs.get(self.username_field)
+            if username:
+                try:
+                    target = User.objects.get(**{self.username_field: username})
+                    if target.is_active:
+                        target.registrar_intento_fallido()
+                except User.DoesNotExist:
+                    pass
+            raise
 
         # Add user information to response
         # self.user is already a User instance due to AUTH_USER_MODEL
         usuario = self.user
+
+        # ---- B.1 (#1): Refuse JWT if user is blocked ----
+        if usuario.esta_bloqueado:
+            raise AuthenticationFailed(
+                detail="Usuario bloqueado.",
+                code="user_blocked",
+            )
+
+        # ---- B.1 (#2): Reset failed-login counter on successful login ----
+        if usuario.intentos_fallidos > 0:
+            usuario.resetear_intentos_fallidos()
 
         # ---- C.4: enforce TenantMembership when request.tenant is set ----
         # When the request comes in on a tenant subdomain (e.g. acme.vyntia.pe),
@@ -763,7 +788,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email']
+        fields = ['email', 'nombres_usuario', 'apellidos_usuario']
 
     def validate_email(self, value: str) -> str:
         """Validate email uniqueness."""

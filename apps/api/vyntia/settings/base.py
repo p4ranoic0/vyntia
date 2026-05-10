@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "apps.time_off.apps.TimeOffConfig",
     "apps.onboarding.apps.OnboardingConfig",
     "apps.tenancy.apps.TenancyConfig",
+    "apps.audit_lite.apps.AuditLiteConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

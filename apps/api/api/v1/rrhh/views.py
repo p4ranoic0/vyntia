@@ -38,6 +38,7 @@ from apps.core.decorators import (
 from apps.core.exceptions import BusinessLogicError
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse
+from apps.core.viewsets import TenantAwareViewSetMixin
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -121,7 +122,7 @@ logger = logging.getLogger(__name__)
         description="Elimina un área del sistema.",
     ),
 )
-class AreaViewSet(viewsets.ModelViewSet):
+class AreaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for Department management."""
 
     queryset = Department.objects.select_related("area_padre").prefetch_related(
@@ -213,11 +214,12 @@ class AreaViewSet(viewsets.ModelViewSet):
                     )
                 )
 
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     def perform_create(self, serializer):
-        """Create area with logging."""
-        area = serializer.save()
+        """Create area with logging — tenant injected by TenantAwareViewSetMixin."""
+        super().perform_create(serializer)
+        area = serializer.instance
         logger.info(
             f"Área creada: {area.siglas_area}",
             extra={
@@ -650,7 +652,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
         description="Elimina un empleado del sistema.",
     ),
 )
-class EmpleadoViewSet(viewsets.ModelViewSet):
+class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for Employee management."""
 
     queryset = Employee.objects.prefetch_related(
@@ -832,11 +834,14 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
                 fecha_max = today - timedelta(days=int(edad_min) * 365)
                 queryset = queryset.filter(fecha_nacimiento__lte=fecha_max)
 
-        return queryset
+        # B.1 (#8): apply tenant filter via mixin
+        return self._filter_by_tenant(queryset)
 
     def perform_create(self, serializer):
-        """Create employee with logging."""
-        empleado = serializer.save()
+        """Create employee with logging — tenant injected by TenantAwareViewSetMixin."""
+        # B.1 (#8): mixin injects tenant=request.tenant into serializer.save()
+        super().perform_create(serializer)
+        empleado = serializer.instance
         logger.info(
             f"Employee creado: {empleado.nombre_completo}",
             extra={
@@ -1286,7 +1291,7 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
 
-class DatosLaboralesViewSet(viewsets.ModelViewSet):
+class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for EmploymentData management with optimized queries."""
 
     queryset = EmploymentData.objects.select_related(
@@ -1340,12 +1345,12 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
-        """Filter by employee if specified."""
+        """Filter by employee if specified, then by tenant."""
         queryset = super().get_queryset()
         empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     @action(detail=False, methods=["get"])
     @require_hr()
@@ -1980,7 +1985,7 @@ class PermisoViewSet(viewsets.ModelViewSet):
         description="Elimina un documento digital del sistema.",
     ),
 )
-class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
+class DocumentosDigitalesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for DigitalDocument management."""
 
     queryset = DigitalDocument.objects.select_related(
@@ -2032,9 +2037,16 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        """Set subido_por, file metadata, and default estado for employee uploads."""
+        """Set subido_por, file metadata, and default estado for employee uploads.
+
+        B.1 (#14): tenant injected via TenantAwareViewSetMixin guarded pattern.
+        """
         user = self.request.user
         extra = {"subido_por": user}
+        # B.1 (#14): propagate tenant when available
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is not None:
+            extra["tenant"] = tenant
         # If non-HR user uploads, set as pending review
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             extra["estado_documento"] = "pendiente_revision"
@@ -2135,7 +2147,8 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         elif es_version_actual == "false":
             queryset = queryset.filter(es_version_actual=False)
 
-        return queryset
+        # B.1 (#14): apply tenant filter via mixin
+        return self._filter_by_tenant(queryset)
 
     @action(detail=False, methods=["get"])
     @require_hr()
@@ -2272,6 +2285,9 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        # B.1 (#14): propagate tenant into direct .objects.create() calls
+        tenant = getattr(request, "tenant", None)
+
         documentos_creados = []
         for i, archivo in enumerate(archivos):
             nombre = nombre_documento or archivo.name
@@ -2282,7 +2298,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                     else f"{nombre} ({i+1}) - {periodo}"
                 )
 
-            doc = DigitalDocument.objects.create(
+            create_kwargs = dict(
                 empleado_id=empleado_id,
                 tipo_documento=tipo_documento,
                 categoria=categoria,
@@ -2302,6 +2318,9 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                 subido_por=request.user,
                 es_documento_oficial=True,
             )
+            if tenant is not None:
+                create_kwargs["tenant"] = tenant
+            doc = DigitalDocument.objects.create(**create_kwargs)
             documentos_creados.append(doc)
 
         serializer = self.get_serializer(documentos_creados, many=True)
@@ -2334,7 +2353,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         description="Obtiene el detalle de un proceso de onboarding.",
     ),
 )
-class OnboardingViewSet(viewsets.ModelViewSet):
+class OnboardingViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet para gestionar el proceso de onboarding de nuevos empleados."""
 
     queryset = OnboardingProcess.objects.select_related(
@@ -2375,11 +2394,16 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return OnboardingEmpleadoSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # B.1 (#15): tenant filter applied via _filter_by_tenant so OnboardingProcess
+        # rows are scoped to request.tenant. TenantAwareViewSetMixin.get_queryset()
+        # is NOT called here (we override fully) — apply the helper manually.
+        queryset = OnboardingProcess.objects.select_related(
+            "empleado", "usuario", "validado_por"
+        )
         estado = self.request.query_params.get("estado")
         if estado:
             queryset = queryset.filter(estado_onboarding=estado)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     @require_hr()
     def list(self, request, *args, **kwargs):
