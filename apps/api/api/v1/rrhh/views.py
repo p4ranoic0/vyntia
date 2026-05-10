@@ -447,12 +447,14 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         user = request.user
 
+        # B.5b carryover: identity fields (nombres_empleado, apellido_paterno,
+        # apellido_materno, numero_documento) and correo_personal are NOT
+        # self-editable — they are HR-only. Identity is immutable for the
+        # employee; correo_personal change requires HR-validated
+        # `corregir-correo` workflow (audit trail). Allowing employee to
+        # rename themselves was the security gap caught by
+        # test_employee_cannot_patch_restricted_fields.
         _SELF_EDITABLE_FIELDS = {
-            "nombres_empleado",
-            "apellido_paterno",
-            "apellido_materno",
-            "numero_documento",
-            "correo_personal",
             "telefono_celular",
             "telefono_fijo",
             "direccion_domicilio",
