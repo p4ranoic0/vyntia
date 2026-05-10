@@ -83,6 +83,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # self.user is already a User instance due to AUTH_USER_MODEL
         usuario = self.user
 
+        # ---- B.1 (#1): Refuse JWT if user is blocked ----
+        if usuario.esta_bloqueado:
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed(
+                detail="Usuario bloqueado.",
+                code="user_blocked",
+            )
+
         # ---- C.4: enforce TenantMembership when request.tenant is set ----
         # When the request comes in on a tenant subdomain (e.g. acme.vyntia.pe),
         # TenantMiddleware populates request.tenant. In that case the user MUST
