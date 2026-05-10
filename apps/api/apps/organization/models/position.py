@@ -76,6 +76,16 @@ class Position(models.Model):
         related_name='direct_reports',
     )
 
+    # Ley 30709 category (B.7) — nullable while CCF rolls out per tenant.
+    category = models.ForeignKey(
+        'compensation.Category',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='positions',
+        help_text='Ley 30709 category from CCF (post-B.7). Nullable while CCF rolls out.',
+    )
+
     # Lifecycle
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True)
