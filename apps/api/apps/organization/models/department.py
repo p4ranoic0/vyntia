@@ -14,14 +14,30 @@ from django.utils import timezone
 
 
 class Department(models.Model):
-    """Modelo para gestionar las áreas organizacionales de la institución."""
-    
+    """Modelo para gestionar las áreas organizacionales de la institución.
+
+    Post-B.6: Department is the canonical OrgUnit per Maestro Module 02. The
+    `unit_type` field discriminates DIRECCION/GERENCIA/SUBGERENCIA/OFICINA/AREA/
+    EQUIPO (legacy areas default to 'AREA'). `cost_center` ties the unit to
+    accounting reporting.
+    """
+
     ESTADO_AREA_CHOICES = [
         ('activo', 'Activo'),
         ('inactivo', 'Inactivo'),
         ('reestructuracion', 'Reestructuración'),
     ]
-    
+
+    # Org unit type (B.6, Maestro § 2.1)
+    UNIT_TYPE_CHOICES = [
+        ('direccion', 'Dirección'),
+        ('gerencia', 'Gerencia'),
+        ('subgerencia', 'Subgerencia'),
+        ('oficina', 'Oficina'),
+        ('area', 'Área'),
+        ('equipo', 'Equipo'),
+    ]
+
     # Campos principales
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -40,15 +56,31 @@ class Department(models.Model):
     siglas_area = models.CharField(max_length=20, default='TEMP')
     descripcion_area = models.TextField(null=True, blank=True)
     jefe_area = models.CharField(max_length=150, null=True, blank=True)
-    
+
+    # OrgUnit characteristics (B.6)
+    unit_type = models.CharField(
+        max_length=20,
+        choices=UNIT_TYPE_CHOICES,
+        default='area',
+        db_index=True,
+        help_text='Type of organizational unit per Maestro Module 02.',
+    )
+    cost_center = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Accounting cost center identifier.',
+    )
+
     # Jerarquía organizacional
     area_padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, db_column='area_padre_id')
     nivel_jerarquico = models.IntegerField(default=1)
-    
+
     # Información presupuestal y estadística
     codigo_presupuestal = models.CharField(max_length=20, null=True, blank=True)
     total_empleados = models.IntegerField(default=0)
-    
+
     # Campos de control
     estado_area = models.CharField(max_length=20, choices=ESTADO_AREA_CHOICES, default='activo')
     created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
