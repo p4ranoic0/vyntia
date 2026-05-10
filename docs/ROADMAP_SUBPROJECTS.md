@@ -2,6 +2,7 @@
 
 > Source of truth for the post-Foundation build plan. Derived from Foundation Design Spec § 6 (2026-04-25).
 > **Foundation (sub-project A) and Multi-tenancy (sub-project C) are complete.** Start from row 3 (B).
+> **Sub-projects E (Extensión Organización) and F (Policies) are absorbed into B** per the B-spec (2026-05-09) — they are completed when B closes.
 
 | # | Code | Sub-project | Needs before | Tier unlocked |
 |---|------|-------------|--------------|---------------|
@@ -15,8 +16,8 @@
 | 8 | **H** | Vyntia Pulse (gestión rendimiento) | B | **Pro tier** |
 | 9 | **G** | Learning + Career | B | Pro tier |
 | 10 | **Q** | Vyntia Hire (ATS — reclutamiento) | B | Pro tier |
-| 11 | **E** | Extensión Organización (positions, org chart) | B | Core extension |
-| 12 | **F** | Policies (gestión políticas SERVIR) | B | GovTech tier |
+| 11 | ~~**E**~~ | ~~Extensión Organización (positions, org chart)~~ — *absorbed into B per B-spec 2026-05-09* | B | Core extension |
+| 12 | ~~**F**~~ | ~~Policies (gestión políticas SERVIR)~~ — *absorbed into B per B-spec 2026-05-09* | B | GovTech tier |
 | 13 | **I** | Labor Relations (relaciones laborales) | B | GovTech tier |
 | 14 | **J** | Safety (seguridad y salud) | B | GovTech tier |
 | 15 | **K** | Welfare (bienestar) | B | GovTech tier |
