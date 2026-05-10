@@ -68,7 +68,7 @@ class AreaSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.IntegerField())
     def get_empleados_activos_count(self, obj) -> int:
         """Get count of active employees."""
-        return obj.get_empleados_activos_count()
+        return obj.empleados_activos_count()
 
     def validate_siglas_area(self, value):
         """Validate siglas uniqueness."""

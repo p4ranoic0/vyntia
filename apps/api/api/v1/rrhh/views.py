@@ -219,7 +219,7 @@ class AreaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Soft delete area by changing status to inactive."""
-        instance.estado_area = "inactiva"
+        instance.estado_area = "inactivo"
         instance.save()
         logger.info(
             f"Área desactivada: {instance.siglas_area}",
@@ -241,7 +241,7 @@ class AreaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         """Get employees in this area."""
         try:
             area = self.get_object()
-            empleados = area.empleados_actuales()
+            empleados = area.empleados_activos()
 
             # Apply pagination
             page = self.paginate_queryset(empleados)
@@ -341,7 +341,7 @@ class AreaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     @require_authenticated()
     def activas(self, request):
         """Get only active areas."""
-        queryset = self.get_queryset().filter(estado="activa")
+        queryset = self.get_queryset().filter(estado_area="activo")
         serializer = AreaListSerializer(queryset, many=True)
         return APIResponse.success(data=serializer.data, message="Áreas activas")
 
