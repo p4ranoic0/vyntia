@@ -66,6 +66,10 @@ import { WorkspacesPage } from '@/features/workspace-switcher'
 // B.6 OrgChart — lazy-loaded so @xyflow/react (~150 KB) stays off other routes.
 const OrgChartPage = lazy(() => import('@/features/organization/pages/OrgChartPage'))
 
+// B.7 CCF (Ley 30709 compliance) — lazy-loaded compensation admin pages.
+const CCFListPage = lazy(() => import('@/features/compensation/pages/CCFListPage'))
+const CCFEditorPage = lazy(() => import('@/features/compensation/pages/CCFEditorPage'))
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -307,6 +311,28 @@ function AppRoutes() {
             <Suspense fallback={<LoadingSpinner />}>
               <OrgChartPage />
             </Suspense>
+          }
+        />
+
+        {/* Compensation — CCF (Ley 30709, B.7) */}
+        <Route
+          path="/compensacion/ccf"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <CCFListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/compensacion/ccf/:id"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <CCFEditorPage />
+              </Suspense>
+            </AdminRoute>
           }
         />
 
