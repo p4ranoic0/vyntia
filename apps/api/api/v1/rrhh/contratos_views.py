@@ -91,8 +91,8 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         ).order_by("-created_at")
 
         # Filtros por parámetros de consulta
-        empleado_id = self.request.query_params.get("id")
-        area_id = self.request.query_params.get("id")
+        empleado_id = self.request.query_params.get("empleado")
+        area_id = self.request.query_params.get("area")
         tipo_documento = self.request.query_params.get("tipo_documento")
         estado = self.request.query_params.get("estado")
         fecha_inicio = self.request.query_params.get("fecha_inicio")
@@ -108,7 +108,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(tipo_documento=tipo_documento)
 
         if estado:
-            queryset = queryset.filter(estado=estado)
+            queryset = queryset.filter(status=estado)
 
         if fecha_inicio:
             try:
@@ -146,7 +146,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Filtrar contratos activos próximos a vencer
             queryset = self.get_queryset().filter(
-                estado="ACTIVO",
+                status="activo",
                 fecha_fin__lte=fecha_limite,
                 fecha_fin__gte=timezone.now().date(),
             )
@@ -226,14 +226,14 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Estadísticas generales
             total_contratos = queryset.count()
-            contratos_activos = queryset.filter(estado="ACTIVO").count()
-            contratos_vencidos = queryset.filter(estado="VENCIDO").count()
-            contratos_terminados = queryset.filter(estado="TERMINADO").count()
+            contratos_activos = queryset.filter(status="activo").count()
+            contratos_vencidos = queryset.filter(status="vencido").count()
+            contratos_terminados = queryset.filter(status="terminado").count()
 
             # Estadísticas por tipo
             stats_por_tipo = queryset.values("tipo_documento").annotate(
                 total=Count("id"),
-                activos=Count("id", filter=Q(estado="ACTIVO")),
+                activos=Count("id", filter=Q(status="activo")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -242,7 +242,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
                 "area__siglas_area", "area__nombre_unidad_organica"
             ).annotate(
                 total=Count("id"),
-                activos=Count("id", filter=Q(estado="ACTIVO")),
+                activos=Count("id", filter=Q(status="activo")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -253,7 +253,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Valor total de contratos activos
             valor_total_activos = (
-                queryset.filter(estado="ACTIVO").aggregate(total=Sum("salario_bruto"))[
+                queryset.filter(status="activo").aggregate(total=Sum("salario_bruto"))[
                     "total"
                 ]
                 or 0
@@ -294,28 +294,29 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     def estadisticas(self, request):
         """Obtiene estadísticas generales del sistema de contratos."""
         try:
-            # Estadísticas básicas
-            total_contratos = Contract.objects.count()
-            contratos_activos = Contract.objects.filter(estado="ACTIVO").count()
+            # Estadísticas básicas — use get_queryset() for proper tenant scoping
+            qs = self.get_queryset()
+            total_contratos = qs.count()
+            contratos_activos = qs.filter(status="activo").count()
 
             # Contratos por vencer en los próximos 30 días
             fecha_limite = timezone.now().date() + timedelta(days=30)
-            contratos_por_vencer = Contract.objects.filter(
-                estado="ACTIVO",
+            contratos_por_vencer = qs.filter(
+                status="activo",
                 fecha_fin__lte=fecha_limite,
                 fecha_fin__gte=timezone.now().date(),
             ).count()
 
             # Distribución por tipo de documento
             distribucion_tipos = (
-                Contract.objects.values("tipo_documento")
+                qs.values("tipo_documento")
                 .annotate(total=Count("id"))
                 .order_by("-total")
             )
 
             # Empleados con contratos activos
             empleados_con_contratos = (
-                Contract.objects.filter(estado="ACTIVO")
+                qs.filter(status="activo")
                 .values("empleado")
                 .distinct()
                 .count()
@@ -323,7 +324,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Áreas con más contratos
             areas_top = (
-                Contract.objects.values(
+                qs.values(
                     "area__siglas_area", "area__nombre_unidad_organica"
                 )
                 .annotate(total=Count("id"))

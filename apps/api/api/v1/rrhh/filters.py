@@ -251,12 +251,21 @@ class EmpleadoFilter(django_filters.FilterSet):
 class DatosLaboralesFilter(django_filters.FilterSet):
     """Filter for EmploymentData model."""
 
-    reg_laboral = django_filters.CharFilter(lookup_expr="icontains")
-    condicion = django_filters.CharFilter(lookup_expr="icontains")
+    # reg_laboral → regimen_laboral (real field name)
+    reg_laboral = django_filters.CharFilter(
+        field_name="regimen_laboral", lookup_expr="icontains"
+    )
+    # condicion → removed (no matching field on EmploymentData)
     categoria = django_filters.CharFilter(lookup_expr="icontains")
-    grupo_ocupacional = django_filters.CharFilter(lookup_expr="icontains")
-    puesto = django_filters.CharFilter(lookup_expr="icontains")
-    estado = django_filters.BooleanFilter()
+    # grupo_ocupacional → removed (no matching field on EmploymentData)
+    # puesto → cargo_empleado (real field name)
+    puesto = django_filters.CharFilter(
+        field_name="cargo_empleado", lookup_expr="icontains"
+    )
+    # estado → estado_datos (real field name)
+    estado = django_filters.CharFilter(
+        field_name="estado_datos", lookup_expr="icontains"
+    )
 
     # Date range filters
     fecha_ingreso_desde = django_filters.DateFilter(
@@ -272,12 +281,12 @@ class DatosLaboralesFilter(django_filters.FilterSet):
         field_name="fecha_cese", lookup_expr="lte"
     )
 
-    # Salary range filters
+    # Salary range filters — remuneracion → sueldo_basico (real field name)
     remuneracion_min = django_filters.NumberFilter(
-        field_name="remuneracion", lookup_expr="gte"
+        field_name="sueldo_basico", lookup_expr="gte"
     )
     remuneracion_max = django_filters.NumberFilter(
-        field_name="remuneracion", lookup_expr="lte"
+        field_name="sueldo_basico", lookup_expr="lte"
     )
 
     # Seniority filters
@@ -288,9 +297,7 @@ class DatosLaboralesFilter(django_filters.FilterSet):
         model = EmploymentData
         fields = [
             "reg_laboral",
-            "condicion",
             "categoria",
-            "grupo_ocupacional",
             "puesto",
             "estado",
         ]
