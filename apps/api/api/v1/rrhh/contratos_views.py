@@ -12,6 +12,7 @@ from apps.core.decorators import (
 )
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse
+from apps.core.viewsets import TenantAwareViewSetMixin
 from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -31,7 +32,7 @@ from .contratos_serializers import (
 )
 
 
-class ContratosAdendasViewSet(viewsets.ModelViewSet):
+class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet para gestión de contratos y adendas.
 
@@ -123,7 +124,7 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
 
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     # @extend_schema(
     #     description="Obtiene contratos próximos a vencer",
@@ -400,7 +401,11 @@ class ContratosAdendasViewSet(viewsets.ModelViewSet):
             )
 
             if serializer.is_valid():
-                nuevo_contrato = serializer.save(created_by=request.user)
+                save_kwargs = {"created_by": request.user}
+                tenant = getattr(request, "tenant", None)
+                if tenant is not None:
+                    save_kwargs["tenant"] = tenant
+                nuevo_contrato = serializer.save(**save_kwargs)
 
                 # Activar el nuevo contrato
                 nuevo_contrato.status = "ACTIVO"
