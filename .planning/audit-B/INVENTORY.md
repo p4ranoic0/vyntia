@@ -1290,7 +1290,80 @@ Distribución por directorio post-C:
 
 ## Maestro gaps — Module 02 (Organization extended)
 
-(Filled by Task 10.)
+### Already implemented in `organization` app (per Task 3)
+- **Department** (`Area` legacy) — areas / unidades organizativas planas, con FK a Company
+- **Location** (`Ubicacion` legacy) — sedes / ubicaciones físicas
+- **CompanyConfig** (`ConfiguracionEmpresa` legacy) — configuración global por empresa/tenant
+
+That covers a thin slice of "organigrama plano" but **none of the puesto / banda / CCF / MPP / CPE requirements**.
+
+### Maestro requirements not yet implemented (§ 3.156-171, `docs/modulos/02_organizacion_trabajo.md`)
+| Entity | Purpose | Sector | Phase |
+|--------|---------|--------|:-----:|
+| `Position` | Catálogo maestro de puestos (definición, distinto de la plaza ocupada) | both | B.6 |
+| `PositionProfile` | Job description (misión, funciones, competencias, requisitos) | both | B.6 |
+| `OccupationalCategory` | Tabla 10 SUNAT (ejecutivo / empleado / obrero) | both | B.6 |
+| `CIUOCode` | Tabla 9 SUNAT — ocupación CIUO-08 OIT | both | B.6 |
+| `OrgUnit` | Estructura jerárquica navegable (DIRECCION / GERENCIA / OFICINA / AREA / EQUIPO) — extiende Department con jerarquía + parentUnit | both | B.6 |
+| `Plaza` | Posición asignada (OCUPADA / VACANTE / CONGELADA) ligada a Position + Employee | both | B.6 |
+| `PositionRiskProfile` | Perfil de riesgos del puesto (vínculo a SST futuro) | both | B.6 |
+| `CategoryFunctionTable (CCF)` | Cuadro Categorías y Funciones — **obligatorio Ley 30709** igualdad salarial | private (LCT) | B.7 |
+| `Category` + `ObjectiveCriteria` | Categorías jerárquicas con criterios objetivos (responsabilidad, esfuerzo, condiciones, complejidad) | private (LCT) | B.7 |
+| `SalaryBand` | Banda (mín / punto medio / máx) por categoría + análisis de equidad interna | private (LCT) | B.7 |
+| `MPP (Manual Perfiles de Puestos)` | Documento maestro de perfiles del CPE | public (SERVIR) | B.8 |
+| `CPE (Cuadro de Puestos de la Entidad)` | Documento normativo SERVIR — Ley 30057 | public (SERVIR) | B.8 |
+| `CAP (Cuadro de Asignación de Personal)` | Documento provisional 276/728 público | public (276/728-pub) | B.8 |
+
+### Legacy parity gaps (from grep on D:/INTRANET/back/app_rrhh/)
+Legacy stored "cargo" only as a free-text `CharField` on:
+- `datos_laborales.cargo_empleado` (max_length=100)
+- `contratos_adendas.cargo` (max_length=100)
+- `remuneracion.cargo` (max_length=100)
+- `configuracion_empresa.cargo_representante`
+
+**No catalog**, no relational integrity, no profile, no salary bands, no CCF, no MPP, no CPE, no orgchart. Each cargo is typed by hand, can be misspelled, no historical tracking. Legacy is therefore non-compliant with **Ley 30709** (private sector salary equality law that requires CCF).
+
+VYNTIA inherits the same gap — `EmploymentData` model still uses string `cargo`. **Migration to Position FK** is part of B.6.
+
+### Estimated work per phase
+
+#### B.6 — Position + OrgChart + Plaza (~2 weeks)
+- 7 models with tenant FK (Position, PositionProfile, OccupationalCategory, CIUOCode, OrgUnit, Plaza, PositionRiskProfile)
+- Reference catalogs: Tabla 9 SUNAT (CIUO-08 OIT) seed data; Tabla 10 SUNAT seed data
+- OrgChart UI (frontend lib decision in **ADR-B.8**) — drag-drop reordering, parent-child traversal, búsqueda jerárquica, exportación PDF
+- Migration: **EmploymentData.cargo (string) → EmploymentData.position (FK)** with data backfill script
+- `ContratosAdendas.cargo` migration to FK
+- Plaza assignment: OCUPADA / VACANTE / CONGELADA states with workflow
+
+#### B.7 — CCF + SalaryBand (~1.5 weeks)
+- Compliance with **Ley 30709** (D.S. 002-2018-TR reglamento)
+- May require legal review of CCF structure
+- Análisis de brechas salariales por género/edad/antigüedad — reporte auto-generado para fiscalización SUNAFIL
+- Plan de nivelación automático sugerido
+- Importación masiva desde Excel (plantilla predefinida)
+
+#### B.8 — MPP + CPE + CAP (~1.5 weeks)
+- Public-sector schema following **SERVIR** norms (Ley 30057)
+- Distinct UI flow gated by `tenant.sector === 'public'` (**ADR-B.6**)
+- Niveles SP-DS / SP-EJ / SP-ES / SP-AP / RE / FP / EC clasificación
+- Generación de documento normativo descargable PDF para registro en SERVIR
+
+### Phase mapping summary
+- **B.6** Position + OrgChart + Plaza → both sectors
+- **B.7** CCF + SalaryBand → private (LCT)
+- **B.8** MPP + CPE + CAP → public (SERVIR / 276)
+
+### Dependencies
+- B.3 polish-organization done (clean baseline on Department / Location / CompanyConfig)
+- **ADR-B.6** (sector gating SERVIR vs LCT in UI) decided before B.7 and B.8
+- **ADR-B.7** (versioning of Position; estructura org versionada por `effective_date`) decided before B.6 — this is critical because § 5.1 maestro requires "consultas a fecha" sobre la estructura
+- **ADR-B.8** (org chart frontend lib) decided before B.6
+- B.6 is a **hard dependency for B.9 (Selección)** and **B.10 (Vinculación)** in Module 03 — the recruitment process is for a Position; the contract references a Position
+
+### Cross-cutting research items (raised here, deferred)
+- Migration plan for legacy `cargo` strings → Position FK (data quality: how many distinct strings? canonicalization needed?). Captured in B.6 plan.
+- Análisis de equidad salarial Ley 30709 — requires legal review during B.7 plan
+
 
 ## Maestro gaps — Module 03 (Employment lifecycle)
 
