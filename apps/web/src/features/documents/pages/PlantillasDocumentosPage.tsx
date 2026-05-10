@@ -5,7 +5,6 @@ import {
   Copy, Download, Eye, FileText, Info, Trash2, Upload,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
-import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   Dialog,

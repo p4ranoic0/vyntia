@@ -1,6 +1,6 @@
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -84,7 +84,7 @@ export default function OnboardingAdminPage() {
       !o.empleado_documento?.includes(searchText)
     ) return false
     if (filterEstado && o.estado_onboarding !== filterEstado) return false
-    if (filterAlerts && !computeAlert({ fecha_email_bienvenida: o.fecha_email_bienvenida ?? null, last_login: (o as any).last_login ?? null })) return false
+    if (filterAlerts && !computeAlert({ fecha_email_bienvenida: o.fecha_email_bienvenida ?? null, last_login: (o as { last_login?: string | null }).last_login ?? null })) return false
     if (filterMinPct !== '' && o.progreso_porcentaje < Number(filterMinPct)) return false
     if (filterMaxPct !== '' && o.progreso_porcentaje > Number(filterMaxPct)) return false
     return true
@@ -421,7 +421,7 @@ function OnboardingTableRow({
 
   const hasAlert = computeAlert({
     fecha_email_bienvenida: o.fecha_email_bienvenida ?? null,
-    last_login: (o as any).last_login ?? null,
+    last_login: (o as { last_login?: string | null }).last_login ?? null,
   })
 
   const handleValidar = async () => {
@@ -621,8 +621,9 @@ function CreateOnboardingDialog({
         empleado_nombre: response.empleado_nombre,
       })
       toast.success(`Onboarding iniciado para ${formData.nombres_empleado}`)
-    } catch (err: any) {
-      console.error('Onboarding error response:', err?.response?.data)
+    } catch (err: unknown) {
+      const errResp = (err as { response?: { data?: unknown } })?.response?.data
+      console.error('Onboarding error response:', errResp)
       toast.error(getErrorMessage(err, 'Error al crear onboarding'))
     } finally {
       setSubmitting(false)
@@ -867,7 +868,7 @@ function OnboardingDetailDialog({
           <DialogHeader>
             <DialogTitle>Onboarding: {onboarding.empleado_nombre}</DialogTitle>
             <DialogDescription>
-              DNI: {onboarding.empleado_documento} | Usuario: {(onboarding as any).usuario_username}
+              DNI: {onboarding.empleado_documento} | Usuario: {(onboarding as { usuario_username?: string }).usuario_username}
             </DialogDescription>
           </DialogHeader>
 
@@ -884,7 +885,7 @@ function OnboardingDetailDialog({
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: 'Datos personales', done: onboarding.datos_personales_completos },
-                  { label: 'Datos laborales', done: (onboarding as any).datos_laborales_completos },
+                  { label: 'Datos laborales', done: (onboarding as { datos_laborales_completos?: boolean }).datos_laborales_completos },
                   { label: 'DNI', done: onboarding.dni_subido },
                   { label: 'Declaraciones juradas', done: onboarding.declaraciones_juradas_subidas },
                   { label: 'Certificados academicos', done: onboarding.certificados_academicos_subidos },

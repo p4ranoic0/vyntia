@@ -1,6 +1,10 @@
 import { apiClient } from '@/shared/api/api'
 import { UploadDocumentResponse, TipoDocumento } from '../types/onboarding'
 
+/**
+ * Upload employee profile photo. Targets /subir-foto/ (distinct endpoint from
+ * subir-documento/). Used by employee self-onboarding flows.
+ */
 export async function uploadFoto(archivo: File): Promise<UploadDocumentResponse> {
   const formData = new FormData()
   formData.append('archivo', archivo)
@@ -8,6 +12,11 @@ export async function uploadFoto(archivo: File): Promise<UploadDocumentResponse>
   return response.data?.data
 }
 
+/**
+ * Employee self-upload during onboarding. The backend infers `empleado` from
+ * the authenticated user (employee role). Sends only minimal fields. Use this
+ * from employee-facing onboarding pages.
+ */
 export async function uploadDocument(
   tipoDocumento: TipoDocumento,
   archivo: File,
@@ -21,6 +30,12 @@ export async function uploadDocument(
   return response.data?.data
 }
 
+/**
+ * HR/admin upload on behalf of an employee. Sends explicit `empleado`,
+ * `categoria`, `nivel_acceso` plus optional extra fields. Use this from
+ * HR/admin tooling — NOT from employee-facing onboarding flows
+ * (uploadDocument is the employee-self variant).
+ */
 export async function subirDocumento(
   empleadoId: number,
   tipoDocumento: string,
