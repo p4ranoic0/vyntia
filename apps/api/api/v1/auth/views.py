@@ -96,7 +96,7 @@ class LoginAPIView(TokenObtainPairView):
         Returns:
             Response with user data and tokens in JSON format
         """
-        from rest_framework.exceptions import PermissionDenied
+        from rest_framework.exceptions import PermissionDenied, ValidationError
 
         serializer = self.get_serializer(data=request.data)
 
@@ -118,6 +118,13 @@ class LoginAPIView(TokenObtainPairView):
                 status_code=status.HTTP_200_OK,
             )
 
+        except ValidationError as e:
+            # Missing fields, malformed data, etc. — surface as 400
+            return APIResponse.error(
+                message="Datos de inicio de sesión inválidos",
+                errors=e.detail if hasattr(e, "detail") else {"detail": str(e)},
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
         except PermissionDenied as e:
             # C.4: User authenticated but has no active TenantMembership for
             # the tenant resolved from the subdomain — return 403, not 401.
