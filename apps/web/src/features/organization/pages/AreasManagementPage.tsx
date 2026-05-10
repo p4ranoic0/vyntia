@@ -77,18 +77,6 @@ export function AreasManagementPage() {
     // Aquí iría la lógica de exportación
   }
 
-  // Datos para gráficos
-  const chartData = {
-    areasPorOrgano: organosUnicos.map(organo => ({
-      organo,
-      cantidad: areas.filter((area: Area) => area.nombre_organo === organo).length
-    })),
-    empleadosPorArea: areas.map((area: Area) => ({
-      area: area.siglas_area,
-      empleados: area.empleados_activos_count || 0
-    })).sort((a, b) => b.empleados - a.empleados).slice(0, 10)
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">

@@ -77,7 +77,7 @@ export function AreaForm({ open, onOpenChange, area, onSubmit, isLoading = false
       await onSubmit(data)
       form.reset()
       onOpenChange(false)
-    } catch (error) {
+    } catch {
       // Error handling is done in the parent component
     }
   }

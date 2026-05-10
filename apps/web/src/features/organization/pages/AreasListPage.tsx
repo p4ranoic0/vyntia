@@ -16,7 +16,7 @@ import {
 import { Input } from '@/shared/ui/input'
 import { useToast } from '@/shared/ui/use-toast'
 import { getErrorMessage } from '@/shared/api/errorUtils'
-import { departmentsService, Area as AreaType } from '@/features/organization/services/departmentsService'
+import { departmentsService, Area as AreaType, CreateAreaData } from '@/features/organization/services/departmentsService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Building2, Edit, MoreHorizontal, Plus, Search, Trash2, Users } from 'lucide-react'
@@ -52,7 +52,7 @@ export function AreasListPage() {
       setIsDeleteDialogOpen(false)
       setSelectedArea(null)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: getErrorMessage(error, 'No se pudo eliminar el área.'),
@@ -84,7 +84,7 @@ export function AreasListPage() {
 
   // Mutación para crear área
   const createAreaMutation = useMutation({
-    mutationFn: (data: any) => departmentsService.createArea(data),
+    mutationFn: (data: CreateAreaData) => departmentsService.createArea(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -94,7 +94,7 @@ export function AreasListPage() {
       setIsFormOpen(false)
       setEditingArea(null)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: getErrorMessage(error, 'No se pudo crear el área.'),
@@ -105,7 +105,7 @@ export function AreasListPage() {
 
   // Mutación para actualizar área
   const updateAreaMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => departmentsService.updateArea(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateAreaData> }) => departmentsService.updateArea(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] })
       toast({
@@ -115,7 +115,7 @@ export function AreasListPage() {
       setIsFormOpen(false)
       setEditingArea(null)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: getErrorMessage(error, 'No se pudo actualizar el área.'),
@@ -124,7 +124,7 @@ export function AreasListPage() {
     },
   })
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: CreateAreaData) => {
     if (editingArea) {
       await updateAreaMutation.mutateAsync({ id: editingArea.id, data })
     } else {
