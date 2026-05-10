@@ -201,12 +201,124 @@ Treating these as separate products would double infrastructure cost and fork th
 
 ## ADR-B.7: Versioning of critical models (Position, Contract)
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** Several VYNTIA models carry historical legal weight: changing them in place destroys context that auditors, employees, and courts may need years later. The two clearest cases:
+- **Position** (B.6): a position carries salary band, role definition, requirements, and reporting line. Changing the salary band of "Analyst II" in 2027 must not retroactively rewrite what people occupying that position earned in 2026 — the contract referenced the 2026 definition.
+- **Contract**: an existing contract may be amended (sueldo update, plazo extension, addendum). Today this is implemented in `apps/contracts/` via Contract + ContractAmendment (introduced L3.10.3) — the contract is immutable once issued; changes are amendments referencing the original.
+
+A general approach (e.g., `django-simple-history` recording every row change automatically) is tempting but mismatches the legal model: not every column change is a legally significant amendment. Some are corrections (typo fix); some are amendments (sueldo change). The model needs to encode that distinction explicitly.
+
+**Decision:** Per-model versioning strategy, not a global library.
+- **Position**: inline versioning on the Position model itself. Fields: `version: int` (starts at 1), `parent: ForeignKey('self', null=True, related_name='successors')` pointing to the previous version. A change to a "versioned" field (salary band, role definition) creates a new Position row with `version = parent.version + 1` and links back. Non-versioned fields (typo in description, internal notes) update in place. Active assignments reference the specific Position version they were issued against.
+- **Contract**: continue with the existing explicit Contract + ContractAmendment split (already implemented in L3.10.3). The Contract row is immutable post-issuance; amendments are separate records linked via FK. No `django-simple-history`.
+- **Other models** (Employee, Department, etc.): no versioning. Audit fields (ADR-B.2) plus AuditEvent for high-stakes mutations are sufficient.
+
+Rationale: explicit, model-specific versioning is auditable in plain SQL — a lawyer's tech advisor can read the schema and understand the history model. Library-driven shadow tables are opaque.
+
+**Consequences:**
+- Positive: Legal review can read history straight from the schema. No need to query a hidden `pgh_history` table.
+- Positive: Distinction between "amendment" and "correction" is encoded — you cannot accidentally rewrite history with a typo fix.
+- Positive: References from other models (assignments → Position version, payroll → Contract version) are explicit and queryable.
+- Negative: Each versioned model carries its own boilerplate (parent FK, version column, duplication-on-change service). Mitigation: extract `VersionedModelMixin` in `apps/core/` once both Position and Contract patterns settle.
+- Negative: Querying "current" rows requires `WHERE successor_id IS NULL` (or a `current_version` flag). Performance acceptable with index on `parent_id`.
+- Negative: Some historical queries (e.g., "show me all Positions with salary > X at any point in time") become more complex — must traverse versions.
+- Neutral: Migration cost low because Contract already follows the pattern; only Position is new.
+
+**Alternatives considered:**
+- `django-simple-history` for automatic record-level history: rejected because it's opaque (auto-generated shadow tables), it can't distinguish amendments from corrections, and it doesn't model the explicit "this assignment references THIS version of the position" relationship cleanly.
+- Event sourcing on these models: rejected as overkill — the volume of changes is low (positions rarely change, contracts amended occasionally) and event sourcing complicates simple reads massively.
+- Snapshot-on-payroll (only the moments payroll runs are versioned): rejected because non-payroll consumers (legal, HR reports, court requests) need full history.
+- Full audit log (ADR-B.2) instead of versioning: rejected because audit log records changes but doesn't make versioned references queryable — "what was this Position's salary band when this contract was signed?" is awkward without versioned rows.
+
+**Reference:** L3.10.3 contract amendment pattern in `apps/contracts/models/contract_amendment.py`. B.6 plan (Position) to apply same pattern. Maestro Module 02 (Position).
+
+
 
 ## ADR-B.8: Org chart frontend library
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** B.6 (organization extended) requires an interactive org chart: navigable, drill-down, drag-drop reordering of reporting relationships, and visual presentation of departments + positions + occupants. Several JavaScript libraries are candidates:
+- `react-d3-tree`: thin React wrapper around D3 hierarchical tree; declarative; read-only by default.
+- `dagre-d3`: graph layout library on D3; generic but imperative.
+- `@xyflow/react` (formerly React Flow): node-based editor framework with drag-drop, custom nodes, panning, zooming, minimap; mature, ~150 KB gzipped, MIT licensed; v11+ has stable TypeScript types and active maintenance.
+- Custom CSS grid + handwritten layout: full control but reimplements panning, zooming, edge routing.
+
+The org chart in VYNTIA needs to be both viewable (employee facing — "who reports to whom") and editable (RRHH facing — drag-drop to reassign). Read-only solutions don't cover the editing UX.
+
+**Decision:** Adopt `@xyflow/react` for the org chart in B.6 and any future graph-shaped UIs (workflow visualizer, process diagrams). Lazy-load it on the org-chart route so users not on that page don't pay the ~150 KB cost. Define custom node components for Department, Position, and Employee node types.
+
+**Consequences:**
+- Positive: Drag-drop reordering, panning, zooming, minimap come for free — no UX framework to build.
+- Positive: TypeScript-first, good docs, active community (sustained releases through 2025–26).
+- Positive: Reusable for future phases (workflow visualizer, ascenso tree, organization migration tool).
+- Positive: Lazy-loading mitigates bundle impact for users not on the org chart screen.
+- Negative: ~150 KB gzipped is a sizable dependency; users who do hit the page see slower first paint compared to a hand-rolled solution. Mitigation: lazy-loaded chunk + skeleton loader.
+- Negative: Library version churn (v11→v12 happened recently with rename). Need to pin and review on update.
+- Negative: Custom layout for hierarchical org chart still requires writing a layout algorithm or wrapping `dagre` — `@xyflow/react` doesn't auto-layout trees out of the box. Acceptable; layout is a one-time integration cost.
+- Neutral: License (MIT) is compatible.
+
+**Alternatives considered:**
+- `react-d3-tree`: rejected because read-only by default, no native drag-drop, and adapting it to editing needs as much work as switching libraries.
+- `dagre-d3`: rejected because D3's imperative model is awkward to maintain in a React codebase — every node update requires manual DOM management.
+- Custom CSS grid: rejected because reinventing panning/zooming/minimap/drag-drop is a multi-week project.
+- `react-flow` v10 (older API): rejected because superseded by `@xyflow/react`.
+- `vis.js`/`cytoscape.js`: rejected because graph-database-style libraries; their visual idiom doesn't fit hierarchical org charts as cleanly.
+
+**Reference:** `@xyflow/react` docs at https://reactflow.dev. B.6 plan to detail node component design. Bundle audit to be added as part of B.6 verification.
+
+
 
 ## ADR-B.9: Severance calculation scope (B vs D)
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** B.14 (desvinculación) needs to compute and present a liquidación (severance settlement) when an employee is terminated. Sub-proyecto D (Vyntia Pay) is the full payroll engine, and severance is a payroll-adjacent calculation. Without an explicit boundary, two failure modes are likely:
+- B.14 ships a barebones placeholder calculation that customers can't trust → desvinculación is unsellable.
+- B.14 implements the full payroll-grade severance with all régimen variants, AFP/ONP detraction, Renta 5ta, etc. → blurs the B/D boundary, duplicates work D will redo, and inflates B.14's scope.
+
+The legal minimum that any LCT termination requires:
+- CTS proporcional (1 sueldo per year worked, prorated for the partial period since last semestre deposit).
+- Vacaciones truncas (días no gozados × jornal).
+- Gratificación trunca (proportional to current semester at termination date).
+- Indemnización por despido arbitrario (1.5 sueldos per year, capped at 12 sueldos), where applicable.
+
+These four components are stable in law (D.S. 003-97-TR, D.S. 001-97-TR, Ley 27735) and can be computed without a full payroll engine — they only need contract data, vacation balance, and current sueldo.
+
+**Decision:** B.14 implements the **minimum legal severance calculation only**:
+- CTS proporcional (last semester only; depósito CTS history not required for B.14 — that lives in D).
+- Vacaciones truncas based on accumulated balance from B's vacation system.
+- Gratificación trunca for the current semester (Julio or Diciembre).
+- Indemnización por despido arbitrario where the cese cause is "despido arbitrario."
+
+The output is persisted as a `SeveranceSettlement` record in B.14, with line items, totals, and a generated PDF settlement letter.
+
+**Sub-proyecto D extends `SeveranceSettlement` later with**:
+- AFP/ONP detraction (requires the AFP/ONP régimen tables and current employee's afiliación).
+- Retención de quinta categoría (Renta 5ta) calculation.
+- Multi-régimen variants: RLE, MYPE, agraria, construcción civil, etc.
+- CTS depósito semestral handling (full history, not just proporcional last semester).
+- Gratificaciones programadas and bonificación extraordinaria 9%.
+- Retroactivos and reintegros if any payroll periods were unpaid at termination.
+- Integration with ONP/AFP T-Registro for cessation notifications.
+
+When D arrives, the existing `SeveranceSettlement` records remain valid; D enhances new settlements with the additional components and may offer a "recompute under D engine" action for already-issued settlements (out of scope for B).
+
+**Consequences:**
+- Positive: B.14 ships a credible, legally-grounded severance flow without waiting for D.
+- Positive: B/D boundary is explicit and enforceable in code review — anyone trying to add AFP/ONP logic to B.14 gets pushback citing this ADR.
+- Positive: `SeveranceSettlement` table is stable across the B → D transition (D extends, doesn't replace).
+- Positive: Test coverage scope for B.14 stays bounded — only 4 calculation rules.
+- Negative: A B-only customer running a complex régimen (e.g., agraria) gets an incomplete severance number and must manually adjust. Documented limitation in B.14.
+- Negative: Customers in régimen MYPE may feel the indemnización cap (since their cap is different); B.14 only covers default LCT cap.
+- Negative: B.14's calculation may be subtly wrong if D's eventual implementation reveals edge cases (e.g., last partial month with overtime). Mitigation: B.14 includes manual override fields on `SeveranceSettlement` lines.
+- Neutral: SERVIR severance differs (different cause framework). B.14 covers SERVIR's analogous minimums per ADR-B.6 sector branching.
+
+**Alternatives considered:**
+- Full liquidación in B.14 (all regímenes, all detractions): rejected because that is sub-proyecto D's whole point. Replicating D inside B blurs the architecture and likely costs 4–6 weeks B.14 could not absorb.
+- Defer all severance to D (B.14 ships without calculation): rejected because B.14 is core HR — a desvinculación module that can't tell you what to pay is not sellable to RRHH directors.
+- Hybrid: B.14 computes nothing but exposes a hook so D plugs in later: rejected because the hook would be empty in B and the demoable feature would be missing.
+
+**Reference:** D.S. 003-97-TR (LCT consolidated); D.S. 001-97-TR (CTS); Ley 27735 (Gratificaciones); Ley 28051 (PLAME). Sub-proyecto D scope in `docs/ROADMAP_SUBPROJECTS.md`. Maestro Module 03.6 (desvinculación).
+
