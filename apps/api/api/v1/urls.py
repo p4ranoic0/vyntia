@@ -32,4 +32,5 @@ urlpatterns = [
     path('payroll/', include('api.v1.payroll.urls')),
     path('time-off/', include('api.v1.time_off.urls')),
     path('onboarding/', include('api.v1.onboarding.urls')),
+    path('compensation/', include('api.v1.compensation.urls')),
 ]
