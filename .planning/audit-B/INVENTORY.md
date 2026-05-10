@@ -306,7 +306,202 @@ Sin errores TS ni warnings ESLint para `features/organization` (verificado con `
 
 ## App: employees
 
-(Filled by Task 4.)
+### Estado actual en VYNTIA (post-A+C)
+
+#### Modelos
+- `Employee` (file: `apps/api/apps/employees/models/employee.py:18`) — entidad central de la app: información personal, contacto, banco, pensión, salud y suspensión de renta 4ta. Renombre L3.10.x: legacy `Empleado` → `Employee`. PK UUID. Tabla legacy `empleado` preservada (db_table line 187). 50+ campos.
+  - **Identidad**: `numero_documento` (CharField), `tipo_documento` (DNI/CE/PASAPORTE/OTROS), `nombres_empleado`, `apellido_paterno`, `apellido_materno`, `numero_ruc`, `genero_empleado` (4 choices), `fecha_nacimiento`, `es_padre_familia`, `es_militar`.
+  - **Pensión / régimen**: `sistema_pensiones` (ONP/AFP×4/PENSIONISTA×3/SIN PENSION), `tipo_comision` (FLUJO/MIXTA), `codigo_cuspp`.
+  - **Salud**: `tipo_seguro_salud` (ESSALUD/EPS/PRIVADO/NINGUNO), `centro_salud`, `direccion_centro_salud`, `departamento_centro_salud`, `vigencia_estado_seguro` (activo/inactivo).
+  - **Renta 4ta**: `tiene_suspension_renta_cuarta_vigente`, `fecha_inicio_suspension_renta`, `fecha_fin_suspension_renta`, `documento_suspension_renta` (FileField, upload `suspensiones_renta/%Y/`).
+  - **Contacto**: `telefono_fijo`, `telefono_celular`, `correo_personal` (EmailField, **unique=True**, ver bug).
+  - **Personal**: `estado_civil`, `direccion_domicilio`, `distrito_domicilio`, `provincia_domicilio`, `departamento_domicilio`.
+  - **Bancario**: `entidad_bancaria`, `numero_cuenta_bancaria`, `numero_cci`.
+  - **Físico/médico**: `tipo_sangre` (8 choices), `talla_empleado` (Decimal 3,2), `peso_empleado` (Decimal 5,2), `ruta_fotografia`.
+  - **Control**: `estado_empleado` (activo/inactivo/suspendido/cesado), `created_at` (db_column `fecha_registro`), `updated_at` (db_column `fecha_actualizacion`).
+  - Tenant FK: ✅ (line 92, nullable=true). Constraint: `unique_employee_doc_per_tenant` sobre `(tenant, numero_documento)` (line 204-207). Migración 0002 retira el `unique=True` global de `numero_documento` y añade el constraint per-tenant (file `migrations/0002_alter_academicrecord_unique_together_and_more.py:47-67`).
+  - **NO se actualizó** el `unique=True` global de `correo_personal` (line 150) — sigue siendo único cross-tenant. **Bug C-multitenancy** (ver Tenant-readiness).
+  - Manager: default. `EmpleadoManager` comentado (line 15) — igual que legacy.
+  - Métodos: `ubicacion_actual()`, `datos_laborales_actuales()`, `historial_ubicaciones()`, `familiares_activos()`, `formacion_academica()`, `boletas_recientes(meses=6)` (stub que devuelve `[]` — herencia legacy). Properties: `nombre_completo`, `edad`, `genero_texto`, `es_activo`, `documento_completo`, `contacto_principal`, `direccion_completa`, `imc`.
+- `FamilyMember` (file: `apps/api/apps/employees/models/family_member.py:17`) — datos familiares. Renombre L3.10.x: legacy `DatosFamiliares` → `FamilyMember`. PK UUID. Tabla legacy `datos_familiares`.
+  - Campos clave: `empleado` FK→`Employee` (CASCADE, related_name `familiares`), datos personales del familiar (nombres, apellidos, tipo+nro documento, fecha_nacimiento, género, parentesco — 14 choices: cónyuge/conviviente/hijo/padre/madre/hermano/abuelo/nieto/tio/primo/suegro/cuñado/yerno_nuera/otro), flags (`es_dependiente`, `es_beneficiario`, `es_contacto_emergencia`), `estado_civil`, `nivel_educativo` (9 choices), `ocupacion`, `centro_trabajo`, contacto familiar, salud (`tiene_seguro_salud`, `tipo_seguro_salud`, `numero_seguro`, `centro_salud_asignado`), discapacidad (`tiene_discapacidad`, `tipo_discapacidad`, `grado_discapacidad`, `certificado_discapacidad`), fechas dependencia, `estado_familiar` (activo/inactivo/fallecido), `observaciones`, audit (db_column legacy).
+  - Tenant FK: ✅ (line 80, nullable=true). `unique_together = [['tenant', 'empleado', 'numero_documento']]` (line 162).
+  - Manager: default. `DatosFamiliaresManager` comentado.
+  - Métodos: `activar_dependencia()`, `desactivar_dependencia(motivo)`, `activar_beneficiario()`, `desactivar_beneficiario()`, `activar_contacto_emergencia()`, `desactivar_contacto_emergencia()`, `marcar_fallecido()`, `actualizar_seguro_salud(...)`, `actualizar_discapacidad(...)`. Classmethods: `dependientes_activos`, `contactos_emergencia`, `beneficiarios_activos`, `hijos_menores`, `familiares_con_discapacidad`. Properties: `nombre_completo`, `edad`, `es_menor_edad`, `es_mayor_edad`, `parentesco_texto`, `genero_texto`, `documento_completo`, `direccion_completa`, `contacto_completo`, `es_activo`, `dependencia_vigente`, `edad_para_dependencia`, `requiere_documentos_adicionales`.
+- `AcademicRecord` (file: `apps/api/apps/employees/models/academic_record.py:17`) — formación académica. Renombre L3.10.x: legacy `DatosAcademicos` → `AcademicRecord`. PK UUID. Tabla legacy `datos_academicos`.
+  - Campos clave: `empleado` FK (CASCADE, related_name `formacion_academica`), `nivel_educativo` (12 choices: primaria→doctorado), `nombre_institucion`, `tipo_institucion` (publica/privada/internacional/virtual/presencial/semipresencial), `modalidad_estudio`, programa (`nombre_carrera`, `codigo_carrera`, `area_conocimiento`, `duracion_anos`, `duracion_semestres`), fechas (`fecha_inicio`, `fecha_fin`, `fecha_graduacion`), `estado_estudios` (completo/incompleto/en_curso/trunco/convalidado), `promedio_ponderado`, créditos, titulación (`numero_titulo`, `numero_diploma`, `numero_colegiatura`, `colegio_profesional`), ubicación institución (Perú default), `mencion_especialidad`, `tesis_titulo`, `reconocimientos`, rutas a documentos (legacy CharField + FK opcional a `documents.DigitalDocument`), verificación SUNEDU, `estado_registro`.
+  - Tenant FK: ✅ (line 68, nullable=true). `unique_together = [['tenant', 'empleado', 'nivel_educativo', 'nombre_carrera', 'nombre_institucion']]` (line 163).
+  - Manager: default. `DatosAcademicosManager` comentado.
+  - Métodos: `marcar_graduado()`, `marcar_en_curso()`, `marcar_incompleto()`, `verificar_sunedu()`, `actualizar_promedio()`, `actualizar_creditos()`, `agregar_colegiatura()`, `agregar_documento()`. Classmethods: `por_nivel_educativo`, `graduados_recientes(anos=5)`, `estudiantes_activos`, `pendientes_verificacion_sunedu`, `por_area_conocimiento`, `profesionales_colegiados`, `estadisticas_por_nivel`. Properties: 14+ (texto helpers, `duracion_completa`, `periodo_estudios`, `es_graduado`, `es_estudiante_activo`, `porcentaje_avance`, `anos_desde_graduacion`, `ubicacion_institucion`, `informacion_colegiatura`, `documentos_disponibles`, `requiere_verificacion`, `es_nivel_superior`, `es_postgrado`).
+- `Certification` (file: `apps/api/apps/employees/models/certification.py:14`) — cursos y certificaciones. Renombre L3.10.x: legacy `CursosCertificaciones` → `Certification`. PK UUID. Tabla legacy `cursos_certificaciones`. Modelo simple (12 campos).
+  - Campos clave: `empleado` FK (CASCADE, related_name `cursos_certificaciones`), `nombre_curso`, `institucion`, `fecha_inicio`, `fecha_fin`, `horas`, `descripcion`, `documento` FK→`documents.DigitalDocument`, `estado_registro` (default `'activo'` — sin choices), audit.
+  - Tenant FK: ✅ (line 18, nullable=true). `unique_together = [['tenant', 'empleado', 'nombre_curso', 'institucion', 'fecha_inicio']]` (line 47).
+
+#### Endpoints REST
+- `/api/v1/employees/employees/` — `EmpleadoViewSet` (file: `api/v1/rrhh/views.py:653`). Routed via `api/v1/employees/urls.py:16`.
+  - `list` (GET): `@cache_response(timeout=300)` + `@require_authenticated()`.
+  - `retrieve` (GET): `@cache_response(timeout=600)` + `@require_authenticated()`.
+  - `create` (POST): `@require_hr()` + invalidate cache. Usa `EmpleadoCreateSerializer` (nested: datos_laborales + area_inicial + datos_familiares + datos_academicos en una sola transacción atómica, file `serializers.py:725`).
+  - `update`/`partial_update` (PUT/PATCH): self-edit habilitado para empleado autenticado sobre su propio legajo con whitelist de 22 campos editables (`_SELF_EDITABLE_FIELDS` views.py:726). RRHH/Admin pueden editar cualquier campo.
+  - `destroy` (DELETE): `@require_admin()` — soft delete via `estado_empleado="inactivo"` (perform_destroy line 861).
+  - Custom actions: `transferir` (POST detail), `estadisticas` (GET), `activos` (GET), `reporte_integral` (GET, PDF), `reporte_seccion` (GET, PDF, query=`personal|laboral|academico|familiar`), `datos_completos` (GET — devuelve 501 NOT_IMPLEMENTED, ver bugs).
+  - FilterSet: `EmpleadoFilter` (filters.py:68) — 18 filtros (nombres, apellidos, dni, género, estado_civil, estado, distrito, fechas y edad, área, área_siglas, puesto, categoría, régimen laboral, remuneración min/max, tiene_hijos, tiene_conyuge).
+  - Permission class: `EmpleadoPermission` (permissions.py:165) — RRHH/Admin RW; SAFE_METHODS para todos los autenticados; jefes_de_area parcialmente permitidos.
+  - Pagination: `StandardResultsSetPagination` (20/page).
+- `/api/v1/employees/family-members/` — `DatosFamiliaresViewSet` (views.py:1030). Self-service: empleado puede CRUD sus propios familiares (líneas 1062-1128). RRHH/Admin pueden CRUD cualquiera.
+- `/api/v1/employees/academic-records/` — `DatosAcademicosViewSet` (views.py:1131). Self-service idéntico.
+- `/api/v1/employees/certifications/` — `CursosCertificacionesViewSet` (views.py:1232). Self-service idéntico (sin update/partial_update/destroy customizados — usa los del ModelViewSet).
+
+#### UI (frontend)
+- `Empleados` (page) at `apps/web/src/features/employees/pages/Empleados.tsx` — listado principal con filtros y tabla.
+- `EmpleadosListPage` at `apps/web/src/features/employees/pages/EmpleadosListPage.tsx` — listado alternativo.
+- `HROverviewDashboard` at `apps/web/src/features/employees/pages/HROverviewDashboard.tsx` — dashboard HR de KPIs.
+- `EmpleadoReportPage` — descarga reporte integral PDF.
+- Páginas-detalle: `DatosPersonalesPage`, `DatosLaboralesPage`, `DatosFamiliaresPage`, `DatosAcademicosPage` (4 tabs/pages).
+- Modales: `DatosPersonalesModal`, `DatosLaboralesModal`, `DatosFamiliaresModal`, `DatosAcademicosModal`.
+- Componentes: `TabPersonales`, `TabLaborales`, `TabFamiliares`, `TabAcademicos`, `AdminDocUpload`.
+- Hooks: `useEmployees`, `useEmployeePermissions`.
+- Service: `employeesService` at `apps/web/src/features/employees/services/employeesService.ts` — el API client con sub-objetos para `datosPersonales`, `datosLaborales` (apunta a `/api/v1/employment-data/`), `datosFamiliares` (`/api/v1/family-members/`), `datosAcademicos` (`/api/v1/academic-records/`), `reportes` (PDF blob downloads).
+- ❌ NO existe UI para `Certification` (cursos/certificaciones) en frontend — modelo expuesto vía `/api/v1/employees/certifications/` pero sin componentes.
+
+#### Tests
+- `apps/api/tests/test_empleado_update_v2.py` — 5 tests (PATCH save fields: pensión, banking, domicilio, sin pensión, read serializer). **5/5 PASAN** (verificado 2026-05-09).
+- ❌ NO existe `apps/api/apps/employees/tests/` — sin tests in-app.
+- ❌ NO hay tests del modelo `Employee` (creación, validaciones, properties como `edad`/`imc`/`nombre_completo`).
+- ❌ NO hay tests para `FamilyMember`, `AcademicRecord`, `Certification` (modelos ni ViewSets).
+- ❌ NO hay tests para `EmpleadoViewSet` actions custom (`transferir`, `estadisticas`, `reporte_integral`, `reporte_seccion`).
+- ❌ NO hay tests para `EmpleadoFilter` (18 filtros sin cobertura).
+- ❌ NO hay tests del `EmpleadoCreateSerializer.create()` transaccional (datos laborales + área + familiares + académicos en 1 POST).
+
+### Gaps vs INTRANET legacy
+
+VYNTIA employees es **paritario campo-por-campo** con el legacy en `Employee`/`Empleado`. Ambos modelos comparten **idénticos**:
+- Mismas 8 listas de choices (TIPO_DOCUMENTO, GENERO, SISTEMA_PENSIONES, TIPO_COMISION, TIPO_SEGURO, ESTADO_CIVIL, TIPO_SANGRE, ESTADO_EMPLEADO, VIGENCIA_ESTADO_SEGURO).
+- Mismos 50+ campos (incluida la suspensión de renta 4ta y el documento SUNAT).
+- Mismos 13 indexes en `Meta`.
+- Mismos métodos (`ubicacion_actual`, `datos_laborales_actuales`, `historial_ubicaciones`, `familiares_activos`, `formacion_academica`, `boletas_recientes`).
+- Mismas properties (`nombre_completo`, `edad`, `genero_texto`, `es_activo`, `documento_completo`, `contacto_principal`, `direccion_completa`, `imc`).
+
+Diferencias estructurales — todas adiciones C/L3, no pérdidas:
+- PK: `empleado_id AutoField` → `id UUIDField`.
+- Constraint: `numero_documento unique=True` global → `(tenant, numero_documento)` per-tenant + tenant FK.
+- Audit timestamps: `fecha_registro/fecha_actualizacion` (legacy nombre) → `created_at/updated_at` (clase EN) con `db_column` legacy preservado.
+
+Field-by-field comparison `FamilyMember`, `AcademicRecord`, `Certification`: **paritario absoluto**. Mismas choices, campos, indexes, métodos, properties — sólo cambian PK→UUID y unique_together extendido con `tenant`.
+
+| Feature legacy | Ubicación legacy | Estado en VYNTIA | Tipo | Prioridad propuesta | Nota |
+|---|---|---|:---:|:---:|---|
+| Modelo `Empleado` (50+ campos, AutoField PK) | `D:/INTRANET/back/app_rrhh/models/empleado.py:17` | Migrado a `Employee` con UUID + class-name EN, db_table `empleado` preservado, **paridad campo-por-campo** | done | — | Sin pérdida funcional. |
+| Modelo `DatosFamiliares` | `datos_familiares.py:15` | Migrado a `FamilyMember` con UUID + class-name EN, db_table `datos_familiares` preservado | done | — | Paridad funcional. |
+| Modelo `DatosAcademicos` | `datos_academicos.py:15` | Migrado a `AcademicRecord` con UUID + class-name EN, db_table `datos_academicos` preservado | done | — | Paridad funcional. |
+| Modelo `CursosCertificaciones` | `cursos_certificaciones.py:12` | Migrado a `Certification` con UUID + class-name EN, db_table `cursos_certificaciones` preservado | done | — | Paridad funcional. |
+| Manager `EmpleadoManager` | `D:/INTRANET/back/app_rrhh/managers.py` | Comentado en VYNTIA `models/employee.py:15` (igual que legacy) | partial | P3 | Decidir: implementar o eliminar comentario. |
+| Manager `DatosFamiliaresManager` / `DatosAcademicosManager` | `D:/INTRANET/back/app_rrhh/managers.py` | Comentados en VYNTIA, igual que legacy | partial | P3 | Mismo veredicto. |
+| `Empleado.boletas_recientes()` stub | `empleado.py:291` | Stub copiado intacto a VYNTIA `employee.py:306` — devuelve `[]` con código muerto duplicado (lines 316-317 dos `return []`) | partial | P2 | Implementar cuando exista `Payslip` (B+ payroll) o eliminar. |
+| Bug heredado: `EmpleadoReportService.generar_reporte_integral` usa `Employee.objects.get(empleado_id=empleado_id)` — campo `empleado_id` NO existe en VYNTIA (es `id` UUID) | `D:/INTRANET/back/app_rrhh/services/empleado_report_service.py` ↔ `apps/employees/services/employee_report_service.py:39, 57` | Bug heredado del rename L3 incompleto en service layer — los endpoints `/employees/{id}/reporte_integral/` y `/reporte_seccion/` SIEMPRE fallan con `FieldError`. **Bug crítico funcional.** | 🐛 bug crítico | P1 |
+| Bug heredado: `EmpleadoCreateSerializer.validate_area_inicial` usa `Department.objects.get(area_id=value, ...)` — `area_id` NO existe en `Department` (es `id` UUID) | legacy: `serializers.py` ↔ `api/v1/rrhh/serializers.py:720` | Bug copiado del rename L3 — POST `/employees/` con `area_inicial` lanza `FieldError`. Si frontend SÍ envía `area_inicial`, **endpoint create falla**. | 🐛 bug crítico | P1 |
+| Bug heredado: `EmpleadoCreateSerializer.area_inicial` declarado como `IntegerField` | `api/v1/rrhh/serializers.py:678` | Department PK ahora es UUID, debería ser `UUIDField` o `PrimaryKeyRelatedField(queryset=Department.objects.all())`. Combinado con bug anterior, hace el create endpoint de empleados completo **inutilizable**. | 🐛 bug crítico | P1 |
+| `Empleado.numero_documento unique=True` global | `empleado.py:91` | Cambiado: ahora unique `(tenant, numero_documento)` per-tenant (migración 0002:47-67) | done | — | C cambió la semántica intencionalmente — distintos tenants pueden tener mismo DNI. |
+| `Empleado.correo_personal unique=True` global | `empleado.py:141` | **NO migrado** — sigue `unique=True` global (employee.py:150). **Inconsistente con la decisión multi-tenant**: dos tenants no pueden tener un empleado con mismo email. | 🐛 bug C-multitenancy | P1 |
+
+### Gaps vs maestro
+
+El maestro § 3 Módulo 03 (líneas 175-191) define el ciclo de vida del empleado en **7 sub-procesos**. **Esta sección audita SOLO la entidad Employee y sus datos de soporte (familiares, académicos, certificaciones)** — sub-procesos como Selección, Vinculación, Inducción, Período de prueba, Desplazamiento y Desvinculación se gap-analizan en **Task 11 (Maestro gaps Module 03)** y NO se duplican aquí.
+
+Foco de esta sección: **03.5 Administración de Legajos** — el repositorio digital permanente del trabajador. El maestro define 15 contenidos obligatorios del legajo (líneas 190-205); aquí trazamos cuáles están ya cubiertos por `Employee + FamilyMember + AcademicRecord + Certification + DigitalDocument`, y cuáles faltan.
+
+| Capability del maestro (§ 03.5 / contenido legajo) | Estado en VYNTIA | Prioridad |
+|---|---|:---:|
+| 1. Datos personales (DNI, fotografía, dirección, estado civil, derechohabientes) | ✅ Cubierto por `Employee` (todos los campos) + `FamilyMember` (derechohabientes vía `es_dependiente`/`es_beneficiario`). Foto vía `ruta_fotografia` (CharField — no FileField, ver bugs). | — |
+| 2. Datos académicos (diplomas, certificados, colegiatura, constancias) | ✅ Cubierto por `AcademicRecord` (incluye colegiatura, SUNEDU, diplomas) + `Certification`. | — |
+| 3. Experiencia laboral previa | ❌ Inexistente. NO hay modelo `WorkExperience` o `PreviousJob`. Sólo el contrato actual y addendas (`apps.contracts`). | P1 (B feature gap) |
+| 4. Contrato vigente y addendas | ⚠️ Cubierto en `apps.contracts` (Task 5) — fuera de scope employees. | (Task 5) |
+| 5. Declaraciones juradas (no parentesco, no incompatibilidad, impedimentos, intereses) | ❌ Inexistente. NO hay modelo `SwornDeclaration` ni `Declaration`. Se almacenan como `DigitalDocument` genérico sin estructura. | P1 |
+| 6. Documentos de identidad y CUSPP | ✅ Parcial: `numero_documento`, `tipo_documento`, `codigo_cuspp` en Employee. Documentos físicos vía `DigitalDocument` (Task 6). | — |
+| 7. Historial de puestos ocupados en la entidad | ⚠️ Parcial vía `LocationHistory` (movimientos de área) + `EmploymentData` historial (con `estado_datos`). NO hay modelo dedicado `JobHistory` ni timeline consolidado. | P2 |
+| 8. Evaluaciones de desempeño | ❌ Inexistente — Module 06 (no scope B, post-B). | (Module 06) |
+| 9. Capacitaciones recibidas | ✅ Parcial — `Certification` cubre cursos formales. NO hay tracking de capacitaciones internas, asistencias, evaluaciones (Module 05). | (Module 05 post-B) |
+| 10. Reconocimientos y felicitaciones | ❌ Inexistente. Existe `AcademicRecord.reconocimientos` (TextField) sólo para reconocimientos académicos. | P2 |
+| 11. Sanciones disciplinarias | ❌ Inexistente — Module 09 procedimiento disciplinario (post-B). | (Module 09) |
+| 12. Licencias otorgadas | ⚠️ Parcial via `apps.time_off` (vacaciones) — fuera de scope employees. Otras licencias (maternidad, paternidad, sin goce) no modeladas explícitamente. | (Task ??) |
+| 13. Exámenes médicos ocupacionales (acceso restringido permlevel 9) | ❌ Inexistente. NO hay modelo `MedicalExam`. Module 07.2 SST (post-B). | (Module 07.2 post-B) |
+| 14. Accidentes laborales (acceso restringido) | ❌ Inexistente. Module 07.2 SST (post-B). | (Module 07.2 post-B) |
+| 15. Documentos de cese | ⚠️ Cubierto parcialmente vía `DigitalDocument` (categoría `cese`) en Task 6. Sin entidad estructurada `Termination`. | (Task 11 desvinculación) |
+| **Funcionalidades 03.5 § 6.3** | | |
+| Upload con OCR | ❌ NO implementado. `DigitalDocument` permite upload pero sin OCR. | P3 |
+| Clasificación automática por tipo | ⚠️ `DigitalDocument.tipo_documento` y `categoria` son manuales (sin ML). | P3 |
+| Firma electrónica | ❌ NO implementado. | P2 (sub-proyecto) |
+| Versionado | ⚠️ `DigitalDocument` tiene `es_version_actual` (Task 6) — no expuesto vía UI. | P2 |
+| **Control de acceso granular por documento (permission levels)** | ❌ NO implementado. `DigitalDocument.nivel_acceso` existe pero sin enforcement por permlevel del usuario. Coincide con gap A04 RBAC granular (ver identity chapter). | P1 (cross-cutting RBAC) |
+| Búsqueda full-text | ❌ NO implementado. Sólo búsqueda por substring (DRF `SearchFilter`). | P3 |
+| Exportación completa del legajo (PDF consolidado) | ✅ `EmpleadoReportService.generar_reporte_integral()` — pero **roto** (bug `empleado_id` arriba). Una vez fix, cubre el requisito básico. | P1 (fix bug) |
+| Retención mínima 5 años post-cese | ❌ NO hay política implementada. | P3 |
+| **Protección datos Ley 29733 (§ 6.4)** | | |
+| Cifrado AES-256 datos sensibles (salud, biometría) | ❌ NO implementado. Datos médicos (`tipo_sangre`, `talla_empleado`, `peso_empleado`, `centro_salud`, etc.) en plaintext. | P1 (compliance) |
+| Registro banco de datos ANPD | ❌ NO documentado ni implementado. | (compliance docs) |
+
+### Bugs y deuda técnica conocidos
+
+Pytest employees: `tests/test_empleado_update_v2.py` 5/5 PASAN. Sin fallos atribuibles a employees en la suite. Sin embargo, hay bugs latentes y bugs críticos en código no cubierto por tests:
+
+| Bug | Ubicación | Causa | Tipo | Prioridad |
+|---|---|---|:---:|:---:|
+| `EmpleadoReportService` usa `Employee.objects.get(empleado_id=...)` — campo no existe (es `id` UUID) | `apps/employees/services/employee_report_service.py:39, 57` | Rename L3 incompleto: el legacy usaba `empleado_id` (AutoField) pero el modelo VYNTIA migró a `id` UUID. El service no se actualizó. **Endpoints `/reporte_integral/` y `/reporte_seccion/` siempre fallan con FieldError**. | 🐛 bug crítico | P1 |
+| `EmpleadoCreateSerializer.validate_area_inicial` usa `Department.objects.get(area_id=value, estado_area="activo")` — `area_id` no existe (es `id` UUID), choice `activo` debería ser correcto pero se llama desde código legacy | `api/v1/rrhh/serializers.py:720` | Mismo problema rename L3 incompleto. **POST `/employees/` con `area_inicial` falla con FieldError**. | 🐛 bug crítico | P1 |
+| `EmpleadoCreateSerializer.area_inicial = serializers.IntegerField(write_only=True)` | `serializers.py:678` | `Department.id` ahora es UUID. Debe ser `PrimaryKeyRelatedField(queryset=Department.objects.all())` o `UUIDField`. Bloquea el endpoint create completo. | 🐛 bug crítico | P1 |
+| `Employee.correo_personal` es `unique=True` **global** (no per-tenant) | `apps/employees/models/employee.py:150` | Migración 0002 corrigió el unique de `numero_documento` pero olvidó `correo_personal`. Dos tenants NO pueden tener empleados con el mismo email — **bug C-multitenancy real**. | 🐛 bug seguridad C | P1 |
+| `EmpleadoFilter.filter_area` filtra por `ubicaciones_destino__area_id` | `api/v1/rrhh/filters.py:161-167` | El related_name `ubicaciones_destino` es la reverse FK desde `Department` (no desde `Employee`). El filtro debería ser `historial_ubicaciones__area_destino_id` (related_name correcto desde Employee). Lanza `FieldError` al ejercitarse. | 🐛 bug | P1 |
+| `EmpleadoFilter.filter_area_siglas` mismo issue + accede `area_destino__siglas_area` | `filters.py:170-177` | Misma causa. Mismo veredicto. | 🐛 bug | P1 |
+| `EmpleadoFilter.filter_remuneracion_min/max` filtra por `datos_laborales__sueldo_basico` | `filters.py:206-222` | El campo en `EmploymentData` es `remuneracion_mensual` (no `sueldo_basico`). Filtros silenciosamente devuelven 0 resultados. | 🐛 bug | P2 |
+| `EmpleadoFilter.filter_tiene_conyuge` busca parentesco en `["esposo", "esposa", "conviviente"]` | `filters.py:241` | Choices reales en `FamilyMember.PARENTESCO_CHOICES`: `conyuge` (no `esposo`/`esposa`) + `conviviente`. Filtro NO matchea cónyuges casados. | 🐛 bug | P2 |
+| `EmpleadoViewSet.get_queryset` filter_by_area usa `historial_ubicaciones__area_destino__area_id` | `api/v1/rrhh/views.py:818-821` | `area_id` no existe; debe ser `area_destino_id` (UUID). Si `?area=` query param se pasa, lanza `FieldError`. | 🐛 bug | P1 |
+| `EmpleadoViewSet.datos_completos` action devuelve hardcoded 501 NOT_IMPLEMENTED | `views.py:874-895` | Action declarada con permiso `ver_empleados` pero el body es un wrapper que siempre retorna 501. Endpoint ruidoso. | ⚠️ deuda | P3 |
+| `EmpleadoViewSet.transferir` action usa `EmploymentData.objects.filter(...).update(area_id=...)` | `views.py:913-915` | `area_id` no existe; debe ser `area_id` legacy db_column. Actualmente `EmploymentData.area` es FK a Department UUID — ver Task 5 (contracts). Si los tests no lo ejercitan, está roto. | 🐛 bug | P1 |
+| `EmpleadoViewSet.estadisticas` action usa `Employee.objects.count()` (sin filtrar por tenant) | `views.py:957-960` | Cuenta empleados de **todos los tenants**. Bug seguridad multi-tenant — confía 100% en RLS sin defense-in-depth. | 🐛 bug seguridad | P1 |
+| `Employee.ruta_fotografia` es CharField legacy (no FileField/ImageField) | `employee.py:174` | Stores ruta string; sin manejo de upload, sin validación de tipo de archivo, sin URL absolute. Inconsistente con `documento_suspension_renta` (FileField line 140). | ⚠️ deuda | P2 |
+| `Employee.boletas_recientes()` tiene `return []` duplicado | `employee.py:316-317` | Código muerto heredado del legacy: dos `return []` consecutivos. Cosmético pero evidencia de stub abandonado. | ⚠️ deuda | P3 |
+| `Department.objects.get(area_id=...)` en `EmpleadoCreateSerializer.create()` | `serializers.py:737` | Repite el bug anterior. Si llegara aquí (no llega porque validate falla antes), lanza FieldError. | 🐛 bug crítico | P1 |
+| `DatosFamiliaresViewSet`/`DatosAcademicosViewSet` self-service: confía en `user.empleado` (OneToOne reverse) | `views.py:1067-1070, 1166-1170` | OK funcionalmente. Pero el campo `user.empleado` debería resolverse vía OneToOne (existe en `User.empleado` line 50). Sin embargo, NO hay validación de que `instance.empleado.tenant == request.tenant` — un empleado de tenant A podría editar familiares de tenant B si su user-membership permite acceso (improbable pero defensible). | ⚠️ deuda seguridad | P2 |
+| Custom managers comentados en los 4 modelos | `employee.py:15`, `family_member.py:14`, `academic_record.py:14` | Decisión pendiente. | ⚠️ deuda | P3 |
+| Sin `apps/employees/tests/` | — | Tests viven en `apps/api/tests/` (root). Co-locate como B.2 cleanup. | ⚠️ deuda | P3 |
+| Frontend `Employee` interface declara `nombres`, `ape_paterno`, `ape_materno`, `dni`, `email`, `area: {organo, siglas}`, `cargo: {...}` | `apps/web/src/features/employees/services/employeesService.ts:9-42` | Backend devuelve `nombres_empleado`, `apellido_paterno`, `apellido_materno`, `numero_documento`, `correo_personal`, sin objeto `area` anidado. Mismatch resuelto vía `normalizeEmployee` (`shared/api/apiNormalizers.ts:90`) — pero el tipo TS está mintiendo respecto al BE. | ⚠️ deuda tipos | P2 |
+| Frontend `DatosLaboralesService` apunta a `/api/v1/employment-data/` | `employeesService.ts:218, 230` | URL no existe. La ruta real es `/api/v1/contracts/employment-data/` (Task 5). Endpoints fallan con 404. | 🐛 bug frontend | P1 |
+| Frontend sin UI para `Certification` (cursos) | — | Modelo expuesto vía API pero sin pantallas. Usuarios no pueden gestionar cursos. | ❌ missing | P2 |
+
+Sin errores TS ni warnings ESLint para `features/employees` (verificado con `tsc --noEmit -p tsconfig.app.json` y `npm run lint`).
+
+### Tenant-readiness
+
+| Concern | Status | Comment |
+|---|:---:|---|
+| `Employee` has tenant FK | ✅ | `employee.py:92` — nullable=true. Constraint: unique `(tenant, numero_documento)` (line 204-207). |
+| `FamilyMember` has tenant FK | ✅ | `family_member.py:80` — nullable=true. `unique_together = (tenant, empleado, numero_documento)`. |
+| `AcademicRecord` has tenant FK | ✅ | `academic_record.py:68` — nullable=true. `unique_together` extendido con `tenant`. |
+| `Certification` has tenant FK | ✅ | `certification.py:18` — nullable=true. `unique_together` extendido con `tenant`. |
+| Composite unique constraint sobre `(tenant, numero_documento)` Employee | ✅ | Migración 0002:64-67 añade `unique_employee_doc_per_tenant`. **Pero** el `unique=True` global de `correo_personal` (line 150) NO fue migrado — bug seguridad C. **P1 fix.** |
+| `EmpleadoViewSet.get_queryset` filtra por tenant | ❌ | views.py:798-835 — NO filtra por tenant. Confía 100% en RLS+middleware. **Sin defense-in-depth.** |
+| `DatosFamiliaresViewSet/DatosAcademicosViewSet/CursosCertificacionesViewSet.get_queryset` filtran por tenant | ❌ | views.py:1062-1074, 1163-1175, 1259-1274 — ninguno filtra por tenant explícitamente. Self-service filter (`user.empleado`) accidentalmente sirve de proxy de aislación, pero un user con membership en múltiples tenants **podría** ver familiares de empleados de otros tenants si su `user.empleado` apunta cross-tenant. Defense-in-depth ausente. |
+| `EmpleadoViewSet.perform_create` asigna tenant automáticamente | ❌ | views.py:837-848 — NO setea `tenant` en `serializer.save()`. Si frontend no envía tenant, se crea con `tenant=NULL` (orphan cross-tenant). **Bug seguridad C P1.** |
+| `EmpleadoCreateSerializer.create()` (transactional) propaga tenant a `EmploymentData`, `FamilyMember`, `AcademicRecord` | ❌ | serializers.py:725-750 — crea registros relacionados sin pasar tenant. Todos los nested writes tienen `tenant=NULL`. Si esto se invocara con éxito, generaría datos huérfanos. **Bug crítico** combinado con el bug del `area_inicial`. |
+| `DatosFamiliares/Academicos/CursosCertificaciones perform_create` propaga tenant | ❌ | Idem — sin override de `perform_create`. `tenant=NULL` automático. |
+| `EmpleadoViewSet.estadisticas` cuenta cross-tenant | ❌ | views.py:957-960 — `Employee.objects.count()` global. **Bug seguridad C P1**: dashboard de un tenant vería conteo de todos los tenants si RLS bypass. |
+| `EmpleadoViewSet.transferir` propaga tenant | ❌ | views.py:913-915 — `EmploymentData.objects.filter(...).update(...)` sin filtrar por tenant. |
+| `EmpleadoFilter` filters tenant | ❌ | filters.py:68-248 — los filtros `area`, `puesto`, `categoria`, etc., recorren relaciones (`historial_ubicaciones`, `datos_laborales`, `familiares`) sin filtrar por tenant. RLS-dependiente. |
+| Test de aislación tenant para employees | ❌ | `tests/test_tenant_isolation.py` no incluye casos de Employee/FamilyMember/AcademicRecord/Certification. |
+| Multi-tenant en frontend | ✅ | El frontend confía en host+JWT. Subdominio determina tenant. No hay selector. |
+
+### Notas
+
+- **Renombrado L3.10.x parcial — versión más severa que organization.** Class names ES→EN (`Empleado`→`Employee`, `DatosFamiliares`→`FamilyMember`, `DatosAcademicos`→`AcademicRecord`, `CursosCertificaciones`→`Certification`) hechos. PK fields legacy (`empleado_id`, `area_id`, `familiar_id`, `academico_id`, `curso_id`) **no fueron actualizados** en el código consumidor (services, serializers, views). Esto produce bugs críticos en `EmpleadoReportService` (3 endpoints PDF rotos), `EmpleadoCreateSerializer` (endpoint create roto), `EmpleadoViewSet.transferir` (action rota), `EmpleadoFilter.filter_area*` (filtros rotos), `EmpleadoViewSet.get_queryset` (filtro `?area=` roto). **El módulo employees está parcialmente roto en producción** y ningún test lo ejercita. **P1 priority en B.1 fast-track antes de exponer panel admin.**
+- **Bug C-multitenancy: `correo_personal` unique global.** La migración 0002 corrigió el unique global de `numero_documento` pero olvidó `correo_personal`. Inconsistencia clara con el modelo multi-tenant. Riesgo: dos tenants con un empleado de mismo email → IntegrityError. **P1 fix:** retirar `unique=True` y añadir constraint `(tenant, correo_personal)` similar a `numero_documento`.
+- **`Employee` es la entidad central HR — paritaria con legacy a nivel campos pero rota a nivel código consumidor.** Ningún campo del legacy se perdió. Sin embargo, los servicios/serializers/views/filters que usan `Employee` referencian PK fields legacy que ya no existen. Esto explica por qué los tests existentes (5 PATCH tests) PASAN — sólo testean update simple, NO los endpoints custom rotos.
+- **Auto-tenant en perform_create ausente en los 4 ViewSets.** Patrón emergente cross-app (identity, organization, employees): ningún ViewSet asigna tenant automáticamente desde `request.tenant`. Cualquier POST que no envíe explícitamente `tenant` crea filas huérfanas. **Decision para B.1**: introducir un `TenantAwareViewSetMixin` que sobrescribe `perform_create` setting `tenant=request.tenant`. Aplicar a los 6 apps de Vyntia Core en una sola PR.
+- **Self-service de familiares/académicos/certificaciones funciona en intención pero defense-in-depth ausente.** Los ViewSets confían 100% en `user.empleado == instance.empleado` para gating, sin verificar que `user.empleado.tenant == request.tenant`. Si un user con multi-membership accede al endpoint en el tenant equivocado, podría ver/editar registros del otro tenant. Improbable en flujo normal pero defensible.
+- **Datos médicos sin cifrado.** `tipo_sangre`, `talla_empleado`, `peso_empleado`, `centro_salud`, `direccion_centro_salud`, `tiene_discapacidad` (FamilyMember) — todos en plaintext. Ley 29733 exige cifrado AES-256 para datos sensibles. **P1 compliance** antes de producción enterprise.
+- **Endpoint create roto (alto impacto).** `POST /api/v1/employees/employees/` con `EmpleadoCreateSerializer` está roto por 3 bugs combinados (`area_inicial` IntegerField + `Department.objects.get(area_id=...)` + `validate_area_inicial` similar). El frontend `employeesService.create` (employeesService.ts:144-155) llama a este endpoint sin `area_inicial` (sólo manda Partial<Employee>) → posiblemente cae al `EmpleadoCreateSerializer.required area_inicial` y devuelve 400. Si se completa correctamente, falla con FieldError 500. **Cualquier flujo de "alta de empleado" en frontend está roto.**
+- **`Certification` huérfano en frontend.** Modelo y endpoint REST listos, pero sin UI. Decisión: incluir en B.2 polish o backlog.
+- **Riesgos al tocar employees en B.1/B.2.** (1) `db_table='empleado'`/`'datos_familiares'`/`'datos_academicos'`/`'cursos_certificaciones'` y `db_column='fecha_registro'`/`'fecha_actualizacion'` son referencia para datos importados — renombrar columnas físicamente rompe migración. (2) `Employee.empleado` OneToOne reverse desde `User` (related_name `usuario`, identity:user.py:50-55) — modificar el FK rompe auth flow. (3) `EmploymentData.empleado` y `LocationHistory.empleado` son FK PROTECT-cascading; eliminar Employee con datos laborales activos lanza `ProtectedError` (correcto). (4) Reportes PDF dependen de templates en `apps/api/templates/reportes/reporte_empleado.html` (ver Task 6 documents).
+- **Preparación para Module 03 sub-procesos (Task 11).** `Employee` es la entidad ancla; en Task 11 se inventarían las 7 sub-procesos (Selección, Vinculación, Inducción, Periodo de prueba, Legajos extendido, Desplazamiento, Desvinculación). Esta sección sólo cubre la entidad y sus datos de soporte.
 
 ## App: contracts
 
