@@ -73,6 +73,14 @@ class DocumentGenerationViewSet(ViewSet):
             self._pdf_generator = _get_pdf_generator()
         return self._pdf_generator
 
+    def _request_tenant(self):
+        """Resolve current request tenant for B.5b #76/#78 tenant threading.
+
+        Returns the request.tenant set by TenantMiddleware, or None for
+        admin/reserved subdomains.
+        """
+        return getattr(self.request, "tenant", None)
+
     # @extend_schema(
     #     description="Generar contrato en formato PDF",
     #     request={
@@ -111,7 +119,7 @@ class DocumentGenerationViewSet(ViewSet):
 
             if formato == "html":
                 html_content = self.template_service.generar_contrato(
-                    contrato.pk, tipo_plantilla=plantilla
+                    contrato.pk, tipo_plantilla=plantilla, tenant=self._request_tenant()
                 )
                 return HttpResponse(
                     html_content, content_type="text/html; charset=utf-8"
@@ -119,7 +127,7 @@ class DocumentGenerationViewSet(ViewSet):
 
             elif formato == "pdf":
                 html_content = self.template_service.generar_contrato(
-                    contrato.pk, tipo_plantilla=plantilla
+                    contrato.pk, tipo_plantilla=plantilla, tenant=self._request_tenant()
                 )
                 pdf_bytes = self.pdf_generator._html_to_pdf(html_content)
 
@@ -129,6 +137,7 @@ class DocumentGenerationViewSet(ViewSet):
                     )
                     nombre_archivo = f"contrato_{contrato.pk}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
                     documento = DigitalDocument.objects.create(
+                        tenant=self._request_tenant() or contrato.tenant,
                         empleado=contrato.empleado,
                         tipo_documento="contrato_trabajo",
                         categoria="laboral",
@@ -212,7 +221,7 @@ class DocumentGenerationViewSet(ViewSet):
 
             if formato == "html":
                 html_content = self.template_service.generar_adenda(
-                    adenda.pk, tipo_adenda=adenda.tipo_documento
+                    adenda.pk, tipo_adenda=adenda.tipo_documento, tenant=self._request_tenant()
                 )
                 return HttpResponse(
                     html_content, content_type="text/html; charset=utf-8"
@@ -220,7 +229,7 @@ class DocumentGenerationViewSet(ViewSet):
 
             elif formato == "pdf":
                 html_content = self.template_service.generar_adenda(
-                    adenda.pk, tipo_adenda=adenda.tipo_documento
+                    adenda.pk, tipo_adenda=adenda.tipo_documento, tenant=self._request_tenant()
                 )
                 pdf_bytes = self.pdf_generator._html_to_pdf(html_content)
 
@@ -228,6 +237,7 @@ class DocumentGenerationViewSet(ViewSet):
                     nombre_doc = f"Adenda {adenda.numero_adenda or adenda.pk}"
                     nombre_archivo = f"adenda_{adenda.pk}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
                     documento = DigitalDocument.objects.create(
+                        tenant=self._request_tenant() or adenda.tenant,
                         empleado=adenda.parent_contract.empleado,
                         tipo_documento="adenda_contrato",
                         categoria="laboral",
@@ -333,6 +343,7 @@ class DocumentGenerationViewSet(ViewSet):
                     empleado.pk,
                     tipo_certificado=tipo_certificado,
                     datos_adicionales=certificado_data,
+                    tenant=self._request_tenant(),
                 )
                 return HttpResponse(
                     html_content, content_type="text/html; charset=utf-8"
@@ -343,6 +354,7 @@ class DocumentGenerationViewSet(ViewSet):
                     empleado.pk,
                     tipo_certificado=tipo_certificado,
                     datos_adicionales=certificado_data,
+                    tenant=self._request_tenant(),
                 )
                 pdf_bytes = self.pdf_generator._html_to_pdf(html_content)
 
@@ -350,6 +362,7 @@ class DocumentGenerationViewSet(ViewSet):
                     num_cert = certificado_data["numero_certificado"]
                     nombre_archivo = f"certificado_{empleado.pk}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
                     documento = DigitalDocument.objects.create(
+                        tenant=self._request_tenant() or empleado.tenant,
                         empleado=empleado,
                         tipo_documento="certificado_trabajo",
                         categoria="laboral",
@@ -455,7 +468,7 @@ class DocumentGenerationViewSet(ViewSet):
             }
 
             if formato == "html":
-                html_content = self.template_service.generar_reporte_html(reporte_data)
+                html_content = self.template_service.generar_reporte_html(reporte_data, tenant=self._request_tenant())
                 return HttpResponse(
                     html_content, content_type="text/html; charset=utf-8"
                 )
@@ -466,6 +479,7 @@ class DocumentGenerationViewSet(ViewSet):
                         reporte_data=reporte_data,
                         guardar_en_bd=guardar_documento,
                         usuario_creador=request.user,
+                        tenant=self._request_tenant(),
                     )
 
                 if guardar_documento:
@@ -587,6 +601,7 @@ class DocumentGenerationViewSet(ViewSet):
                 return APIResponse.error(message="Solo se permiten archivos .docx", status_code=status.HTTP_400_BAD_REQUEST)
 
             plantilla = DocumentTemplate.objects.create(
+                tenant=self._request_tenant(),
                 tipo=tipo,
                 nombre=nombre,
                 descripcion=descripcion,
@@ -686,6 +701,7 @@ class DocumentGenerationViewSet(ViewSet):
                     numero_certificado=numero_cert,
                     proposito=request.data.get("proposito", ""),
                     incluir_salario=request.data.get("incluir_salario", False),
+                    tenant=self._request_tenant(),
                 )
                 nombre_base = f"{plantilla.tipo}_{empleado.pk}"
                 asociado_empleado = empleado
@@ -693,7 +709,7 @@ class DocumentGenerationViewSet(ViewSet):
                 if not contrato_id:
                     return APIResponse.error(message="contrato_id es requerido para este tipo de plantilla", status_code=status.HTTP_400_BAD_REQUEST)
                 contrato = get_object_or_404(Contract, pk=contrato_id)
-                variables = self.word_service.construir_variables_contrato(contrato)
+                variables = self.word_service.construir_variables_contrato(contrato, tenant=self._request_tenant())
                 nombre_base = f"{plantilla.tipo}_{contrato.pk}"
                 asociado_empleado = contrato.empleado
             else:
@@ -723,6 +739,7 @@ class DocumentGenerationViewSet(ViewSet):
                 nombre_archivo = f"{nombre_base}_{timezone.now().strftime('%Y%m%d%H%M%S')}.{ext}"
                 tipo_doc = plantilla.tipo if plantilla.tipo in ['certificado_trabajo', 'constancia_laboral', 'contrato', 'adenda'] else 'otros'
                 documento = DigitalDocument.objects.create(
+                    tenant=self._request_tenant() or asociado_empleado.tenant,
                     empleado=asociado_empleado,
                     tipo_documento=tipo_doc,
                     categoria='laboral',
