@@ -352,13 +352,13 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
   const generarPdfMutation = useMutation({
     mutationFn: () => {
       if (!contratoId) throw new Error('No se selecciono contrato')
-      const esAdenda = contrato?.es_adenda || contrato?.tipo_documento?.startsWith('ADENDA_')
+      const esAdenda = contrato?.tipo_documento?.startsWith('ADENDA_')
       return esAdenda
         ? contractsService.generarAdendaPdf({ adenda_id: contratoId })
         : contractsService.generarContratoPdf({ contrato_id: contratoId })
     },
     onSuccess: (data) => {
-      const label = contrato?.es_adenda ? 'Adenda' : 'Contrato'
+      const label = contrato?.tipo_documento?.startsWith('ADENDA_') ? 'Adenda' : 'Contrato'
       toast.success(`${label} PDF generado exitosamente`)
       if (data.archivo_url) {
         window.open(data.archivo_url, '_blank', 'noopener,noreferrer')
@@ -412,7 +412,7 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
         <DialogHeader>
           <DialogTitle>Detalle del Contrato</DialogTitle>
           <DialogDescription>
-            {contrato ? `${contrato.numero_contrato}${contrato.numero_adenda ? ` / ${contrato.numero_adenda}` : ''}` : 'Cargando...'}
+            {contrato ? contrato.numero_contrato : 'Cargando...'}
           </DialogDescription>
         </DialogHeader>
 
@@ -427,7 +427,7 @@ function DetailContratoDialog({ open, onOpenChange, contratoId, onRenovarSuccess
               <Badge className={ESTADO_CONTRATO_BADGE[contrato.status] ?? 'bg-gray-100 text-gray-800'}>
                 {contrato.estado_texto ?? ESTADO_CONTRATO_LABELS[contrato.status] ?? contrato.status}
               </Badge>
-              {contrato.es_adenda && (
+              {contrato.tipo_documento?.startsWith('ADENDA_') && (
                 <Badge variant="outline">Adenda</Badge>
               )}
               {contrato.esta_vigente && (
