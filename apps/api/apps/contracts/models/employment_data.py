@@ -287,7 +287,9 @@ class EmploymentData(models.Model):
     def generar_codigo_empleado(self):
         """Genera un código único para el empleado."""
         area_codigo = self.area.codigo_area[:3].upper() if self.area.codigo_area else 'GEN'
-        empleado_numero = str(self.empleado.empleado_id).zfill(4)
+        # B.4 #59: PK field was renamed to id (UUID) after L3.10.4e.
+        # Use last 8 hex chars of UUID as the readable short code.
+        empleado_numero = str(self.empleado.id).replace("-", "")[-8:].upper()
         return f"{area_codigo}-{empleado_numero}"
     
     def es_jefe_de(self, empleado):

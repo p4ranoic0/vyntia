@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Textarea } from '@/shared/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
@@ -75,10 +75,10 @@ export function DatosFamiliaresModal({
   isReadOnly = false,
   title = 'Datos Familiares'
 }: DatosFamiliaresModalProps) {
-  const { user } = useAuth()
-  const { 
-    canEditEmployeeData, 
-    canAccessEmployeeData, 
+  useAuth()
+  const {
+    canEditEmployeeData,
+    canAccessEmployeeData,
     getViewMode,
     currentEmployeeId,
     isEmployee
@@ -101,6 +101,7 @@ export function DatosFamiliaresModal({
     if (open && empleadoId) {
       checkAccessAndLoadDatos()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checkAccessAndLoadDatos is defined below; adding it would cause infinite loop
   }, [open, empleadoId])
 
   const checkAccessAndLoadDatos = async () => {
@@ -180,6 +181,7 @@ export function DatosFamiliaresModal({
     setEditingFamiliar(newFamiliar)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- wired via editingFamiliar state, kept for future UI
   const handleSaveFamiliar = () => {
     if (!editingFamiliar || !datos) return
     
@@ -220,6 +222,7 @@ export function DatosFamiliaresModal({
     setEditingContacto(newContacto)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- wired via editingContacto state, kept for future UI
   const handleSaveContacto = () => {
     if (!editingContacto || !datos) return
     

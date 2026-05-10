@@ -8,7 +8,7 @@ import { useMemo } from "react";
  * Diferencia entre administradores y empleados normales
  */
 export function useEmployeePermissions() {
-  const { user, hasRole, hasPermission, hasAnyRole, hasAnyPermission } =
+  const { user, hasPermission, hasAnyRole } =
     useAuth();
 
   const isAdmin = useMemo(() => {

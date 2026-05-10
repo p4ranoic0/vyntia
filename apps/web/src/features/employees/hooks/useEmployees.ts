@@ -5,6 +5,7 @@ export interface PaginationParams {
   page?: number;
   page_size?: number;
   search?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- open-ended filter params from API consumers
   [key: string]: any;
 }
 
@@ -35,6 +36,7 @@ export function useEmpleados(params?: PaginationParams) {
 export function useCreateEmpleado() {
   const queryClient = useQueryClient();
   return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API client accepts any employee shape
     mutationFn: (data: any) => apiClient.createEmpleado(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["empleados"] }),
   });
@@ -43,6 +45,7 @@ export function useCreateEmpleado() {
 export function useUpdateEmpleado() {
   const queryClient = useQueryClient();
   return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API client accepts any employee patch shape
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       apiClient.updateEmpleado(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["empleados"] }),

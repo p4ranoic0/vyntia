@@ -24,7 +24,7 @@ import { LoadingSpinner } from '@/shared/ui/loading-spinner'
 import { Badge } from '@/shared/ui/badge'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { toast } from 'sonner'
-import { User, Calendar, MapPin, Phone, Mail, CreditCard, Lock, AlertCircle, Edit } from 'lucide-react'
+import { User, Calendar, MapPin, Phone, Mail, Lock, AlertCircle, Edit } from 'lucide-react'
 import { employeesService, type DatosPersonales } from '@/features/employees/services/employeesService'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useEmployeePermissions } from '@/features/employees/hooks/useEmployeePermissions'
@@ -44,10 +44,10 @@ export function DatosPersonalesModal({
   isReadOnly = false,
   title = 'Datos Personales'
 }: DatosPersonalesModalProps) {
-  const { user } = useAuth()
-  const { 
-    canEditEmployeeData, 
-    canAccessEmployeeData, 
+  useAuth()
+  const {
+    canEditEmployeeData,
+    canAccessEmployeeData,
     getViewMode,
     currentEmployeeId,
     isEmployee
@@ -68,6 +68,7 @@ export function DatosPersonalesModal({
     if (open && empleadoId) {
       checkAccessAndLoadDatos()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checkAccessAndLoadDatos is defined below; adding it would cause infinite loop
   }, [open, empleadoId])
 
   const checkAccessAndLoadDatos = async () => {

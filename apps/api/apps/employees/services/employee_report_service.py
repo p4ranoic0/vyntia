@@ -36,7 +36,7 @@ class EmpleadoReportService:
         Returns:
             tuple: (pdf_bytes, nombre_archivo)
         """
-        empleado = Employee.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(id=empleado_id)
         context = self._obtener_contexto_completo(empleado)
         html_content = render_to_string("reportes/reporte_empleado.html", context)
         pdf_content = self.pdf_generator._html_to_pdf(html_content)
@@ -54,7 +54,7 @@ class EmpleadoReportService:
         Returns:
             tuple: (pdf_bytes, nombre_archivo)
         """
-        empleado = Employee.objects.get(empleado_id=empleado_id)
+        empleado = Employee.objects.get(id=empleado_id)
         context = self._obtener_contexto_completo(empleado)
         context["seccion"] = seccion
 

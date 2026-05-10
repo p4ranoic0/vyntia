@@ -115,6 +115,7 @@ export default function EmpleadosListPage() {
         }
       }
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- query params are open-ended filter bag passed to API
       const params: Record<string, any> = {
         page: currentPage,
         page_size: itemsPerPage
@@ -165,10 +166,11 @@ export default function EmpleadosListPage() {
         // TODO: Implementar filtro por equipo cuando tengamos la relación supervisor-empleado
         console.log('✅ DEBUG: Aplicando filtro "team" - devolviendo todos los empleados (temporal)')
         return employeeList
-      case 'own':
+      case 'own': {
         const ownEmployees = employeeList.filter(emp => emp.id === currentEmployeeId)
         console.log('✅ DEBUG: Aplicando filtro "own" - devolviendo', ownEmployees.length, 'empleados')
         return ownEmployees
+      }
       default:
         console.log('❌ DEBUG: Filtro desconocido - devolviendo array vacío')
         return []
@@ -188,6 +190,7 @@ export default function EmpleadosListPage() {
   // Efectos
   useEffect(() => {
     loadEmployees()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- loadEmployees is a stable function; adding it causes duplicate loads
   }, [currentPage, searchTerm, selectedArea, selectedEstado, permissions])
 
   // Manejar búsqueda

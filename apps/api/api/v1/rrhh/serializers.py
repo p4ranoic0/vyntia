@@ -680,7 +680,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating employees with related data."""
 
     datos_laborales = DatosLaboralesCreateSerializer(write_only=True)
-    area_inicial = serializers.IntegerField(write_only=True)
+    area_inicial = serializers.UUIDField(write_only=True)
     datos_familiares = DatosFamiliaresSerializer(
         many=True, write_only=True, required=False
     )
@@ -722,7 +722,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     def validate_area_inicial(self, value):
         """Validate initial area exists and is active."""
         try:
-            area = Department.objects.get(area_id=value, estado_area="activo")
+            area = Department.objects.get(id=value, estado_area="activo")
         except Department.DoesNotExist:
             raise serializers.ValidationError("Área no encontrada o inactiva.")
         return value
@@ -742,7 +742,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
         empleado = Employee.objects.create(**validated_data)
 
         # Get area and create labor data
-        area = Department.objects.get(area_id=area_inicial_id)
+        area = Department.objects.get(id=area_inicial_id)
 
         # Create labor data — propagate tenant so EmploymentData is tenant-scoped
         ld_kwargs = {"empleado": empleado, "area": area, **datos_laborales}

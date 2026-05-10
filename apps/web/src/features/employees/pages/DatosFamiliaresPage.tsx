@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/shared/ui/textarea'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from '@/shared/ui/use-toast'
-import { Users, Heart, Baby, Plus, Trash2, Phone, MapPin } from 'lucide-react'
+import { Users, Heart, Plus, Trash2, Phone } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import EmployeeLayout from '@/shared/layout/EmployeeLayout'
 
@@ -64,9 +64,11 @@ export function DatosFamiliaresPage() {
     const empleadoId = parseInt(id)
 
     employeesService.datosFamiliares.getAll(empleadoId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- backend response shape varies across API versions
       .then((response: any) => {
         const items = response?.data || response?.results || []
         const records = Array.isArray(items) ? items : []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw backend record shape
         const familiares = records.map((r: any) => ({
           id: r.id,
           nombres: r.nombres_familiar || '',
@@ -112,6 +114,7 @@ export function DatosFamiliaresPage() {
                 fecha_nacimiento: f.fecha_nacimiento,
                 genero_familiar: f.genero,
                 es_beneficiario: f.es_beneficiario,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial update payload, service accepts any
               } as any)
             : employeesService.datosFamiliares.create(empleadoId, {
                 nombres_familiar: f.nombres,
@@ -121,6 +124,7 @@ export function DatosFamiliaresPage() {
                 fecha_nacimiento: f.fecha_nacimiento,
                 genero_familiar: f.genero,
                 es_beneficiario: f.es_beneficiario,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- create payload, service accepts any
               } as any)
         )
       )
@@ -129,7 +133,7 @@ export function DatosFamiliaresPage() {
         description: 'Los datos familiares han sido actualizados correctamente.',
       })
       setIsEditing(false)
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'No se pudieron guardar los datos. Inténtalo de nuevo.',
