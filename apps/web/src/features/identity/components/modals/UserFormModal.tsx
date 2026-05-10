@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Save, User, Mail, Lock, Shield, Building2 } from 'lucide-react'
+import { Save, User, Mail, Lock, Shield } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -24,19 +24,6 @@ import { toast } from 'sonner'
 import { usersService, rolesService, type UserFormData, type Role } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
-interface Employee {
-  id: number
-  nombres: string
-  ape_paterno: string
-  ape_materno: string
-  dni: string
-  area: {
-    id: number
-    organo: string
-    siglas: string
-  }
-}
-
 interface UserFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -50,7 +37,6 @@ export function UserFormModal({ open, onOpenChange, userId, onSuccess }: UserFor
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(false)
   const [roles, setRoles] = useState<Role[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
   
   const [formData, setFormData] = useState<UserFormData>({
     nombres_usuario: '',
@@ -78,7 +64,7 @@ export function UserFormModal({ open, onOpenChange, userId, onSuccess }: UserFor
         resetForm()
       }
     }
-  }, [open, isEditing, userId])
+  }, [open, isEditing, userId]) // eslint-disable-line react-hooks/exhaustive-deps -- loadInitialData/loadUserData/resetForm re-created each render; adding them would cause infinite loop
 
   const loadInitialData = async () => {
     try {
@@ -201,20 +187,20 @@ export function UserFormModal({ open, onOpenChange, userId, onSuccess }: UserFor
       
       onSuccess?.()
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving user:', error)
-      
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors)
+      const err = error as { response?: { data?: { errors?: Record<string, string>; message?: string } } }
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors)
       } else {
-        toast.error(error.response?.data?.message || 'Error al guardar el usuario')
+        toast.error(err.response?.data?.message || 'Error al guardar el usuario')
       }
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (field: keyof UserFormData, value: any) => {
+  const handleInputChange = (field: keyof UserFormData, value: UserFormData[keyof UserFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // Limpiar error del campo cuando el usuario empiece a escribir

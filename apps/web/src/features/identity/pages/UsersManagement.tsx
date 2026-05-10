@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  User as UserIcon, 
-  Mail, 
-  Calendar, 
-  Shield, 
-  Building2, 
-  Clock, 
-  Edit, 
+import {
+  ArrowLeft,
+  User as UserIcon,
+  Calendar,
+  Shield,
+  Building2,
+  Clock,
+  Edit,
   Key,
   UserCheck,
   UserX,
@@ -18,10 +17,16 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
-import { Separator } from '@/shared/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { toast } from 'sonner'
 import { usersService, type User } from '@/features/identity/services/usersService'
+
+interface UserStatistics {
+  total_usuarios?: number
+  usuarios_activos?: number
+  usuarios_inactivos?: number
+  sin_login_reciente?: number
+}
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/shared/layout/UsersLayout'
 
@@ -30,14 +35,14 @@ export function UsersManagement() {
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [statistics, setStatistics] = useState<any>(null)
+  const [statistics, setStatistics] = useState<UserStatistics | null>(null)
 
   useEffect(() => {
     if (id) {
       loadUserData(parseInt(id))
       loadStatistics()
     }
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps -- loadUserData/loadStatistics re-created each render; adding them would cause infinite loop
 
   const loadUserData = async (userId: number) => {
     try {

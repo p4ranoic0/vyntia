@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Key, Eye, EyeOff, Shield, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Key, Eye, EyeOff, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -44,7 +44,7 @@ export function ChangePasswordModal({ open, onOpenChange, userId, onSuccess }: C
     if (open && userId) {
       fetchUser()
     }
-  }, [open, userId])
+  }, [open, userId]) // eslint-disable-line react-hooks/exhaustive-deps -- fetchUser re-created each render; adding it would cause infinite loop
 
   useEffect(() => {
     if (formData.new_password) {
@@ -173,12 +173,13 @@ export function ChangePasswordModal({ open, onOpenChange, userId, onSuccess }: C
       resetForm()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al cambiar contraseña:', error)
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors)
+      const err = error as { response?: { data?: { errors?: Record<string, string>; message?: string } } }
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors)
       } else {
-        toast.error(error.response?.data?.message || 'Error al cambiar la contraseña')
+        toast.error(err.response?.data?.message || 'Error al cambiar la contraseña')
       }
     } finally {
       setLoading(false)

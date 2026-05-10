@@ -38,7 +38,7 @@ export function ChangePassword() {
     if (id) {
       loadUserData(id)
     }
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps -- loadUserData re-created each render; adding it would cause infinite loop
 
   useEffect(() => {
     if (formData.new_password) {
@@ -155,11 +155,11 @@ export function ChangePassword() {
       })
       
       navigate(`/usuarios/gestion/${user.id}`)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error changing password:', error)
-      
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors)
+      const err = error as { response?: { data?: { errors?: Record<string, string> } } }
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors)
       } else {
         toast.error('Error al cambiar la contraseña')
       }

@@ -24,7 +24,6 @@ import {
   Users,
   X
 } from 'lucide-react'
-import { Separator } from '@/shared/ui/separator'
 // import { ScrollArea } from '@/shared/ui/scroll-area' // Componente no disponible
 import { toast } from 'sonner'
 import { 
@@ -48,7 +47,7 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
     if (open && userId) {
       loadUserData(userId)
     }
-  }, [open, userId])
+  }, [open, userId]) // eslint-disable-line react-hooks/exhaustive-deps -- loadUserData re-created each render; adding it would cause infinite loop
 
   const loadUserData = async (userId: number) => {
     try {

@@ -322,3 +322,76 @@ When D arrives, the existing `SeveranceSettlement` records remain valid; D enhan
 
 **Reference:** D.S. 003-97-TR (LCT consolidated); D.S. 001-97-TR (CTS); Ley 27735 (Gratificaciones); Ley 28051 (PLAME). Sub-proyecto D scope in `docs/ROADMAP_SUBPROJECTS.md`. Maestro Module 03.6 (desvinculación).
 
+---
+
+## ADR-B.10: `Permission.modulo` stays as CharField (deferred FK migration)
+
+**Status:** Accepted (2026-05-10)
+
+**Context:** `apps.identity.Permission` carries a `modulo` field that is a `CharField` (string ID), not a `ForeignKey` to the `Module` model. The same database has a real `Module` model (`apps.identity.Module`) used by the menu/sidebar system. The audit (Task 7 chapter, INVENTORY.md line 139) flagged this as inconsistent: permissions reference modules by string ID instead of FK, and the dead method `CustomTokenObtainPairSerializer._get_user_modules` had assumed FK semantics, accessing `permiso.modulo.pk` and `permiso.modulo.nombre_modulo` — which would raise `AttributeError` if it were ever called.
+
+Migrating to FK requires: (a) a data-migration that maps every existing `modulo` string to the corresponding `Module.pk`, including dropped/renamed module IDs in legacy data; (b) a schema migration; (c) updating every `Permission.objects.filter(modulo=...)` consumer (15+ sites across `permission_service`, `menu_service`, ViewSets); (d) frontend type updates. Total estimated effort: ~3-5 days, with potential data-cleanup risk for legacy strings that don't match a real Module.
+
+**Decision:** Keep `Permission.modulo` as `CharField` for the duration of sub-project B. Remove the dead `_get_user_modules` method (it was unused and would have errored on the FK assumption). Document this decision so future contributors don't re-introduce the same dead pattern.
+
+The migration to FK can be revisited in a post-B sub-project if a real consumer requires FK semantics (e.g., a Modules admin UI that wants to enforce referential integrity on Permission rows).
+
+**Consequences:**
+- Positive: Avoids 3-5 days of migration + risk on legacy data we can't fully validate.
+- Positive: Removes dead code that would have raised AttributeError if reached.
+- Positive: Status quo for all 15+ consumers — no consumer-side churn.
+- Negative: Permission rows can reference module IDs that don't exist in `Module` table — no referential integrity at the DB level.
+- Negative: Frontend cannot eagerly join Permission → Module without a service-layer lookup.
+- Neutral: When/if a Modules admin UI lands in sub-project T or later, this ADR will be superseded.
+
+**Alternatives considered:**
+- Migrate to FK in B.2: rejected — the data risk and consumer surface inflate B.2 beyond polish scope.
+- Migrate to FK in a later B-phase: deferred — no current B-phase consumer needs FK semantics.
+- Rewrite `_get_user_modules` to handle CharField: rejected — the method is dead code; keeping it as polished dead code adds maintenance debt without benefit.
+
+**Reference:** INVENTORY.md (Task 7 identity chapter, line 139); B.2 plan Task 4.
+
+
+
+## ADR-B.11: UserRole vs TenantMembership.role coexist (no consolidation)
+
+**Status:** Accepted (2026-05-10)
+
+**Context:** Two role-bearing models exist in VYNTIA, introduced in different sub-projects:
+
+- **`apps.tenancy.TenantMembership.role`** (sub-project C) — flat CharField with values like `"owner"`, `"admin"`, `"member"`. One row per `(user, tenant)` membership. Used at the workspace boundary: "can this user authenticate INTO this tenant at all, and if so, what's their workspace-level tier?"
+- **`apps.identity.UserRole` → `apps.identity.Role`** (legacy schema, predates multi-tenancy) — FK chain with `RolePermission` linking each role to atomic Permissions. Used for granular RBAC inside a tenant: "what specific actions can this user perform on which resources?"
+
+The audit (Task 7 chapter, INVENTORY.md line 167) flagged this dualism as deuda técnica. Two paths existed:
+1. **Consolidate**: pick one model, migrate everything. Reduces conceptual surface but requires invasive migration that crosses C and identity bounded contexts.
+2. **Keep both**: clarify roles in a single ADR so contributors understand which model to extend in which scenario.
+
+**Decision:** Keep both models. They occupy distinct layers:
+
+- `TenantMembership.role` is the **workspace gate**. Set at invitation/activation time. Read by middleware (`TenantAuthMiddleware`) to confirm the JWT-bearing user has a live membership for the requested subdomain. Granularity intentionally coarse (3-4 string tiers).
+- `UserRole`/`Role`/`Permission`/`RolePermission` is the **RBAC engine**. Operating inside a tenant context, it powers per-action permission checks (e.g., "can this user approve a contract amendment?"). Granularity arbitrarily deep.
+
+Sub-projects T (Workflow engine) and any future RBAC-extensions modify the identity-side chain. Sub-projects related to multi-tenant onboarding/billing modify TenantMembership.
+
+**Consequences:**
+- Positive: Workspace-tier checks and action-level permission checks are clearly separated — no risk of one accidentally bypassing the other.
+- Positive: Migration cost avoided (consolidation would touch C.4, identity, and every middleware/permission consumer).
+- Positive: TenantMembership stays small and fast (single row per membership); RBAC complexity stays in identity where it can grow without bloating the membership table.
+- Negative: Two role concepts to document for new contributors. Mitigated by this ADR.
+- Negative: A user could in theory have a high TenantMembership tier but no UserRole assignments inside the tenant — UI must surface that mismatch (e.g., admin tier without RBAC permissions sees an "incomplete onboarding" prompt).
+- Neutral: When the OnboardingProcess auto-creates a User, both a TenantMembership AND a default UserRole assignment must be created — check covered by B.5b (onboarding polish, item #15 already partially addressed in B.1).
+
+**Source-of-truth rule:**
+
+| Question | Source |
+|---|---|
+| Can user X enter workspace Y? | `TenantMembership(user=X, tenant=Y, status='active')` exists |
+| What tier is user X in workspace Y? | `TenantMembership.role` (`'owner' \| 'admin' \| 'member'`) |
+| Can user X perform action Z in workspace Y? | `PermissionService.has_any_permission(X, [Z])`, which traverses UserRole → Role → RolePermission → Permission |
+
+**Alternatives considered:**
+- Merge into one model with both flat and granular fields: rejected — the table grows unboundedly with RolePermission cardinality, and the membership-gate use case wants O(1) lookups.
+- Drop `UserRole`/`Role` and rely on `TenantMembership.role` strings + per-action mapping: rejected — would force every permission check into a hard-coded role→action map, eliminating the data-driven RBAC that lets RRHH admins create custom roles.
+- Drop `TenantMembership.role` and infer membership tier from RBAC permissions: rejected — middleware tier checks should not require a permission service round-trip.
+
+**Reference:** INVENTORY.md (Task 7 identity chapter, line 167); B.2 plan Task 6.

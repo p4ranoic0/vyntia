@@ -92,14 +92,16 @@ export interface RolePermissionFormData {
 
 // Servicio para gestión de roles
 export const roleService = {
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     const response = await apiClient.getRoles(params);
     const roles = extractCollection(response.data);
-    return roles.map((role: any) => normalizeSecurityRole(role));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return roles.map((role: any) => normalizeSecurityRole(role)); // extractCollection returns unknown[]; normalizeSecurityRole expects raw API shape
   },
 
   async getById(id: string) {
-    const response = await apiClient.get<any>(`/api/v1/identity/roles/${id}/`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<any>(`/api/v1/identity/roles/${id}/`); // raw API response shape varies
     const role = normalizeSecurityRole(response.data);
 
     return {
@@ -122,7 +124,7 @@ export const roleService = {
 
   async update(id: string, data: Partial<RoleFormData>) {
     // Mapear los datos del frontend al formato esperado por el backend
-    const backendData: any = {};
+    const backendData: Record<string, string> = {};
     if (data.nombre !== undefined) backendData.nombre_rol = data.nombre;
     if (data.descripcion !== undefined)
       backendData.descripcion_rol = data.descripcion;
@@ -141,7 +143,7 @@ export const roleService = {
 
 // Servicio para gestión de permisos
 export const permissionService = {
-  async getAll(params?: Record<string, any>): Promise<Permission[]> {
+  async getAll(params?: Record<string, unknown>): Promise<Permission[]> {
     const response = await apiClient.getPermisos(params);
     // El backend devuelve los datos en data.data.results
     const data =
@@ -157,7 +159,7 @@ export const permissionService = {
     pageSize: number = 20,
     search?: string,
   ): Promise<PaginatedResponse<Permission>> {
-    const params: Record<string, any> = {
+    const params: Record<string, unknown> = {
       page,
       page_size: pageSize,
     };
@@ -216,7 +218,7 @@ export const permissionService = {
 
 // Servicio para gestión de módulos
 export const moduleService = {
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     const response = await apiClient.get<Module[]>(
       "/api/v1/identity/modules/",
       params,
@@ -253,7 +255,7 @@ export const moduleService = {
 
 // Servicio para gestión de permisos de roles
 export const rolePermissionService = {
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     const response = await apiClient.get<RolePermission[]>(
       "/api/v1/identity/role-permissions/",
       params,
@@ -262,7 +264,8 @@ export const rolePermissionService = {
   },
 
   async getByRoleId(roleId: string) {
-    const response = await apiClient.get<any>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<any>( // raw APIResponse envelope; shape varies
       `/api/v1/identity/role-permissions/por_rol/?rol_id=${roleId}`,
     );
     // El backend devuelve los datos en response.data.data cuando usa APIResponse.success
@@ -289,7 +292,7 @@ export const rolePermissionService = {
   async update(id: string, data: Partial<RolePermissionFormData>) {
     // Convertir el formato del frontend al formato esperado por el backend
     // Django espera los IDs de las ForeignKeys directamente
-    const backendData: any = {};
+    const backendData: Record<string, string> = {};
     if (data.role !== undefined) backendData.rol_id = data.role;
     if (data.permission !== undefined) backendData.permiso_id = data.permission;
     const response = await apiClient.patch<RolePermission>(
@@ -312,9 +315,10 @@ export const rolePermissionService = {
           permission: permissionId,
           granted: true,
         });
-      } catch (error: any) {
+      } catch (error) {
         // Si el error es 409 (Conflict), significa que ya existe la relación
-        if (error.response?.status === 409) {
+        const err = error as { response?: { status?: number } }
+        if (err.response?.status === 409) {
           // Permiso ya asignado, continuar sin error
           return null; // Retornar null para indicar que se saltó
         }
@@ -411,7 +415,8 @@ export const securityService = {
       totalPermissions: permissions.length,
       totalModules: modules.length,
       activeRoles: roles.filter((r) => r.is_active).length,
-      activeModules: modules.filter((m: any) => m.activo ?? m.is_active).length,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      activeModules: modules.filter((m: any) => m.activo ?? m.is_active).length, // Module has no `activo` in type; backend may return it
     };
   },
 

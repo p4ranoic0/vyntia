@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal, Plus, Edit, Trash2, UserCog, Search, Users } from 'lucide-react'
+import { MoreHorizontal, Plus, Edit, Trash2, UserCog, Users } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'

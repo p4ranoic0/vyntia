@@ -44,27 +44,30 @@ class UsuarioManager(models.Manager):
         return self.create_user(username, email, password, **extra_fields)
 
     def activos(self):
-        """Get active users."""
-        return self.filter(estado=True)
+        """Get active users (Django is_active AND estado_usuario='activo')."""
+        return self.filter(is_active=True, estado_usuario="activo")
 
     def inactivos(self):
-        """Get inactive users."""
-        return self.filter(estado=False)
+        """Get inactive users (is_active=False OR estado_usuario != 'activo')."""
+        return self.filter(Q(is_active=False) | ~Q(estado_usuario="activo"))
 
     def con_roles(self):
-        """Get users with their roles."""
-        return self.prefetch_related("rol_set")
+        """Get users with their roles prefetched via the UserRole pivot."""
+        return self.prefetch_related("roles_asignados__rol")
 
     def por_rol(self, nombre_rol: str):
-        """Filter users by role.
+        """Filter users with an active role assignment matching nombre_rol.
 
         Args:
-            nombre_rol: Role name
+            nombre_rol: Role name (case-insensitive substring match).
 
         Returns:
-            QuerySet: Users with specified role
+            QuerySet[User]
         """
-        return self.filter(rol__nombre__icontains=nombre_rol)
+        return self.filter(
+            roles_asignados__rol__nombre_rol__icontains=nombre_rol,
+            roles_asignados__estado_asignacion="activo",
+        ).distinct()
 
     def login_reciente(self, dias: int = 30):
         """Get users with recent login.

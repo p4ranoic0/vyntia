@@ -231,15 +231,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def tiempo_desde_ultimo_login(self):
         """Calcula el tiempo transcurrido desde el último login."""
-        if self.last_login:
-            delta = timezone.now() - self.last_login
-            if delta.days > 0:
-                return f"{delta.days} día{'s' if delta.days != 1 else ''}"
-            elif delta.seconds > 3600:
-                horas = delta.seconds // 3600
-                return f"{horas} hora{'s' if horas != 1 else ''}"
-            elif delta.seconds > 60:
-                minutos = delta.seconds // 60
+        if not self.last_login:
+            return None
+        delta = timezone.now() - self.last_login
+        if delta.days > 0:
+            return f"{delta.days} día{'s' if delta.days != 1 else ''}"
+        if delta.seconds > 3600:
+            horas = delta.seconds // 3600
+            return f"{horas} hora{'s' if horas != 1 else ''}"
+        if delta.seconds > 60:
+            minutos = delta.seconds // 60
+            return f"{minutos} minuto{'s' if minutos != 1 else ''}"
+        return "menos de 1 minuto"
 
     @property
     def ultimo_login_texto(self):
@@ -407,17 +410,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
     def roles_activos(self):
-        """Obtiene los roles activos del usuario."""
+        """Obtiene los roles activos del usuario, filtrados por tenant context si activo (B.2 #48)."""
         from .roles import Role
         from .rbac import UserRole
+        from apps.tenancy.context import get_current_tenant
 
-        # Obtener IDs de roles válidos (activos y no expirados)
-        roles_usuario = UserRole.objects.filter(
-            usuario=self, estado_asignacion="activo"
-        ).select_related("rol")
+        tenant = get_current_tenant()
+
+        ur_qs = UserRole.objects.filter(usuario=self, estado_asignacion="activo")
+        if tenant is not None:
+            ur_qs = ur_qs.filter(tenant=tenant)
+        usuario_roles = ur_qs.select_related("rol")
 
         roles_ids = []
-        for usuario_rol in roles_usuario:
+        for usuario_rol in usuario_roles:
             # Verificar que la asignación no haya expirado y que el rol esté activo
             if (
                 usuario_rol.fecha_expiracion is None
@@ -425,16 +431,21 @@ class User(AbstractBaseUser, PermissionsMixin):
             ) and usuario_rol.rol.estado_rol == "activo":
                 roles_ids.append(usuario_rol.rol.pk)
 
-        # Devolver QuerySet de roles activos
-        return Role.objects.filter(pk__in=roles_ids, estado_rol="activo")
+        roles_qs = Role.objects.filter(pk__in=roles_ids, estado_rol="activo")
+        if tenant is not None:
+            roles_qs = roles_qs.filter(tenant=tenant)
+        return roles_qs
 
     def permisos_activos(self):
-        """Obtiene los permisos activos del usuario a traves de sus roles."""
+        """Obtiene los permisos activos del usuario via roles, filtrados por tenant si activo (B.2 #48)."""
         from .roles import Permission
         from .rbac import RolePermission
+        from apps.tenancy.context import get_current_tenant
+
+        tenant = get_current_tenant()
 
         try:
-            roles = self.roles_activos()
+            roles = self.roles_activos()  # already tenant-filtered (B.2 #48)
             if not roles.exists():
                 return Permission.objects.none()
 
@@ -442,13 +453,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             if roles.filter(nombre_rol="Super Administrador").exists():
                 return "*"
 
-            permiso_ids = RolePermission.objects.filter(
-                rol__in=roles
-            ).values_list('permiso_id', flat=True).distinct()
+            rp_qs = RolePermission.objects.filter(rol__in=roles)
+            if tenant is not None:
+                rp_qs = rp_qs.filter(tenant=tenant)
 
-            return Permission.objects.filter(
-                pk__in=permiso_ids,
-                estado_permiso='activo'
-            )
+            permiso_ids = rp_qs.values_list("permiso_id", flat=True).distinct()
+
+            perm_qs = Permission.objects.filter(pk__in=permiso_ids, estado_permiso="activo")
+            if tenant is not None:
+                perm_qs = perm_qs.filter(tenant=tenant)
+            return perm_qs
         except Exception:
             return Permission.objects.none()

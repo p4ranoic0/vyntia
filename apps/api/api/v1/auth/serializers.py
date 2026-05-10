@@ -262,55 +262,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Exception:
             return []
     
-    def _get_user_modules(self, usuario: User) -> List[Dict[str, Any]]:
-        """Get active modules for the user based on their permissions.
-        
-        Args:
-            usuario: User instance
-            
-        Returns:
-            List of module dictionaries with their permissions
-        """
-        try:
-            from apps.identity.models import Module, RolePermission, UserRole
-
-            # Obtener roles activos del usuario
-            usuario_roles = UserRole.objects.filter(
-                usuario=usuario,
-                estado_asignacion='activo'
-            ).values_list('id', flat=True)
-            
-            # Obtener permisos de esos roles
-            roles_permisos = RolePermission.objects.filter(
-                rol_id__in=usuario_roles
-            ).select_related('permiso', 'permiso__modulo')
-            
-            # Agrupar permisos por módulo
-            modulos_permisos = {}
-            for rp in roles_permisos:
-                if rp.permiso and rp.permiso.modulo:
-                    modulo = rp.permiso.modulo
-                    if modulo.pk not in modulos_permisos:
-                        modulos_permisos[modulo.pk] = {
-                            'id': modulo.pk,
-                            'name': modulo.nombre_modulo,
-                            'status': modulo.estado_modulo,
-                            'permissions': []
-                        }
-                    
-                    # Agregar permiso al módulo
-                    modulos_permisos[modulo.pk]['permissions'].append({
-                        'id': rp.permiso.pk,
-                        'nombre': rp.permiso.nombre_permiso,
-                        'descripcion': rp.permiso.descripcion_permiso,
-                        'tipo': rp.permiso.tipo_permiso,
-                        'estado': rp.permiso.estado_permiso
-                    })
-            
-            return list(modulos_permisos.values())
-        except Exception:
-            return []
-
 
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login."""

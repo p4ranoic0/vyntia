@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Save, User, Mail, Lock, Shield, Building2 } from 'lucide-react'
+import { ArrowLeft, Save, User, Mail, Shield } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -19,19 +19,6 @@ import { usersService, rolesService, type UserFormData, type Role } from '@/feat
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/shared/layout/UsersLayout'
 
-interface Employee {
-  id: number
-  nombres: string
-  ape_paterno: string
-  ape_materno: string
-  dni: string
-  area: {
-    id: number
-    organo: string
-    siglas: string
-  }
-}
-
 export function UsersForm() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
@@ -40,7 +27,6 @@ export function UsersForm() {
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(isEditing)
   const [roles, setRoles] = useState<Role[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
   
   const [formData, setFormData] = useState<UserFormData>({
     nombres_usuario: '',
@@ -68,7 +54,7 @@ export function UsersForm() {
     if (isEditing && id) {
       loadUserData(parseInt(id))
     }
-  }, [isEditing, id])
+  }, [isEditing, id]) // eslint-disable-line react-hooks/exhaustive-deps -- loadUserData re-created each render; adding it would cause infinite loop
 
   const loadInitialData = async () => {
     try {
@@ -191,7 +177,7 @@ export function UsersForm() {
     }
   }
 
-  const handleInputChange = (field: keyof UserFormData, value: any) => {
+  const handleInputChange = (field: keyof UserFormData, value: UserFormData[keyof UserFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[field]) {
