@@ -1291,7 +1291,7 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
 
-class DatosLaboralesViewSet(viewsets.ModelViewSet):
+class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for EmploymentData management with optimized queries."""
 
     queryset = EmploymentData.objects.select_related(
@@ -1345,12 +1345,12 @@ class DatosLaboralesViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
-        """Filter by employee if specified."""
+        """Filter by employee if specified, then by tenant."""
         queryset = super().get_queryset()
         empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     @action(detail=False, methods=["get"])
     @require_hr()
