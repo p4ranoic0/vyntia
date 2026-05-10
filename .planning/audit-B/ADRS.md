@@ -322,3 +322,32 @@ When D arrives, the existing `SeveranceSettlement` records remain valid; D enhan
 
 **Reference:** D.S. 003-97-TR (LCT consolidated); D.S. 001-97-TR (CTS); Ley 27735 (Gratificaciones); Ley 28051 (PLAME). Sub-proyecto D scope in `docs/ROADMAP_SUBPROJECTS.md`. Maestro Module 03.6 (desvinculación).
 
+---
+
+## ADR-B.10: `Permission.modulo` stays as CharField (deferred FK migration)
+
+**Status:** Accepted (2026-05-10)
+
+**Context:** `apps.identity.Permission` carries a `modulo` field that is a `CharField` (string ID), not a `ForeignKey` to the `Module` model. The same database has a real `Module` model (`apps.identity.Module`) used by the menu/sidebar system. The audit (Task 7 chapter, INVENTORY.md line 139) flagged this as inconsistent: permissions reference modules by string ID instead of FK, and the dead method `CustomTokenObtainPairSerializer._get_user_modules` had assumed FK semantics, accessing `permiso.modulo.pk` and `permiso.modulo.nombre_modulo` — which would raise `AttributeError` if it were ever called.
+
+Migrating to FK requires: (a) a data-migration that maps every existing `modulo` string to the corresponding `Module.pk`, including dropped/renamed module IDs in legacy data; (b) a schema migration; (c) updating every `Permission.objects.filter(modulo=...)` consumer (15+ sites across `permission_service`, `menu_service`, ViewSets); (d) frontend type updates. Total estimated effort: ~3-5 days, with potential data-cleanup risk for legacy strings that don't match a real Module.
+
+**Decision:** Keep `Permission.modulo` as `CharField` for the duration of sub-project B. Remove the dead `_get_user_modules` method (it was unused and would have errored on the FK assumption). Document this decision so future contributors don't re-introduce the same dead pattern.
+
+The migration to FK can be revisited in a post-B sub-project if a real consumer requires FK semantics (e.g., a Modules admin UI that wants to enforce referential integrity on Permission rows).
+
+**Consequences:**
+- Positive: Avoids 3-5 days of migration + risk on legacy data we can't fully validate.
+- Positive: Removes dead code that would have raised AttributeError if reached.
+- Positive: Status quo for all 15+ consumers — no consumer-side churn.
+- Negative: Permission rows can reference module IDs that don't exist in `Module` table — no referential integrity at the DB level.
+- Negative: Frontend cannot eagerly join Permission → Module without a service-layer lookup.
+- Neutral: When/if a Modules admin UI lands in sub-project T or later, this ADR will be superseded.
+
+**Alternatives considered:**
+- Migrate to FK in B.2: rejected — the data risk and consumer surface inflate B.2 beyond polish scope.
+- Migrate to FK in a later B-phase: deferred — no current B-phase consumer needs FK semantics.
+- Rewrite `_get_user_modules` to handle CharField: rejected — the method is dead code; keeping it as polished dead code adds maintenance debt without benefit.
+
+**Reference:** INVENTORY.md (Task 7 identity chapter, line 139); B.2 plan Task 4.
+
