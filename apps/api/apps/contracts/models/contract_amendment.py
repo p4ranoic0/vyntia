@@ -105,7 +105,17 @@ class ContractAmendment(models.Model):
         max_length=150,
         null=True,
         blank=True,
-        help_text='Nuevo cargo (para ADENDA_CARGO)',
+        help_text='Nuevo cargo (para ADENDA_CARGO). Legacy string field preserved.',
+    )
+
+    # Catalog Position FK (B.6 #104) — nullable; backfill deferred per user.
+    new_position = models.ForeignKey(
+        'organization.Position',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cargo_amendments',
+        help_text='New position FK (post-B.6) for ADENDA_CARGO. Legacy nuevo_cargo preserved.',
     )
 
     nuevo_horario = models.CharField(

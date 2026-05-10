@@ -93,6 +93,17 @@ class EmploymentData(models.Model):
     codigo_puesto = models.CharField(max_length=20, null=True, blank=True)
     nivel_puesto = models.CharField(max_length=10, null=True, blank=True)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
+
+    # Catalog Position FK (B.6 #104) — nullable; backfill from legacy
+    # `cargo_empleado` string deferred to operational task per user decision.
+    position = models.ForeignKey(
+        'organization.Position',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='employment_records',
+        help_text='Catalog position FK (post-B.6). Legacy cargo_empleado preserved.',
+    )
     
     # Información contractual
     tipo_contrato = models.CharField(max_length=20, choices=TIPO_CONTRATO_CHOICES)
