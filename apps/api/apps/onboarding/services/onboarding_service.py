@@ -537,12 +537,20 @@ class OnboardingService:
 
     @staticmethod
     def _enviar_notificacion(subject, from_email, recipient, text_content, html_content):
-        """Intenta enviar via Celery, cae a sincrono si falla."""
+        """Intenta enviar via Celery, cae a sincrono si falla.
+
+        B.5b #83: log the Celery dispatch exception before falling back so SMTP
+        failures don't get silenced (previously returned None silently).
+        """
         try:
             send_email_html_task.apply_async(
                 args=[subject, from_email, recipient, text_content, html_content]
             )
         except Exception:
+            logger.exception(
+                "Celery dispatch failed for %s; falling back to synchronous send",
+                recipient,
+            )
             OnboardingService._enviar_email_sincrono(subject, from_email, recipient, text_content, html_content)
 
     @staticmethod
