@@ -107,7 +107,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener el contrato
-            contrato = get_object_or_404(Contract, contrato_id=contrato_id)
+            contrato = get_object_or_404(Contract, pk=contrato_id)
 
             if formato == "html":
                 html_content = self.template_service.generar_contrato(
@@ -145,7 +145,7 @@ class DocumentGenerationViewSet(ViewSet):
                     contrato.save(update_fields=["documento_generado"])
                     return APIResponse.success(
                         data={
-                            "id": documento.documento_id,
+                            "id": documento.id,
                             "archivo_url": (
                                 documento.archivo.url if documento.archivo else None
                             ),
@@ -242,7 +242,7 @@ class DocumentGenerationViewSet(ViewSet):
                     )
                     return APIResponse.success(
                         data={
-                            "id": documento.documento_id,
+                            "id": documento.id,
                             "archivo_url": (
                                 documento.archivo.url if documento.archivo else None
                             ),
@@ -315,7 +315,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
 
             # Obtener el empleado
-            empleado = get_object_or_404(Employee, empleado_id=empleado_id)
+            empleado = get_object_or_404(Employee, pk=empleado_id)
 
             # Crear datos del certificado
             certificado_data = {
@@ -364,7 +364,7 @@ class DocumentGenerationViewSet(ViewSet):
                     )
                     return APIResponse.success(
                         data={
-                            "id": documento.documento_id,
+                            "id": documento.id,
                             "archivo_url": (
                                 documento.archivo.url if documento.archivo else None
                             ),
@@ -471,7 +471,7 @@ class DocumentGenerationViewSet(ViewSet):
                 if guardar_documento:
                     return APIResponse.success(
                         data={
-                            "id": documento.documento_id,
+                            "id": documento.id,
                             "archivo_url": (
                                 documento.archivo.url if documento.archivo else None
                             ),
@@ -540,7 +540,7 @@ class DocumentGenerationViewSet(ViewSet):
 
             data = [
                 {
-                    "id": p.plantilla_id,
+                    "id": p.id,
                     "tipo": p.tipo,
                     "tipo_texto": p.get_tipo_display(),
                     "nombre": p.nombre,
@@ -592,12 +592,12 @@ class DocumentGenerationViewSet(ViewSet):
                 descripcion=descripcion,
                 archivo=archivo,
                 activa=True,
-                creada_por=request.user,
+                created_by=request.user,
             )
 
             return APIResponse.success(
                 data={
-                    "id": plantilla.plantilla_id,
+                    "id": plantilla.id,
                     "tipo": plantilla.tipo,
                     "tipo_texto": plantilla.get_tipo_display(),
                     "nombre": plantilla.nombre,
@@ -613,11 +613,11 @@ class DocumentGenerationViewSet(ViewSet):
             )
 
     @require_hr()
-    @action(detail=False, methods=["delete"], url_path="plantillas-word/(?P<plantilla_id>[0-9]+)/eliminar")
+    @action(detail=False, methods=["delete"], url_path="plantillas-word/(?P<plantilla_id>[0-9a-f-]+)/eliminar")
     def eliminar_plantilla_word(self, request, plantilla_id=None):
         """Eliminar (desactivar) una plantilla Word."""
         try:
-            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id)
+            plantilla = get_object_or_404(DocumentTemplate, pk=plantilla_id)
             plantilla.activa = False
             plantilla.save(update_fields=["activa"])
             return APIResponse.success(message="Plantilla eliminada exitosamente")
@@ -628,15 +628,15 @@ class DocumentGenerationViewSet(ViewSet):
             )
 
     @require_authenticated()
-    @action(detail=False, methods=["get"], url_path="plantillas-word/(?P<plantilla_id>[0-9]+)/descargar")
+    @action(detail=False, methods=["get"], url_path="plantillas-word/(?P<plantilla_id>[0-9a-f-]+)/descargar")
     def descargar_plantilla_word(self, request, plantilla_id=None):
         """Descargar el archivo .docx de una plantilla."""
         try:
-            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id, activa=True)
+            plantilla = get_object_or_404(DocumentTemplate, pk=plantilla_id, activa=True)
             with open(plantilla.archivo.path, 'rb') as f:
                 docx_bytes = f.read()
             response = HttpResponse(docx_bytes, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            nombre_archivo = f"plantilla_{plantilla.tipo}_{plantilla.plantilla_id}.docx"
+            nombre_archivo = f"plantilla_{plantilla.tipo}_{plantilla.id}.docx"
             response["Content-Disposition"] = f'attachment; filename="{nombre_archivo}"'
             return response
         except Exception as e:
@@ -663,22 +663,22 @@ class DocumentGenerationViewSet(ViewSet):
             guardar_documento: bool (default True)
         """
         try:
-            plantilla_id = request.data.get("id")
-            empleado_id = request.data.get("id")
-            contrato_id = request.data.get("id")
+            plantilla_id = request.data.get("plantilla_id") or request.data.get("id")
+            empleado_id = request.data.get("empleado_id")
+            contrato_id = request.data.get("contrato_id")
             formato = request.data.get("formato", "docx")
             guardar = request.data.get("guardar_documento", True)
 
             if not plantilla_id:
                 return APIResponse.error(message="plantilla_id es requerido", status_code=status.HTTP_400_BAD_REQUEST)
 
-            plantilla = get_object_or_404(DocumentTemplate, plantilla_id=plantilla_id, activa=True)
+            plantilla = get_object_or_404(DocumentTemplate, pk=plantilla_id, activa=True)
 
             # Construir variables según el tipo de plantilla
             if plantilla.tipo in ('certificado_trabajo', 'constancia_laboral'):
                 if not empleado_id:
                     return APIResponse.error(message="empleado_id es requerido para este tipo de plantilla", status_code=status.HTTP_400_BAD_REQUEST)
-                empleado = get_object_or_404(Employee, empleado_id=empleado_id)
+                empleado = get_object_or_404(Employee, pk=empleado_id)
                 numero_cert = request.data.get("numero_certificado") or f"CERT-{empleado.pk}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
                 variables = self.word_service.construir_variables_certificado(
                     empleado=empleado,
@@ -692,7 +692,7 @@ class DocumentGenerationViewSet(ViewSet):
             elif plantilla.tipo in ('contrato', 'adenda'):
                 if not contrato_id:
                     return APIResponse.error(message="contrato_id es requerido para este tipo de plantilla", status_code=status.HTTP_400_BAD_REQUEST)
-                contrato = get_object_or_404(Contract, contrato_id=contrato_id)
+                contrato = get_object_or_404(Contract, pk=contrato_id)
                 variables = self.word_service.construir_variables_contrato(contrato)
                 nombre_base = f"{plantilla.tipo}_{contrato.pk}"
                 asociado_empleado = contrato.empleado
@@ -737,7 +737,7 @@ class DocumentGenerationViewSet(ViewSet):
                 )
                 return APIResponse.success(
                     data={
-                        "id": documento.documento_id,
+                        "id": documento.id,
                         "archivo_url": documento.archivo.url if documento.archivo else None,
                         "nombre_archivo": documento.nombre_documento,
                         "formato": ext,
