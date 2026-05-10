@@ -156,32 +156,36 @@ class LogoutAPIView(APIView):
         Returns:
             Response confirming logout
         """
-        try:
-            # Get refresh token from request body
-            refresh_token = request.data.get("refresh_token")
+        from rest_framework_simplejwt.exceptions import TokenError
 
-            if refresh_token:
-                try:
-                    token = RefreshToken(refresh_token)
-                    token.blacklist()
-                except Exception:
-                    # Token might already be blacklisted or invalid
-                    pass
+        refresh_token = request.data.get("refresh_token") or request.data.get("refresh")
 
-            # Logout from Django session
-            logout(request)
-
-            # Return success response
-            return APIResponse.success(
-                message="Cierre de sesión exitoso", status_code=status.HTTP_200_OK
-            )
-
-        except Exception as e:
+        if not refresh_token:
             return APIResponse.error(
-                message="Error al cerrar sesión",
-                errors={"detail": str(e)},
+                message="Token de refresco requerido",
+                errors={"refresh": "Este campo es obligatorio."},
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
+
+        try:
+            token = RefreshToken(refresh_token)
+            try:
+                token.blacklist()
+            except AttributeError:
+                # Token blacklist app not installed; skip blacklist
+                pass
+        except TokenError as exc:
+            return APIResponse.error(
+                message="Token de refresco inválido",
+                errors={"refresh": str(exc)},
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        logout(request)
+        return APIResponse.success(
+            message="Cierre de sesión exitoso",
+            status_code=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(exclude=True)
