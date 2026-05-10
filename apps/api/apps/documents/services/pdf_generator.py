@@ -70,29 +70,32 @@ class PDFGenerator:
                 "Instale con: pip install xhtml2pdf reportlab"
             )
     
-    def generar_pdf_contrato(self, contrato_id: int, 
+    def generar_pdf_contrato(self, contrato_id: int,
                            tipo_plantilla: Optional[str] = None,
-                           guardar_automatico: bool = True) -> Tuple[bytes, str]:
+                           guardar_automatico: bool = True,
+                           tenant=None) -> Tuple[bytes, str]:
         """
         Genera un PDF de contrato desde su plantilla.
-        
+
         Args:
             contrato_id: ID del contrato a generar
             tipo_plantilla: Tipo específico de plantilla (opcional)
             guardar_automatico: Si debe guardarse automáticamente en DigitalDocument
-            
+            tenant: Tenant del request (B.5b #78) — set on auto-saved DigitalDocument
+                    and propagated to TemplateService for Company.get_config.
+
         Returns:
             Tuple[bytes, str]: Contenido del PDF y nombre del archivo
-            
+
         Raises:
             ValidationError: Si hay errores en la generación
         """
         try:
             # Generar HTML desde plantilla
             html_content = self.template_service.generar_contrato(
-                contrato_id, tipo_plantilla
+                contrato_id, tipo_plantilla, tenant=tenant
             )
-            
+
             # Obtener datos del contrato para el nombre del archivo
             contrato = Contract.objects.select_related(
                 'empleado', 'area'
@@ -111,37 +114,45 @@ class PDFGenerator:
                     nombre_archivo=nombre_archivo,
                     empleado=contrato.empleado,
                     tipo_documento='contrato_trabajo',
-                    contrato=contrato
+                    contrato=contrato,
+                    tenant=tenant,
                 )
-            
+
             return pdf_content, nombre_archivo
-            
+
         except Exception as e:
             raise ValidationError(f"Error generando PDF de contrato: {str(e)}")
-    
-    def generar_pdf_adenda(self, contrato_id: int, tipo_adenda: str,
-                         guardar_automatico: bool = True) -> Tuple[bytes, str]:
+
+    def generar_pdf_adenda(self, adenda_id, tipo_adenda: str,
+                         guardar_automatico: bool = True,
+                         tenant=None) -> Tuple[bytes, str]:
         """
         Genera un PDF de adenda desde su plantilla.
-        
+
         Args:
-            contrato_id: ID del contrato base
+            adenda_id: ID (UUID) de la ContractAmendment a generar — post-L3.10.3 split,
+                       this is the amendment PK, NOT the parent Contract PK.
             tipo_adenda: Tipo de adenda a generar
             guardar_automatico: Si debe guardarse automáticamente
-            
+            tenant: Tenant del request (B.5b #78)
+
         Returns:
             Tuple[bytes, str]: Contenido del PDF y nombre del archivo
         """
         try:
             # Generar HTML desde plantilla
             html_content = self.template_service.generar_adenda(
-                contrato_id, tipo_adenda
+                adenda_id, tipo_adenda, tenant=tenant
             )
-            
-            # Obtener datos del contrato
-            contrato = Contract.objects.select_related(
-                'empleado', 'area'
-            ).get(pk=contrato_id)
+
+            # Obtener datos de la adenda + parent contract (para nombre archivo + empleado)
+            from apps.contracts.models import ContractAmendment
+            adenda = ContractAmendment.objects.select_related(
+                'parent_contract',
+                'parent_contract__empleado',
+                'parent_contract__area',
+            ).get(pk=adenda_id)
+            contrato = adenda.parent_contract
 
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_adenda(contrato, tipo_adenda)
@@ -156,17 +167,19 @@ class PDFGenerator:
                     nombre_archivo=nombre_archivo,
                     empleado=contrato.empleado,
                     tipo_documento='adenda_contrato',
-                    contrato=contrato
+                    contrato=contrato,
+                    tenant=tenant,
                 )
-            
+
             return pdf_content, nombre_archivo
-            
+
         except Exception as e:
             raise ValidationError(f"Error generando PDF de adenda: {str(e)}")
-    
+
     def generar_pdf_certificado(self, empleado_id: int, tipo_certificado: str,
                               datos_adicionales: Optional[Dict[str, Any]] = None,
-                              guardar_automatico: bool = True) -> Tuple[bytes, str]:
+                              guardar_automatico: bool = True,
+                              tenant=None) -> Tuple[bytes, str]:
         """
         Genera un PDF de certificado laboral.
         
@@ -182,31 +195,32 @@ class PDFGenerator:
         try:
             # Generar HTML desde plantilla
             html_content = self.template_service.generar_certificado(
-                empleado_id, tipo_certificado, datos_adicionales
+                empleado_id, tipo_certificado, datos_adicionales, tenant=tenant
             )
-            
+
             # Obtener datos del empleado
             empleado = Employee.objects.get(pk=empleado_id)
-            
+
             # Generar nombre del archivo
             nombre_archivo = self._generar_nombre_archivo_certificado(
                 empleado, tipo_certificado
             )
-            
+
             # Convertir HTML a PDF
             pdf_content = self._html_to_pdf(html_content)
-            
+
             # Guardar automáticamente si se solicita
             if guardar_automatico:
                 self._guardar_documento_digital(
                     pdf_content=pdf_content,
                     nombre_archivo=nombre_archivo,
                     empleado=empleado,
-                    tipo_documento='certificado_trabajo'
+                    tipo_documento='certificado_trabajo',
+                    tenant=tenant,
                 )
-            
+
             return pdf_content, nombre_archivo
-            
+
         except Exception as e:
             raise ValidationError(f"Error generando PDF de certificado: {str(e)}")
     
@@ -460,26 +474,35 @@ class PDFGenerator:
     
     def _guardar_documento_digital(self, pdf_content: bytes, nombre_archivo: str,
                                  empleado: Employee, tipo_documento: str,
-                                 contrato: Optional[Contract] = None) -> DigitalDocument:
+                                 contrato: Optional[Contract] = None,
+                                 tenant=None) -> DigitalDocument:
         """
         Guarda el PDF generado en DigitalDocument.
-        
+
         Args:
             pdf_content: Contenido del PDF
             nombre_archivo: Nombre del archivo
             empleado: Employee asociado
             tipo_documento: Tipo de documento
             contrato: Contrato asociado (opcional)
-            
+            tenant: Tenant del request (B.5b #78). When None, falls back to
+                    `empleado.tenant` to avoid creating tenant-orphan documents.
+
         Returns:
             DigitalDocument: Documento guardado
         """
         try:
             # Crear archivo Django
             archivo_django = ContentFile(pdf_content, name=nombre_archivo)
-            
+
+            # Resolver tenant — explicit tenant kwarg wins, falling back to
+            # empleado.tenant. Empleado is a hard requirement so this avoids
+            # tenant=NULL orphans.
+            effective_tenant = tenant if tenant is not None else getattr(empleado, 'tenant', None)
+
             # Crear registro en DigitalDocument
             documento = DigitalDocument.objects.create(
+                tenant=effective_tenant,
                 empleado=empleado,
                 tipo_documento=tipo_documento,
                 categoria='laboral',
@@ -506,7 +529,8 @@ class PDFGenerator:
     
     def generar_reporte_pdf(self, reporte_data: Dict[str, Any],
                            guardar_en_bd: bool = True,
-                           usuario_creador=None) -> Any:
+                           usuario_creador=None,
+                           tenant=None) -> Any:
         """
         Genera un PDF de reporte de contratos.
 
@@ -514,12 +538,13 @@ class PDFGenerator:
             reporte_data: Datos y filtros del reporte
             guardar_en_bd: Si debe guardarse en DigitalDocument
             usuario_creador: User que genera el reporte
+            tenant: Tenant del request (B.5b #78)
 
         Returns:
             DigitalDocument si guardar_en_bd=True, bytes del PDF en caso contrario
         """
         try:
-            html_content = self.template_service.generar_reporte_html(reporte_data)
+            html_content = self.template_service.generar_reporte_html(reporte_data, tenant=tenant)
             pdf_content = self._html_to_pdf(html_content)
 
             fecha_str = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -528,8 +553,19 @@ class PDFGenerator:
             if guardar_en_bd:
                 from django.core.files.base import ContentFile
                 archivo_django = ContentFile(pdf_content, name=nombre_archivo)
+                empleado_asociado = (
+                    usuario_creador.empleado
+                    if usuario_creador and hasattr(usuario_creador, 'empleado')
+                    else None
+                )
+                effective_tenant = (
+                    tenant
+                    if tenant is not None
+                    else getattr(empleado_asociado, 'tenant', None) or getattr(usuario_creador, 'tenant', None)
+                )
                 documento = DigitalDocument.objects.create(
-                    empleado=None if not usuario_creador or not hasattr(usuario_creador, 'empleado') else usuario_creador.empleado,
+                    tenant=effective_tenant,
+                    empleado=empleado_asociado,
                     tipo_documento='otros',
                     categoria='administrativo',
                     nombre_documento=f"Reporte de Contratos {datetime.now().strftime('%d/%m/%Y')}",
