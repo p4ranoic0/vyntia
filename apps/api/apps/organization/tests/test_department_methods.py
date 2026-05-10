@@ -59,3 +59,100 @@ class TestAreaViewSetPerformDestroy:
         assert 'estado_area = "inactiva"' not in source
         assert "estado_area = 'inactiva'" not in source
         assert '"inactivo"' in source or "'inactivo'" in source
+
+
+@pytest.mark.django_db
+class TestAreaSerializerValidateSiglas:
+    def test_two_tenants_can_have_same_siglas(self):
+        """validate_siglas_area must scope to the current tenant (#55)."""
+        from apps.tenancy.models import Tenant
+        from apps.tenancy.context import tenant_context
+        from apps.organization.models import Department
+        from apps.identity.models import User
+        from api.v1.rrhh.serializers import AreaSerializer
+
+        # Create an admin user to own the tenants
+        admin = User.objects.create_user(
+            username="admin_55a",
+            email="admin@test.com",
+            password="test123",
+            is_staff=True,
+        )
+
+        ta = Tenant.objects.create(
+            name="VS TA",
+            slug="vs-ta",
+            ruc="20111111111",
+            plan="starter",
+            status="active",
+            created_by=admin,
+        )
+        tb = Tenant.objects.create(
+            name="VS TB",
+            slug="vs-tb",
+            ruc="20222222222",
+            plan="starter",
+            status="active",
+            created_by=admin,
+        )
+
+        Department.objects.create(
+            nombre_organo="A_55",
+            nombre_unidad_organica="A_55",
+            siglas_area="RRHH",
+            estado_area="activo",
+            tenant=ta,
+        )
+
+        # Same siglas in tenant B should be allowed
+        with tenant_context(tb):
+            serializer = AreaSerializer(data={
+                "nombre_organo": "B_55",
+                "nombre_unidad_organica": "B_55",
+                "siglas_area": "RRHH",
+                "estado_area": "activo",
+            })
+            assert serializer.is_valid(), serializer.errors
+
+    def test_same_tenant_still_blocks_duplicate_siglas(self):
+        """Within the same tenant, duplicate siglas must still be rejected (#55)."""
+        from apps.tenancy.models import Tenant
+        from apps.tenancy.context import tenant_context
+        from apps.organization.models import Department
+        from apps.identity.models import User
+        from api.v1.rrhh.serializers import AreaSerializer
+
+        # Create an admin user to own the tenant
+        admin = User.objects.create_user(
+            username="admin_55b",
+            email="admin2@test.com",
+            password="test123",
+            is_staff=True,
+        )
+
+        tc = Tenant.objects.create(
+            name="VS TC",
+            slug="vs-tc",
+            ruc="20333333333",
+            plan="starter",
+            status="active",
+            created_by=admin,
+        )
+
+        Department.objects.create(
+            nombre_organo="C_55",
+            nombre_unidad_organica="C_55",
+            siglas_area="DUPL",
+            estado_area="activo",
+            tenant=tc,
+        )
+
+        with tenant_context(tc):
+            serializer = AreaSerializer(data={
+                "nombre_organo": "C2_55",
+                "nombre_unidad_organica": "C2_55",
+                "siglas_area": "DUPL",
+                "estado_area": "activo",
+            })
+            assert not serializer.is_valid()
+            assert "siglas_area" in serializer.errors
