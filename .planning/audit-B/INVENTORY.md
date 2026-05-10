@@ -1228,7 +1228,65 @@ Distribución por directorio post-C:
 
 ## Maestro gaps — Module 01 (Policies)
 
-(Filled by Task 9.)
+### Maestro requirements (§ 3.139-152, `docs/modulos/01_planificacion_politicas.md`)
+- Gestor documental de políticas (versionado, aprobación, difusión, derogación)
+- Plan estratégico anual de RRHH con objetivos, KPIs y presupuesto
+- Workforce planning (proyección de headcount, plan de sucesión, análisis de brechas)
+- Matriz de cumplimiento normativo (MTPE / SUNAFIL / MINSA / SERVIR / SUNAT) con alertas de vencimiento
+- Cobertura SERVIR procesos 1 (Estrategias / políticas) y 2 (Planificación de RR.HH.)
+
+### Entities required (per maestro)
+| Entity | Purpose |
+|--------|---------|
+| `Policy` | Política con metadatos (título, sector, tipo: CORPORATIVA / RRHH / SST / RIT / ETICA / DIRECTIVA, vigencia) |
+| `PolicyVersion` | Histórico versionado con aprobaciones y trazabilidad de cambios |
+| `PolicyApprovalFlow` | Flujo elaboración → revisión legal → revisión SST → aprobación gerencial |
+| `PolicyPublication` | Publicación con difusión al portal del empleado |
+| `PolicyAcknowledgment` | Acuse de recibo del colaborador (auditable) |
+| `HRStrategicPlan` | Plan anual con objetivos estratégicos y presupuesto |
+| `StrategicObjective` + `KPI` | Objetivos con metas y mediciones periódicas |
+| `WorkforcePlan` + `HeadcountProjection` | Proyección de plantilla por área × periodo |
+| `SuccessionPlan` + `KeyPosition` + `SuccessorCandidate` | Plan de sucesión para puestos clave |
+| `ComplianceMatrix` + `ComplianceObligation` + `Evidence` | Matriz normativa con responsables, deadlines, evidencias |
+
+### Current state in VYNTIA
+**Zero implementation.** Confirmed via grep across `apps/api/apps/`:
+- No `apps/policies/` Django app
+- No models, no serializers, no views, no URLs
+- Matches found only in `apps/tenancy/rls/policies.py` — these are PostgreSQL Row-Level-Security policies (multi-tenancy infra), NOT HR policies. Unrelated.
+- No frontend feature folder (`features/policies/` does not exist)
+
+### Current state in INTRANET legacy
+**Zero implementation.** Confirmed via grep across `D:/INTRANET/back/app_rrhh/`. Legacy never built Module 01. The only "policy" string matches are inside multi-tenant infra terminology — none are HR policies.
+
+### Estimated work
+- **New Django app** `apps/policies/` (follows the bounded-context pattern from Foundation L3)
+- ~10 tenant-scoped models extending `TenantScopedModel` (Policy, PolicyVersion, PolicyApprovalFlow, PolicyPublication, PolicyAcknowledgment, HRStrategicPlan, StrategicObjective, KPI, WorkforcePlan, ComplianceMatrix + supporting tables)
+- CRUD endpoints + serializers + filters + permissions (`apps/policies/permissions.py`)
+- Document upload + storage backend (uses **ADR-B.4** storage decision)
+- Approval workflow engine (uses **ADR-B.3** workflow decision — same engine that B.10 vinculación and B.13 desplazamiento will reuse)
+- Versioning logic (uses **ADR-B.7** versioning decision)
+- Frontend `features/policies/` with list / detail / version-history / acknowledgment-tracking pages
+- Compliance dashboard (consumes ComplianceMatrix; surfaces vencimientos)
+- Tests: model + endpoint + isolation tests + acknowledgment audit trail
+- **Tier comercial:** Pro (per maestro § 150)
+- Estimated effort: ~2.5 weeks single-engineer
+
+### Phase mapping
+- Single phase: **B.15 — Policies module (greenfield)** — last functional phase before B.16 close-out
+
+### Dependencies
+- ADR-B.4 (document storage) decided before B.15
+- ADR-B.3 (approval workflows) decided before B.15 — workflow engine should land in B.10 or B.13 to be reused here
+- ADR-B.7 (versioning) decided before B.15
+- B.1 polish-baseline merged (clean foundation, lint at zero)
+- B.5 polish-documents merged (since Policy reuses document-upload patterns from `apps/documents`)
+- B.6 (Position) is NOT a hard dependency — Policy references roles by string, not by FK
+
+### Cross-cutting research items (raised here, deferred)
+- Public-sector PEI / POI / PDP integration (maestro § 7) — deferred to follow-up; not B-scope
+- ANPD declaration of policy data (Ley 29733) — covered by ADR-B.2 audit trail decision
+
 
 ## Maestro gaps — Module 02 (Organization extended)
 
