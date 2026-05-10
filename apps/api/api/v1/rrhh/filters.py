@@ -358,10 +358,10 @@ class UsuarioFilter(django_filters.FilterSet):
         fields = ["username", "email", "is_active", "estado"]
 
     def filter_empleado_area(self, queryset, name, value):
-        """Filter by employee's current area."""
+        """Filter by employee's current area (#18 carry-over: same stale path as EmpleadoFilter)."""
         if value is not None:
             return queryset.filter(
-                empleado__ubicaciones_destino__area_id=value,
+                empleado__ubicaciones_destino__area_destino_id=value,
                 empleado__ubicaciones_destino__estado_ubicacion="activo",
             )
         return queryset
