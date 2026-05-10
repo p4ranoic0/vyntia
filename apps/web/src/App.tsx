@@ -56,12 +56,15 @@ import ReportesPage from '@/features/time-off/pages/ReportesPage'
 import SolicitudesPage from '@/features/time-off/pages/SolicitudesPage'
 import VacacionesManagementPage from '@/features/time-off/pages/VacacionesManagementPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { AdminApp } from '@/features/admin'
 import { TenantProvider, useTenant } from '@/shared/tenant'
 import { ActivationPage, ImpersonationBanner } from '@/features/tenancy'
 import { WorkspacesPage } from '@/features/workspace-switcher'
+
+// B.6 OrgChart — lazy-loaded so @xyflow/react (~150 KB) stays off other routes.
+const OrgChartPage = lazy(() => import('@/features/organization/pages/OrgChartPage'))
 
 
 const queryClient = new QueryClient({
@@ -296,6 +299,16 @@ function AppRoutes() {
         <Route path="/areas/crear" element={<AdminRoute><AreaFormPage /></AdminRoute>} />
         <Route path="/areas/editar/:id" element={<AdminRoute><AreaFormPage /></AdminRoute>} />
         <Route path="/areas/gestion" element={<AdminRoute><AreasManagementPage /></AdminRoute>} />
+
+        {/* Organization — OrgChart (B.6) */}
+        <Route
+          path="/organizacion/orgchart"
+          element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <OrgChartPage />
+            </Suspense>
+          }
+        />
 
         {/* Vacaciones - gestion admin */}
         <Route path="/vacaciones/periodos" element={<AdminRoute><PeriodosPage /></AdminRoute>} />
