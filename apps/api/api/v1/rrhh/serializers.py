@@ -1312,8 +1312,13 @@ class OnboardingIniciarSerializer(serializers.Serializer):
     def create(self, validated_data):
         from apps.onboarding.services import OnboardingService
 
-        created_by = self.context["request"].user
-        result = OnboardingService.crear_onboarding_completo(validated_data, created_by)
+        request = self.context["request"]
+        created_by = request.user
+        # B.1 (#15): propagate tenant so Employee + OnboardingProcess are tenant-scoped
+        tenant = getattr(request, "tenant", None)
+        result = OnboardingService.crear_onboarding_completo(
+            validated_data, created_by, tenant=tenant
+        )
         return result
 
 

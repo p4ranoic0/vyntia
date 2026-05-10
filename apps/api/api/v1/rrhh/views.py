@@ -2353,7 +2353,7 @@ class DocumentosDigitalesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet)
         description="Obtiene el detalle de un proceso de onboarding.",
     ),
 )
-class OnboardingViewSet(viewsets.ModelViewSet):
+class OnboardingViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet para gestionar el proceso de onboarding de nuevos empleados."""
 
     queryset = OnboardingProcess.objects.select_related(
@@ -2394,11 +2394,16 @@ class OnboardingViewSet(viewsets.ModelViewSet):
         return OnboardingEmpleadoSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # B.1 (#15): tenant filter applied via _filter_by_tenant so OnboardingProcess
+        # rows are scoped to request.tenant. TenantAwareViewSetMixin.get_queryset()
+        # is NOT called here (we override fully) — apply the helper manually.
+        queryset = OnboardingProcess.objects.select_related(
+            "empleado", "usuario", "validado_por"
+        )
         estado = self.request.query_params.get("estado")
         if estado:
             queryset = queryset.filter(estado_onboarding=estado)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     @require_hr()
     def list(self, request, *args, **kwargs):
