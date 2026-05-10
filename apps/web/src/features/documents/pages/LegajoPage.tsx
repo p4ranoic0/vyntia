@@ -185,7 +185,7 @@ function ContratoCard({ contrato }: ContratoCardProps) {
           <FileCheck className="h-4 w-4 text-indigo-600" />
         </div>
         <div>
-          <p className="font-medium text-sm">{contrato.numero_contrato}{contrato.numero_adenda ? ` - ${contrato.numero_adenda}` : ''}</p>
+          <p className="font-medium text-sm">{contrato.numero_contrato}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {TIPO_CONTRATO_LABELS[contrato.tipo_documento] ?? contrato.tipo_documento}
             {contrato.cargo ? ` - ${contrato.cargo}` : ''}

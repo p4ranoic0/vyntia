@@ -17,7 +17,6 @@ export interface Contrato {
     nombre: string;
   };
   numero_contrato: string;
-  numero_adenda?: string | null;
   tipo_documento: string;
   tipo_documento_texto?: string;
   fecha_inicio: string;
@@ -43,14 +42,11 @@ export interface Contrato {
   esta_vencido?: boolean;
   duracion_dias?: number | null;
   duracion_meses?: number | null;
-  es_contrato_inicial?: boolean;
-  es_adenda?: boolean;
 }
 
 export interface ContratoListItem {
   id: string;
   numero_contrato: string;
-  numero_adenda?: string | null;
   empleado: string;
   empleado_nombre: string;
   area_nombre: string;
@@ -71,7 +67,6 @@ export interface ContratoFormData {
   empleado: string;
   area: string;
   numero_contrato?: string;
-  numero_adenda?: string;
   tipo_documento: string;
   fecha_inicio: string;
   fecha_fin?: string;

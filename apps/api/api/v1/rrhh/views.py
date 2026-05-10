@@ -1026,8 +1026,6 @@ class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         "area",
         "jefe_directo",
     ).all()
-
-    queryset = EmploymentData.objects.select_related("empleado")
     serializer_class = DatosLaboralesSerializer
     permission_classes = [RRHHPermission]
     pagination_class = StandardResultsSetPagination
@@ -1037,8 +1035,8 @@ class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
     filterset_class = DatosLaboralesFilter
-    search_fields = ["puesto_trabajo", "categoria_laboral", "regimen_laboral"]
-    ordering_fields = ["fecha_ingreso", "fecha_cese", "remuneracion_mensual"]
+    search_fields = ["cargo_empleado", "categoria", "regimen_laboral"]
+    ordering_fields = ["fecha_ingreso", "fecha_cese", "sueldo_basico"]
     ordering = ["-fecha_ingreso"]
 
     @require_authenticated()
@@ -1084,22 +1082,22 @@ class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     def estadisticas_remuneracion(self, request):
         """Get salary statistics."""
         try:
-            queryset = self.get_queryset().filter(estado_laboral="activo")
+            queryset = self.get_queryset().filter(estado_datos="activo")
             stats = queryset.aggregate(
-                promedio=Avg("remuneracion_mensual"),
+                promedio=Avg("sueldo_basico"),
                 total_empleados=Count("id"),
             )
 
             # Group by salary ranges
             rangos = {
-                "menos_1000": queryset.filter(remuneracion_mensual__lt=1000).count(),
+                "menos_1000": queryset.filter(sueldo_basico__lt=1000).count(),
                 "entre_1000_2000": queryset.filter(
-                    remuneracion_mensual__gte=1000, remuneracion_mensual__lt=2000
+                    sueldo_basico__gte=1000, sueldo_basico__lt=2000
                 ).count(),
                 "entre_2000_3000": queryset.filter(
-                    remuneracion_mensual__gte=2000, remuneracion_mensual__lt=3000
+                    sueldo_basico__gte=2000, sueldo_basico__lt=3000
                 ).count(),
-                "mas_3000": queryset.filter(remuneracion_mensual__gte=3000).count(),
+                "mas_3000": queryset.filter(sueldo_basico__gte=3000).count(),
             }
 
             stats["rangos_salariales"] = rangos

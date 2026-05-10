@@ -1,8 +1,9 @@
 """AppConfig for the `apps.contracts` Django app — VYNTIA employment relationship.
 
 Owns the contractual/employment-relationship entities of an employee:
-- Contract (employment contract — initial contract or amendment/adenda;
-  unified table that handles both via numero_adenda nullable)
+- Contract (immutable issued employment contract)
+- ContractAmendment (amendments linked via parent_contract FK; e.g., sueldo
+  updates, plazo extensions, addenda)
 - EmploymentData (current employment data: position, work modality, salary base,
   schedule, direct supervisor, regimen laboral peruano)
 
@@ -11,9 +12,9 @@ the legal contract instrument and the operational employment terms. Personal
 data of the employee lives in `apps.employees`. Compensation calculations
 (payroll runs, deductions, AFP/SUNAT) live in `apps.payroll` (L3.7).
 
-Future split (deferred to L3.10/post-rename):
-- Contract → Contract + ContractAmendment (model split + data migration)
-- EmploymentData → EmploymentData (rename only)
+Model split completed in L3.10.3 (2026-04-27); Contract and ContractAmendment
+are now separate models (previously unified via numero_adenda nullable field).
+See L3.10.3 plan for context.
 """
 
 from django.apps import AppConfig

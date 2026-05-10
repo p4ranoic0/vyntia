@@ -260,9 +260,8 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
     )
     area_nombre = serializers.CharField(source="area.nombre_completo", read_only=True)
     es_activo = serializers.ReadOnlyField()
-    antiguedad_años = serializers.ReadOnlyField()
+    antiguedad_anos = serializers.ReadOnlyField()
     antiguedad_meses = serializers.ReadOnlyField()
-    tiempo_servicio = serializers.ReadOnlyField()
     ultimo_login_texto = serializers.SerializerMethodField()
     dias_sin_login = serializers.SerializerMethodField()
 
@@ -308,9 +307,8 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
             "categoria",
             "sueldo_basico",
             "es_activo",
-            "antiguedad_años",
+            "antiguedad_anos",
             "antiguedad_meses",
-            "tiempo_servicio",
             "empleado_nombre",
             "area_nombre",
             "ultimo_login_texto",
