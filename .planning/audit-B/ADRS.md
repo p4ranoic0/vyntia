@@ -96,15 +96,108 @@ Sub-proyecto T later refactors all of these per-flow state machines into a decla
 
 ## ADR-B.4: Document storage backend
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** VYNTIA generates and stores significant document volume: PDF certificates (laboral, vacaciones), Word/PDF contracts and amendments, and the legajo digital (employee personnel file: identity docs, academic certificates, contract scans). Today, documents land on the local filesystem under `MEDIA_ROOT` (`apps/api/media/`). The Module 06 audit (Task 6) flagged that without tenant segregation in the filesystem path, a path-traversal bug or misconfigured permission check could leak documents across tenants — a hard-fail for a multi-tenant SaaS.
+
+Production multi-tenant SaaS typically uses S3 or Azure Blob with per-tenant prefixes and pre-signed URLs for download. That architecture is correct long-term but requires (a) provisioning a bucket/account and IAM, (b) replacing direct filesystem reads in PDF generation pipeline, (c) signed URL generation in download views, (d) ops monitoring. None of this is on B's critical path; deployment hardening is post-B.
+
+**Decision:** Stay on filesystem storage for the duration of sub-project B. Two protective measures:
+1. **Storage abstraction layer**: introduce `apps/core/storage.py` exposing a `TenantStorage` class that wraps Django's `default_storage` and prefixes all paths with `<tenant_id>/`. All document-writing code (PDF generator, contract upload, legajo upload) uses `TenantStorage` instead of touching paths directly. Switching to S3/Azure later becomes a settings change (`DEFAULT_FILE_STORAGE = ...`) plus a one-time data migration, not a code rewrite.
+2. **Tenant-segregated MEDIA_ROOT layout**: documents land under `MEDIA_ROOT/<tenant_id>/<category>/<filename>` (e.g., `media/42/documentos_empleados/legajo-EMP-1234.pdf`). Per-tenant directories make filesystem-traversal-style cross-tenant leaks structurally harder; the application also enforces tenant scoping on read.
+
+This is the **critical mitigation noted in B.5b** (the post-C.0 work splitting tenant E2E from the rest). Signed URLs and S3-style access control come from the post-B deployment hardening sub-project.
+
+**Consequences:**
+- Positive: Cross-tenant document leak risk reduced — both code path (TenantStorage enforces prefix) and filesystem layout (per-tenant directories) are tenant-aware.
+- Positive: Migration to S3/Azure later is a config switch + one-time data move, not a refactor across N call sites.
+- Positive: No new external service dependency in B (no S3 credentials, no IAM, no ops cost).
+- Negative: Filesystem doesn't scale horizontally — single-server deployment is implied throughout B. Acceptable; B is for first sellable product, not multi-region.
+- Negative: No signed URLs in B, so download views must check tenant + permission server-side before streaming. Bug in that check = leak. Mitigation: dedicated test coverage on the download endpoints in B.5b/B.16.
+- Negative: Backups must include `MEDIA_ROOT`. Operations runbook to be added in deployment sub-project.
+- Neutral: Local dev still trivial (filesystem); test fixtures can use `tmp_path`.
+
+**Alternatives considered:**
+- S3 from B.1: rejected because of provisioning + ops cost (IAM, billing, monitoring), and signed URL implementation work that doesn't compound with any other B deliverable.
+- Azure Blob from B.1: rejected for the same reasons; no preference between S3 and Azure forced today, decision deferred to deployment sub-project.
+- Continue without storage abstraction: rejected because every document write site would need rewriting when migration eventually happens — debt grows linearly with B's scope.
+
+**Reference:** Module 06 audit (Task 6) leak risk; B.5b plan (post-C.0 tenant isolation work). `apps/core/storage.py` to be added in B.1.
+
+
 
 ## ADR-B.5: Testing strategy for employment lifecycle
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** Module 03 in the Maestro decomposes employment into 7 sub-procesos that compose into a single lifecycle: selección → contratación → onboarding → vida laboral (asistencia, ausencias, vacaciones, desplazamiento, ascensos) → desvinculación → cese → post-cese. Each B phase implements one or two slices of that pipeline. Testing each slice in isolation is necessary but not sufficient: the sellable claim is "VYNTIA manages the full employment lifecycle," which is only true if the integration works end-to-end. Costly Playwright e2e on every phase would slow B significantly; no e2e at all would let composition bugs ship.
+
+The C.0 work already added an opt-in tenant isolation Playwright suite (`tests/e2e/tenant-isolation.test.js`, gated by `RUN_TENANT_E2E=1`). The pattern of opt-in heavy e2e plus default-on pytest is established and works.
+
+**Decision:** Three-tier strategy:
+1. **Per-phase pytest unit tests**: every B phase ships unit tests for new models, services, validators, and serializers. Default-on, run on every CI invocation. Existing baseline (161 passing) must not regress.
+2. **Per-phase pytest integration tests**: every B phase that touches multiple bounded contexts (e.g., contracts → employees → audit_lite) ships integration tests using Django test client + DRF APIClient. Default-on.
+3. **B.16 close-out Playwright e2e for full lifecycle**: a new `tests/e2e/employment-lifecycle.test.js` is added in the final B phase (B.16), exercising the full happy path: provision tenant → seed admin → create empleado → assign position → issue contract → run onboarding step → record asistencia → request vacaciones → process desplazamiento → run desvinculación → confirm cese settlement. Opt-in, gated by `RUN_LIFECYCLE_E2E=1`, documented as a release-gate test.
+
+The two e2e suites (tenant isolation + lifecycle) are both opt-in but become required for any release branch promotion.
+
+**Consequences:**
+- Positive: Each phase's CI runs fast (no Playwright per phase). Baseline preserved.
+- Positive: Integration bugs caught at B.16 instead of post-launch — single dedicated phase to fix lifecycle composition issues.
+- Positive: Lifecycle e2e doubles as live demo script (the test reads as a sales-friendly walkthrough).
+- Negative: B.16 is a heavy phase (e2e write + bug fixing the issues it surfaces). Risk of underestimation — flagged for spec discussion when B.16 is planned.
+- Negative: Bugs that span phases may sit undetected until B.16. Mitigation: integration tests at each phase boundary catch most cases.
+- Negative: Two opt-in e2e suites mean two CI configurations to maintain; if devs forget to run them, regression slips.
+- Neutral: Vitest frontend unit tests continue per-component; no change.
+
+**Alternatives considered:**
+- Playwright e2e per phase: rejected because each phase would carry 30–60 minutes of e2e dev work plus brittle test maintenance, with most coverage redundant to the lifecycle test.
+- pytest only (no e2e in B): rejected because UI regressions in critical flows (contract issue, desvinculación) would only surface in production; lifecycle e2e is a release blocker.
+- One giant e2e suite that runs on every push: rejected because suite runtime would exceed 15–20 minutes and slow down per-phase iteration.
+- Keep tenant isolation e2e gated but make lifecycle e2e default-on: rejected because lifecycle e2e provisions tenants and seeds extensive data — dev environments may not be ready.
+
+**Reference:** `tests/e2e/tenant-isolation.test.js` (C.0 pattern). B.16 plan to define lifecycle e2e in detail. ROADMAP-B.md test baselines.
+
+
 
 ## ADR-B.6: SERVIR vs LCT in UI
 
-(Filled by Task 14.)
+**Status:** Proposed (becomes Accepted on B.0 merge)
+
+**Context:** VYNTIA is positioned for both private sector clients (regulated by LCT — Ley General del Trabajo and Ley 30709 on equal-pay/CCF) and public sector clients (regulated by SERVIR via D.Leg. 1057/CAS, D.Leg. 728, D.Leg. 276, plus MPP — Manual de Perfiles de Puestos and CPE — Cuadro de Puestos de la Entidad). The two regimes overlap on ~80% of HR concepts (employee, contract, vacaciones, asistencia) but diverge on:
+- Position management: private uses CCF; public uses MPP/CPE with formal Designación and Encargatura concepts.
+- Disciplinary process: public has a regulated PAD (Procedimiento Administrativo Disciplinario); private follows internal RIT.
+- Movement: public has Desplazamiento with 6 sub-types (designación, rotación, encargatura, comisión, destaque, transferencia); private uses simpler reassignment.
+- Severance: public has formal cese causes; private has LCT-defined causes plus indemnización por despido arbitrario.
+- Retributions: public has fixed scales; private uses CCF bands per Ley 30709.
+
+Treating these as separate products would double infrastructure cost and fork the codebase. Treating them identically would force one regime's UI on the other, breaking domain fit.
+
+**Decision:** Single codebase with a per-tenant `sector` discriminator.
+- Add `Tenant.sector` field (`'private' | 'public'`) seeded at provisioning.
+- Frontend exposes a `useTenant()` hook returning `{ sector, ... }`. Sector-specific UI branches use this hook; default route guards prevent showing public-only screens to private tenants and vice versa.
+- Backend models share a common base (Employee, Contract, Position) plus sector-specific subclasses or sector-conditional fields where schemas diverge significantly. Examples: `Position` keeps a base table plus `private_attrs` / `public_attrs` JSON or sector-specific child tables; movement records have a `kind` enum that admits both `reassignment` (private) and the 6 desplazamiento types (public).
+- Sector-conditional validation lives in services (`apps/<context>/services/`), not in serializers, so the same DRF endpoint can serve both sectors.
+- Only ~20% of Core diverges; the bulk of UI and models is shared.
+
+**Consequences:**
+- Positive: Single codebase, single CI pipeline, single deployment. Lowest TCO.
+- Positive: Common code (employees, vacaciones, asistencia, identity) gets twice the testing/usage.
+- Positive: A tenant that switches sector classification (rare but real, e.g., a state-owned enterprise spin-off) doesn't require migration to a different product.
+- Negative: Some screens become busier with conditional branches (`if sector === 'public' ...`). Mitigation: factor into separate sector-aware components when branches exceed ~3 cases.
+- Negative: Reviewers must remember sector when validating PRs — easy to forget the other sector path. Mitigation: PR template question "tested both sectors?" plus CI coverage on both paths.
+- Negative: A regression in sector logic potentially affects all tenants of that sector simultaneously.
+- Neutral: Demos and sales materials need two flavors; that work would exist regardless of architecture.
+
+**Alternatives considered:**
+- Separate tenants per sector with separate apps deployed: rejected because it doubles infra cost (DBs, deploys, monitoring), splits engineering attention, and forces customers in mixed contexts (e.g., consulting firms with public + private clients) to maintain two accounts.
+- Separate apps (vyntia-private, vyntia-public) sharing a library: rejected because divergence is small and library coordination overhead is high. Forks tend to drift.
+- Plugin architecture (sector pluggable at runtime per workspace): rejected as overengineering — only two plugins ever, and they touch the same domain entities.
+- Tag features in code with feature flags rather than per-tenant sector: rejected because sector is identity, not a flag — a tenant doesn't toggle between private and public week to week.
+
+**Reference:** Maestro Module 02 (organization, position) and Module 03 (lifecycle) for sector divergences. Phase B.6 (Position) and B.13 (Desplazamiento) plans must explicitly call out sector branches.
+
+
 
 ## ADR-B.7: Versioning of critical models (Position, Contract)
 
