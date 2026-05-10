@@ -544,7 +544,7 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
         area_id = self.request.query_params.get("area")
         if area_id:
             queryset = queryset.filter(
-                historial_ubicaciones__area_destino__area_id=area_id,
+                historial_ubicaciones__area_destino_id=area_id,
                 historial_ubicaciones__estado_ubicacion="activo",
             )
 
@@ -684,11 +684,12 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     def estadisticas(self, request):
         """Get employee statistics."""
         try:
+            base_qs = self.get_queryset()
             stats = {
-                "total": Employee.objects.count(),
-                "activos": Employee.objects.filter(estado_empleado="activo").count(),
-                "inactivos": Employee.objects.filter(estado_empleado="inactivo").count(),
-                "cesados": Employee.objects.filter(estado_empleado="cesado").count(),
+                "total": base_qs.count(),
+                "activos": base_qs.filter(estado_empleado="activo").count(),
+                "inactivos": base_qs.filter(estado_empleado="inactivo").count(),
+                "cesados": base_qs.filter(estado_empleado="cesado").count(),
             }
             return APIResponse.success(
                 data=stats, message="Estadísticas de empleados obtenidas exitosamente"
