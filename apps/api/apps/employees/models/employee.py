@@ -147,7 +147,7 @@ class Employee(models.Model):
     # Información de contacto
     telefono_fijo = models.CharField(max_length=20, null=True, blank=True)
     telefono_celular = models.CharField(max_length=20, blank=True, default='')
-    correo_personal = models.EmailField(max_length=150, unique=True)
+    correo_personal = models.EmailField(max_length=150)
 
     # Información personal
     estado_civil = models.CharField(max_length=15, choices=ESTADO_CIVIL_CHOICES, blank=True, default='')
@@ -204,6 +204,11 @@ class Employee(models.Model):
             models.UniqueConstraint(
                 fields=["tenant", "numero_documento"],
                 name="unique_employee_doc_per_tenant",
+            ),
+            models.UniqueConstraint(
+                fields=["tenant", "correo_personal"],
+                name="employees_employee_unique_tenant_correo",
+                condition=models.Q(correo_personal__isnull=False) & ~models.Q(correo_personal=""),
             ),
         ]
 
