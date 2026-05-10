@@ -652,7 +652,7 @@ class RolPermisosViewSet(viewsets.ModelViewSet):
         description="Elimina un empleado del sistema.",
     ),
 )
-class EmpleadoViewSet(viewsets.ModelViewSet):
+class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for Employee management."""
 
     queryset = Employee.objects.prefetch_related(
@@ -834,11 +834,14 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
                 fecha_max = today - timedelta(days=int(edad_min) * 365)
                 queryset = queryset.filter(fecha_nacimiento__lte=fecha_max)
 
-        return queryset
+        # B.1 (#8): apply tenant filter via mixin
+        return self._filter_by_tenant(queryset)
 
     def perform_create(self, serializer):
-        """Create employee with logging."""
-        empleado = serializer.save()
+        """Create employee with logging — tenant injected by TenantAwareViewSetMixin."""
+        # B.1 (#8): mixin injects tenant=request.tenant into serializer.save()
+        super().perform_create(serializer)
+        empleado = serializer.instance
         logger.info(
             f"Employee creado: {empleado.nombre_completo}",
             extra={

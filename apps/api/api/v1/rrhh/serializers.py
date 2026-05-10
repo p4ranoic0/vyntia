@@ -725,27 +725,39 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         """Create employee with all related data."""
+        # B.1 (#9): tenant injected by TenantAwareViewSetMixin via serializer.save(tenant=...)
+        tenant = validated_data.get("tenant")
+
         datos_laborales = validated_data.pop("datos_laborales")
         area_inicial_id = validated_data.pop("area_inicial")
         datos_familiares = validated_data.pop("datos_familiares", [])
         datos_academicos = validated_data.pop("datos_academicos", [])
 
-        # Create employee
+        # Create employee (tenant already in validated_data — flows via **validated_data)
         empleado = Employee.objects.create(**validated_data)
 
         # Get area and create labor data
         area = Department.objects.get(area_id=area_inicial_id)
 
-        # Create labor data
-        EmploymentData.objects.create(empleado=empleado, area=area, **datos_laborales)
+        # Create labor data — propagate tenant so EmploymentData is tenant-scoped
+        ld_kwargs = {"empleado": empleado, "area": area, **datos_laborales}
+        if tenant is not None:
+            ld_kwargs["tenant"] = tenant
+        EmploymentData.objects.create(**ld_kwargs)
 
-        # Create family data
+        # Create family data — propagate tenant so FamilyMember rows are tenant-scoped
         for familiar_data in datos_familiares:
-            FamilyMember.objects.create(empleado=empleado, **familiar_data)
+            fm_kwargs = {"empleado": empleado, **familiar_data}
+            if tenant is not None:
+                fm_kwargs["tenant"] = tenant
+            FamilyMember.objects.create(**fm_kwargs)
 
-        # Create academic data
+        # Create academic data — propagate tenant so AcademicRecord rows are tenant-scoped
         for academico_data in datos_academicos:
-            AcademicRecord.objects.create(empleado=empleado, **academico_data)
+            ar_kwargs = {"empleado": empleado, **academico_data}
+            if tenant is not None:
+                ar_kwargs["tenant"] = tenant
+            AcademicRecord.objects.create(**ar_kwargs)
 
         return empleado
 
