@@ -15,11 +15,10 @@ import { Badge } from '@/shared/ui/badge'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useToast } from '@/shared/ui/use-toast'
-import { apiClient } from '@/shared/api/api'
 import { roleService, permissionService, rolePermissionService } from '@/features/identity/services/securityService'
 
 // Importar interfaces del servicio
-import { Role, Permission, RolePermission } from '@/features/identity/services/securityService'
+import { Permission, RolePermission } from '@/features/identity/services/securityService'
 
 export default function RolePermissionsPage() {// Estados
   const [selectedRoleId, setSelectedRoleId] = useState<string>('')
@@ -81,7 +80,9 @@ export default function RolePermissionsPage() {// Estados
   })
 
   // Memoizar rolePermissions para evitar bucle infinito
-  const memoizedRolePermissions = useMemo(() => rolePermissions, [JSON.stringify(rolePermissions)])
+  const rolePermissionsKey = JSON.stringify(rolePermissions)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedRolePermissions = useMemo(() => rolePermissions, [rolePermissionsKey]) // rolePermissionsKey is the stable serialized dep
 
   // Efectos
   React.useEffect(() => {
@@ -198,7 +199,7 @@ export default function RolePermissionsPage() {// Estados
         roleId: roleIdNumber,
         permissionIds
       })
-    } catch (error) {
+    } catch {
       // El error ya se maneja en onError del mutation
     } finally {
       setIsSaving(false)

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Shield, 
-  Plus, 
-  Minus, 
-  Search, 
-  Check, 
+import {
+  Shield,
+  Plus,
+  Minus,
+  Search,
+  Check,
   X,
-  AlertTriangle,
   Users,
   Settings
 } from 'lucide-react'
@@ -23,15 +22,13 @@ import { Input } from '@/shared/ui/input'
 import { Badge } from '@/shared/ui/badge'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
-import { Separator } from '@/shared/ui/separator'
 // import { ScrollArea } from '@/shared/ui/scroll-area' // Componente no disponible
 import { toast } from 'sonner'
-import { 
-  usersService, 
-  rolesService, 
-  type User, 
-  type Role, 
-  type UserRoleAssignment 
+import {
+  usersService,
+  rolesService,
+  type User,
+  type Role,
 } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
@@ -60,7 +57,7 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
       loadData(userId)
       setSearchTerm('')
     }
-  }, [open, userId])
+  }, [open, userId]) // eslint-disable-line react-hooks/exhaustive-deps -- loadData re-created each render; adding it would cause infinite loop
 
   // Efecto para inicializar selectedRoles cuando userRoles cambie
   useEffect(() => {
@@ -116,7 +113,8 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
     role.descripcion_rol?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleRoleToggle = (roleId: string, isCurrentlyAssigned: boolean) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleRoleToggle = (roleId: string, _isCurrentlyAssigned: boolean) => { // param kept for caller compatibility
     // Simplemente alternar la selección del rol
     if (selectedRoles.has(roleId)) {
       // Si está seleccionado, deseleccionarlo
@@ -218,9 +216,10 @@ export function RoleManagementModal({ open, onOpenChange, userId, onSuccess }: R
       toast.success(`Roles actualizados correctamente. ${changes.toAdd} agregados, ${changes.toRemove} removidos.`)
       onSuccess?.()
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating roles:', error)
-      toast.error(error.response?.data?.message || 'Error al actualizar los roles')
+      const err = error as { response?: { data?: { message?: string } } }
+      toast.error(err.response?.data?.message || 'Error al actualizar los roles')
     } finally {
       setSubmitting(false)
     }

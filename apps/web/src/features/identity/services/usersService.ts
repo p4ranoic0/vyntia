@@ -88,13 +88,14 @@ export const usersService = {
   /**
    * Obtener lista de usuarios con filtros opcionales
    */
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     try {
       const response = await apiClient.get("/api/v1/identity/users/", {
         params,
       });
       const users = extractCollection(response.data);
-      return users.map((user: any) => normalizeUser(user));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return users.map((user: any) => normalizeUser(user)); // extractCollection returns unknown[]; normalizeUser expects raw API shape
     } catch (error) {
       console.error("Error fetching users:", error);
       throw new Error(getErrorMessage(error));
@@ -269,7 +270,8 @@ export const usersService = {
         `/api/v1/identity/user-roles/buscar_usuarios_por_roles/?${queryParams.toString()}`,
       );
       const users = extractCollection(response.data);
-      return users.map((user: any) => normalizeUser(user));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return users.map((user: any) => normalizeUser(user)); // extractCollection returns unknown[]; normalizeUser expects raw API shape
     } catch (error) {
       console.error("Error searching users by roles:", error);
       throw new Error(getErrorMessage(error));
@@ -353,11 +355,12 @@ export const rolesService = {
   /**
    * Obtener lista de roles
    */
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     try {
       const response = await apiClient.get("/api/v1/identity/roles/", { params });
       const roles = extractCollection(response.data);
-      return roles.map((role: any) => normalizeRole(role));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return roles.map((role: any) => normalizeRole(role)); // extractCollection returns unknown[]; normalizeRole expects raw API shape
     } catch (error) {
       console.error("Error fetching roles:", error);
       throw new Error(getErrorMessage(error));
@@ -464,7 +467,7 @@ export const permissionsService = {
   /**
    * Obtener lista de permisos
    */
-  async getAll(params?: Record<string, any>) {
+  async getAll(params?: Record<string, unknown>) {
     try {
       const response = await apiClient.get("/api/v1/identity/permissions/", {
         params,
@@ -476,7 +479,8 @@ export const permissionsService = {
         response.data;
       const permissions = Array.isArray(data) ? data : [];
 
-      return permissions.map((permission: any) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return permissions.map((permission: any) => ({ // raw API response; shape mapped to Permission interface below
         id: permission.permiso_id || permission.id,
         nombre_permiso: permission.nombre_permiso,
         descripcion_permiso: permission.descripcion_permiso,

@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
-  Users, 
-  Calendar, 
-  Shield, 
-  Building2, 
+import {
+  Users,
+  Calendar,
+  Shield,
+  Building2,
   UserCheck,
   BarChart3,
-  Settings,
   TrendingUp,
   AlertTriangle,
   Clock,
-  FileText,
   Activity,
   Key,
   Lock,
@@ -43,7 +41,7 @@ interface DashboardStats {
 interface QuickAction {
   title: string
   description: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   href: string
   color: string
   count?: number
@@ -58,7 +56,7 @@ interface RecentActivity {
 }
 
 export function AdminDashboard() {
-  const { user } = useAuth()
+  useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats>({
     totalEmpleados: 0,

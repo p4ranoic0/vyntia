@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import {
+  Users,
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   Eye,
-  UserCheck,
-  UserX,
   Key,
   Shield
 } from 'lucide-react'
@@ -135,14 +132,14 @@ export function UsersList() {
     } else {
       loadUsers()
     }
-  }, [roleFilter])
+  }, [roleFilter]) // eslint-disable-line react-hooks/exhaustive-deps -- searchUsersByRole reads roleFilter/searchTerm/statusFilter via closure; extracting would cause loops
 
   // Efecto para actualizar búsqueda cuando cambian otros filtros y hay un rol seleccionado
   useEffect(() => {
     if (roleFilter !== 'all') {
       searchUsersByRole()
     }
-  }, [searchTerm, statusFilter])
+  }, [searchTerm, statusFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return

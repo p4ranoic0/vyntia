@@ -18,14 +18,13 @@ import { Input } from '@/shared/ui/input'
 import { Badge } from '@/shared/ui/badge'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
-import { Separator } from '@/shared/ui/separator'
 import { toast } from 'sonner'
-import { 
-  usersService, 
-  rolesService, 
-  type User, 
-  type Role, 
-  type UserRoleAssignment 
+import {
+  usersService,
+  rolesService,
+  type User,
+  type Role,
+  type UserRoleAssignment,
 } from '@/features/identity/services/usersService'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { UsersLayout } from '@/shared/layout/UsersLayout'
@@ -46,7 +45,7 @@ export function RoleManagement() {
     if (id) {
       loadData(id)
     }
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps -- loadData re-created each render; adding it would cause infinite loop
 
   const loadData = async (userId: string) => {
     try {
@@ -169,7 +168,7 @@ export function RoleManagement() {
       // Limpiar estados de cambios
       setRolesToRemove(new Set())
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating roles:', error)
       toast.error('Error al actualizar los roles')
     } finally {
