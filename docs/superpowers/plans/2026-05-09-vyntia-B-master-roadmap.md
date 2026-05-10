@@ -2,7 +2,7 @@
 
 > Confirmed phase structure for sub-project B. Each phase is a separate branch and PR, mergeable independently.
 > Source spec: `docs/superpowers/specs/2026-05-09-vyntia-B-vyntia-core-functional-design.md`.
-> Roadmap version: TENTATIVE (will be confirmed by Task 13 post-audit).
+> Audit date: 2026-05-09. Roadmap version: **CONFIRMED** (Task 13 of B.0 audit complete).
 
 ## Phase table
 
@@ -119,3 +119,10 @@ Per ADR-B.6, distinct sector boundaries require separate phases for clean RBAC a
 ### 8. B.9 (Selección) kept as single phase
 
 Despite 1 backlog item (item #110), the scope is large: 7-model module (PersonnelRequisition, JobPosting, JobApplication, Candidate, SelectionStage, CandidateEvaluation, MeritRanking) with full workflow. Backlog item count is not the only signal of phase weight; effort estimate dominates (2w).
+
+## Cross-references
+
+- **Backlog:** `.planning/audit-B/BACKLOG.md` (132 items, 22-25 weeks estimated effort)
+- **Inventory:** `.planning/audit-B/INVENTORY.md` (source material from Tasks 1-10)
+- **ADRs:** `.planning/audit-B/ADRS.md` (6 architectural decision records)
+- **Audit plan:** `docs/superpowers/plans/2026-05-09-vyntia-B0-audit.md` (Tasks 1-13 + learnings)
