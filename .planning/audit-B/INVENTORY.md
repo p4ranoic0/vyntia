@@ -712,7 +712,266 @@ Sin errores TS ni warnings ESLint para `features/contracts` (verificado con `tsc
 
 ## App: documents
 
-(Filled by Task 6.)
+### Estado actual en VYNTIA (post-A+C)
+
+> **Contexto rename L3.11:** El legacy tenía `DocumentosDigitales` (AutoField PK `documento_id`) + `PlantillaDocumento` (AutoField PK `plantilla_id`). VYNTIA renombró a `DigitalDocument` + `DocumentTemplate` con UUID PK = `id`. Tabla `documentos_digitales` y `app_rrhh_plantilla_documento` preservadas. **El renombre dejó múltiples consumidores stale referenciando `documento_id` / `plantilla_id` / `empleado_id` / `contrato_id` que ya no existen** — se documenta sistemáticamente en bugs.
+
+> **Contexto C.3 (Multi-tenancy):** Migration `0003_digitaldocument_tenant_documenttemplate_tenant.py` (2026-05-09) añadió tenant FK nullable a ambos modelos. Ningún ViewSet asigna ni filtra tenant — confianza 100% en RLS+middleware (patrón cross-app).
+
+#### Modelos
+- `DigitalDocument` (file: `apps/api/apps/documents/models/digital_document.py:25`) — documento digital del legajo del empleado. Renombre L3.11: legacy `DocumentosDigitales` → `DigitalDocument`. PK `id` UUID. Tabla legacy `documentos_digitales` preservada (line 218).
+  - **Choices** (líneas 28-106): `TIPO_DOCUMENTO_CHOICES` (32 valores: dni, pasaporte, certificados varios, contratos, adendas, boletas, constancias, resoluciones, cartas, evaluaciones, otros), `CATEGORIA_CHOICES` (11: personal, academico, laboral, medico, legal, administrativo, capacitacion, evaluacion, remuneraciones, ubicacion, otros), `ESTADO_DOCUMENTO_CHOICES` (7: activo/inactivo/vencido/pendiente_revision/aprobado/rechazado/archivado), `NIVEL_ACCESO_CHOICES` (4: publico/restringido/confidencial/muy_confidencial), `FORMATO_ARCHIVO_CHOICES` (11: pdf/jpg/jpeg/png/doc/docx/xls/xlsx/txt/zip/rar).
+  - **Relaciones**: `empleado` FK→`employees.Employee` (CASCADE, related_name `documentos_digitales`), `validado_por` FK→`identity.User` (SET_NULL), `digitalizado_por` FK→`identity.User` (SET_NULL), `subido_por` FK→`identity.User` (SET_NULL), `documento_padre` FK→self (CASCADE, related_name `versiones`), `familiar` FK→`employees.FamilyMember` (SET_NULL).
+  - **Identidad/contenido**: `tipo_documento`, `categoria`, `nombre_documento` (CharField max=200), `descripcion` (TextField nullable).
+  - **Archivo**: `archivo` FileField con `upload_to='documentos_empleados/%Y/%m/'` y `FileExtensionValidator` (11 ext.); `nombre_archivo_original`, `formato_archivo`, `tamano_archivo` (BigIntegerField, en bytes). Función legacy `documento_upload_path` preservada (líneas 19-22) por compat con migraciones históricas.
+  - **Metadatos**: `numero_documento` (nullable), `fecha_emision`, `fecha_vencimiento`, `entidad_emisora`.
+  - **Acceso/seguridad**: `nivel_acceso` (default `restringido`), `requiere_autorizacion`, `es_documento_oficial`, `es_copia_certificada`, `es_confidencial`, `requiere_firma_digital`.
+  - **Versioning**: `version` (CharField default `1.0`), `documento_padre` (self FK), `es_version_actual` (default True).
+  - **Estado/validación**: `estado_documento` (default `activo`), `validado_por`, `fecha_validacion`, `observaciones_validacion`.
+  - **Digitalización**: `digitalizado_por`, `fecha_digitalizacion` (auto_now_add), `calidad_digitalizacion` (alta/media/baja).
+  - **Audit**: `fecha_subida` (auto_now_add), `updated_at` (auto_now, db_column `fecha_actualizacion`), `subido_por`.
+  - **Búsqueda**: `palabras_clave` (CharField max=500, CSV), `notas_internas`.
+  - Tenant FK: ✅ (líneas 110-117, nullable=true). NO hay composite unique constraint con tenant — `unique_together = [['empleado', 'tipo_documento', 'numero_documento', 'version']]` (line 233) — suficiente porque `empleado` ya está taggeado vía employees.
+  - Manager: default. `DocumentosDigitalesManager` comentado (línea 16, 215 — igual al legacy).
+  - **Properties calculadas (16)**: `tipo_documento_texto`, `categoria_texto`, `estado_texto`, `nivel_acceso_texto`, `tamano_archivo_legible`, `extension_archivo`, `esta_vencido`, `dias_para_vencimiento`, `proximo_a_vencer` (30 días), `es_imagen`, `es_pdf`, `es_documento_office`, `url_descarga`, `informacion_validacion`, `informacion_version`, `requiere_atencion`, `nivel_seguridad` (Alto/Medio/Bajo).
+  - **Métodos instancia**: `validar_documento(usuario, observaciones)`, `rechazar_documento(usuario, motivo)`, `crear_nueva_version(archivo, usuario, descripcion_cambios)`, `_generar_nueva_version()` (incrementa float +0.1), `marcar_como_vencido()`, `renovar_documento(nueva_fecha, archivo)`, `archivar_documento(motivo)`, `cambiar_nivel_acceso(nuevo_nivel, usuario, justificacion)`, `agregar_palabras_clave(palabras)`. **Bug L3.11**: `informacion_version` accede `self.documento_padre.id` (línea 337) — antes era `documento_padre.documento_id`; aquí está bien porque ahora es UUID.
+  - **Class methods (queries)**: `por_tipo_documento`, `documentos_vencidos`, `proximos_a_vencer(dias=30)`, `pendientes_validacion`, `por_categoria`, `buscar_por_palabras_clave`, `documentos_confidenciales`, `estadisticas_por_tipo` (Count('id') — correcto), `documentos_por_empleado`. **Ninguno filtra tenant** — leak cross-tenant si se invoca desde shell.
+  - `save()` override: hidrata `tamano_archivo`, `nombre_archivo_original`, `formato_archivo` desde el FileField si están vacíos (líneas 567-577).
+
+- `DocumentTemplate` (file: `apps/api/apps/documents/models/document_template.py:11`) — plantilla Word (.docx) reutilizable para generación de documentos. Renombre L3.11: legacy `PlantillaDocumento` → `DocumentTemplate`. PK `id` UUID. Tabla legacy `app_rrhh_plantilla_documento` preservada (line 59).
+  - **Choices**: `TIPO_CHOICES` (4: certificado_trabajo, constancia_laboral, contrato, adenda).
+  - **Campos**: `tipo`, `nombre` (max=200), `descripcion` (TextField default ''), `archivo` (FileField `upload_to='plantillas_word/%Y/'`), `activa` (default True).
+  - **Audit**: `created_at` (auto_now_add, db_column `fecha_creacion`), `created_by` FK→`identity.User` (SET_NULL, related_name `plantillas_creadas`, db_column `creada_por_id`).
+  - Tenant FK: ✅ (líneas 28-35, nullable=true). **NO hay constraint per-tenant** sobre `(tenant, tipo, nombre)` — dos tenants pueden tener plantillas con nombre idéntico, lo cual es OK; pero **NO hay defense-in-depth** para que un user de tenant_b vea las plantillas de tenant_a si el ViewSet no filtra (cosa que no hace, ver bugs).
+  - **Property `variables_disponibles`** (líneas 67-93): retorna lista de marcadores `{{...}}` según el tipo. Base 12 variables comunes (NOMBRE_EMPLEADO, APELLIDOS, DNI, CARGO, etc.) + extras según tipo (NUMERO_CERTIFICADO/PROPOSITO/SALARIO_BRUTO para cert/constancia; NUMERO_CONTRATO/TIPO_CONTRATO/SALARIO_NETO/JORNADA para contrato; idem + NUMERO_ADENDA para adenda).
+
+#### Servicios (3 + management commands)
+- `apps/documents/services/template_service.py` — `TemplateService` (HTML rendering desde Django templates).
+  - **Mappings declarados** (líneas 31-49): `PLANTILLAS_CONTRATO` (7 entradas mapean `Contract.tipo_documento` → archivo HTML; CAS_* → `contratos/contrato_cas.html`, LEY_728_* → `contratos/contrato_728.html`, LEY_276_INDETERMINADO → `contratos/contrato_276.html`); `PLANTILLAS_ADENDA` (4 → todos a `adendas/adenda_base.html`); `PLANTILLAS_CERTIFICADO` (2: CONSTANCIA → `certificados/constancia_laboral.html`, CERTIFICADO → `certificados/certificado_trabajo.html`).
+  - **Métodos**: `generar_contrato(contrato_id, tipo_plantilla)` (renderiza HTML), `generar_adenda(adenda_id, tipo_adenda)`, `generar_certificado(empleado_id, tipo_certificado, datos_adicionales)` (auto-detect: empleado `activo` → CONSTANCIA, cesado → CERTIFICADO line 178-181), `_preparar_contexto_contrato/_empleado/_obtener_datos_institucion`, `validar_plantilla`, `listar_plantillas_disponibles`/`obtener_plantillas_disponibles`, `generar_reporte_html(reporte_data)`, `_generar_reporte_html_fallback`.
+  - **`_obtener_datos_institucion`**: invoca `Company.get_config(tenant=None)` con TODO inline (line 324: "TODO(C.3): pass tenant from service caller once middleware ships"). **Bug C-multitenancy P1** — todos los documentos generados rinden los datos de la institución del tenant `None` (default seed) en lugar del tenant del request.
+  - **Bug L3.10.3 stale**: línea 216 `'numero_adenda': getattr(contrato, 'numero_adenda', None)` — `Contract` post-split NO tiene `numero_adenda` (vive en `ContractAmendment`). Siempre `None` para contratos. Ya documentado en Task 5 contracts.
+  - **Bug**: línea 254 `contrato.created_by.nombre_completo if contrato.creado_por_id else ...` — el field es `created_by` (English), pero la condición chequea `creado_por_id`. Si `creado_por_id` es el db_column legacy, el atributo es `created_by_id` en Django. Atributo NO existe → `AttributeError` → cualquier render de contrato lanza excepción.
+  - **Bug**: línea 230 `contrato.get_estado_display()` — el field es `status` con `db_column='estado'`. El método auto-generado por choices es `get_status_display`. **`get_estado_display` no existe** → AttributeError. Igual patrón en `_generar_reporte_html_fallback` línea 439.
+  - **Bug**: línea 433 `c.numero_contrato or c.contrato_id` — `Contract` post-rename tiene `id` UUID, no `contrato_id`. AttributeError.
+
+- `apps/documents/services/pdf_generator.py` — `PDFGenerator` (HTML→PDF).
+  - **Cadena de motores PDF** (líneas 24-45, 213-239): xhtml2pdf → WeasyPrint → ReportLab. Disponibilidad detectada via try/except import. `_html_to_pdf` itera en ese orden y avisa al log cuando cae a ReportLab ("Usando stub ReportLab — el PDF NO contendrá contenido real" line 234-237). Por CLAUDE.md, **sólo ReportLab funciona reliably en Windows**, lo que significa que en dev local todos los PDFs son stubs ("DOCUMENTO GENERADO. Contenido del documento generado desde plantilla.").
+  - **Funciones de limpieza**: `_strip_unsupported_css` elimina `@page { ... counter() ... }` (xhtml2pdf no soporta counters) — fix histórico para Windows.
+  - **Métodos**: `generar_pdf_contrato(contrato_id, tipo_plantilla, guardar_automatico)`, `generar_pdf_adenda(contrato_id, tipo_adenda, guardar_automatico)`, `generar_pdf_certificado(empleado_id, tipo_certificado, datos_adicionales, guardar_automatico)`, `generar_reporte_pdf(reporte_data, guardar_en_bd, usuario_creador)`. Todos guardan opcionalmente en `DigitalDocument` (líneas 461-505).
+  - **`obtener_configuracion_disponible`** retorna info de capacidades (motor disponible + plantillas).
+  - **Bug**: `generar_pdf_adenda` recibe `contrato_id` pero invoca `template_service.generar_adenda(contrato_id, tipo_adenda)`; `template_service.generar_adenda` realmente espera **adenda_id** (UUID de `ContractAmendment`). El renombre L3.10.3 (split Contract/Amendment) rompió la signature, pero `pdf_generator.generar_pdf_adenda` no se actualizó.
+  - **Bug L3.11**: `_guardar_documento_digital` crea `DigitalDocument` SIN tenant — invocado desde la cadena de generación cualquier PDF generado quedará con `tenant=NULL` (orphan). Afecta `generar_pdf_contrato/adenda/certificado/reporte` todos.
+
+- `apps/documents/services/word_template_service.py` — `WordTemplateService` (replace `{{VAR}}` en .docx).
+  - Usa `python-docx`. Métodos: `generar_desde_plantilla(plantilla, variables)`, `_reemplazar_en_documento`, `_reemplazar_en_parrafo` (combina runs y restaura formato del primer run), `construir_variables_empleado(empleado, datos_adicionales)`, `construir_variables_contrato(contrato)`, `construir_variables_certificado(empleado, tipo, numero_certificado, proposito, incluir_salario)`, `_format_date` (formato "DD de mes de YYYY"), `pdf_desde_docx(docx_bytes)` (usa `docx2pdf` que requiere Word instalado en Windows; retorna None si falla).
+  - **Bug crítico L3.10.3** (línea 139): `'NUMERO_ADENDA': contrato.numero_adenda or ''` — Contract post-split no tiene `numero_adenda` → AttributeError. **Cualquier flujo de generación Word de contrato falla**. Ya documentado en Task 5.
+  - **Bug L3.10.3** (línea 175): filtra `Contract.objects.filter(empleado=empleado, estado='ACTIVO')` — el field es `status`, no `estado`. FieldError. Afecta a `construir_variables_certificado(incluir_salario=True)`.
+  - **Bug**: `EMPRESA_NOMBRE`, `EMPRESA_RUC`, `EMPRESA_DIRECCION`, `CIUDAD` están **hardcoded** (líneas 119-123): `'Lima'`, `'Institución Pública'`, `'20123456789'`, `'Av. Principal 123, Lima, Perú'`. **No leen `Company.get_config(tenant=...)`** como sí lo hace `TemplateService._obtener_datos_institucion` (con su propio bug). Cualquier documento Word generado tendrá data institucional falsa.
+  - **`pdf_desde_docx` requiere Word instalado (docx2pdf)** — en producción Linux/Docker fallará silenciosamente devolviendo None y el ViewSet hace fallback a .docx (líneas 712-716 del view).
+
+- Management command: `seed_plantillas_default.py` — genera .docx defaults para los 4 tipos de plantilla y los registra en `DocumentTemplate` si no existen. Acepta `--force` para recrear. **Sin scope de tenant** — siembra plantillas con `tenant=NULL` (globales).
+
+#### Endpoints REST
+**Estructura URL inusual:** `apps/api/api/v1/documents/urls.py` registra `DocumentosDigitalesViewSet` en el router con prefix `documents` Y simultáneamente incluye `app_rrhh.document_generation_urls` montadas en `documents/`. El resultado es que **todas** las routes terminan bajo `/api/v1/documents/documents/...`. Conflicto potencial con el detail-route `<uuid>` del ViewSet. Ver Notas.
+
+- `/api/v1/documents/documents/` — `DocumentosDigitalesViewSet` (file: `api/v1/rrhh/views.py:1983`). CRUD ModelViewSet completo.
+  - `list` (GET): `@require_authenticated()` — non-HR users ven sólo sus documentos (filter `empleado=user.empleado` línea 2080).
+  - `retrieve` (GET): `@require_authenticated()`.
+  - `create` (POST): `@require_authenticated()`. Non-HR users solo pueden subir para su propio legajo (linea 2026-2031). `perform_create` (línea 2034): inyecta `subido_por`, `nombre_archivo_original`, `formato_archivo`, `tamano_archivo` desde el FileField; si non-HR, fuerza `estado_documento='pendiente_revision'`.
+  - `update`/`partial_update`: `@require_hr()` (sólo RRHH puede editar).
+  - `destroy`: `@require_admin()` (sólo admin puede eliminar — hard delete, sin soft-delete).
+  - **Custom actions**:
+    - `por_tipo` (GET, list, RRHH): filtra por `tipo_documento` query param — devuelve lista paginada.
+    - `boletas_pago` (GET, list, `@require_permissions(["ver_boletas_pago"])`): filtra `tipo_documento='boleta_pago'` — replaces old `Boleta` model endpoint.
+    - `proximos_vencer` (GET, list, RRHH): filtra `fecha_vencimiento__lte=today+30d` and gte today, `estado='activo'`. Acepta `?dias=N`.
+    - `validar` (POST, detail, RRHH): invoca `documento.validar_documento(user, observaciones)` — marca como `aprobado`.
+    - `rechazar` (POST, detail, RRHH): invoca `documento.rechazar_documento(user, motivo)` — exige `motivo`.
+    - `subir_institucional` (POST, list, RRHH): subida múltiple de archivos institucionales (boletas, constancias, resoluciones, etc.). Acepta `archivos[]` o `archivo` único. Auto-asigna categoría según `TIPO_CATEGORIA_MAP` interno (líneas 2247-2262, duplicado con frontend `legajoService.TIPO_CATEGORIA_MAP`).
+  - Filtros (`get_queryset` 2072-2138): `empleado`, `tipo_documento`, `categoria`, `estado`, `activos` (boolean), `origen` (institucional/personal — usa lista hardcoded `TIPOS_INSTITUCIONALES`), `es_version_actual` (true/false). Implementación manual (no `DjangoFilterBackend filterset`).
+  - **Permission class**: `DocumentosDigitalesPermission` (custom, no analizada en detalle aquí). Decoradores por método.
+  - Pagination: `StandardResultsSetPagination` (20/page).
+
+- `/api/v1/documents/documents/<action>/` — `DocumentGenerationViewSet` (file: `api/v1/app_rrhh/document_generation_views.py:50`). NO es ModelViewSet — `ViewSet` plain con acciones POST/GET.
+  - `permission_classes = [IsAuthenticated, IsHRUser]` + decoradores `@require_hr` por acción.
+  - **Excluido del schema OpenAPI** (`@extend_schema(exclude=True)` línea 49) — porque genera PDFs sin serializer estándar.
+  - Custom actions:
+    - `generar_contrato` (POST): genera HTML/PDF de un contrato. Acepta `id` (contrato), `formato` (html/pdf), `guardar_documento`, `plantilla`. **3 BUGS L3.11**: (1) línea 110 `get_object_or_404(Contract, contrato_id=contrato_id)` — Contract no tiene `contrato_id`; debería ser `pk=contrato_id` o `id=contrato_id`. **Endpoint roto al 100%**: lanza FieldError. (2) línea 148 `documento.documento_id` — `DigitalDocument` ya no tiene `documento_id`; es `id`. AttributeError. (3) línea 144 `contrato.documento_generado = True` + save update_fields — funciona (campo BooleanField existe).
+    - `generar_adenda` (POST): genera HTML/PDF de una adenda. Acepta `adenda_id`, `formato`, `guardar_documento`. **2 BUGS L3.11**: (1) línea 211 `get_object_or_404(ContractAmendment, pk=adenda_id)` — OK (usa pk). (2) línea 245 `documento.documento_id` — broken. Endpoint **medio-roto** (responde data con None en `id` cuando guarda).
+    - `generar_certificado` (POST): genera HTML/PDF de certificado/constancia. Acepta `id` (empleado), `tipo_certificado`, `proposito`, `incluir_salario/prestaciones`, `observaciones`, `formato`, `guardar_documento`. **2 BUGS L3.11**: (1) línea 318 `get_object_or_404(Employee, empleado_id=empleado_id)` — Employee no tiene `empleado_id`; **endpoint roto al 100%**. (2) línea 367 `documento.documento_id` — broken.
+    - `generar_reporte` (POST): genera reporte de contratos. Acepta filtros (fecha_inicio/fin, area, tipo_contrato, estado, agrupar_por_area, etc.). Invoca `pdf_generator.generar_reporte_pdf` con transaction.atomic. Bug menor línea 474 `documento.documento_id` — broken.
+    - `plantillas_disponibles` (GET): retorna `{contratos:[...], adendas:[...], certificados:[...]}` desde `TemplateService.obtener_plantillas_disponibles`.
+    - `listar_plantillas_word` (GET, `?tipo=`): lista DocumentTemplates activos. **Bug L3.11**: línea 543 `"id": p.plantilla_id` — DocumentTemplate ya no tiene `plantilla_id`; AttributeError. **Endpoint roto al 100%**.
+    - `subir_plantilla_word` (POST, RRHH): valida `archivo`, `nombre`, `tipo` (debe estar en TIPO_CHOICES), `descripcion`. Crea `DocumentTemplate(creada_por=request.user, ...)`. **Bug L3.11**: línea 595 usa `creada_por=request.user` — el field renombrado es `created_by` (con db_column `creada_por_id`). **TypeError: unexpected keyword argument 'creada_por'**. Endpoint **roto al 100%**. (2) línea 600 `plantilla.plantilla_id` — broken.
+    - `eliminar_plantilla_word` (DELETE, RRHH): URL pattern `plantillas-word/(?P<plantilla_id>[0-9]+)/eliminar` — **regex `[0-9]+` ya no matchea UUIDs**. Cualquier intento de eliminar lanza 404. Soft-delete (`activa=False`).
+    - `descargar_plantilla_word` (GET): mismo bug regex `[0-9]+`. + `plantilla.plantilla_id` AttributeError línea 639.
+    - `generar_desde_plantilla_word` (POST, RRHH): MASTER bug — líneas 666-668 leen los TRES IDs (`plantilla_id`, `empleado_id`, `contrato_id`) del **mismo query param** `request.data.get("id")`. Copy-paste catastrófico. **Endpoint funcionalmente roto**: el cliente debe enviar la misma key 3 veces para los 3 tipos distintos. Adicionalmente: `get_object_or_404(DocumentTemplate, plantilla_id=...)` (línea 675) y `get_object_or_404(Employee, empleado_id=...)` (línea 681) y `get_object_or_404(Contract, contrato_id=...)` (línea 695) — los tres campos NO existen post-rename L3.11.
+
+#### UI (frontend)
+- `apps/web/src/features/documents/` (post-L4.7).
+  - **Pages (3)**:
+    - `LegajoPage.tsx` (~530 líneas, basado en `wc -l`): vista del legajo del empleado. Lista documentos con filtros, modal de subida, validar/rechazar.
+    - `GestionDocumentosPage.tsx`: gestor RRHH para subida masiva institucional (boletas, resoluciones, etc.). Usa `legajoService.subirInstitucional`.
+    - `PlantillasDocumentosPage.tsx`: gestor de plantillas Word (.docx). Lista, sube, descarga, elimina. **Backend roto** (ver bugs arriba: `plantilla_id` AttributeError + regex `[0-9]+` en URL no matchea UUID).
+  - **Services (2)**: `legajoService` (líneas ~310 — CRUD `/api/v1/documents/documents/`, validar, rechazar, subir_institucional), `templatesService` (líneas ~143 — CRUD plantillas-word, subir/descargar/eliminar/generar-desde-plantilla-word).
+  - **Phantom field**: `legajoService.Documento.numero_referencia` (líneas 21, 45) — el modelo `DigitalDocument` NO tiene ese campo. Si el form lo enviara, DRF lo ignoraría silenciosamente.
+  - **Cross-app dependency**: `contractsService` (Task 5) invoca `/api/v1/documents/documents/generar-certificado/`, `generar-contrato/`, `generar-adenda/` — **TODOS rotos por los bugs documentados arriba**. Sin frontend de adendas (Task 5), sin frontend de generar reporte.
+  - **Lint warnings (5)**: `GestionDocumentosPage.tsx` (líneas 20-21: `TIPO_DOCUMENTO_LABELS`/`CATEGORIA_LABELS` import sin uso), `LegajoPage.tsx` (línea 503: `EmpleadoRow` interface sin uso; línea 542: `any`), `PlantillasDocumentosPage.tsx` (línea 8: `Badge` import sin uso). 0 errores tsc.
+
+#### Templates (`apps/api/templates/`)
+**5 directorios + 17 archivos HTML** (verificado vía Glob 2026-05-09):
+
+| Directorio | Archivos | Generado por |
+|---|---|---|
+| `contratos/` | `contrato_base.html`, `contrato_fijo.html`, `contrato_cas.html`, `contrato_728.html`, `contrato_276.html` (5) | `TemplateService.generar_contrato` con `PLANTILLAS_CONTRATO` map. `contrato_fijo.html` NO está mapeado (huérfano). `contrato_base.html` es fallback. |
+| `adendas/` | `adenda_base.html` (1) | `TemplateService.generar_adenda` con `PLANTILLAS_ADENDA` map (4 tipos → mismo archivo base; lógica por tipo dentro del template). |
+| `certificados/` | `certificado_laboral.html`, `certificado_trabajo.html`, `constancia_laboral.html` (3) | `TemplateService.generar_certificado`. `certificado_laboral.html` NO está mapeado en `PLANTILLAS_CERTIFICADO` (huérfano legacy). |
+| `reportes/` | `reporte_contratos.html`, `reporte_empleado.html`, `reporte_vacaciones_empleado.html` (3) | `reporte_contratos.html` invocado por `template_service.generar_reporte_html`. `reporte_empleado.html` invocado por `apps.employees.services.employee_report_service` (Task 4). `reporte_vacaciones_empleado.html` invocado por `apps.time_off.services` (Task 7+). |
+| `emails/` | `bienvenida.html`, `documento_rechazado.html`, `onboarding_aprobado.html`, `onboarding_observado.html`, `vacaciones_solicitud.html` (5) | Emails enviados por `apps.core.tasks.send_email_html_task` desde diversos servicios: identity (`bienvenida`), documents (`documento_rechazado`), onboarding (`onboarding_*`), time_off (`vacaciones_solicitud`). |
+
+**Templates huérfanos (no mapeados a ningún tipo):** `contratos/contrato_fijo.html`, `certificados/certificado_laboral.html`. **Sin documentar** si son legacy stale o reservados para uso futuro. Bug deuda P3.
+
+**Plantillas Word (.docx)**: NO viven en el repo. Se generan/cargan en `media/plantillas_word/%Y/` por `seed_plantillas_default` o por usuario via `subir_plantilla_word`. `DocumentTemplate.archivo` apunta al storage.
+
+#### Tests
+- `apps/api/tests/test_documentos_model.py` — 6 tests `TestTamanoArchivoLegible`. **6/6 PASAN** (verificado 2026-05-09). Cubre la property `tamano_archivo_legible` (B/KB/MB/GB, idempotente, cero, no muta).
+- `apps/api/tests/test_documentos_digitales_onboarding.py` — 4 tests `TestDocumentosDigitalesOnboardingEmployee`. **4/4 PASAN**. Cubre: empleado puede listar sus propios docs, response incluye `archivo_url`, empleado NO ve docs de otro empleado (aislación non-HR), filtro `es_version_actual`.
+- ❌ NO existe `apps/documents/tests/` (in-app tests).
+- ❌ NO hay tests para tenant isolation de DigitalDocument/DocumentTemplate.
+- ❌ NO hay tests para PDFGenerator (cadena xhtml2pdf/WeasyPrint/ReportLab).
+- ❌ NO hay tests para WordTemplateService (replace de `{{VAR}}` en .docx).
+- ❌ NO hay tests para `DocumentGenerationViewSet` (ningún endpoint de generar-contrato/adenda/certificado/reporte/desde-plantilla-word). Por eso los **9+ bugs L3.11 declarados arriba pasan invisibles a CI**.
+- ❌ NO hay tests para `subir_institucional`, `validar`, `rechazar` actions del DocumentosDigitalesViewSet.
+- ❌ NO hay tests para versioning (`crear_nueva_version`, `_generar_nueva_version`, `es_version_actual`).
+- ❌ NO hay tests para alertas de vencimiento (`proximos_vencer`, `marcar_como_vencido`, cron task).
+
+### Gaps vs INTRANET legacy
+
+VYNTIA documents es **paritario campo-por-campo absoluto** con el legacy en ambos modelos. Sin pérdida funcional vs legacy. Plantillas HTML/email son idénticas (17 templates legacy = 17 templates VYNTIA, sin diferencias en nombres o ubicación).
+
+| Feature legacy | Ubicación legacy | Estado en VYNTIA | Tipo | Prioridad propuesta | Nota |
+|---|---|---|:---:|:---:|---|
+| Modelo `DocumentosDigitales` (AutoField PK `documento_id`) | `D:/INTRANET/back/app_rrhh/models/documentos_digitales.py:23` | Migrado a `DigitalDocument` con UUID `id`, paridad campo-por-campo absoluta. Tabla `documentos_digitales` preservada. | done | — | Sin pérdida funcional. **Cambio breaking**: `documento_id` → `id` rompe consumers (ver bugs). |
+| Modelo `PlantillaDocumento` (AutoField PK `plantilla_id`) | `D:/INTRANET/back/app_rrhh/models/plantilla_documento.py:9` | Migrado a `DocumentTemplate` con UUID `id`. Tabla `app_rrhh_plantilla_documento` preservada. db_columns legacy: `fecha_creacion`, `creada_por_id`. | done | — | Sin pérdida funcional. Cambio breaking igual. |
+| Audit `fecha_actualizacion` field name | `documentos_digitales.py:189` | Renombrado a `updated_at` con `db_column='fecha_actualizacion'`. | done | — | Compat con datos importados. |
+| Audit `fecha_creacion` field name (PlantillaDocumento) | `plantilla_documento.py:38` | Renombrado a `created_at` con `db_column='fecha_creacion'`. | done | — | Compat. |
+| Audit `creada_por` FK (PlantillaDocumento) | `plantilla_documento.py:39-45` | Renombrado a `created_by` con `db_column='creada_por_id'`. **Pero el ViewSet aún usa kwarg `creada_por`** (ver bugs). | partial | P1 | Bug L3.11. |
+| FK a `Empleado`/`Usuario`/`DatosFamiliares` (legacy strings) | `documentos_digitales.py:108-110, 152-156, 162-166, 173-177, 190-194` | Actualizadas a `'employees.Employee'`, `'identity.User'`, `'employees.FamilyMember'`. | done | — | Lazy strings preservadas para evitar import circular. |
+| Manager `DocumentosDigitalesManager` | `D:/INTRANET/back/app_rrhh/managers.py` | Comentado en VYNTIA (igual que legacy). | partial | P3 | Implementar o eliminar. |
+| 17 templates HTML (contratos, adendas, certificados, reportes, emails) | `D:/INTRANET/back/templates/**/*.html` | **Migración byte-by-byte completa**: idénticos archivos en `D:/VYNTIA/apps/api/templates/`. | done | — | Sin diff entre legacy y VYNTIA. |
+| Plantillas Word `.docx` defaults | Sin equivalente en repo legacy | `apps/documents/management/commands/seed_plantillas_default.py` regenera 4 defaults via python-docx. | done | — | Mejora vs legacy. |
+
+**Sin gaps funcionales**: el split L3.11 es renombre puro. Los bugs declarados en este chapter NO son regresiones funcionales del legacy — son artefactos del rename incompleto (consumers stale).
+
+### Gaps vs maestro
+
+El maestro § 3 Módulo **03.5 (Legajos digitales)** define un dossier digital completo con índice, búsqueda full-text, retention policy, version history, document categories, signing workflows, e-firma. **Esta sección audita SOLO la entidad DigitalDocument + DocumentTemplate**. Los flujos completos de "Legajos digitales" (search index, retention, e-firma, audit trail completo) son scope de **Task 11 (Module 03 gaps)**.
+
+| Capability del maestro (§ 03.5 / DigitalDocument entity) | Estado en VYNTIA | Prioridad |
+|---|---|:---:|
+| Almacenamiento file FK por empleado | ✅ `DigitalDocument.empleado` FK + `archivo` FileField. | — |
+| Tipo y categoría de documento (taxonomía) | ✅ 32 tipos + 11 categorías. Más rica que típica taxonomía SaaS. Adecuada al sector público peruano. | — |
+| Versioning (versión actual + historial) | ✅ `version`, `documento_padre` self-FK, `es_version_actual`, `crear_nueva_version()`. | — |
+| Estados de validación (workflow aprobado/rechazado/pendiente_revision) | ✅ `estado_documento` + `validar_documento`/`rechazar_documento`. | — |
+| Niveles de acceso (público/restringido/confidencial/muy_confidencial) | ✅ `nivel_acceso` con 4 niveles. **Pero**: NO se enforce en el ViewSet — `get_queryset` no filtra por nivel_acceso vs role del usuario. Un empleado puede listar docs `confidencial` propios pero sin gate cross-area. | P2 |
+| Firma electrónica del documento | ❌ No implementado. `requiere_firma_digital` BooleanField existe (línea 212) pero sin servicio de firma. | P1 (sub-proyecto) |
+| Búsqueda full-text por palabras clave | ⚠️ Parcial. `palabras_clave` CharField CSV + `buscar_por_palabras_clave` classmethod usan `icontains`. **NO hay índice full-text** (PostgreSQL `tsvector`). Performance se degrada >10k docs. | P2 |
+| Vencimiento con alertas (cron) | ⚠️ Parcial. `fecha_vencimiento`, `proximos_vencer` action lista, pero **NO hay celery task que envíe email automático** ni que actualice `estado_documento='vencido'` automáticamente. `marcar_como_vencido()` requiere invocación manual. | P2 |
+| Retention policy (eliminación automática post-N años) | ❌ No implementado. SUNAFIL exige conservar documentos laborales por ≥5 años post-cese; CAS exige 4. NO hay model field `fecha_eliminacion_programada` ni cron. | P1 (compliance) |
+| Auditoría completa (quién accedió/descargó cuándo) | ❌ Sólo se registra `validado_por`/`subido_por`/`digitalizado_por`. **NO hay log de accesos/descargas** (DocumentAccessLog). Crítico para documentos confidenciales. | P1 (compliance + LPD Perú) |
+| Encriptación at-rest para documentos `confidencial`/`muy_confidencial` | ❌ Archivos guardados en disk planos. Sin S3 SSE-KMS, sin pgcrypto. | P1 (LPD Perú) |
+| Categoría taxonomy específica del maestro | ✅ La taxonomía VYNTIA ya cubre "personal/laboral/medico/legal/administrativo/capacitacion/evaluacion/remuneraciones/ubicacion/otros". | — |
+| Document templates (.docx + .html) | ✅ `DocumentTemplate` (Word) + 17 HTML files. Variables interpoladas via `{{VAR}}` o Django `{{ var }}`. | — |
+| OCR para PDFs/imágenes escaneadas | ❌ No implementado. Imágenes (`es_imagen`) y PDFs se almacenan sin texto extraído. | P3 |
+| Generación PDF en producción | ❌ ReportLab stub no genera contenido real (cadena xhtml2pdf/WeasyPrint inestable en Windows). En Linux/Docker sí funciona pero tests no cubren. | P1 (Module 03 deployment) |
+| Generación Word con datos institucionales correctos por tenant | ❌ `WordTemplateService.construir_variables_empleado` hardcodea EMPRESA_NOMBRE/RUC/DIRECCION (líneas 119-123). No lee `Company.get_config(tenant)`. | P1 (C-multitenancy) |
+| Carga masiva (bulk upload) | ⚠️ Parcial. `subir_institucional` acepta `archivos[]` lista, pero sin progreso, sin retry, sin batch-size limit. Para boletas mensuales (250+ archivos) timeoutea. | P2 |
+| Compresión / thumbnails | ❌ No implementado. Imágenes >5MB se almacenan tal cual. Sin lazy-load thumbnails en `LegajoPage`. | P3 |
+| Categorías por sub-proceso (vinculación, formación, evaluación, desvinculación, etc.) | ⚠️ Parcial. La taxonomía existe (32 tipos) pero NO está agrupada por proceso del maestro § 03 (Vinculación → cert_estudios + contrato + RIT, Desvinculación → carta_cese + liquidacion). Pendiente de UI grouping. | P3 |
+| `DigitalDocument.contrato` FK directo (relación contract↔documento) | ❌ No existe. La relación es indirecta: `Contract.documento_generado` BooleanField (sólo flag). Para encontrar el PDF del contrato hay que filtrar `DigitalDocument.empleado=contrato.empleado, tipo='contrato_trabajo', fecha_subida` cercana — frágil. Asimétrico con `ContractAmendment.documento_generado` que SÍ es FileField. | P2 |
+
+### Bugs y deuda técnica conocidos
+
+Pytest documents: 10/10 PASAN (4 onboarding + 6 modelo). PERO: cobertura limitada a 1 modelo property + 4 endpoints; los 25+ bugs declarados están latentes.
+
+| Bug | Ubicación | Causa | Tipo | Prioridad |
+|---|---|---|:---:|:---:|
+| `DocumentGenerationViewSet.generar_contrato` invoca `Contract` lookup con kwarg `contrato_id=...` | `api/v1/app_rrhh/document_generation_views.py:110` | Rename L3.11 incompleto. Contract ya no tiene `contrato_id` (es `id` UUID). **Endpoint `POST /generar-contrato/` roto al 100% — lanza FieldError**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_contrato` lee `contrato_id = request.data.get("id")` | `document_generation_views.py:98` | El cliente envía `id` del contrato, pero el field name es engañoso (debería ser `contrato_id` o `contract_id`). Frontend `contractsService.generarContratoPdf` confirma usa `id`. Funcional, pero confuso. | ⚠️ deuda API contract | P3 |
+| `DocumentGenerationViewSet.generar_contrato` accede `documento.documento_id` línea 148 | `document_generation_views.py:148` | DigitalDocument tras renombre L3.11 tiene `id` UUID. AttributeError → lanza 500 al guardar. **Endpoint roto al 100%**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_adenda` accede `documento.documento_id` línea 245 | `document_generation_views.py:245` | Idem. Endpoint serializa con AttributeError. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_certificado` invoca `Employee` lookup con kwarg `empleado_id=...` | `document_generation_views.py:318` | Rename L3.11 incompleto. Employee ya no tiene `empleado_id`. **Endpoint roto al 100%**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_certificado` accede `documento.documento_id` línea 367 | `document_generation_views.py:367` | Idem. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_reporte` accede `documento.documento_id` línea 474 | `document_generation_views.py:474` | Idem. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.listar_plantillas_word` accede `p.plantilla_id` línea 543 | `document_generation_views.py:543` | DocumentTemplate post-rename tiene `id` UUID. AttributeError. **Endpoint roto al 100%**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.subir_plantilla_word` crea con `creada_por=request.user` línea 595 | `document_generation_views.py:595` | El field renombrado es `created_by`. **TypeError: unexpected keyword argument 'creada_por'**. **Endpoint roto al 100%**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.subir_plantilla_word` accede `plantilla.plantilla_id` línea 600 | `document_generation_views.py:600` | AttributeError. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.eliminar_plantilla_word` URL pattern `[0-9]+` | `document_generation_views.py:616` | Regex sólo matchea integers. UUIDs nunca matchean. **Endpoint inalcanzable** — siempre 404. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.descargar_plantilla_word` URL pattern `[0-9]+` + `plantilla_id` kwarg | `document_generation_views.py:631-639` | Idem regex. + `plantilla.plantilla_id` AttributeError línea 639. **Endpoint inalcanzable**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_desde_plantilla_word` lee TRES IDs del MISMO query param `'id'` | `document_generation_views.py:666-668` | Copy-paste bug: `plantilla_id = request.data.get("id")`, `empleado_id = request.data.get("id")`, `contrato_id = request.data.get("id")`. **Funcionalmente roto** — el cliente debe enviar UN único valor "id" interpretable como cualquiera de los 3. + lookups `plantilla_id=...`/`empleado_id=...`/`contrato_id=...` (líneas 675, 681, 695) usan campos legacy. **Endpoint roto al 100%**. | 🐛 bug crítico L3.11 | P1 |
+| `DocumentGenerationViewSet.generar_desde_plantilla_word` accede `documento.documento_id` línea 740 | `document_generation_views.py:740` | AttributeError. | 🐛 bug crítico L3.11 | P1 |
+| `template_service.py:216` accede `getattr(contrato, 'numero_adenda', None)` | `apps/documents/services/template_service.py:216` | Bug L3.10.3 stale (split Contract/Amendment). Contract no tiene `numero_adenda`. Silencioso pero stale — ya documentado en Task 5 contracts. | 🐛 bug L3.10.3 | P1 |
+| `template_service.py:230` invoca `contrato.get_estado_display()` | `apps/documents/services/template_service.py:230` | El campo es `status` con `db_column='estado'`. Django auto-genera `get_status_display`, NO `get_estado_display`. **AttributeError** en cualquier render de contrato. | 🐛 bug crítico | P1 |
+| `template_service.py:254` chequea `if contrato.creado_por_id else ...` | `apps/documents/services/template_service.py:254` | El field es `created_by` con db_column `creado_por_id`. El atributo Python es `created_by_id`, NO `creado_por_id`. **AttributeError** en render de contratos. | 🐛 bug crítico | P1 |
+| `template_service.py:433` invoca `c.numero_contrato or c.contrato_id` | `apps/documents/services/template_service.py:433` | Contract post-rename tiene `id` UUID. **AttributeError** en `_generar_reporte_html_fallback` cuando `numero_contrato` es vacío. | 🐛 bug L3.11 | P1 |
+| `template_service.py:439` invoca `c.get_estado_display()` | `apps/documents/services/template_service.py:439` | Mismo bug status/estado. AttributeError. | 🐛 bug crítico | P1 |
+| `template_service._obtener_datos_institucion` invoca `Company.get_config(tenant=None)` | `apps/documents/services/template_service.py:324` | TODO inline ack. Todos los documentos generados rinden datos del tenant `None` (default seed) en lugar del tenant del request. **Bug seguridad C-multitenancy**: si tenant_a y tenant_b comparten instancia, se cruzan datos institucionales. | 🐛 bug C-multitenancy | P1 |
+| `word_template_service.py:139` accede `contrato.numero_adenda` directo | `apps/documents/services/word_template_service.py:139` | Bug L3.10.3 stale. AttributeError crítico — ya documentado en Task 5. | 🐛 bug crítico L3.10.3 | P1 |
+| `word_template_service.py:175` filtra `Contract.objects.filter(estado='ACTIVO')` | `apps/documents/services/word_template_service.py:175` | Field es `status`. FieldError en `construir_variables_certificado(incluir_salario=True)`. | 🐛 bug L3.10.3 | P1 |
+| `word_template_service.py:119-123` hardcodea `EMPRESA_NOMBRE`, `EMPRESA_RUC`, `EMPRESA_DIRECCION`, `CIUDAD` | `apps/documents/services/word_template_service.py:119-123` | NO consulta `Company.get_config(tenant)`. Cualquier .docx generado tiene "Institución Pública / 20123456789 / Av. Principal 123". **Asimetría con TemplateService** que sí (mal-)consulta `Company.get_config`. | 🐛 bug C-multitenancy | P1 |
+| `pdf_generator.generar_pdf_adenda` invoca `template_service.generar_adenda(contrato_id, tipo_adenda)` | `apps/documents/services/pdf_generator.py:137-139` | Post-split L3.10.3, `template_service.generar_adenda` espera **adenda_id (UUID de ContractAmendment)**, no contrato_id. La signature se rompió pero pdf_generator no actualizó. **Documentos de adenda generan con datos del contrato padre, no de la adenda.** | 🐛 bug L3.10.3 | P1 |
+| `pdf_generator._guardar_documento_digital` crea DigitalDocument SIN tenant | `apps/documents/services/pdf_generator.py:482-495` | No setea `tenant`. Cualquier PDF generado queda con `tenant=NULL` (orphan). Idéntico patrón cross-app. | 🐛 bug C-multitenancy | P1 |
+| `DocumentosDigitalesViewSet.subir_institucional` crea DigitalDocument SIN tenant | `api/v1/rrhh/views.py:2285-2304` | No setea `tenant` en `DigitalDocument.objects.create(...)`. Documentos institucionales subidos quedan con tenant=NULL. | 🐛 bug C-multitenancy | P1 |
+| `DocumentosDigitalesViewSet.perform_create` no asigna tenant | `views.py:2034-2049` | Patrón cross-app. ningun ViewSet de documents asigna tenant. | 🐛 bug C-multitenancy | P1 |
+| `DocumentosDigitalesViewSet.get_queryset` no filtra por tenant | `views.py:2072-2138` | Confianza 100% en RLS+middleware. Sin defense-in-depth. | 🐛 bug C-multitenancy | P1 |
+| `DocumentosDigitalesViewSet.get_queryset` filtra por `empleado=user.empleado` para non-HR | `views.py:2078-2082` | Implementación correcta, pero **NO chequea `nivel_acceso` vs role**: un empleado puede ver sus propios docs marcados `confidencial`/`muy_confidencial` sin restricción. La lógica del modelo (nivel_seguridad) no se aplica en queryset. | ⚠️ deuda lógica | P2 |
+| Frontend `Documento.numero_referencia` field | `apps/web/src/features/documents/services/legajoService.ts:21, 45` | El modelo `DigitalDocument` NO tiene `numero_referencia`. Phantom field. Si form lo enviara, DRF lo ignoraría. | ⚠️ deuda tipos | P3 |
+| Frontend lint (5 warnings) | `GestionDocumentosPage.tsx:20-21`, `LegajoPage.tsx:503,542`, `PlantillasDocumentosPage.tsx:8` | Imports unused + 1 `any`. Cleanup trivial. | ⚠️ deuda lint | P3 |
+| URL conflict: `DocumentosDigitalesViewSet` registrado con prefix `documents` Y `app_rrhh.document_generation_urls` montado en `documents/` | `api/v1/documents/urls.py:11-16` | Ambos producen URLs bajo `/api/v1/documents/documents/`. El detail-route del ViewSet (`<uuid>/`) puede conflictuar con custom actions del DocumentGenerationViewSet (`generar-contrato/` etc.). DRF evita conflicto formal porque el ViewSet sólo expone `<uuid>` UUID-format y las acciones son strings, pero **el path naming es inusual** y dificulta legibilidad/seguridad. | ⚠️ deuda URL | P2 |
+| Templates huérfanos `contratos/contrato_fijo.html` y `certificados/certificado_laboral.html` | `apps/api/templates/` | NO mapeados a ningún tipo en `PLANTILLAS_CONTRATO`/`PLANTILLAS_CERTIFICADO`. Sin documentación si son legacy stale o reservados futuros. | ⚠️ deuda docs | P3 |
+| `DigitalDocument.estadisticas_por_tipo` classmethod no filtra tenant | `models/digital_document.py:546-557` | `cls.objects.filter(...)` sin tenant. Si se invoca desde shell o desde reporte, cuenta cross-tenant. | 🐛 bug C-multitenancy | P2 |
+| `DigitalDocument.documentos_vencidos`/`proximos_a_vencer`/`pendientes_validacion` classmethods no filtran tenant | `models/digital_document.py:484-501` | Idem. Si un cron invoca `documentos_vencidos()`, marca como vencidos cross-tenant. | 🐛 bug C-multitenancy | P2 |
+| Sin tests para `DocumentGenerationViewSet` | — | Por eso los 14+ bugs L3.11 declarados arriba pasan invisibles. | ⚠️ deuda tests | P1 |
+| Sin tests para `PDFGenerator` cadena de motores | — | Cualquier regresión en xhtml2pdf/WeasyPrint/ReportLab pasa silenciosa. ReportLab stub se invoca en Windows sin warning visible al test. | ⚠️ deuda tests | P2 |
+| `DocumentTemplate` sin constraint de unicidad `(tenant, tipo, nombre)` | `models/document_template.py:58-62` | Dos plantillas idénticas pueden coexistir en el mismo tenant. Probable que se quieran deduplicar. | ⚠️ deuda | P3 |
+| Custom managers comentados | `digital_document.py:16, 215`; `document_template.py` | Decisión pendiente. | ⚠️ deuda | P3 |
+| Sin `apps/documents/tests/` | — | Tests viven en `apps/api/tests/test_documentos_*.py`. Co-locate como B.2 cleanup. | ⚠️ deuda | P3 |
+| Sin retention policy / auditoría de descargas | — | Crítico para compliance LPD Perú + SUNAFIL. | ❌ missing | P1 |
+
+Sin errores TS para `features/documents` (verificado con `tsc --noEmit -p tsconfig.app.json`). 5 warnings ESLint (listados arriba).
+
+### Tenant-readiness
+
+| Concern | Status | Comment |
+|---|:---:|---|
+| `DigitalDocument` has tenant FK | ✅ | `digital_document.py:110-117` — nullable=true. Sin composite unique con tenant (suficiente porque empleado ya está taggeado). |
+| `DocumentTemplate` has tenant FK | ✅ | `document_template.py:28-35` — nullable=true. **NO hay constraint per-tenant** sobre `(tenant, tipo, nombre)` — defense-in-depth ausente. |
+| Composite unique constraint sobre `(tenant, ...)` para DigitalDocument | ⚠️ | `unique_together = (empleado, tipo_documento, numero_documento, version)` — implícito vía empleado. Sin defense-in-depth si hay bug de cross-tenant employee. |
+| `DocumentosDigitalesViewSet.get_queryset` filtra por tenant | ❌ | `views.py:2072-2138` — NO filtra por tenant. Confianza 100% en RLS+middleware. Sin defense-in-depth. |
+| `DocumentosDigitalesViewSet.perform_create` asigna tenant automáticamente | ❌ | `views.py:2034-2049` — NO setea tenant. Si frontend no lo envía, queda `tenant=NULL`. **Bug seguridad C P1**. |
+| `DocumentosDigitalesViewSet.subir_institucional` setea tenant | ❌ | `views.py:2285-2304` — `DigitalDocument.objects.create(...)` sin tenant. Idem orphan. |
+| `DocumentGenerationViewSet.*` (todos los `generar-*`) setea tenant en DigitalDocument creado | ❌ | Todos los `DigitalDocument.objects.create(...)` (líneas 131, 230, 352, 725) NO setean tenant. PDFs generados quedan orphan. |
+| `pdf_generator._guardar_documento_digital` setea tenant | ❌ | `pdf_generator.py:482-495` — sin tenant. Idem. |
+| `TemplateService._obtener_datos_institucion` lee `Company.get_config(tenant=request.tenant)` | ❌ | `template_service.py:324` — hardcoded `tenant=None`. **TODO acknowledged in code**. Documentos rinden datos del tenant default. |
+| `WordTemplateService.construir_variables_empleado` lee company config por tenant | ❌ | `word_template_service.py:119-123` — EMPRESA_* hardcoded. NO consulta Company.get_config en absoluto. **Bug C-multitenancy**. |
+| File storage segregado por tenant | ❌ | `MEDIA_ROOT = BASE_DIR / "media"`. Upload paths: `documentos_empleados/%Y/%m/`, `plantillas_word/%Y/`, `adendas/%Y/`. **NO incluyen tenant en el path**. Filesystem-level: archivos de tenant_a y tenant_b conviven en el mismo directorio. Si un usuario tiene URL del archivo (`/media/documentos_empleados/2026/05/foo.pdf`) y el web server sirve `/media/` sin auth wall, **leak cross-tenant directo via URL adivinada**. **Bug seguridad serio**. |
+| `DocumentTemplate` per-tenant vs system-wide | ⚠️ | Diseño ambiguo: tenant FK es nullable (líneas 28-35). **NO hay flag** que indique "system template (tenant=NULL)" vs "tenant-owned (tenant=X)". `seed_plantillas_default` siembra con tenant=NULL — se asume system-wide. ViewSet no filtra ni por tenant ni por NULL. Resultado: tenant_b ve las plantillas creadas por tenant_a. **Bug seguridad** + decisión arquitectural pendiente para B.1+. |
+| Test de aislación tenant para DigitalDocument/DocumentTemplate | ❌ | `tests/test_tenant_isolation.py` no incluye casos de estos modelos. |
+| Multi-tenant en frontend | ✅ | El frontend confía en host+JWT. Subdominio determina tenant. URLs de archivos del backend son las únicas que sí podrían leakear (ver bullet anterior). |
+| PDF generation context per-tenant | ❌ | `TemplateService` y `WordTemplateService` no aceptan tenant param. Si tenant_a genera PDF y tenant_b ejecuta paralelo, ambos rinden el mismo `Company.get_config(tenant=None)`. |
+
+### Notas
+
+- **15+ bugs L3.11 stale en `DocumentGenerationViewSet`.** El renombre `documento_id`/`plantilla_id`/`empleado_id`/`contrato_id` → `id` UUID rompió **TODOS** los endpoints de generación de documentos. `generar-contrato`, `generar-certificado`, `subir-plantilla-word`, `eliminar-plantilla-word`, `descargar-plantilla-word`, `generar-desde-plantilla-word` están **funcionalmente al 100% rotos** (lanzan FieldError/AttributeError/TypeError o son inalcanzables por regex URL). `generar-adenda` y `generar-reporte` están medio-rotos (responden pero con AttributeError al construir el payload de éxito). **Esta es la peor regresión documentada en cualquier chapter del audit hasta ahora**: la app entera de documentos está prácticamente inoperante. Ningún test cubre estos endpoints, por eso pasan a CI verde. **P1 priority absoluta para B.1 fast-track**.
+- **`apps/api/api/v1/app_rrhh/document_generation_views.py` no fue migrado en L3.11.** Per CLAUDE.md, este archivo es el "active document generation entry point" y fue dejado en `app_rrhh/` (legacy folder) con re-mount en `/api/v1/documents/documents/`. **Decisión arquitectural inconsistente**: el modelo se renombró, el ViewSet `DocumentosDigitalesViewSet` también, pero `DocumentGenerationViewSet` quedó congelado en estado pre-rename. Necesita ser migrado a `apps/api/api/v1/documents/views.py` (que actualmente NO existe — sólo hay `urls.py`).
+- **Asimetría `Company.get_config` entre TemplateService y WordTemplateService.** El primero llama `Company.get_config(tenant=None)` (con TODO ack); el segundo NO consulta `Company.get_config` en absoluto y hardcodea valores ficticios. Cualquier reconciliación C.3 multi-tenancy debe arreglar ambos en el mismo PR.
+- **File storage segregation gap CRÍTICO.** `MEDIA_ROOT` es flat — todos los tenants comparten directorio. Si en producción se sirve `/media/*` sin auth wall (default Django dev server), tenant_b puede adivinar URLs de tenant_a. **Mitigación urgente**: o (a) prefijar tenant_id en `upload_to` del FileField, o (b) servir media via signed URLs S3, o (c) interceptar serving de `/media/` con auth+tenant filter middleware. **Decision para ADRS Task 12**.
+- **Cadena de generación PDF inestable en Windows.** xhtml2pdf falla con `@page counter()` (mitigado por `_strip_unsupported_css`); WeasyPrint falla con dependencias GTK no disponibles en Windows; ReportLab funciona pero genera **stub** ("DOCUMENTO GENERADO. Contenido del documento generado desde plantilla.") sin contenido real. Esto se ack-ea en log warning línea 234-237 pero no se surface al usuario. En producción Linux/Docker la cadena debería funcionar — **pero NO hay test que lo verifique**. Bug latente de despliegue.
+- **`DocumentTemplate` ambigüedad system vs per-tenant.** Tenant FK nullable + sin flag explícito + sin filtro en ViewSet = todos los tenants ven todas las plantillas. **Decisión arquitectural pendiente**: ¿es DocumentTemplate sistema-wide (con plantillas globales que tenants pueden usar/sobrescribir) o per-tenant exclusivo? El maestro § 03.5 sugiere per-tenant con override jerárquico — implementación pendiente.
+- **Templates HTML legacy son paritarios.** Los 17 archivos HTML están idénticos byte-by-byte entre `D:/INTRANET/back/templates/` y `D:/VYNTIA/apps/api/templates/`. La migración fue copy-paste exitoso. **Pero**: `contrato_fijo.html` y `certificado_laboral.html` NO están mapeados a ningún tipo en los servicios — son huérfanos. Decisión P3: documentar como "deprecated" o reactivar.
+- **Templates Django `{% %}` multi-line gotcha.** Per CLAUDE.md, "Django's template lexer does not support multi-line `{% %}` or `{{ }}` tags". Las 17 plantillas no han sido auditadas para verificar que cumplen esta regla. Si alguno tiene tag multi-línea, falla en runtime al renderizar.
+- **Riesgos al tocar documents en B.1/B.2.** (1) `db_table='documentos_digitales'` y `'app_rrhh_plantilla_documento'` son referencia para datos importados. (2) `DigitalDocument.empleado` FK CASCADE — eliminar Employee borra cascade su legajo entero (incluyendo boletas históricas). (3) `DigitalDocument.documento_padre` FK CASCADE — eliminar versión padre borra todas las versiones hijo. (4) `DigitalDocument.familiar` FK SET_NULL — OK. (5) Los archivos físicos en `media/documentos_empleados/` NO se borran cuando se elimina el `DigitalDocument` (Django no elimina files de FileField al delete). Acumulación silenciosa de orphan files. (6) Cross-app: `Contract.documento_generado` BooleanField, `ContractAmendment.documento_generado` FileField (asimetría documentada en Task 5). (7) Plantillas `apps/api/templates/contratos/` y `adendas/` consumidas por contracts; `certificados/` por employees; `reportes/reporte_empleado.html` por employees; `reportes/reporte_contratos.html` por contracts.
+- **Preparación para Module 03 sub-procesos (Task 11).** `DigitalDocument` es el ancla del **legajo digital § 03.5**. En Task 11 se inventarían los flujos completos (índice full-text, retention policy, e-firma, audit trail, OCR, document categories agrupadas por sub-proceso, decision matrix de gaps de retention compliance SUNAFIL/LPD Perú). Esta sección sólo cubrió las entidades + bugs L3.11. La generación de PDFs en producción (xhtml2pdf vs WeasyPrint vs ReportLab) y la decisión arquitectural sobre `DocumentTemplate` system-vs-tenant son piezas mayores pendientes para B.1+.
 
 ## App: onboarding
 
