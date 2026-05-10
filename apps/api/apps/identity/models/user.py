@@ -231,15 +231,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def tiempo_desde_ultimo_login(self):
         """Calcula el tiempo transcurrido desde el último login."""
-        if self.last_login:
-            delta = timezone.now() - self.last_login
-            if delta.days > 0:
-                return f"{delta.days} día{'s' if delta.days != 1 else ''}"
-            elif delta.seconds > 3600:
-                horas = delta.seconds // 3600
-                return f"{horas} hora{'s' if horas != 1 else ''}"
-            elif delta.seconds > 60:
-                minutos = delta.seconds // 60
+        if not self.last_login:
+            return None
+        delta = timezone.now() - self.last_login
+        if delta.days > 0:
+            return f"{delta.days} día{'s' if delta.days != 1 else ''}"
+        if delta.seconds > 3600:
+            horas = delta.seconds // 3600
+            return f"{horas} hora{'s' if horas != 1 else ''}"
+        if delta.seconds > 60:
+            minutos = delta.seconds // 60
+            return f"{minutos} minuto{'s' if minutos != 1 else ''}"
+        return "menos de 1 minuto"
 
     @property
     def ultimo_login_texto(self):
