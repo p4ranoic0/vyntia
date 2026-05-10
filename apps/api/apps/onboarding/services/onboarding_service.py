@@ -496,7 +496,7 @@ class OnboardingService:
         try:
             onboarding = OnboardingProcess.objects.select_related(
                 "usuario", "empleado"
-            ).get(onboarding_id=onboarding_id)
+            ).get(pk=onboarding_id)
         except OnboardingProcess.DoesNotExist:
             return None
 
