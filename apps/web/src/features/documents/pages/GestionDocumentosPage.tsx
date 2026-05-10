@@ -15,11 +15,7 @@ import {
 } from '@/shared/ui/dialog'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { toast } from 'sonner'
-import {
-  legajoService,
-  TIPO_DOCUMENTO_LABELS,
-  CATEGORIA_LABELS,
-} from '@/features/documents/services/legajoService'
+import { legajoService } from '@/features/documents/services/legajoService'
 import { employeesService } from '@/features/employees/services/employeesService'
 
 /* --------------------------------------------------------

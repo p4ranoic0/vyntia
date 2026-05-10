@@ -94,13 +94,42 @@ class WordTemplateService:
             for run in para.runs[1:]:
                 run.text = ''
 
-    def construir_variables_empleado(self, empleado, datos_adicionales: Optional[Dict] = None) -> Dict[str, str]:
+    def _resolver_datos_empresa(self, tenant=None) -> Dict[str, str]:
+        """Resolve empresa data from Company.get_config(tenant) with safe fallback (#74).
+
+        When tenant is None or Company.get_config raises (no row, missing model),
+        falls back to placeholder strings. Caller (ViewSet) should always pass
+        request.tenant to avoid cross-tenant data leak.
+        """
+        try:
+            from apps.organization.models import Company
+            cfg = Company.get_config(tenant=tenant)
+        except Exception:
+            cfg = None
+
+        if cfg is None:
+            return {
+                'CIUDAD': 'Lima',
+                'EMPRESA_NOMBRE': 'Institución Pública',
+                'EMPRESA_RUC': '20123456789',
+                'EMPRESA_DIRECCION': 'Av. Principal 123, Lima, Perú',
+            }
+
+        return {
+            'CIUDAD': cfg.distrito or cfg.provincia or 'Lima',
+            'EMPRESA_NOMBRE': cfg.nombre or 'Institución Pública',
+            'EMPRESA_RUC': cfg.ruc or '20123456789',
+            'EMPRESA_DIRECCION': cfg.direccion or 'Av. Principal 123, Lima, Perú',
+        }
+
+    def construir_variables_empleado(self, empleado, datos_adicionales: Optional[Dict] = None, tenant=None) -> Dict[str, str]:
         """
         Construye el diccionario de variables para documentos de empleado.
 
         Args:
             empleado: Instancia de Employee
             datos_adicionales: Variables adicionales (para certificados, etc.)
+            tenant: Tenant del request (B.5b #74) para resolver Company config
         """
         datos_laborales = empleado.datos_laborales_actuales()
 
@@ -117,11 +146,8 @@ class WordTemplateService:
             'TELEFONO': empleado.telefono_celular or '',
             'EMAIL': empleado.correo_personal or '',
             'FECHA_HOY': self._format_date(hoy),
-            'CIUDAD': 'Lima',
-            'EMPRESA_NOMBRE': 'Institución Pública',
-            'EMPRESA_RUC': '20123456789',
-            'EMPRESA_DIRECCION': 'Av. Principal 123, Lima, Perú',
         }
+        variables.update(self._resolver_datos_empresa(tenant=tenant))
 
         if datos_adicionales:
             for k, v in datos_adicionales.items():
@@ -129,14 +155,24 @@ class WordTemplateService:
 
         return variables
 
-    def construir_variables_contrato(self, contrato) -> Dict[str, str]:
-        """Construye variables para documentos de contrato/adenda."""
+    def construir_variables_contrato(self, contrato, tenant=None) -> Dict[str, str]:
+        """Construye variables para documentos de contrato/adenda.
+
+        Args:
+            contrato: Contract instance.
+            tenant: Tenant del request (B.5b #74).
+
+        For ContractAmendment documents, the caller (TemplateService.generar_adenda)
+        is responsible for overriding NUMERO_ADENDA + amendment-specific fields
+        post-call. Contract has no `numero_adenda` field post-L3.10.3 split,
+        so we set it empty and let amendment callers override.
+        """
         empleado = contrato.empleado
-        variables = self.construir_variables_empleado(empleado)
+        variables = self.construir_variables_empleado(empleado, tenant=tenant)
 
         variables.update({
             'NUMERO_CONTRATO': contrato.numero_contrato or '',
-            'NUMERO_ADENDA': contrato.numero_adenda or '',
+            'NUMERO_ADENDA': '',  # ContractAmendment field; Contract path leaves empty (caller overrides for amendments)
             'TIPO_CONTRATO': contrato.get_tipo_documento_display(),
             'FECHA_INICIO': self._format_date(contrato.fecha_inicio),
             'FECHA_FIN': self._format_date(contrato.fecha_fin),
@@ -159,12 +195,17 @@ class WordTemplateService:
         numero_certificado: str,
         proposito: str = '',
         incluir_salario: bool = False,
+        tenant=None,
     ) -> Dict[str, str]:
-        """Construye variables para certificados y constancias."""
+        """Construye variables para certificados y constancias.
+
+        Args:
+            tenant: Tenant del request (B.5b #74).
+        """
         from django.utils import timezone
         hoy = timezone.now().date()
 
-        variables = self.construir_variables_empleado(empleado)
+        variables = self.construir_variables_empleado(empleado, tenant=tenant)
 
         datos_laborales = empleado.datos_laborales_actuales()
         salario = ''
@@ -172,7 +213,7 @@ class WordTemplateService:
             # Buscar salario del último contrato activo
             from apps.contracts.models import Contract
             contrato = Contract.objects.filter(
-                empleado=empleado, estado='ACTIVO'
+                empleado=empleado, status='activo'
             ).order_by('-fecha_inicio').first()
             if contrato:
                 salario = str(contrato.salario_bruto)

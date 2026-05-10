@@ -73,7 +73,7 @@ export const onboardingService = {
   },
 
   async getAll(
-    params?: Record<string, any>,
+    params?: Record<string, unknown>,
   ): Promise<{ results: OnboardingStatus[]; count: number }> {
     const response = await apiClient.get("/api/v1/onboarding/processes/", params);
     const rawData = response.data;

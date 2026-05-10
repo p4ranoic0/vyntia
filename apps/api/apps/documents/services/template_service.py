@@ -52,17 +52,19 @@ class TemplateService:
         """Inicializa el servicio de plantillas."""
         self.templates_dir = os.path.join(settings.BASE_DIR, 'templates')
     
-    def generar_contrato(self, contrato_id: int, tipo_plantilla: Optional[str] = None) -> str:
+    def generar_contrato(self, contrato_id: int, tipo_plantilla: Optional[str] = None, tenant=None) -> str:
         """
         Genera el HTML de un contrato desde su plantilla.
-        
+
         Args:
             contrato_id: ID del contrato a generar
             tipo_plantilla: Tipo específico de plantilla (opcional)
-            
+            tenant: Tenant del request (B.5b #75) — usado para resolver
+                    Company.get_config sin cross-tenant data leak.
+
         Returns:
             str: HTML generado del contrato
-            
+
         Raises:
             ValidationError: Si el contrato no existe o faltan datos
         """
@@ -85,9 +87,9 @@ class TemplateService:
             # Fallback to base template if specific one not found
             if not plantilla:
                 plantilla = 'contratos/contrato_base.html'
-            
+
             # Preparar contexto de datos
-            contexto = self._preparar_contexto_contrato(contrato)
+            contexto = self._preparar_contexto_contrato(contrato, tenant=tenant)
             
             # Renderizar plantilla
             template = get_template(plantilla)
@@ -100,13 +102,14 @@ class TemplateService:
         except Exception as e:
             raise ValidationError(f"Error generando contrato: {str(e)}")
     
-    def generar_adenda(self, adenda_id, tipo_adenda: str) -> str:
+    def generar_adenda(self, adenda_id, tipo_adenda: str, tenant=None) -> str:
         """
         Genera el HTML de una adenda desde su plantilla.
 
         Args:
             adenda_id: ID (UUID) de la ContractAmendment a generar
             tipo_adenda: Tipo de adenda a generar
+            tenant: Tenant del request (B.5b #75)
 
         Returns:
             str: HTML generado de la adenda
@@ -124,7 +127,7 @@ class TemplateService:
 
             plantilla = self.PLANTILLAS_ADENDA.get(tipo_adenda, 'adendas/adenda_base.html')
 
-            contexto = self._preparar_contexto_contrato(contrato)
+            contexto = self._preparar_contexto_contrato(contrato, tenant=tenant)
             # Override con datos especificos de la adenda
             contexto['contrato']['numero_adenda'] = adenda.numero_adenda
             contexto['adenda'] = {
@@ -159,16 +162,18 @@ class TemplateService:
         except Exception as e:
             raise ValidationError(f"Error generando adenda: {str(e)}")
     
-    def generar_certificado(self, empleado_id: int, tipo_certificado: str, 
-                          datos_adicionales: Optional[Dict[str, Any]] = None) -> str:
+    def generar_certificado(self, empleado_id: int, tipo_certificado: str,
+                          datos_adicionales: Optional[Dict[str, Any]] = None,
+                          tenant=None) -> str:
         """
         Genera el HTML de un certificado laboral.
-        
+
         Args:
             empleado_id: ID del empleado
             tipo_certificado: Tipo de certificado a generar
             datos_adicionales: Datos adicionales para el certificado
-            
+            tenant: Tenant del request (B.5b #75)
+
         Returns:
             str: HTML generado del certificado
         """
@@ -181,8 +186,8 @@ class TemplateService:
                 tipo_certificado = 'CONSTANCIA' if estado == 'activo' else 'CERTIFICADO'
 
             plantilla = self.PLANTILLAS_CERTIFICADO.get(tipo_certificado, 'certificados/constancia_laboral.html')
-            
-            contexto = self._preparar_contexto_empleado(empleado)
+
+            contexto = self._preparar_contexto_empleado(empleado, tenant=tenant)
             if datos_adicionales:
                 contexto['certificado'] = datos_adicionales
             
@@ -196,24 +201,25 @@ class TemplateService:
         except Exception as e:
             raise ValidationError(f"Error generando certificado: {str(e)}")
     
-    def _preparar_contexto_contrato(self, contrato: Contract) -> Dict[str, Any]:
+    def _preparar_contexto_contrato(self, contrato: Contract, tenant=None) -> Dict[str, Any]:
         """
         Prepara el contexto de datos para plantillas de contrato.
-        
+
         Args:
             contrato: Instancia del contrato
-            
+            tenant: Tenant del request (B.5b #75)
+
         Returns:
             Dict: Contexto con todos los datos necesarios
         """
         empleado = contrato.empleado
-        institucion = self._obtener_datos_institucion()
+        institucion = self._obtener_datos_institucion(tenant=tenant)
 
         contexto = {
             # Datos del contrato
             'contrato': {
                 'numero': contrato.numero_contrato,
-                'numero_adenda': getattr(contrato, 'numero_adenda', None),
+                'numero_adenda': None,  # Contract has no numero_adenda post-L3.10.3 split; ContractAmendment carries this field (set explicitly when generating amendment docs)
                 'tipo': contrato.get_tipo_documento_display(),
                 'tipo_contrato': contrato.tipo_documento,
                 'jornada': contrato.get_jornada_laboral_display(),
@@ -227,7 +233,7 @@ class TemplateService:
                 'lugar_trabajo': contrato.lugar_trabajo,
                 'horario_trabajo': contrato.horario_trabajo,
                 'observaciones': contrato.observaciones,
-                'estado': contrato.get_estado_display(),
+                'estado': contrato.get_status_display(),
                 'area': contrato.area.nombre_completo if contrato.area_id else '',
                 'tipo_modalidad': contrato.get_tipo_documento_display(),
                 'regimen_laboral': 'CAS (D.L. 1057)' if contrato.tipo_documento.startswith('CAS') else ('Ley 728 (D.Leg. 728)' if contrato.tipo_documento.startswith('LEY_728') else 'Ley 276 (D.Leg. 276)'),
@@ -251,24 +257,25 @@ class TemplateService:
             # Datos de generación
             'generacion': {
                 'fecha': datetime.now(),
-                'usuario': contrato.created_by.nombre_completo if contrato.creado_por_id else 'Sistema',
+                'usuario': contrato.created_by.nombre_completo if contrato.created_by_id else 'Sistema',
             },
             'fecha_generacion': datetime.now(),
         }
 
         return contexto
     
-    def _preparar_contexto_empleado(self, empleado: Employee) -> Dict[str, Any]:
+    def _preparar_contexto_empleado(self, empleado: Employee, tenant=None) -> Dict[str, Any]:
         """
         Prepara el contexto de datos para plantillas de empleado.
-        
+
         Args:
             empleado: Instancia del empleado
-            
+            tenant: Tenant del request (B.5b #75)
+
         Returns:
             Dict: Contexto con datos del empleado
         """
-        institucion = self._obtener_datos_institucion()
+        institucion = self._obtener_datos_institucion(tenant=tenant)
         datos_laborales = empleado.datos_laborales_actuales()
         contexto = {
             'empleado': self._obtener_datos_empleado(empleado),
@@ -313,15 +320,21 @@ class TemplateService:
             'cargo': datos_laborales.cargo_empleado if datos_laborales else None,
         }
     
-    def _obtener_datos_institucion(self) -> Dict[str, Any]:
+    def _obtener_datos_institucion(self, tenant=None) -> Dict[str, Any]:
         """
         Obtiene los datos institucionales para los documentos.
+
+        Args:
+            tenant: Tenant del request (passed through from caller / ViewSet).
+                    When None, falls back to the global default config — caller
+                    is responsible for passing the request tenant to avoid
+                    cross-tenant institution data leak (B.5b #75).
 
         Returns:
             Dict: Datos de la institución
         """
         from apps.organization.models import Company
-        cfg = Company.get_config(tenant=None)  # TODO(C.3): pass tenant from service caller once middleware ships
+        cfg = Company.get_config(tenant=tenant)
         return {
             'nombre': cfg.nombre,
             'ruc': cfg.ruc,
@@ -376,12 +389,13 @@ class TemplateService:
         """Alias de listar_plantillas_disponibles() para compatibilidad con views."""
         return self.listar_plantillas_disponibles()
 
-    def generar_reporte_html(self, reporte_data: Dict[str, Any]) -> str:
+    def generar_reporte_html(self, reporte_data: Dict[str, Any], tenant=None) -> str:
         """
         Genera el HTML de un reporte de contratos.
 
         Args:
             reporte_data: Diccionario con filtros y parametros del reporte
+            tenant: Tenant del request (B.5b #75)
 
         Returns:
             str: HTML generado del reporte
@@ -411,7 +425,7 @@ class TemplateService:
             'total_contratos': contratos.count(),
             'fecha_generacion': datetime.now(),
             'usuario_generador': reporte_data.get('usuario_generador', 'Sistema'),
-            'institucion': self._obtener_datos_institucion(),
+            'institucion': self._obtener_datos_institucion(tenant=tenant),
         }
 
         try:
@@ -430,13 +444,13 @@ class TemplateService:
             area_nombre = c.area.nombre_completo if c.area_id else "N/A"
             filas += f"""
             <tr>
-                <td>{c.numero_contrato or c.contrato_id}</td>
+                <td>{c.numero_contrato or str(c.id)}</td>
                 <td>{empleado_nombre}</td>
                 <td>{c.tipo_documento}</td>
                 <td>{area_nombre}</td>
                 <td>{c.fecha_inicio or ''}</td>
                 <td>{c.fecha_fin or ''}</td>
-                <td>{c.get_estado_display()}</td>
+                <td>{c.get_status_display()}</td>
             </tr>"""
 
         return f"""

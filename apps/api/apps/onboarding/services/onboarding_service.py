@@ -99,6 +99,10 @@ class OnboardingService:
         base_username = f"{primera_letra}{apellido_clean}".replace(" ", "")
 
         # Verificar colisiones
+        # TODO(B-future): scope username uniqueness to (tenant, username) when
+        # identity model adds tenant FK to User uniqueness — current global
+        # check enables cross-tenant username enumeration via collision suffixes.
+        # See B.5b plan: out-of-scope (depends on identity-app coordination).
         username = base_username
         counter = 1
         while User.objects.filter(username=username).exists():
@@ -264,16 +268,24 @@ class OnboardingService:
             requiere_cambio_password=True,
         )
 
-        # Asignar rol de empleado
+        # Asignar rol de empleado (B.5b #81: scope Role lookup by tenant when available)
         try:
-            rol_empleado = Role.objects.filter(
+            role_qs = Role.objects.filter(
                 nombre_rol__in=["Employee", "empleado"], estado_rol="activo"
-            ).first()
+            )
+            if tenant is not None:
+                role_qs = role_qs.filter(tenant=tenant)
+            rol_empleado = role_qs.first()
             if rol_empleado:
                 UserRole.objects.create(
                     usuario=usuario,
                     rol=rol_empleado,
                     estado_asignacion="activo",
+                )
+            else:
+                logger.warning(
+                    "No se encontro rol Employee/empleado para tenant=%s",
+                    getattr(tenant, "pk", None),
                 )
         except Exception as e:
             logger.warning(f"No se pudo asignar rol de empleado: {e}")
@@ -496,7 +508,7 @@ class OnboardingService:
         try:
             onboarding = OnboardingProcess.objects.select_related(
                 "usuario", "empleado"
-            ).get(onboarding_id=onboarding_id)
+            ).get(pk=onboarding_id)
         except OnboardingProcess.DoesNotExist:
             return None
 
@@ -525,12 +537,20 @@ class OnboardingService:
 
     @staticmethod
     def _enviar_notificacion(subject, from_email, recipient, text_content, html_content):
-        """Intenta enviar via Celery, cae a sincrono si falla."""
+        """Intenta enviar via Celery, cae a sincrono si falla.
+
+        B.5b #83: log the Celery dispatch exception before falling back so SMTP
+        failures don't get silenced (previously returned None silently).
+        """
         try:
             send_email_html_task.apply_async(
                 args=[subject, from_email, recipient, text_content, html_content]
             )
         except Exception:
+            logger.exception(
+                "Celery dispatch failed for %s; falling back to synchronous send",
+                recipient,
+            )
             OnboardingService._enviar_email_sincrono(subject, from_email, recipient, text_content, html_content)
 
     @staticmethod

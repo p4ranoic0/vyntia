@@ -500,14 +500,24 @@ function RechazoDialog({ open, onClose, onConfirm }: RechazoDialogProps) {
    Muestra lista de empleados con búsqueda y acceso a legajos
    -------------------------------------------------------- */
 
+/** Permissive employee shape — covers both canonical (nombre_completo,
+ * numero_documento, estado_empleado) and legacy (nombres, ape_paterno,
+ * dni, estado) field names from older API responses. */
 interface EmpleadoRow {
   id: string
-  nombres_empleado: string
-  apellido_paterno: string
-  apellido_materno: string
-  numero_documento: string
-  estado_empleado: string
-  nombre_completo: string
+  nombres_empleado?: string
+  apellido_paterno?: string
+  apellido_materno?: string
+  numero_documento?: string
+  estado_empleado?: string
+  nombre_completo?: string
+  // Legacy field-name variants surfaced by older endpoints
+  nombres?: string
+  ape_paterno?: string
+  ape_materno?: string
+  dni?: string
+  estado?: string
+  area?: { siglas?: string; organo?: string } | null
 }
 
 function LegajoAdminPanel() {
@@ -539,7 +549,7 @@ function LegajoAdminPanel() {
   const empleadosFiltrados = useMemo(() => {
     if (!search.trim()) return empleados
     const q = search.toLowerCase()
-    return empleados.filter((emp: any) => {
+    return empleados.filter((emp: EmpleadoRow) => {
       const nombre = (emp.nombre_completo ?? `${emp.nombres ?? emp.nombres_empleado ?? ''} ${emp.ape_paterno ?? emp.apellido_paterno ?? ''} ${emp.ape_materno ?? emp.apellido_materno ?? ''}`).toLowerCase()
       const doc = (emp.dni ?? emp.numero_documento ?? '').toLowerCase()
       return nombre.includes(q) || doc.includes(q)
@@ -617,7 +627,7 @@ function LegajoAdminPanel() {
           )}
           {!loadingEmpleados && empleadosFiltrados.length > 0 && (
             <div className="divide-y max-h-[500px] overflow-y-auto">
-              {empleadosFiltrados.map((emp: any) => {
+              {empleadosFiltrados.map((emp: EmpleadoRow) => {
                 const id = emp.id
                 const nombre = emp.nombre_completo ?? `${emp.nombres ?? emp.nombres_empleado ?? ''} ${emp.ape_paterno ?? emp.apellido_paterno ?? ''} ${emp.ape_materno ?? emp.apellido_materno ?? ''}`
                 const doc = emp.dni ?? emp.numero_documento ?? ''
