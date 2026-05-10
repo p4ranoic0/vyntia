@@ -1160,7 +1160,71 @@ VYNTIA `OnboardingProcess` es funcionalmente un **checklist de documentos admini
 
 ## Cross-cutting deuda técnica
 
-(Filled by Task 8 — pytest failures, tsc errors, lint warnings attributed by app.)
+Tres baselines técnicos pre-existentes documentados aquí; deben cerrarse o reclasificarse explícitamente como wontfix antes de cerrar B. Cada item se atribuye a un app + propone fase de cierre.
+
+### Pytest pre-existing failures (7)
+
+Capturados en B.0 audit del baseline post-Foundation. Todos son asuntos de auth (4), onboarding (2), o integración de API (1). Raíces: fixtures DRF/pytest incompatibles, lógica faltante de restricción de campos (onboarding), endpoints incompletos.
+
+| # | Test | App | Causa | Fase propuesta |
+|---|------|-----|-------|:--------------:|
+| 1 | `tests/test_auth_api.py::LoginAPITest::test_login_datos_faltantes` | identity | Fixture DRF/pytest: client.post() no valida campos faltantes en request.data (bypass DRF parsing) | B.1 |
+| 2 | `tests/test_auth_api.py::LoginAPITest::test_login_usuario_bloqueado` | identity | Mismo: request.data no propagado a serializer validation | B.1 |
+| 3 | `tests/test_auth_api.py::LogoutAPITest::test_logout_token_invalido` | identity | Mismo fixture bug: token validation en LogoutView ignora request.data | B.1 |
+| 4 | `tests/test_auth_api.py::UserProfileAPITest::test_actualizar_perfil_exitoso` | identity | PATCH actualización no persiste nombres_usuario campo: ViewSet no llama `serializer.save()` o `user.save()` | B.1 |
+| 5 | `tests/test_auth_api.py::AuthAPISecurityTest::test_multiples_intentos_login_fallidos` | identity | `intentos_fallidos` counter no se incrementa en fallos; LoginAttempt model insertable pero ViewSet no consulta/actualiza | B.2 |
+| 6 | `tests/test_onboarding_api.py::TestCorregirCorreo::test_corregir_correo_updates_email` | onboarding | Endpoint `/corregir-correo/` planificado (Wave 1) pero no existe; test RED por spec incompleta | B.3 |
+| 7 | `tests/test_onboarding_self_update.py::TestEmpleadoSelfUpdate::test_employee_cannot_patch_restricted_fields` | onboarding | Validación faltante: employee PATCH no bloquea `nombres_empleado`, `apellido_paterno`, etc. (security regression); debe 403 | B.3 |
+
+Causas raíz agrupadas:
+- **4 auth fixture bugs (B.1):** client.post() no respeta DRF serializer validation. Remedio: actualizar fixtures para usar `rest_framework.test.APIRequestFactory` o simular `request.data` en test setup.
+- **1 auth counter (B.2):** LoginAttempt model existe pero nunca se consulta en ViewSet. Remedio: integrar counter en login endpoint + test.
+- **2 onboarding spec gaps (B.3):** Wave 1 incompleta (corregir-correo) + validación de restricción de campos. Remedio: implementar endpoint + add field restriction decorator/permission.
+
+### TS errors (1)
+
+| # | File | Error | Acción propuesta | Fase |
+|---|------|-------|------------------|:----:|
+| 1 | `apps/web/src/generated/api/models/BlankEnum.ts:6:5` | `error TS1132: Enum member expected` (enum BlankEnum malformed: vacío con `;` colgante) | Regenerar con `openapi-typescript@latest` (issue en openapi-typescript-codegen v0.x con enums vacíos); O añadir ESLint ignore-rule `/* eslint-disable @typescript-eslint/no-empty-enum */` | B.1 |
+
+### Lint warnings (641 total)
+
+Distribución por directorio post-C:
+
+| Directorio | Count | Categoría dominante | Remedio | Fase |
+|------------|------:|-------|--------:|:-----:|
+| `src/generated/api/` | 202 | auto-generated (no-explicit-any 202x; ignorar) | Agregar regla ESLint: ignore `src/generated/` o añadir `.eslintignore` | B.1 |
+| `src/features/employees/` | 16 | no-explicit-any (Tab*.tsx), no-unused-vars (hooks) | Tipificar any (request/response payloads); remover vars no usadas | B.4 |
+| `src/features/identity/` | 15 | no-explicit-any (auth, menu, roles) | Tipificar any; aplicar strict mode gradual | B.1 |
+| `src/features/time-off/` | 13 | no-explicit-any (vacation forms, rules) | Tipificar enums/dtos; remove unused | B.5 |
+| `src/shared/ui/` | 6 | no-explicit-any (shadcn/ui wrappers) | Tipificar input/output | B.1 |
+| `src/features/organization/` | 6 | no-explicit-any (department forms) | Tipificar | B.2 |
+| `src/shared/layout/` | 5 | no-unused-vars, no-explicit-any (Header, Sidebar) | Remover imports no usados | B.1 |
+| `src/features/auth/` | 4 | no-explicit-any (services, context) | Tipificar API responses (APIResponse<User>) | B.1 |
+| `src/shared/api/` | 3 | no-explicit-any (menuService) | Tipificar | B.1 |
+| `src/features/payroll/` | 3 | no-explicit-any | Tipificar | B.5 |
+| `src/features/onboarding/` | 3 | no-explicit-any | Tipificar | B.3 |
+| `src/features/documents/` | 3 | no-explicit-any, no-unused-vars | Tipificar | B.5 |
+| `src/shared/hooks/`, `src/shared/components/`, otros | 9 | mixto | Tipificar | B.1 |
+
+**Recomendación de categorización:**
+- **B.1 (polish baseline):** Absorbe 235+ warnings (generated/ ignore-rule, 5 archivos identity+shared tipificar, BlankEnum.ts fix, UI+layout). Justificación: cross-cutting infra, visibility rápida.
+- **B.2-B.5:** Absorben 406 warnings (employees 16 → B.4, organization 6 → B.2, time-off 13 → B.5, onboarding 3 → B.3, payroll 3 → B.5, docs 3 → B.5). Justificación: contexto de app, prioridad con features.
+
+**Estrategia de remedio:**
+1. **B.1 lint ignore (fase inicial):** Agregar `.eslintignore` con `src/generated/` para remover 202 warnings instantáneamente (auto-generated, no valor).
+2. **Migración gradual:** Restar 202 de 641 = 439 reales. Atacar B.1 cross-cutting (40-50 warnings) en 2-3h de typing. Resto mapea a phases.
+3. **No regresión:** Fijar `npm run lint` en CI post-B.1; bloquear PRs con warnings nuevas.
+
+### Resumen recomendaciones
+
+**Pytest:** Mapear 7 failures a B.1/B.2/B.3 (ver tabla arriba). Tres categorías: fixture bugs (B.1), counter (B.2), onboarding spec (B.3).
+
+**TypeScript:** 1 error auto-generated (BlankEnum) → fix regenerate o ignore-rule en B.1.
+
+**Lint:** 641 warnings; 202 auto-generated (ignore); 439 reales. Estrategia: fix 40-50 B.1 cross-cutting en 2-3h (identity, shared, ui). Resto mapea a app phases 20-50 warnings cada una (0.5-1h per phase).
+
+**Baseline preservación:** Post-Foundation, 161 pytest passed. B.0 acepta 7 failures pre-existentes (fixture bugs + spec incompleta); B.1+ cierra. Lint baseline 641; B.1 → 439 (ignore generated); B.2-5 → 0 (target, no regression).
 
 ## Maestro gaps — Module 01 (Policies)
 
