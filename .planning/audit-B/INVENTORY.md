@@ -505,7 +505,210 @@ Sin errores TS ni warnings ESLint para `features/employees` (verificado con `tsc
 
 ## App: contracts
 
-(Filled by Task 5.)
+### Estado actual en VYNTIA (post-A+C+L3.10.3)
+
+> **Contexto split L3.10.3 (commit `e7bcf132` 2026-04-27):** El legacy tenía UN solo modelo `ContratosAdendas` con `tipo_documento` que mezclaba CAS/Ley 728/Ley 276 (contratos) + ADENDA_SALARIAL/CARGO/HORARIO/EXTENSION (adendas), distinguidos por `numero_adenda` nullable. L3.10.3 dividió en **DOS modelos**: `Contract` (sólo contratos, sin `numero_adenda`) y `ContractAmendment` (sólo adendas, FK `parent_contract` + `numero_adenda` siempre presente). Esta split deja consumidores stale (ver bugs).
+
+#### Modelos
+- `Contract` (file: `apps/api/apps/contracts/models/contract.py:19`) — contrato laboral inicial (sin adendas). Renombre L3.10.x: legacy `ContratosAdendas` → `Contract` con extracción de campos de adenda. PK UUID. Tabla legacy `contratos_adendas` preservada (line 224).
+  - **Identidad**: `numero_contrato` (CharField max=50). Generador automático `generar_numero_contrato()` formato `CON-YYYY-NNNN` (line 342). Choice `tipo_documento` (CharField max=25) con **7 valores** (líneas 29-40): 3 de CAS (INDETERMINADO/DETERMINADO/SUPLENCIA), 3 de Ley 728 (FIJO/FIJO_SUPLENCIA/INDETERMINADO), 1 de Ley 276 (INDETERMINADO). **Nótese: NO incluye los 4 ADENDA_*** del legacy — esos se movieron a `ContractAmendment.TIPO_DOCUMENTO_CHOICES`.
+  - **Relaciones**: `empleado` FK→`employees.Employee` (CASCADE, related_name `contratos_adendas`), `area` FK→`organization.Department` (PROTECT, related_name `contratos_adendas_area`).
+  - **Fechas**: `fecha_inicio`, `fecha_fin` (nullable — para indeterminados), `fecha_firma` (nullable).
+  - **Salario**: `salario_bruto` (DecimalField 10,2, MinValueValidator 0.01), `salario_neto` (nullable — calculado en `save()` como `salario_bruto * 0.87` rounded 2 decimals si no provisto, line 279).
+  - **Laboral**: `cargo` (CharField max=100), `jornada_laboral` (4 choices: COMPLETA/PARCIAL/REDUCIDA/FLEXIBLE), `funciones` (TextField nullable), `lugar_trabajo`, `horario_trabajo`.
+  - **Estado**: `status` (CharField max=15, **field renamed `estado` → `status` con db_column='estado'** line 167-173) con 6 choices: BORRADOR/PENDIENTE/ACTIVO/VENCIDO/TERMINADO/ANULADO. `documento_generado` (BooleanField).
+  - **Audit**: `created_at` (auto_now_add, db_column `fecha_creacion`), `updated_at` (auto_now, db_column `fecha_modificacion`), `created_by`/`updated_by` FK→`identity.User` (PROTECT, db_columns `creado_por_id`/`modificado_por_id`).
+  - Tenant FK: ✅ (line 78-85, nullable=true). **Constraint per-tenant**: `unique_contract_number_per_tenant` sobre `(tenant, numero_contrato)` (line 235-240). Migración 0003 (`migrations/0003_contract_tenant_contractamendment_tenant_and_more.py`) añade tenant FK a los 3 modelos + el constraint.
+  - Manager: default. `ContratosAdendasManager` comentado (líneas 220-221, 369-370) — igual que legacy.
+  - **Validaciones (`clean`)**: rechaza `fecha_fin <= fecha_inicio`; rechaza `fecha_fin` en tipos INDETERMINADO; exige `fecha_fin` en tipos DETERMINADO. `save()` invoca `full_clean()` siempre (line 282).
+  - **Properties calculadas**: `dias_hasta_vencimiento`, `esta_vigente`, `esta_vencido`, `esta_por_vencer(dias=30)`, `duracion_dias`, `duracion_meses`. **Eliminadas vs legacy**: `es_contrato_inicial`, `es_adenda` (no aplican post-split).
+  - **Métodos**: `generar_numero_contrato()`, `generar_numero_adenda()` (ahora delega a `self.amendments.count()` line 351-354), `puede_generar_adenda()`, `obtener_adendas()` (delega a `self.amendments.order_by('created_at')`).
+
+- `ContractAmendment` (file: `apps/api/apps/contracts/models/contract_amendment.py:17`) — adenda a un contrato existente. **Modelo nuevo de L3.10.3** (no existía en legacy como entidad propia). PK UUID. Tabla nueva `contract_amendments` (line 185).
+  - **Relación principal**: `parent_contract` FK→`contracts.Contract` (CASCADE, related_name `amendments`, line 60-65). **Diseño "delta-only"**: la adenda guarda sólo los campos que cambian, no duplica todos los del contrato.
+  - **Choices propios**: `TIPO_DOCUMENTO_CHOICES` con 4 valores ADENDA_SALARIAL/CARGO/HORARIO/EXTENSION (los que ya no están en `Contract.TIPO_DOCUMENTO_CHOICES`).
+  - **Identidad**: `numero_adenda` (CharField max=20, formato `AD-NNN` generado por `Contract.generar_numero_adenda()`).
+  - **Fechas**: `fecha_inicio`, `fecha_fin` (nullable), `fecha_firma` (nullable).
+  - **Nuevos valores (sólo el que aplica al tipo)**: `nuevo_salario` (Decimal 10,2 nullable), `nuevo_cargo` (CharField nullable), `nuevo_horario` (CharField nullable), `nueva_jornada_laboral` (choices nullable), `nueva_fecha_fin_contrato` (DateField nullable — para ADENDA_EXTENSION).
+  - **Otros**: `motivo` (TextField nullable), `observaciones`, `status` (igual 6 choices que Contract, db_column `estado`), `documento_generado` (**FileField** upload `adendas/%Y/` — distinto al `BooleanField` de Contract).
+  - **Audit**: created/updated_by/at idénticos a Contract (db_column legacy preservado).
+  - Tenant FK: ✅ (line 51-58, nullable=true). NO hay constraint per-tenant explícito sobre `numero_adenda` — `unique_together = [['parent_contract', 'numero_adenda']]` (line 186), suficiente porque `parent_contract` ya pertenece a un tenant.
+  - **Sin `clean()` ni `save()` overridden** — no hay validaciones cruzadas (e.g., que ADENDA_SALARIAL exija `nuevo_salario`, que ADENDA_CARGO exija `nuevo_cargo`, etc.). Ver bugs.
+
+- `EmploymentData` (file: `apps/api/apps/contracts/models/employment_data.py:19`) — datos laborales actuales/históricos del empleado. Renombre L3.10.x: legacy `DatosLaborales` → `EmploymentData`. PK UUID. Tabla legacy `datos_laborales` preservada (line 139).
+  - **Choices** (líneas 22-67): `TIPO_CONTRATO_CHOICES` (7 valores: CAS/CAP/indefinido/temporal/practicas/consultoria/locacion), `MODALIDAD_TRABAJO_CHOICES` (presencial/remoto/hibrido), `JORNADA_LABORAL_CHOICES` (completa/parcial/por_horas), `ESTADO_DATOS_CHOICES` (activo/inactivo/suspendido), `REGIMEN_LABORAL_CHOICES` (276/728/1057/locacion/consultoria/practicas), `CATEGORIA_CHOICES` (directivo/funcionario/profesional/tecnico/auxiliar/practicante/consultor).
+  - **Relaciones**: `empleado` FK→`employees.Employee` (CASCADE, related_name `datos_laborales`), `area` FK→`organization.Department` (PROTECT, related_name `empleados_laborales`), `jefe_directo` FK→`employees.Employee` (SET_NULL, related_name `subordinados_laborales`).
+  - **Puesto**: `cargo_empleado` (CharField max=100), `codigo_puesto`, `nivel_puesto`, `categoria` (choices).
+  - **Contractual**: `tipo_contrato`, `regimen_laboral`, `modalidad_trabajo` (default `presencial`), `jornada_laboral` (default `completa`).
+  - **Fechas**: `fecha_ingreso`, `fecha_inicio_contrato`, `fecha_fin_contrato` (nullable), `fecha_cese` (nullable).
+  - **Salario**: `sueldo_basico` (Decimal 10,2, **sin MinValueValidator** — diferente a `Contract.salario_bruto`), `asignacion_familiar`, `bonificacion_especial`, `otras_bonificaciones` (todos Decimal 8,2 default 0).
+  - **Horario**: `horario_entrada` (TimeField nullable), `horario_salida`, `horas_semanales` (Decimal 4,2 default 40).
+  - **Control**: `estado_datos` (default `activo`), `observaciones`, `created_at` (db_column `fecha_registro`), `updated_at` (db_column `fecha_actualizacion`).
+  - Tenant FK: ✅ (line 82-89, nullable=true). **NO hay composite unique constraint con tenant** — `unique_together = [['empleado', 'fecha_inicio_contrato']]` (line 155) — suficiente porque `empleado` ya está taggeado. **Pero**: si dos tenants tuvieran un Employee con el mismo numero_documento (lo cual NO debería pasar gracias al constraint per-tenant en Employee, pero vía bug C de `correo_personal`), no hay defense-in-depth.
+  - Manager: default. `DatosLaboralesManager` comentado.
+  - **Properties calculadas**: `sueldo_total`, `antiguedad_anos`, `antiguedad_meses`, `antiguedad_dias`, `antiguedad_texto`, `contrato_vigente`, `dias_para_vencimiento`, `contrato_por_vencer`, `es_activo`, `tipo_contrato_texto`, `regimen_laboral_texto`, `categoria_texto`, `modalidad_trabajo_texto`, `jornada_laboral_texto`, `horario_completo`.
+  - **Métodos**: `calcular_vacaciones_pendientes()` (stub: retorna `anos_completos * 30` sin restar tomadas, comentario in-line), `generar_codigo_empleado()` (**ROTO** — usa `self.empleado.empleado_id` line 290 que NO existe en VYNTIA; ver bugs), `es_jefe_de(empleado)`, `subordinados_directos()`, `historial_cargos()`, `renovar_contrato(nueva_fecha_fin, observaciones)`, `cesar_empleado(fecha_cese, motivo)`.
+
+#### Endpoints REST
+URLs montadas **flat** sobre `/api/v1/` (NO bajo `/contracts/` prefix — file `api/v1/urls.py:30` usa `path('', include('api.v1.contracts.urls'))`). Routes finales:
+- `/api/v1/contracts/` — `ContratosAdendasViewSet` (file: `api/v1/rrhh/contratos_views.py:34`). Routed via `api/v1/contracts/urls.py:15`.
+  - `list` (GET): `@require_authenticated()`. Sin caché.
+  - `retrieve` (GET): `@require_authenticated()`.
+  - `create` (POST): `@require_hr()`. Usa `ContratosAdendasCreateSerializer` con `validate()` que duplica las reglas de `Contract.clean()`.
+  - `update`/`partial_update` (PUT/PATCH): `@require_hr()`. Usa `ContratosAdendasUpdateSerializer` que recalcula `salario_neto` si cambia `salario_bruto` (line 157).
+  - `destroy` (DELETE): `@require_admin()` — **hard delete** (no soft-delete, distinto a Employee).
+  - Custom actions: `alertas_vencimiento` (GET, list — RRHH), `reporte_contratos` (GET, list — RRHH, agregaciones por tipo+área), `estadisticas` (GET, list — RRHH), `renovar_contrato` (POST detail — crea nuevo contrato heredando datos del original y marca el original como TERMINADO).
+  - Filtros (en `get_queryset` líneas 86-126): `empleado_id`, `area_id`, `tipo_documento`, `estado`, `fecha_inicio`, `fecha_fin`. **Bug**: líneas 93-94 ambos `empleado_id` y `area_id` toman del query param `'id'` (mismo nombre) — los filtros se sobreescriben. Ver bugs.
+  - Permission class: `IsAuthenticated` + decoradores por método. Sin filterset DjangoFilterBackend — filtros manuales.
+  - Pagination: `StandardResultsSetPagination` (20/page).
+- `/api/v1/contract-amendments/` — `ContractAmendmentViewSet` (`contratos_views.py:437`).
+  - CRUD ModelViewSet completo (no decoradores `@require_hr` — sólo `IsAuthenticated`). **Bug seguridad**: cualquier autenticado puede crear/editar/eliminar adendas.
+  - `get_queryset` filtra por `parent_contract` o `empleado` (query params).
+  - Sin custom actions.
+- `/api/v1/employment-data/` — `DatosLaboralesViewSet` (file: `api/v1/rrhh/views.py:1289`).
+  - CRUD con decoradores `@require_authenticated` (list/retrieve), `@require_hr` (create/update/partial_update), `@require_admin` (destroy).
+  - Custom action: `estadisticas_remuneracion` (GET list — RRHH, **ROTA** por uso de `estado_laboral` y `remuneracion_mensual` que no existen; ver bugs).
+  - **Anti-patrón**: queryset declarado dos veces (línea 1292-1296 con `select_related` completo, sobrescrito en línea 1298 con sólo `empleado`). El primero está muerto.
+  - FilterSet `DatosLaboralesFilter` (file: `filters.py:251`) declara filtros sobre **campos inexistentes**: `reg_laboral`, `condicion`, `grupo_ocupacional`, `puesto`, `estado`, `remuneracion`. Ningún filtro funciona; cualquier query param dispara `FieldError`. Ver bugs.
+  - `search_fields = ["puesto_trabajo", "categoria_laboral", "regimen_laboral"]` — los primeros DOS no existen (real: `cargo_empleado`, `categoria`).
+  - `ordering_fields = ["fecha_ingreso", "fecha_cese", "remuneracion_mensual"]` — `remuneracion_mensual` no existe.
+
+#### UI (frontend)
+- `ContratosPage` at `apps/web/src/features/contracts/pages/ContratosPage.tsx` (657 líneas) — listado con tabla, filtros (estado, tipo_documento, área, empleado, búsqueda), modal create, modal detail. Implementa `getAlertasVencimiento` para banner de vencimiento, `renovar` y `generarContratoPdf`/`generarAdendaPdf`/`generarCertificado`.
+- Service: `contractsService` at `apps/web/src/features/contracts/services/contractsService.ts:152`. Endpoints: GET/POST/PATCH `/api/v1/contracts/`, GET `/api/v1/contracts/estadisticas/`, GET `/api/v1/contracts/alertas_vencimiento/`, POST `/api/v1/contracts/{id}/renovar_contrato/`. Cross-app: POST `/api/v1/documents/documents/generar-certificado/`, `generar-contrato/`, `generar-adenda/`.
+- ❌ NO existe UI para `ContractAmendment` (adendas) en frontend post-split. La interface `Contrato` aún declara `numero_adenda?`, `es_contrato_inicial?`, `es_adenda?` (líneas 20, 46-47) — **fields stale del modelo unificado pre-L3.10.3**, ahora viven en el modelo `ContractAmendment` separado. Para crear una adenda hace falta una pantalla nueva.
+- ❌ NO existe UI dedicada para `EmploymentData` — el listado/edición se hace desde Empleados (`employeesService.datosLaborales`).
+- Hooks: NO hay `useContracts.ts`. La página usa React Query inline.
+
+#### Tests
+- `apps/api/tests/test_contratos_integration.py` — 11 tests TestContratosIntegration. **11/11 PASAN** (verificado 2026-05-09).
+  - Cubre: `test_calculo_salario_neto`, `test_contrato_vencido`, `test_crear_adenda_contrato` (Contract + ContractAmendment), `test_crear_contrato_inicial`, `test_generacion_numeros_contrato`, `test_integracion_area_contratos`, `test_integracion_empleado_contrato`, `test_integracion_usuario_contratos`, `test_propiedades_calculadas_contrato`, `test_sistema_completo_workflow`, `test_validaciones_contrato`.
+  - Sólo testea **modelos** — NO ejercita ningún ViewSet, ningún serializer, ningún endpoint. Por eso los bugs en `DatosLaboralesViewSet`/`DatosLaboralesFilter`/`DatosLaboralesSerializer`/filtros de `ContratosAdendasViewSet` quedan invisibles.
+- ❌ NO existe `apps/contracts/tests/` (in-app tests).
+- ❌ NO hay tests para tenant isolation de Contract/ContractAmendment/EmploymentData.
+- ❌ NO hay tests para `ContractAmendmentViewSet` (CRUD adendas).
+- ❌ NO hay tests para validación de "ADENDA_SALARIAL exige `nuevo_salario`", "ADENDA_CARGO exige `nuevo_cargo`", etc.
+- ❌ NO hay tests para `EmploymentData.calcular_vacaciones_pendientes` ni `cesar_empleado()`.
+
+### Gaps vs INTRANET legacy
+
+VYNTIA contracts es **paritario campo-por-campo** con el legacy unificado, con la salvedad del split L3.10.3. El legacy `ContratosAdendas` se mapea como **unión** de `Contract` (campos no-adenda) + `ContractAmendment` (campos de adenda). `DatosLaborales` → `EmploymentData` es paritario absoluto.
+
+| Feature legacy | Ubicación legacy | Estado en VYNTIA | Tipo | Prioridad propuesta | Nota |
+|---|---|---|:---:|:---:|---|
+| Modelo `ContratosAdendas` (unificado, AutoField PK) | `D:/INTRANET/back/app_rrhh/models/contratos_adendas.py:17` | **Split a `Contract` + `ContractAmendment`** (L3.10.3 commit `e7bcf132`). PK UUID + class-name EN. Tabla `contratos_adendas` preservada para Contract; `contract_amendments` nueva. | done | — | Sin pérdida funcional. **Decision arquitectural intencional**: separar permite validaciones específicas y queries distintos. |
+| Choice `ADENDA_SALARIAL/CARGO/HORARIO/EXTENSION` en `tipo_documento` legacy | `contratos_adendas.py:39-42` | Movidos a `ContractAmendment.TIPO_DOCUMENTO_CHOICES` (líneas 26-31). Eliminados de `Contract.TIPO_DOCUMENTO_CHOICES`. | done | — | Coherente con split. |
+| Campo `numero_adenda` (nullable) en modelo unificado | `contratos_adendas.py:87-92` | Movido a `ContractAmendment.numero_adenda` (CharField max=20, requerido). Eliminado de `Contract`. **Pero**: consumidores stale (template_service, word_template_service, frontend interface) aún acceden `contrato.numero_adenda`. | partial | P1 | Ver bugs §. |
+| Property `es_contrato_inicial`, `es_adenda` | `contratos_adendas.py:334-342` | **Eliminadas** (no aplican post-split: `Contract` siempre es contrato inicial). Frontend interface `Contrato` aún declara estos fields opcional → siempre `undefined` post-split. | partial | P3 | Limpiar tipo TS. |
+| Método `generar_numero_adenda()` legacy (busca por `numero_contrato`) | `contratos_adendas.py:354-364` | Migrado a `Contract.generar_numero_adenda()` (line 351-354) que ahora delega a `self.amendments.count()`. | done | — | Más eficiente con FK. |
+| Método `obtener_contrato_base()` (si es adenda devuelve el contrato unificado padre) | `contratos_adendas.py:384-395` | **Eliminado** del `Contract`. La nueva `ContractAmendment.parent_contract` cumple el mismo rol vía FK directa. | done | — | Diseño superior con FK. |
+| Constraint `unique_together = [['numero_contrato', 'numero_adenda']]` | `contratos_adendas.py:221` | **Cambiado** a per-tenant: `Contract` tiene `unique_contract_number_per_tenant` sobre `(tenant, numero_contrato)`; `ContractAmendment` tiene `unique_together = [['parent_contract', 'numero_adenda']]`. | done | — | Decisión multi-tenant. |
+| Modelo `DatosLaborales` (AutoField PK) | `D:/INTRANET/back/app_rrhh/models/datos_laborales.py:18` | Migrado a `EmploymentData` con UUID + class-name EN, db_table `datos_laborales` preservado, **paridad campo-por-campo absoluta**. | done | — | Sin pérdida funcional. |
+| `DatosLaborales.dato_laboral_id AutoField` | `datos_laborales.py:69` | Cambiado a `id UUIDField`. | done | — | Decisión multi-tenant. |
+| `EmploymentData` audit fields legacy `fecha_registro`/`fecha_actualizacion` | `datos_laborales.py:132-133` | Renombrados a `created_at`/`updated_at` con `db_column` legacy preservado (líneas 132-133 VYNTIA). | done | — | Compat con datos importados. |
+| Manager `ContratosAdendasManager` / `DatosLaboralesManager` | `D:/INTRANET/back/app_rrhh/managers.py` | Comentados en VYNTIA (igual que legacy). | partial | P3 | Implementar o eliminar. |
+
+### Gaps vs maestro
+
+El maestro § 3 Módulo 03.2 (líneas 74-127 de `docs/modulos/03_gestion_empleo.md`) define **Vinculación**: generación de contrato, firma electrónica, T-Registro, EsSalud/AFP, entrega de documentos obligatorios. **Esta sección audita SOLO la entidad Contract en sí** — los flujos de Vinculación completos (T-Registro, firma, plantillas dinámicas) son scope de **Task 11 (Module 03 gaps)**.
+
+| Capability del maestro (§ 03.2 / Contract entity) | Estado en VYNTIA | Prioridad |
+|---|---|:---:|
+| 7 tipos de contrato régimen 728 (Indefinido, Inicio/Incremento actividad, Necesidad mercado, Reconversión, Ocasional, Suplencia, Emergencia, Obra/servicio, Intermitente, Temporada, Tiempo parcial — 11 según tabla maestro) | ⚠️ Parcial. `Contract.TIPO_DOCUMENTO_CHOICES` tiene 3 de Ley 728 (FIJO/FIJO_SUPLENCIA/INDETERMINADO). **Faltan**: Por inicio/incremento actividad, Necesidad mercado, Reconversión, Ocasional, Emergencia, Obra/servicio, Intermitente, Temporada, Tiempo parcial. La estructura legal es más rica que los 3 buckets actuales. | P1 (B feature gap) |
+| Tope conjunto contratos modalidad 5 años → desnaturaliza a indeterminado (Art. 77 LPCL) | ❌ No implementado. Sin lógica que sume duración acumulada de contratos sucesivos por empleado y dispare desnaturalización. | P1 (compliance) |
+| `Contract.regimen_laboral` (CAS/728/276) | ⚠️ Parcial. El campo `tipo_documento` codifica indirectamente el régimen vía prefix (`CAS_*`, `LEY_728_*`, `LEY_276_*`) — pero NO hay un campo `regimen_laboral` separado en `Contract`. `EmploymentData.regimen_laboral` SÍ existe (entidad distinta). Inconsistencia de modelo entre Contract y EmploymentData. | P2 |
+| `ContractStatus` (VIGENTE/SUSPENDIDO/TERMINADO) | ✅ Cubierto por `Contract.status` (BORRADOR/PENDIENTE/ACTIVO/VENCIDO/TERMINADO/ANULADO) — alineado. | — |
+| `ContractDocument` (PDF firmado del contrato) | ⚠️ Parcial. `Contract.documento_generado` es BooleanField (sólo flag); el PDF real va a `apps.documents.DigitalDocument` (ver Task 6). `ContractAmendment.documento_generado` SÍ es FileField (asimétrico). | P2 |
+| Generación automática de contrato según régimen y tipo contractual | ⚠️ Parcial. `template_service.py` y `word_template_service.py` arman variables por contrato — pero usan placeholders stale (`numero_adenda` accedido en Contract). Frontend invoca `documents.generar-contrato` (ver Task 6). | (Task 6) |
+| Firma electrónica del contrato | ❌ No implementado. `Contract.fecha_firma` existe (DateField) — sin integración con servicio de firma electrónica. | P1 (sub-proyecto) |
+| Registro T-Registro SUNAT (alta) — txt estructurado Anexo 3 + PVS | ❌ No implementado. NO hay `TRegistroDeclaration` ni servicios SUNAT. Modelo en maestro § 3.5 menciona la entidad. | P1 (compliance — Task 11) |
+| Registro EsSalud / EPS (alta del trabajador) | ❌ No implementado. | (Task 11) |
+| Afiliación AFP / ONP (validación o alta) | ❌ No implementado. `Employee.sistema_pensiones` existe pero sin workflow. | (Task 11) |
+| Apertura cuenta haberes | ❌ No implementado. `Employee.entidad_bancaria`/`numero_cuenta_bancaria` existen. | P3 |
+| Entrega de documentos obligatorios (RIT, Reglamento SST, Código ética, Política protección datos, Manual funciones) | ❌ No implementado. Documents app tiene generic `DigitalDocument` pero sin gating "vinculación incompleta hasta entrega". | (Task 11 + Task 6) |
+| Validación ADENDA_SALARIAL exige `nuevo_salario`, ADENDA_CARGO exige `nuevo_cargo`, etc. | ❌ No implementado. `ContractAmendment` no tiene `clean()` ni validators que verifiquen coherencia tipo↔campo. Una adenda puede crearse vacía. | P2 |
+| Estado VENCIDO automático cuando `fecha_fin < hoy` | ❌ No implementado. El status no se actualiza por cron — debe hacerse manualmente. Property `esta_vencido` calcula on-the-fly pero `status` en BD se queda en ACTIVO. | P2 |
+| Notificaciones de vencimiento próximo (SLA legal: avisar al trabajador antes del fin) | ⚠️ Parcial. Endpoint `alertas_vencimiento` lista contratos próximos a vencer — pero no hay notificación automática (email/celery task). | P2 |
+| Multi-régimen (276 público / 728 privado / 1057 CAS) con strategy pattern | ⚠️ Parcial. `Contract.tipo_documento` discrimina por prefix; sin clase strategy real. EmploymentData.regimen_laboral idem. Module 04 (payroll) requeriría strategy real. | P2 (post-B Module 04) |
+
+### Bugs y deuda técnica conocidos
+
+Pytest contracts: 11/11 PASAN (`test_contratos_integration.py`). PERO: tests sólo cubren modelos, NO ejercitan ViewSets/serializers/filters — todos los bugs que listamos están latentes.
+
+| Bug | Ubicación | Causa | Tipo | Prioridad |
+|---|---|---|:---:|:---:|
+| `EmploymentData.generar_codigo_empleado()` usa `self.empleado.empleado_id` — campo no existe en `Employee` (es `id` UUID) | `apps/contracts/models/employment_data.py:290` | Rename L3 incompleto. Igual patrón que bugs employees Task 4. **Si se invoca, lanza AttributeError**. | 🐛 bug | P1 |
+| `EmploymentData.calcular_vacaciones_pendientes()` retorna `anos_completos * 30` sin restar tomadas | `employment_data.py:283-285` | Stub heredado del legacy, aún incompleto. Comentario in-line "Aquí se restaría los días ya tomados". El cálculo correcto vive en `apps.time_off`. | ⚠️ deuda | P2 |
+| `ContratosAdendasViewSet.get_queryset` líneas 93-94 leen ambos `empleado_id` y `area_id` del MISMO query param `'id'` | `api/v1/rrhh/contratos_views.py:93-94` | Copy-paste bug — `empleado_id = request.query_params.get("id")` y dos líneas después `area_id = request.query_params.get("id")`. Resultado: ambos filtros se aplican al mismo valor cuando se pasa `?id=...`. **Probablemente debería ser `empleado` y `area`.** | 🐛 bug | P1 |
+| `ContratosAdendasViewSet.estadisticas` action invoca `Contract.objects.count()` (sin tenant filter) | `contratos_views.py:297` | Igual patrón que `EmpleadoViewSet.estadisticas`. Cuenta cross-tenant. **Bug seguridad C P1**. También líneas 298, 302, 318, 325 — `Contract.objects.values(...)` sin tenant filter. | 🐛 bug seguridad | P1 |
+| `ContratosAdendasViewSet.alertas_vencimiento` action invoca `area_id = request.query_params.get("id")` | `contratos_views.py:142` | Mismo copy-paste — debería ser `area_id = request.query_params.get("area_id")`. | 🐛 bug | P2 |
+| `ContratosAdendasViewSet.reporte_contratos` action filtra por `area_id = request.query_params.get("id")` | `contratos_views.py:198` | Idem. Y línea 273 lo serializa al response como `'id': area_id` (clave engañosa). | 🐛 bug | P2 |
+| `ContratosAdendasViewSet.renovar_contrato` action: `obs_anterior` con regex `.strip(" -")` line 412 | `contratos_views.py:412-414` | Cosmético: el `.strip(" -")` puede recortar caracteres legítimos del nombre. No bug crítico pero raro. | ⚠️ deuda | P3 |
+| `ContratosAdendasViewSet.renovar_contrato` invoca create con `'empleado': contrato.empleado_id`, `'area': contrato.area_id` | `contratos_views.py:378-379` | Funciona porque Django acepta el `_id` field en `ForeignKey`. Pero NO propaga `tenant`. **Combinado con la falta de `perform_create`**, el nuevo contrato se crea con `tenant=NULL`. | 🐛 bug seguridad C | P1 |
+| `ContractAmendmentViewSet` tiene `permission_classes = [IsAuthenticated]` SIN `@require_hr` | `contratos_views.py:444` | Cualquier usuario autenticado puede crear/editar/borrar adendas. No hay role-gating. **Bug seguridad serio**. | 🐛 bug seguridad | P1 |
+| `ContractAmendment` sin `clean()` que valide coherencia tipo↔campo | `contract_amendment.py` | Una `ADENDA_SALARIAL` sin `nuevo_salario` se guarda silenciosamente. ADENDA_CARGO sin `nuevo_cargo` idem. Validación lógica ausente. | ⚠️ deuda lógica | P2 |
+| `ContractAmendment` sin manager / sin `documento_generado` valor inicial coherente con Contract | `contract_amendment.py:151-156` | Diseño asimétrico: Contract usa BooleanField; ContractAmendment usa FileField. Confunde a consumidores. | ⚠️ deuda | P3 |
+| `DatosLaboralesViewSet.queryset` declarado dos veces — el primero (con select_related completo) es código muerto | `views.py:1292-1296 + 1298` | Línea 1298 sobrescribe el queryset de líneas 1292-1296. Performance penalty: queries hace JOINs extra cuando se ejecuta `area`/`jefe_directo`. | 🐛 bug performance | P2 |
+| `DatosLaboralesViewSet.search_fields = ["puesto_trabajo", "categoria_laboral", "regimen_laboral"]` — los primeros DOS no existen | `views.py:1308` | Real: `cargo_empleado`, `categoria`. Búsqueda `?search=...` lanza FieldError. | 🐛 bug | P1 |
+| `DatosLaboralesViewSet.ordering_fields = [..., "remuneracion_mensual"]` — campo no existe | `views.py:1309` | Real: `sueldo_basico`. `?ordering=remuneracion_mensual` lanza FieldError. | 🐛 bug | P1 |
+| `DatosLaboralesViewSet.estadisticas_remuneracion` filtra `estado_laboral="activo"` | `views.py:1355` | Campo real: `estado_datos`. Lanza FieldError. | 🐛 bug crítico | P1 |
+| `DatosLaboralesViewSet.estadisticas_remuneracion` agrega `Avg("remuneracion_mensual")` | `views.py:1357` | Campo real: `sueldo_basico`. Lanza FieldError. **Endpoint roto al 100%**. | 🐛 bug crítico | P1 |
+| `DatosLaboralesFilter` declara filtros sobre **5 campos inexistentes** (`reg_laboral`, `condicion`, `grupo_ocupacional`, `puesto`, `estado` BooleanField, `remuneracion`) | `filters.py:251-296` | Migración fallida del legacy: el legacy tenía esos nombres, VYNTIA renombró. **Cualquier query param dispara FieldError**. Filterset entero está roto. | 🐛 bug crítico | P1 |
+| `DatosLaboralesFilter.Meta.fields` lista los mismos campos rotos | `filters.py:289-296` | El FilterSet ni se instancia correctamente — emite warnings al startup. | 🐛 bug | P1 |
+| `DatosLaboralesSerializer` declara `antiguedad_años` (con tilde) ReadOnlyField | `serializers.py:258, 306` | Property real: `antiguedad_anos` (sin tilde). DRF intenta acceder a `obj.antiguedad_años` → AttributeError → field se serializa como `null`. **Silencioso pero roto**. | 🐛 bug | P1 |
+| `DatosLaboralesSerializer` declara `tiempo_servicio` ReadOnlyField | `serializers.py:260, 308` | Property no existe. Real: `antiguedad_texto`. Field serializa como `null`. | 🐛 bug | P2 |
+| `DatosLaboralesSerializer.validate_remuneracion_mensual` | `serializers.py:316-320` | Field `remuneracion_mensual` no existe en el serializer ni en el modelo. La validación nunca se invoca. | ⚠️ deuda | P3 |
+| `DatosLaboralesSerializer.get_ultimo_login_texto` accede `obj.empleado.usuario` | `serializers.py:266-274` | El related_name de User→Employee es `empleado` (forward) y de Employee→User es `usuario` (reverse OneToOne). **Si funciona** depende de cómo se nombró en identity:user.py. Verificar Task 1. | ⚠️ deuda | P3 |
+| `template_service.py:216` usa `getattr(contrato, 'numero_adenda', None)` — Contract no tiene ese field post-split | `apps/documents/services/template_service.py:216` | **Bug L3.10.3 — consumer stale.** `getattr` con default evita AttributeError pero siempre retorna `None` para Contract. Templates con `{{ contrato.numero_adenda }}` siempre vacío. | 🐛 bug L3.10.3 | P1 |
+| `template_service.py:129-132` accede `adenda.numero_adenda` (correcto) — pero línea 216 mezcla en mismo dict | `apps/documents/services/template_service.py:129, 132, 216` | Diseño confuso post-split: el mismo helper se invoca para Contract y para ContractAmendment según contexto. | ⚠️ deuda | P2 |
+| `word_template_service.py:139` acceso directo `contrato.numero_adenda or ''` (sin getattr) | `apps/documents/services/word_template_service.py:139` | **Bug crítico L3.10.3.** `Contract` no tiene `numero_adenda` → `AttributeError`. Cualquier flujo de generación Word de contrato (no adenda) **falla**. | 🐛 bug crítico L3.10.3 | P1 |
+| `apps/contracts/apps.py:4-16` docstring describe modelo unificado y "Future split (deferred to L3.10/post-rename)" | `apps/contracts/apps.py` | **Documentación stale L3.10.3.** El split YA se hizo, pero el AppConfig docstring lo lista como pendiente. | ⚠️ deuda docs | P3 |
+| Frontend `Contrato` interface declara `numero_adenda?`, `es_contrato_inicial?`, `es_adenda?` | `apps/web/src/features/contracts/services/contractsService.ts:20, 46-47` | **Stale fields del modelo unificado pre-L3.10.3.** Backend ya no los devuelve (Contract no los tiene). El tipo TS está mintiendo. | ⚠️ deuda tipos | P2 |
+| Frontend `ContratoFormData` declara `numero_adenda?` | `contractsService.ts:74` | Idem — campo no existe en `ContratosAdendasCreateSerializer`. Si el form lo enviara, DRF lo ignoraría silenciosamente. | ⚠️ deuda tipos | P2 |
+| Frontend sin UI para crear/editar `ContractAmendment` post-split | — | Modelo y endpoint REST listos, pero ContratosPage sólo gestiona contratos. La acción "renovar" crea un nuevo Contract, no un ContractAmendment. | ❌ missing | P1 |
+| `EmpleadoCreateSerializer.create()` (employees app) crea `EmploymentData` sin tenant | `api/v1/rrhh/serializers.py:725-750` | Ya documentado en Task 4 — recordatorio aquí: el bug afecta a contracts también porque crea EmploymentData con `tenant=NULL`. | 🐛 bug C-multitenancy | P1 |
+| `Contract.salario_neto` se calcula como `salario_bruto * 0.87` quantize 0.01 | `contract.py:279` | Cálculo de descuentos hardcoded a 13% (sin AFP/ONP/EsSalud reales). Para Module 04 hace falta strategy real. | ⚠️ deuda lógica | P2 |
+| `Contract.save()` siempre invoca `full_clean()` | `contract.py:282` | Ineficiente en updates parciales. Pero acepta porque las validaciones son lightweight. | ⚠️ deuda perf | P3 |
+| Custom managers comentados | `contract.py:220-221, 369-370`; `employment_data.py:16, 136` | Decisión pendiente. | ⚠️ deuda | P3 |
+| Sin `apps/contracts/tests/` | — | Tests viven en `apps/api/tests/test_contratos_integration.py`. Co-locate como B.2 cleanup. | ⚠️ deuda | P3 |
+| Tests no ejercitan ViewSet/Serializer/Filter | `tests/test_contratos_integration.py` | Por eso 21+ bugs declarados aquí pasan invisibles. | ⚠️ deuda tests | P1 |
+
+Sin errores TS ni warnings ESLint para `features/contracts` (verificado con `tsc --noEmit -p tsconfig.app.json` y `npm run lint`).
+
+### Tenant-readiness
+
+| Concern | Status | Comment |
+|---|:---:|---|
+| `Contract` has tenant FK | ✅ | `contract.py:78-85` — nullable=true. Constraint: `unique_contract_number_per_tenant` sobre `(tenant, numero_contrato)` (line 235-240). |
+| `ContractAmendment` has tenant FK | ✅ | `contract_amendment.py:51-58` — nullable=true. `unique_together = (parent_contract, numero_adenda)` (line 186) — suficiente porque parent_contract ya está taggeado. |
+| `EmploymentData` has tenant FK | ✅ | `employment_data.py:82-89` — nullable=true. `unique_together = (empleado, fecha_inicio_contrato)` (line 155). |
+| Composite unique constraint sobre `(tenant, numero_contrato)` Contract | ✅ | Migración 0003:38-43 añade `unique_contract_number_per_tenant`. |
+| `ContratosAdendasViewSet.get_queryset` filtra por tenant | ❌ | `contratos_views.py:86-126` — NO filtra por tenant. Confía 100% en RLS+middleware. Sin defense-in-depth. |
+| `ContractAmendmentViewSet.get_queryset` filtra por tenant | ❌ | `contratos_views.py:447-455` — NO filtra por tenant. |
+| `DatosLaboralesViewSet.get_queryset` filtra por tenant | ❌ | `views.py:1342-1348` — NO filtra por tenant. |
+| `ContratosAdendasViewSet.perform_create` asigna tenant automáticamente | ❌ | NO hay override. Si frontend no envía tenant, se crea con `tenant=NULL` (orphan cross-tenant). **Bug seguridad C P1.** El `ContratosAdendasCreateSerializer.create` (line 124) tampoco lo setea. |
+| `ContractAmendmentViewSet.perform_create` asigna tenant | ❌ | NO hay override. ContractAmendment se crea con `tenant=NULL`. Combinación crítica con el bug de `permission_classes = [IsAuthenticated]` (cualquier user puede crear adendas en cualquier tenant). |
+| `DatosLaboralesViewSet.perform_create` asigna tenant | ❌ | Idem. |
+| `ContratosAdendasViewSet.estadisticas` y `reporte_contratos` cuentan cross-tenant | ❌ | `contratos_views.py:297-306, 309-330` — `Contract.objects.count()`/values() sin filter por tenant. **Bug seguridad C P1**. |
+| `ContratosAdendasViewSet.renovar_contrato` propaga tenant al nuevo contrato | ❌ | `contratos_views.py:377-403` — el `nuevo_contrato_data` no incluye `tenant`. **Crea contrato huérfano**. |
+| Test de aislación tenant para Contract/ContractAmendment/EmploymentData | ❌ | `tests/test_tenant_isolation.py` no incluye casos de estos modelos. |
+| Multi-tenant en frontend | ✅ | El frontend confía en host+JWT. Subdominio determina tenant. |
+
+### Notas
+
+- **Split L3.10.3 dejó 4 consumidores stale.** El split de `ContratosAdendas` → `Contract` + `ContractAmendment` (commit `e7bcf132` 2026-04-27) es arquitecturalmente correcto pero NO actualizó: (1) `apps/documents/services/template_service.py:216` (`getattr(contrato, 'numero_adenda', None)` — silencioso pero stale), (2) `apps/documents/services/word_template_service.py:139` (`contrato.numero_adenda or ''` — **AttributeError crítico** en generación Word de contratos no-adenda), (3) `apps/web/src/features/contracts/services/contractsService.ts:20,46-47` (interface TS aún declara `numero_adenda`/`es_contrato_inicial`/`es_adenda`), (4) `apps/contracts/apps.py:4-16` (docstring del AppConfig describe el modelo unificado y lista el split como "Future"). **P1 cleanup en B.1 fast-track**.
+- **`DatosLaboralesViewSet`/`Filter`/`Serializer` están rotos al ~80%.** El renombre L3.10.x no actualizó referencias a campos antiguos del legacy: `puesto_trabajo`, `categoria_laboral`, `remuneracion_mensual`, `estado_laboral`, `reg_laboral`, `condicion`, `grupo_ocupacional`, `antiguedad_años` (con tilde), `tiempo_servicio`. **8 fields fantasma**. Cualquier query con search/ordering/filter sobre `EmploymentData` lanza FieldError. El endpoint `estadisticas_remuneracion` está 100% roto. **P1 prioridad antes de exponer panel admin con métricas.**
+- **`ContractAmendmentViewSet` sin role-gating.** El ViewSet sólo declara `permission_classes = [IsAuthenticated]` — cualquier usuario logueado puede CRUD adendas en cualquier tenant (compuesto con el bug de tenant filtering ausente). **Bug seguridad serio P1**: un empleado regular podría crear adendas falsificadas.
+- **`ContratosAdendasViewSet` get_queryset bug copy-paste.** Líneas 93-94 leen empleado_id y area_id del mismo query param `'id'` — los filtros se sobreescriben. Probablemente debería ser `'empleado'` y `'area'`. Igual patrón en `alertas_vencimiento` (line 142) y `reporte_contratos` (line 198). El frontend `contractsService.getAll` envía `empleado_id` y `area_id` (líneas 156-157) — el backend nunca los recibe. **Filtros no funcionan en absoluto.**
+- **Auto-tenant en perform_create ausente — patrón cross-app confirmado.** Igual que identity, organization, employees: ningún ViewSet de contracts asigna tenant automáticamente. **Decision para B.1 fast-track**: introducir `TenantAwareViewSetMixin` aplicable a los 6 apps de Vyntia Core. Esta es la 4ª chapter que reporta el mismo problema.
+- **`ContractAmendment` sin validación de coherencia tipo↔campo.** Una `ADENDA_SALARIAL` puede crearse sin `nuevo_salario`; ADENDA_CARGO sin `nuevo_cargo`; etc. **P2 fix**: añadir `clean()` que verifique coherencia.
+- **Asimetría `Contract.documento_generado` BooleanField vs `ContractAmendment.documento_generado` FileField.** Confunde consumidores: el primero es flag, el segundo es upload. La elección histórica viene del legacy, pero post-split se debería unificar (probablemente usando Document FK del Task 6 documents app).
+- **Tipo de contrato régimen 728 sub-modelado.** El maestro § 03.2 lista 11 tipos de contrato (Indefinido, Inicio/Incremento actividad, Necesidad mercado, Reconversión, Ocasional, Suplencia, Emergencia, Obra/servicio, Intermitente, Temporada, Tiempo parcial). VYNTIA captura sólo 3 (FIJO/FIJO_SUPLENCIA/INDETERMINADO). Para B+ feature parity se necesita extender choices y añadir lógica de desnaturalización (Art. 77 LPCL: 5 años máx → indeterminado automático).
+- **Sin `regimen_laboral` field en Contract.** El régimen está implícito en el prefix de `tipo_documento`. Inconsistente con `EmploymentData.regimen_laboral` (campo explícito). **P2 refactor**: añadir `Contract.regimen_laboral` y derivarlo del tipo, o sólo mantener uno de los dos.
+- **Tests cubren modelos al 100% pero ViewSets/Serializers/Filters al 0%.** 11 tests de integración pasan validando lógica de modelo (full_clean, properties, FK, generadores), pero NO ejercitan ningún endpoint REST. Por eso los ~21 bugs declarados arriba NO disparan ningún CI failure. **P1 priority en B.1**: smoke tests sobre los endpoints rotos antes de habilitar dashboard.
+- **EmpleadoCreateSerializer (employees app) crea EmploymentData sin tenant.** Recordatorio del Task 4: el flujo nested-write `POST /employees/` con `area_inicial` debería crear un `EmploymentData` con tenant — actualmente lo crea con `tenant=NULL`. Cross-bug entre employees y contracts.
+- **Riesgos al tocar contracts en B.1/B.2.** (1) `db_table='contratos_adendas'`, `'datos_laborales'`, `'contract_amendments'` y db_columns legacy son referencia para datos importados. (2) `EmploymentData.empleado` FK CASCADE — eliminar Employee borra cascade su EmploymentData. (3) `Contract.empleado` FK CASCADE idem. (4) `ContractAmendment.parent_contract` FK CASCADE — eliminar Contract borra todas sus adendas. (5) `obj.empleado.usuario` reverse OneToOne de identity.User → identidad clave. (6) Generación PDF/Word depende de templates `apps/api/templates/contratos/` y `apps/api/templates/adendas/` (ver Task 6).
+- **Preparación para Module 03 sub-procesos (Task 11).** `Contract` es el ancla de **03.2 Vinculación**; en Task 11 se inventarían los flujos completos (T-Registro, firma electrónica, EsSalud/AFP, entrega de docs obligatorios). Esta sección sólo cubrió la entidad. La extensión de tipos de contrato régimen 728 (los 11 del maestro) y la lógica de desnaturalización son las mayores piezas pendientes.
 
 ## App: documents
 
