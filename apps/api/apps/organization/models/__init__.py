@@ -5,7 +5,14 @@ from .company import Company
 from .department import Department
 from .location_history import LocationHistory
 from .occupational_category import OccupationalCategory
+from .plaza import Plaza
 from .position import Position
+from .position_profile import (
+    PositionFunction,
+    PositionProfile,
+    PositionRequirement,
+)
+from .position_risk_profile import PositionRiskProfile
 
 __all__ = [
     "CIUOCode",
@@ -13,5 +20,10 @@ __all__ = [
     "Department",
     "LocationHistory",
     "OccupationalCategory",
+    "Plaza",
     "Position",
+    "PositionFunction",
+    "PositionProfile",
+    "PositionRequirement",
+    "PositionRiskProfile",
 ]
