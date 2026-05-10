@@ -3,7 +3,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.v1.rrhh.views import OnboardingViewSet
+from api.v1.onboarding.views import OnboardingViewSet
 
 app_name = "onboarding"
 
