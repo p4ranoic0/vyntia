@@ -38,6 +38,7 @@ from apps.core.decorators import (
 from apps.core.exceptions import BusinessLogicError
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse
+from apps.core.viewsets import TenantAwareViewSetMixin
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -121,7 +122,7 @@ logger = logging.getLogger(__name__)
         description="Elimina un área del sistema.",
     ),
 )
-class AreaViewSet(viewsets.ModelViewSet):
+class AreaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for Department management."""
 
     queryset = Department.objects.select_related("area_padre").prefetch_related(
@@ -213,11 +214,12 @@ class AreaViewSet(viewsets.ModelViewSet):
                     )
                 )
 
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     def perform_create(self, serializer):
-        """Create area with logging."""
-        area = serializer.save()
+        """Create area with logging — tenant injected by TenantAwareViewSetMixin."""
+        super().perform_create(serializer)
+        area = serializer.instance
         logger.info(
             f"Área creada: {area.siglas_area}",
             extra={
