@@ -1985,7 +1985,7 @@ class PermisoViewSet(viewsets.ModelViewSet):
         description="Elimina un documento digital del sistema.",
     ),
 )
-class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
+class DocumentosDigitalesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for DigitalDocument management."""
 
     queryset = DigitalDocument.objects.select_related(
@@ -2037,9 +2037,16 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        """Set subido_por, file metadata, and default estado for employee uploads."""
+        """Set subido_por, file metadata, and default estado for employee uploads.
+
+        B.1 (#14): tenant injected via TenantAwareViewSetMixin guarded pattern.
+        """
         user = self.request.user
         extra = {"subido_por": user}
+        # B.1 (#14): propagate tenant when available
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is not None:
+            extra["tenant"] = tenant
         # If non-HR user uploads, set as pending review
         if not (user.es_administrador or user.es_rrhh or user.es_admin_rrhh):
             extra["estado_documento"] = "pendiente_revision"
@@ -2140,7 +2147,8 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
         elif es_version_actual == "false":
             queryset = queryset.filter(es_version_actual=False)
 
-        return queryset
+        # B.1 (#14): apply tenant filter via mixin
+        return self._filter_by_tenant(queryset)
 
     @action(detail=False, methods=["get"])
     @require_hr()
@@ -2277,6 +2285,9 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        # B.1 (#14): propagate tenant into direct .objects.create() calls
+        tenant = getattr(request, "tenant", None)
+
         documentos_creados = []
         for i, archivo in enumerate(archivos):
             nombre = nombre_documento or archivo.name
@@ -2287,7 +2298,7 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                     else f"{nombre} ({i+1}) - {periodo}"
                 )
 
-            doc = DigitalDocument.objects.create(
+            create_kwargs = dict(
                 empleado_id=empleado_id,
                 tipo_documento=tipo_documento,
                 categoria=categoria,
@@ -2307,6 +2318,9 @@ class DocumentosDigitalesViewSet(viewsets.ModelViewSet):
                 subido_por=request.user,
                 es_documento_oficial=True,
             )
+            if tenant is not None:
+                create_kwargs["tenant"] = tenant
+            doc = DigitalDocument.objects.create(**create_kwargs)
             documentos_creados.append(doc)
 
         serializer = self.get_serializer(documentos_creados, many=True)
