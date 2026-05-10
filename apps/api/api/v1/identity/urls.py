@@ -3,14 +3,14 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.v1.rrhh.views import (
+from api.v1.identity.views import (
     ModulosViewSet,
     PermisoViewSet,
     RolPermisosViewSet,
     RolViewSet,
+    UsuarioRolesViewSet,
     UsuarioViewSet,
 )
-from api.v1.rrhh.usuario_roles_views import UsuarioRolesViewSet
 
 app_name = "identity"
 
