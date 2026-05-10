@@ -5,6 +5,7 @@ from .company import Company
 from .department import Department
 from .location_history import LocationHistory
 from .occupational_category import OccupationalCategory
+from .position import Position
 
 __all__ = [
     "CIUOCode",
@@ -12,4 +13,5 @@ __all__ = [
     "Department",
     "LocationHistory",
     "OccupationalCategory",
+    "Position",
 ]
