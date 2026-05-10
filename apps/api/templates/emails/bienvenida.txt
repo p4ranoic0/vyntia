@@ -1,9 +1,9 @@
-Bienvenido a la Intranet - Sistema de Recursos Humanos
+Bienvenido a VYNTIA - Sistema de Recursos Humanos
 ======================================================
 
 Estimado/a {{ nombre_empleado }},
 
-Le damos la bienvenida a nuestra institucion. Se ha creado su cuenta de acceso al sistema de Intranet para que pueda completar su proceso de incorporacion.
+Le damos la bienvenida a nuestra institucion. Se ha creado su cuenta de acceso a la plataforma VYNTIA para que pueda completar su proceso de incorporacion.
 
 CREDENCIALES DE ACCESO
 ----------------------
@@ -33,5 +33,5 @@ Cordialmente,
 Area de Recursos Humanos
 
 ---
-Este es un correo automatico generado por el sistema de Intranet RRHH.
+Este es un correo automatico generado por la plataforma VYNTIA.
 Por favor, no responda a este correo.
