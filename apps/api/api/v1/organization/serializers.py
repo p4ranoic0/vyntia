@@ -1,4 +1,8 @@
-"""Serializers for B.6 Position + Plaza + reference data API."""
+"""Serializers for B.6 Position + Plaza + reference data API.
+
+B.8 extends with PositionRegister + PositionRegisterEntry serializers
+(CPE / CAP) and the MPP rendering input serializers.
+"""
 from rest_framework import serializers
 
 from apps.organization.models import (
@@ -8,6 +12,8 @@ from apps.organization.models import (
     Position,
     PositionFunction,
     PositionProfile,
+    PositionRegister,
+    PositionRegisterEntry,
     PositionRequirement,
     PositionRiskProfile,
 )
@@ -143,3 +149,72 @@ class PlazaSerializer(serializers.ModelSerializer):
 class PlazaOccupySerializer(serializers.Serializer):
     """Input for `occupy` custom action — Employee UUID resolved in ViewSet."""
     employee = serializers.UUIDField()
+
+
+# ---- B.8 — PositionRegister (CPE + CAP) -------------------------------------
+
+class PositionRegisterEntrySerializer(serializers.ModelSerializer):
+    position_code = serializers.CharField(source='position.code', read_only=True)
+    position_name = serializers.CharField(source='position.name', read_only=True)
+    situacion_display = serializers.CharField(
+        source='get_situacion_display', read_only=True,
+    )
+    clasificacion_cap_display = serializers.CharField(
+        source='get_clasificacion_cap_display', read_only=True,
+    )
+
+    class Meta:
+        model = PositionRegisterEntry
+        fields = [
+            'id', 'register', 'position', 'position_code', 'position_name',
+            'sequence', 'plaza_code', 'plaza_count',
+            'situacion', 'situacion_display',
+            'nivel_organizacional', 'nivel_remunerativo',
+            'clasificacion_cap', 'clasificacion_cap_display',
+            'notes',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class PositionRegisterSerializer(serializers.ModelSerializer):
+    register_type_display = serializers.CharField(
+        source='get_register_type_display', read_only=True,
+    )
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True,
+    )
+    entry_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PositionRegister
+        fields = [
+            'id', 'tenant',
+            'register_type', 'register_type_display',
+            'title', 'description',
+            'version', 'parent_version',
+            'status', 'status_display',
+            'effective_date', 'approved_at', 'approved_by',
+            'servir_registered_at', 'servir_registration_ref',
+            'entry_count',
+            'created_at', 'updated_at', 'created_by',
+        ]
+        read_only_fields = [
+            'id', 'version', 'parent_version',
+            'approved_at', 'approved_by',
+            'servir_registered_at', 'servir_registration_ref',
+            'entry_count', 'created_at', 'updated_at',
+        ]
+
+    def get_entry_count(self, obj):
+        return obj.entries.count()
+
+
+class PositionRegisterApprovalSerializer(serializers.Serializer):
+    """Input for PositionRegister approve action."""
+    effective_date = serializers.DateField(required=False)
+
+
+class PositionRegisterServirSerializer(serializers.Serializer):
+    """Input for PositionRegister register-in-servir action (CPE only)."""
+    reference = serializers.CharField(max_length=100)

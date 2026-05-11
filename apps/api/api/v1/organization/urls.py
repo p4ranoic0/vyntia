@@ -1,6 +1,7 @@
 """URLs for organization bounded context — English paths per spec § 3.4.
 
-B.6: extended with Position / Plaza / reference-data ViewSets per Module 02.
+B.6: Position / Plaza / reference-data ViewSets per Module 02.
+B.8: PositionRegister (CPE / CAP) + entries + MPP rendering endpoints.
 """
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
@@ -16,6 +17,8 @@ from .views import (
     PlazaViewSet,
     PositionFunctionViewSet,
     PositionProfileViewSet,
+    PositionRegisterEntryViewSet,
+    PositionRegisterViewSet,
     PositionRequirementViewSet,
     PositionRiskProfileViewSet,
     PositionViewSet,
@@ -36,6 +39,10 @@ router.register(r"position-risk-profiles", PositionRiskProfileViewSet, basename=
 router.register(r"plazas", PlazaViewSet, basename="plaza")
 router.register(r"occupational-categories", OccupationalCategoryViewSet, basename="occupational-category")
 router.register(r"ciuo-codes", CIUOCodeViewSet, basename="ciuo-code")
+
+# B.8 — CPE / CAP + MPP
+router.register(r"position-registers", PositionRegisterViewSet, basename="position-register")
+router.register(r"position-register-entries", PositionRegisterEntryViewSet, basename="position-register-entry")
 
 urlpatterns = [
     path("", include(router.urls)),

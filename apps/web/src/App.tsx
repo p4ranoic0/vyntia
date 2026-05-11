@@ -70,6 +70,14 @@ const OrgChartPage = lazy(() => import('@/features/organization/pages/OrgChartPa
 const CCFListPage = lazy(() => import('@/features/compensation/pages/CCFListPage'))
 const CCFEditorPage = lazy(() => import('@/features/compensation/pages/CCFEditorPage'))
 
+// B.8 CPE/CAP/MPP (Ley 30057 SERVIR + DL 276/728) — public-sector gated.
+const PositionRegisterListPage = lazy(
+  () => import('@/features/organization/pages/PositionRegisterListPage'),
+)
+const PositionRegisterEditorPage = lazy(
+  () => import('@/features/organization/pages/PositionRegisterEditorPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -331,6 +339,28 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <CCFEditorPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Organization — CPE/CAP + MPP (Ley 30057 SERVIR + DL 276/728, B.8) */}
+        <Route
+          path="/organizacion/registros/:type"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PositionRegisterListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/organizacion/registros/:type/:id"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PositionRegisterEditorPage />
               </Suspense>
             </AdminRoute>
           }

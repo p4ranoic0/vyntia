@@ -1,4 +1,9 @@
-"""ViewSets for B.6 Position + Plaza + reference data API."""
+"""ViewSets for B.6 Position + Plaza + reference data API.
+
+B.8 extends with PositionRegister + PositionRegisterEntry ViewSets and
+the MPP HTML / PDF download endpoints (CPE → Manual de Perfiles de Puestos).
+"""
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -15,9 +20,12 @@ from apps.organization.models import (
     Position,
     PositionFunction,
     PositionProfile,
+    PositionRegister,
+    PositionRegisterEntry,
     PositionRequirement,
     PositionRiskProfile,
 )
+from apps.organization.services import render_mpp_html, render_mpp_pdf
 
 from .serializers import (
     CIUOCodeSerializer,
@@ -27,6 +35,10 @@ from .serializers import (
     PositionFunctionSerializer,
     PositionNewVersionSerializer,
     PositionProfileSerializer,
+    PositionRegisterApprovalSerializer,
+    PositionRegisterEntrySerializer,
+    PositionRegisterSerializer,
+    PositionRegisterServirSerializer,
     PositionRequirementSerializer,
     PositionRiskProfileSerializer,
     PositionSerializer,
@@ -216,3 +228,98 @@ class PlazaViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             data=PlazaSerializer(plaza).data,
             message="Plaza congelada",
         )
+
+
+# ---- B.8 — PositionRegister (CPE / CAP) + MPP rendering --------------------
+
+class PositionRegisterViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
+    """CPE (Ley 30057) + CAP (DL 276/728) — tenant-scoped, versioned."""
+    queryset = PositionRegister.objects.select_related(
+        'approved_by', 'created_by', 'parent_version',
+    )
+    serializer_class = PositionRegisterSerializer
+    permission_classes = [RRHHPermission]
+    filter_backends = [
+        DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter,
+    ]
+    search_fields = ['title', 'description']
+    filterset_fields = ['register_type', 'status']
+    ordering_fields = ['effective_date', 'version', 'created_at']
+    ordering = ['-effective_date', '-version']
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        register = self.get_object()
+        in_serializer = PositionRegisterApprovalSerializer(data=request.data)
+        in_serializer.is_valid(raise_exception=True)
+        try:
+            register.approve(
+                user=request.user,
+                effective_date=in_serializer.validated_data.get('effective_date'),
+            )
+        except Exception as e:
+            return APIResponse.error(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        return APIResponse.success(
+            data=PositionRegisterSerializer(register).data,
+            message=f"{register.get_register_type_display()} aprobado",
+        )
+
+    @action(detail=True, methods=['post'], url_path='register-in-servir')
+    def register_in_servir(self, request, pk=None):
+        register = self.get_object()
+        in_serializer = PositionRegisterServirSerializer(data=request.data)
+        in_serializer.is_valid(raise_exception=True)
+        try:
+            register.register_in_servir(
+                reference=in_serializer.validated_data['reference'],
+            )
+        except Exception as e:
+            return APIResponse.error(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        return APIResponse.success(
+            data=PositionRegisterSerializer(register).data,
+            message="CPE registrado en SERVIR",
+        )
+
+    @action(detail=True, methods=['get'], url_path='mpp-html')
+    def mpp_html(self, request, pk=None):
+        """Render MPP as HTML preview (CPE only)."""
+        register = self.get_object()
+        try:
+            html = render_mpp_html(
+                register_id=register.id,
+                tenant=getattr(request, 'tenant', None),
+            )
+        except Exception as e:
+            return APIResponse.error(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        return HttpResponse(html, content_type='text/html; charset=utf-8')
+
+    @action(detail=True, methods=['get'], url_path='mpp-pdf')
+    def mpp_pdf(self, request, pk=None):
+        """Download MPP as PDF (CPE only)."""
+        register = self.get_object()
+        try:
+            pdf = render_mpp_pdf(
+                register_id=register.id,
+                tenant=getattr(request, 'tenant', None),
+            )
+        except Exception as e:
+            return APIResponse.error(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = f"mpp_{register.title.replace(' ', '_')}_v{register.version}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+
+class PositionRegisterEntryViewSet(viewsets.ModelViewSet):
+    """Entries (rows) of a PositionRegister — CPE or CAP."""
+    queryset = PositionRegisterEntry.objects.select_related(
+        'register', 'position',
+    )
+    serializer_class = PositionRegisterEntrySerializer
+    permission_classes = [RRHHPermission]
+    filter_backends = [
+        DjangoFilterBackend, filters.OrderingFilter,
+    ]
+    filterset_fields = ['register', 'situacion', 'position']
+    ordering_fields = ['sequence', 'plaza_code', 'created_at']
+    ordering = ['register', 'sequence']

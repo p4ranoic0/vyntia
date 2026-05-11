@@ -86,6 +86,59 @@ class Position(models.Model):
         help_text='Ley 30709 category from CCF (post-B.7). Nullable while CCF rolls out.',
     )
 
+    # SERVIR / Ley 30057 classification (B.8). Nullable — only populated on
+    # public-sector tenants. Private tenants leave these blank.
+    SERVIR_GROUP_CHOICES = [
+        ('fp', 'Funcionario Público'),
+        ('dp', 'Directivo Público'),
+        ('cc', 'Servidor Civil de Carrera'),
+        ('cs', 'Servidor de Actividades Complementarias'),
+        ('cf', 'Servidor de Confianza'),
+    ]
+    SERVIR_LEVEL_CHOICES = [
+        ('cf_1', 'CF-1 (Inicial)'),
+        ('cf_2', 'CF-2 (Intermedio)'),
+        ('cf_3', 'CF-3 (Avanzado)'),
+        ('cf_4', 'CF-4 (Senior)'),
+        ('dp_1', 'DP-1'),
+        ('dp_2', 'DP-2'),
+        ('dp_3', 'DP-3'),
+        ('dp_4', 'DP-4'),
+    ]
+    SALARY_TIER_CHOICES = [
+        ('principal', 'Principal'),
+        ('ajustada', 'Ajustada'),
+        ('priorizada', 'Priorizada'),
+    ]
+
+    servir_group = models.CharField(
+        max_length=10,
+        choices=SERVIR_GROUP_CHOICES,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Ley 30057 grupo de servidor civil. Solo para tenants sector público.',
+    )
+    servir_level = models.CharField(
+        max_length=10,
+        choices=SERVIR_LEVEL_CHOICES,
+        null=True,
+        blank=True,
+        help_text='Nivel SERVIR para servidor de carrera o directivo público.',
+    )
+    salary_tier = models.CharField(
+        max_length=20,
+        choices=SALARY_TIER_CHOICES,
+        null=True,
+        blank=True,
+        help_text='D.S. 138-2014-EF compensación principal / ajustada / priorizada.',
+    )
+    familia_puesto = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='SERVIR familia de puestos (agrupación temática).',
+    )
+
     # Lifecycle
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True)
