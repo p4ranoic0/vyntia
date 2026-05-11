@@ -5,6 +5,7 @@ from .candidate import Candidate
 from .certification import Certification
 from .employee import Employee
 from .family_member import FamilyMember
+from .job_posting import JobPosting
 from .personnel_requisition import PersonnelRequisition
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "Certification",
     "Employee",
     "FamilyMember",
+    "JobPosting",
     "PersonnelRequisition",
 ]
