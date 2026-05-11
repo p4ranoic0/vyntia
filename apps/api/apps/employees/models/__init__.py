@@ -8,6 +8,7 @@ from .family_member import FamilyMember
 from .candidate_evaluation import CandidateEvaluation
 from .job_application import JobApplication
 from .job_posting import JobPosting
+from .merit_ranking import MeritRanking
 from .personnel_requisition import PersonnelRequisition
 from .selection_stage import SelectionStage
 
@@ -20,6 +21,7 @@ __all__ = [
     "FamilyMember",
     "JobApplication",
     "JobPosting",
+    "MeritRanking",
     "PersonnelRequisition",
     "SelectionStage",
 ]
