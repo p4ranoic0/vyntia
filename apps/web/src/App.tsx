@@ -78,6 +78,17 @@ const PositionRegisterEditorPage = lazy(
   () => import('@/features/organization/pages/PositionRegisterEditorPage'),
 )
 
+// B.9 Selección (Module 03.1) — HR admin pages.
+const RequisitionListPage = lazy(
+  () => import('@/features/recruitment/pages/RequisitionListPage'),
+)
+const JobPostingEditorPage = lazy(
+  () => import('@/features/recruitment/pages/JobPostingEditorPage'),
+)
+const CandidateDashboardPage = lazy(
+  () => import('@/features/recruitment/pages/CandidateDashboardPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -361,6 +372,38 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <PositionRegisterEditorPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Selección — Module 03.1 (B.9) */}
+        <Route
+          path="/seleccion/requisiciones"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <RequisitionListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/seleccion/convocatorias"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <JobPostingEditorPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/seleccion/convocatorias/:id/candidatos"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <CandidateDashboardPage />
               </Suspense>
             </AdminRoute>
           }
