@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MPP - {{ register.title }}</title>
+    <style>
+      @page { size: A4; margin: 20mm 18mm 22mm 18mm; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 10px; color: #1a1a2e; line-height: 1.5; }
+      .header { border-bottom: 3px solid #1e3a5f; padding-bottom: 10px; margin-bottom: 18px; }
+      .header h1 { font-size: 20px; color: #1e3a5f; font-weight: 700; letter-spacing: 1px; }
+      .header .subtitle { font-size: 12px; color: #4a5568; margin-top: 2px; }
+      .meta-table { width: 100%; margin-bottom: 14px; border-collapse: collapse; }
+      .meta-table td { padding: 4px 8px; vertical-align: top; }
+      .meta-table .label { font-weight: 600; color: #1e3a5f; width: 25%; }
+      .entry { page-break-inside: avoid; margin-bottom: 18px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; }
+      .entry-header { background: #f7fafc; padding: 8px 12px; margin: -12px -12px 10px -12px; border-bottom: 1px solid #e2e8f0; border-radius: 4px 4px 0 0; }
+      .entry-header h2 { font-size: 13px; color: #1e3a5f; font-weight: 700; }
+      .entry-header .code { color: #4a5568; font-weight: 400; font-size: 11px; margin-left: 8px; }
+      .entry-meta { display: table; width: 100%; margin-bottom: 8px; }
+      .entry-meta-cell { display: table-cell; padding: 2px 6px; font-size: 9px; }
+      .entry-meta-label { color: #4a5568; font-weight: 600; }
+      .section { margin-top: 8px; }
+      .section h3 { font-size: 11px; color: #1e3a5f; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid #e2e8f0; }
+      .section p { color: #2d3748; }
+      .section ul { margin-left: 16px; margin-top: 2px; }
+      .section ul li { margin-bottom: 2px; }
+      .footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #cbd5e0; font-size: 8px; color: #718096; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Manual de Perfiles de Puestos (MPP)</h1>
+      <div class="subtitle">{{ register.title }} — v{{ register.version }} ({{ register.get_status_display }})</div>
+    </div>
+
+    <table class="meta-table">
+      <tr>
+        <td class="label">Institución:</td><td>{{ institucion.name|default:"—" }}</td>
+        <td class="label">RUC:</td><td>{{ institucion.ruc|default:"—" }}</td>
+      </tr>
+      <tr>
+        <td class="label">Vigencia desde:</td><td>{% if register.effective_date %}{{ register.effective_date|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        <td class="label">Aprobado por:</td><td>{% if register.approved_by %}{{ register.approved_by.get_full_name|default:register.approved_by.username }}{% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <td class="label">Marco legal:</td><td colspan="3">Ley 30057 (SERVIR) — Cuadro de Puestos de la Entidad</td>
+      </tr>
+    </table>
+
+    {% for entry in entries %}
+      <div class="entry">
+        <div class="entry-header">
+          <h2>
+            {{ entry.position.name }}
+            <span class="code">[{{ entry.position.code }}{% if entry.plaza_code %} · {{ entry.plaza_code }}{% endif %}]</span>
+          </h2>
+        </div>
+
+        <div class="entry-meta">
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Órgano:</span> {{ entry.position.department.nombre_unidad_organica|default:"—" }}
+          </div>
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Grupo SERVIR:</span> {{ entry.position.get_servir_group_display|default:"—" }}
+          </div>
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Nivel:</span> {{ entry.position.get_servir_level_display|default:"—" }}
+          </div>
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Banda:</span> {{ entry.position.get_salary_tier_display|default:"—" }}
+          </div>
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Familia:</span> {{ entry.position.familia_puesto|default:"—" }}
+          </div>
+          <div class="entry-meta-cell">
+            <span class="entry-meta-label">Plazas:</span> {{ entry.plaza_count }} ({{ entry.get_situacion_display }})
+          </div>
+        </div>
+
+        {% if entry.position.profile and entry.position.profile.mission %}
+          <div class="section">
+            <h3>Misión del puesto</h3>
+            <p>{{ entry.position.profile.mission|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if entry.position.functions.exists %}
+          <div class="section">
+            <h3>Funciones principales</h3>
+            <ul>
+              {% for fn in entry.position.functions.all %}
+                <li>{{ fn.description }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if entry.position.requirements.exists %}
+          <div class="section">
+            <h3>Requisitos del puesto</h3>
+            <ul>
+              {% for req in entry.position.requirements.all %}
+                <li><strong>{{ req.get_kind_display }}:</strong> {{ req.description }}{% if not req.is_required %} (deseable){% endif %}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if entry.position.profile and entry.position.profile.work_conditions %}
+          <div class="section">
+            <h3>Condiciones de trabajo</h3>
+            <p>{{ entry.position.profile.work_conditions|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if entry.notes %}
+          <div class="section">
+            <h3>Notas</h3>
+            <p>{{ entry.notes|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p style="margin-top: 20px; color: #718096;">El CPE no contiene puestos.</p>
+    {% endfor %}
+
+    <div class="footer">
+      Documento generado por VYNTIA — MPP renderizado a partir del CPE registrado por SERVIR (Ley 30057).
+    </div>
+  </body>
+</html>
