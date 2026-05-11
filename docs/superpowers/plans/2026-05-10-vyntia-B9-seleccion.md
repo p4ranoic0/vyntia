@@ -569,14 +569,15 @@ feat(B9): MeritRanking + ranking_service (aggregation algorithm with eliminatori
 - `apps/api/api/v1/employees/serializers.py` — extend with serializers
 - `apps/api/api/v1/employees/urls.py` — register routes
 
-Routes under `/api/v1/employees/`:
-- `candidates/` — CandidateViewSet (CRUD)
-- `personnel-requisitions/` — RequisitionViewSet + custom actions `submit/`, `approve-hr/`, `approve-finance/`, `reject/`, `cancel/`
-- `job-postings/` — JobPostingViewSet + `publish/`, `close/`, `declare-void/`, `compute-ranking/`
-- `selection-stages/` — SelectionStageViewSet (CRUD, filtered by posting)
-- `job-applications/` — JobApplicationViewSet + `eliminate/`, `withdraw/`, `advance-to/`
-- `candidate-evaluations/` — CandidateEvaluationViewSet (CRUD, filtered by application)
-- `merit-rankings/` — MeritRankingViewSet (read-only; computed by job-postings/<id>/compute-ranking/)
+Routes flat under `/api/v1/` (matches existing employees-app convention
+per api/v1/urls.py § 7):
+- `/candidates/` — CandidateViewSet (CRUD)
+- `/personnel-requisitions/` — RequisitionViewSet + `submit/`, `approve-hr/`, `approve-finance/`, `reject/`, `cancel/`
+- `/job-postings/` — JobPostingViewSet + `publish/`, `start-evaluation/`, `close/`, `declare-void/`, `compute-ranking/`
+- `/selection-stages/` — SelectionStageViewSet (CRUD, filtered by posting)
+- `/job-applications/` — JobApplicationViewSet + `advance-to/`, `eliminate/`, `withdraw/`
+- `/candidate-evaluations/` — CandidateEvaluationViewSet (CRUD; evaluator auto-set from request.user)
+- `/merit-rankings/` — MeritRankingViewSet (read-only; computed via job-postings/<id>/compute-ranking/)
 
 Permission gating: RRHHPermission + TenantAwareViewSetMixin on tenant-scoped models. Public-sector posting actions check sector_mode validation.
 
