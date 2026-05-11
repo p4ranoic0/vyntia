@@ -12,6 +12,8 @@ from .position_profile import (
     PositionProfile,
     PositionRequirement,
 )
+from .position_register import PositionRegister
+from .position_register_entry import PositionRegisterEntry
 from .position_risk_profile import PositionRiskProfile
 
 __all__ = [
@@ -24,6 +26,8 @@ __all__ = [
     "Position",
     "PositionFunction",
     "PositionProfile",
+    "PositionRegister",
+    "PositionRegisterEntry",
     "PositionRequirement",
     "PositionRiskProfile",
 ]
