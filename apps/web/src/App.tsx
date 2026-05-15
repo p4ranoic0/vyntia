@@ -113,6 +113,11 @@ const DigitalDossierListPage = lazy(
   () => import('@/features/documents/pages/DigitalDossierListPage'),
 )
 
+// B.13 Desplazamiento (Module 03.6) — HR admin pages.
+const DisplacementListPage = lazy(
+  () => import('@/features/organization/pages/DisplacementListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -494,6 +499,18 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <DigitalDossierListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Desplazamiento — Module 03.6 (B.13) */}
+        <Route
+          path="/desplazamiento"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <DisplacementListPage />
               </Suspense>
             </AdminRoute>
           }
