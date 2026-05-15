@@ -89,6 +89,17 @@ const CandidateDashboardPage = lazy(
   () => import('@/features/recruitment/pages/CandidateDashboardPage'),
 )
 
+// B.10 Vinculación + T-Registro (Module 03.2) — HR admin pages.
+const TRegistroListPage = lazy(
+  () => import('@/features/contracts/pages/TRegistroListPage'),
+)
+const DocumentSignatureListPage = lazy(
+  () => import('@/features/documents/pages/DocumentSignatureListPage'),
+)
+const HiringBundleListPage = lazy(
+  () => import('@/features/documents/pages/HiringBundleListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -404,6 +415,38 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <CandidateDashboardPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Vinculación + T-Registro — Module 03.2 (B.10) */}
+        <Route
+          path="/vinculacion/t-registro"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <TRegistroListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/vinculacion/firmas"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <DocumentSignatureListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/vinculacion/bundles"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <HiringBundleListPage />
               </Suspense>
             </AdminRoute>
           }
