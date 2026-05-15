@@ -1,7 +1,7 @@
-"""Serializers for B.10 contracts — TRegistroDeclaration."""
+"""Serializers for B.10 contracts — TRegistroDeclaration + B.11 ProbationPeriod."""
 from rest_framework import serializers
 
-from apps.contracts.models import TRegistroDeclaration
+from apps.contracts.models import ProbationPeriod, TRegistroDeclaration
 
 
 class TRegistroDeclarationSerializer(serializers.ModelSerializer):
@@ -54,4 +54,51 @@ class MarkAcceptedInputSerializer(serializers.Serializer):
 
 
 class MarkRejectedInputSerializer(serializers.Serializer):
+    reason = serializers.CharField(required=True, allow_blank=False)
+
+
+# ---------------------------- B.11 ProbationPeriod -----------------------------
+
+class ProbationPeriodSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True,
+    )
+    regimen_display = serializers.CharField(
+        source='get_regimen_display', read_only=True,
+    )
+    days_remaining = serializers.IntegerField(read_only=True)
+    is_within_30_days = serializers.BooleanField(read_only=True)
+    is_within_15_days = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ProbationPeriod
+        fields = [
+            'id', 'tenant', 'contract',
+            'regimen', 'regimen_display',
+            'plazo_dias', 'start_date', 'end_date',
+            'status', 'status_display',
+            'evaluation_score', 'evaluation_competencies',
+            'evaluator', 'evaluated_at',
+            'decision_reason', 'decided_by', 'decided_at',
+            'days_remaining', 'is_within_30_days', 'is_within_15_days',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'plazo_dias', 'end_date',
+            'status', 'status_display', 'regimen_display',
+            'evaluation_score', 'evaluation_competencies',
+            'evaluator', 'evaluated_at',
+            'decision_reason', 'decided_by', 'decided_at',
+            'days_remaining', 'is_within_30_days', 'is_within_15_days',
+            'created_at', 'updated_at',
+        ]
+
+
+class EvaluateProbationInputSerializer(serializers.Serializer):
+    score = serializers.IntegerField(min_value=0, max_value=100, required=True)
+    competencies = serializers.JSONField(required=False, default=dict)
+    comments = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class NotRenewInputSerializer(serializers.Serializer):
     reason = serializers.CharField(required=True, allow_blank=False)
