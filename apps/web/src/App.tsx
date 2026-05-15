@@ -100,6 +100,14 @@ const HiringBundleListPage = lazy(
   () => import('@/features/documents/pages/HiringBundleListPage'),
 )
 
+// B.11 Inducción + Período de prueba (Modules 03.3 + 03.4) — HR admin pages.
+const InductionPlanListPage = lazy(
+  () => import('@/features/onboarding/pages/InductionPlanListPage'),
+)
+const ProbationPeriodListPage = lazy(
+  () => import('@/features/contracts/pages/ProbationPeriodListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -447,6 +455,28 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <HiringBundleListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Inducción + Período de prueba — Modules 03.3 + 03.4 (B.11) */}
+        <Route
+          path="/induccion"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <InductionPlanListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/periodo-prueba"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ProbationPeriodListPage />
               </Suspense>
             </AdminRoute>
           }
