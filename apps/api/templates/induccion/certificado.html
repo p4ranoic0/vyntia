@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Certificado de Inducción — {{ plan.title }}</title>
+<style>
+  @page { size: A4 landscape; margin: 2cm; }
+  body { font-family: 'Inter', 'Helvetica', sans-serif; color: #1f2937; }
+  .frame { border: 4px double #6C63FF; padding: 32px 48px; text-align: center; height: 100%; }
+  .brand { color: #6C63FF; font-size: 28px; font-weight: bold; letter-spacing: 4px; }
+  .title { margin-top: 24px; font-size: 22px; font-weight: 600; }
+  .employee { margin-top: 32px; font-size: 32px; font-weight: bold; }
+  .desc { margin-top: 24px; font-size: 14px; line-height: 1.6; }
+  .meta { margin-top: 40px; font-size: 12px; color: #4b5563; }
+  .meta strong { color: #111827; }
+  .seal { margin-top: 56px; font-size: 12px; color: #6b7280; }
+  .seal .ref { font-family: monospace; font-size: 11px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="brand">VYNTIA</div>
+  <div class="title">CERTIFICADO DE INDUCCIÓN</div>
+  <div class="desc">Otorga el presente certificado a:</div>
+  <div class="employee">{{ employee_full_name }}</div>
+  <div class="desc">
+    Por haber culminado satisfactoriamente el programa de
+    <strong>Inducción {{ plan.get_kind_display }}</strong>
+    {% if plan.lengua_originaria %}(en lengua originaria: {{ plan.lengua_originaria }}){% endif %},
+    conforme a lo dispuesto por la Resolución de Presidencia Ejecutiva
+    Nº 265-2017-SERVIR-PE.
+  </div>
+  <div class="meta">
+    <p><strong>Plan:</strong> {{ plan.title }}</p>
+    {% if plan.starts_at %}<p><strong>Inicio:</strong> {{ plan.starts_at|date:"d \d\e F \d\e Y" }}</p>{% endif %}
+    {% if plan.completed_at %}<p><strong>Finalización:</strong> {{ plan.completed_at|date:"d \d\e F \d\e Y" }}</p>{% endif %}
+    {% if evaluation_score is not None %}<p><strong>Calificación final:</strong> {{ evaluation_score }} / 100</p>{% endif %}
+  </div>
+  <div class="seal">
+    Emitido el {{ issued_at|date:"d \d\e F \d\e Y" }}
+    <div class="ref">Ref: {{ plan.id }}</div>
+  </div>
+</div>
+</body>
+</html>
