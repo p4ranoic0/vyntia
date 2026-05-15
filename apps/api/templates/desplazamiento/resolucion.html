@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Resolución de desplazamiento — {{ employee_full_name }}</title>
+<style>
+  @page { size: A4 portrait; margin: 2cm; }
+  body { font-family: 'Inter', 'Helvetica', sans-serif; color: #1f2937; font-size: 11px; line-height: 1.5; }
+  .brand { color: #6C63FF; font-size: 22px; font-weight: bold; letter-spacing: 4px; }
+  .header { border-bottom: 2px solid #6C63FF; padding-bottom: 12px; margin-bottom: 18px; }
+  .title { font-size: 16px; font-weight: 600; margin-top: 4px; }
+  .resol { font-weight: 600; font-size: 13px; margin: 12px 0; }
+  .considerando p, .resuelve p { margin: 6px 0; text-align: justify; }
+  .resuelve { margin-top: 14px; border-top: 1px dashed #e5e7eb; padding-top: 10px; }
+  .signatures { margin-top: 36px; display: flex; justify-content: space-around; font-size: 10px; }
+  .signatures .slot { width: 30%; text-align: center; }
+  .slot .line { border-top: 1px solid #4b5563; margin-bottom: 4px; height: 32px; }
+  .meta { margin: 16px 0; font-size: 10px; color: #4b5563; }
+  .meta strong { color: #111827; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">VYNTIA</div>
+  <div class="title">RESOLUCIÓN ADMINISTRATIVA DE DESPLAZAMIENTO</div>
+</div>
+
+<p class="resol">
+  Resolución Nº {{ displacement.resolution_number|default:"________" }} ·
+  {{ issued_at|date:"d \d\e F \d\e Y" }}
+</p>
+
+<div class="meta">
+  <strong>Tipo:</strong> {{ displacement.get_kind_display }} ·
+  <strong>Servidor:</strong> {{ employee_full_name }} ·
+  <strong>Documento:</strong> {{ displacement.employee.numero_documento|default:"—" }}
+</div>
+
+<div class="considerando">
+  <p><strong>CONSIDERANDO:</strong></p>
+  <p>
+    Que, mediante solicitud cursada por la jefatura inmediata y previa evaluación
+    administrativa, corresponde formalizar el desplazamiento del servidor citado
+    en condición de <strong>{{ displacement.get_kind_display }}</strong>, desde
+    <strong>{{ displacement.origen_department.nombre_unidad_organica|default:"" }}</strong>
+    {% if displacement.origen_position %}
+      (puesto {{ displacement.origen_position.name }})
+    {% endif %}
+    hacia
+    <strong>{{ displacement.destino_department.nombre_unidad_organica|default:"" }}</strong>
+    {% if displacement.destino_position %}
+      (puesto {{ displacement.destino_position.name }})
+    {% endif %}.
+  </p>
+  {% if displacement.justification %}
+    <p>Justificación: {{ displacement.justification }}</p>
+  {% endif %}
+</div>
+
+<div class="resuelve">
+  <p><strong>SE RESUELVE:</strong></p>
+  <p>
+    1. Disponer el desplazamiento bajo la modalidad de
+    <strong>{{ displacement.get_kind_display }}</strong> con vigencia desde
+    el <strong>{{ displacement.start_date|date:"d/m/Y" }}</strong>
+    {% if displacement.end_date %}
+      hasta el <strong>{{ displacement.end_date|date:"d/m/Y" }}</strong>
+    {% else %}
+      con carácter indeterminado
+    {% endif %}.
+  </p>
+  <p>
+    2. Las áreas correspondientes adoptarán las acciones administrativas que
+    deriven de la presente resolución, en el marco del DL 276 y las normas
+    SERVIR aplicables.
+  </p>
+</div>
+
+<div class="signatures">
+  <div class="slot">
+    <div class="line"></div>
+    Jefe directo
+    {% if displacement.approved_by_supervisor %}<br /><small>{{ displacement.approved_by_supervisor.username }}</small>{% endif %}
+  </div>
+  <div class="slot">
+    <div class="line"></div>
+    RRHH
+    {% if displacement.approved_by_hr %}<br /><small>{{ displacement.approved_by_hr.username }}</small>{% endif %}
+  </div>
+  <div class="slot">
+    <div class="line"></div>
+    Titular
+    {% if displacement.approved_by_titular %}<br /><small>{{ displacement.approved_by_titular.username }}</small>{% endif %}
+  </div>
+</div>
+</body>
+</html>
