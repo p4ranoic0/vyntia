@@ -3,6 +3,7 @@
 PDF/Word generation engines for the HR document workflow.
 """
 
+from . import bundle_service, signature_service
 from .pdf_generator import PDFGenerator
 from .template_service import TemplateService
 from .word_template_service import WordTemplateService
@@ -11,4 +12,6 @@ __all__ = [
     "PDFGenerator",
     "TemplateService",
     "WordTemplateService",
+    "bundle_service",
+    "signature_service",
 ]
