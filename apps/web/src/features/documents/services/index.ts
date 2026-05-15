@@ -1,4 +1,5 @@
 export * from './documentSignatureService'
+export * from './dossierService'
 export * from './hiringBundleService'
 export * from './legajoService'
 export * from './templatesService'
