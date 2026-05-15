@@ -165,6 +165,16 @@ class DigitalDocument(models.Model):
         null=True, blank=True,
         related_name='documentos',
     )
+    # B.12: direct FK to Contract (was previously inferred indirectly). Backlog #120.
+    contract = models.ForeignKey(
+        'contracts.Contract',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='digital_documents',
+    )
+    # B.12: numeric permission level (1-9 per maestro § 6.3) for granular RBAC
+    # on top of `nivel_acceso`. Médicos/accidentes → 9. Backlog #118.
+    permission_level = models.PositiveSmallIntegerField(default=3, db_index=True)
     es_version_actual = models.BooleanField(default=True)
     
     # Estado y validación
