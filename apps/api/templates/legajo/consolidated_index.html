@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Legajo Digital — {{ employee_full_name }}</title>
+<style>
+  @page { size: A4 portrait; margin: 1.5cm; }
+  body { font-family: 'Inter', 'Helvetica', sans-serif; color: #1f2937; font-size: 11px; }
+  .brand { color: #6C63FF; font-size: 22px; font-weight: bold; letter-spacing: 4px; }
+  .header { border-bottom: 2px solid #6C63FF; padding-bottom: 12px; margin-bottom: 18px; }
+  .title { font-size: 16px; font-weight: 600; margin-top: 4px; }
+  .employee-block { background: #f3f4f6; padding: 10px; border-radius: 4px; margin-bottom: 18px; }
+  .employee-block strong { color: #111827; }
+  h2 { font-size: 13px; color: #6C63FF; margin-top: 18px; margin-bottom: 6px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #f1f5f9; font-size: 10px; }
+  th { background: #f8fafc; color: #4b5563; font-weight: 600; }
+  .pl { color: #b45309; font-weight: 600; }
+  .empty { color: #9ca3af; font-style: italic; }
+  .footer { margin-top: 28px; font-size: 9px; color: #9ca3af; text-align: center; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">VYNTIA</div>
+  <div class="title">Legajo Digital — Resumen consolidado</div>
+</div>
+
+<div class="employee-block">
+  <strong>{{ employee_full_name }}</strong><br />
+  Ref legajo: {{ dossier.id }}<br />
+  Creado: {{ dossier.created_at|date:"d/m/Y" }}
+  {% if dossier.is_closed %} · CERRADO {{ dossier.closed_at|date:"d/m/Y" }}{% endif %}
+  {% if dossier.retention_until %} · Retención hasta {{ dossier.retention_until|date:"d/m/Y" }}{% endif %}
+</div>
+
+{% for section, docs in sections_with_docs %}
+  <h2>{{ section.label }} <span class="pl">(PL {{ section.permission_level }})</span></h2>
+  {% if docs %}
+    <table>
+      <thead>
+        <tr><th>Documento</th><th>Tipo</th><th>Versión</th><th>Subido</th></tr>
+      </thead>
+      <tbody>
+        {% for doc in docs %}
+          <tr>
+            <td>{{ doc.nombre_documento }}</td>
+            <td>{{ doc.tipo_documento }}</td>
+            <td>{{ doc.version }}</td>
+            <td>{{ doc.fecha_subida|date:"d/m/Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty">Sin documentos.</p>
+  {% endif %}
+{% endfor %}
+
+<div class="footer">
+  Documento generado por VYNTIA · Maestro § 03.5 · Retención mínima 5 años post-cese (Ley 29733).
+</div>
+</body>
+</html>
