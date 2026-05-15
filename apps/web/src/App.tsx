@@ -108,6 +108,11 @@ const ProbationPeriodListPage = lazy(
   () => import('@/features/contracts/pages/ProbationPeriodListPage'),
 )
 
+// B.12 Legajos digitales completos (Module 03.5) — HR admin pages.
+const DigitalDossierListPage = lazy(
+  () => import('@/features/documents/pages/DigitalDossierListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -477,6 +482,18 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <ProbationPeriodListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Legajos digitales — Module 03.5 (B.12) */}
+        <Route
+          path="/legajos-digitales"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <DigitalDossierListPage />
               </Suspense>
             </AdminRoute>
           }
