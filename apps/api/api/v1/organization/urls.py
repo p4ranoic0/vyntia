@@ -11,6 +11,11 @@ from api.v1.rrhh.views import (
     ConfiguracionEmpresaViewSet,
 )
 
+from .displacement_views import (
+    DisplacementExtensionViewSet,
+    DisplacementViewSet,
+    LocationHistoryViewSet,
+)
 from .views import (
     CIUOCodeViewSet,
     OccupationalCategoryViewSet,
@@ -43,6 +48,11 @@ router.register(r"ciuo-codes", CIUOCodeViewSet, basename="ciuo-code")
 # B.8 — CPE / CAP + MPP
 router.register(r"position-registers", PositionRegisterViewSet, basename="position-register")
 router.register(r"position-register-entries", PositionRegisterEntryViewSet, basename="position-register-entry")
+
+# B.13 — Desplazamiento (Module 03.6)
+router.register(r"displacements", DisplacementViewSet, basename="displacement")
+router.register(r"displacement-extensions", DisplacementExtensionViewSet, basename="displacement-extension")
+router.register(r"location-histories", LocationHistoryViewSet, basename="location-history")
 
 urlpatterns = [
     path("", include(router.urls)),
