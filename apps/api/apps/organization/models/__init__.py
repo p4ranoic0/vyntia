@@ -3,6 +3,7 @@
 from .ciuo_code import CIUOCode
 from .company import Company
 from .department import Department
+from .displacement import Displacement, DisplacementExtension
 from .location_history import LocationHistory
 from .occupational_category import OccupationalCategory
 from .plaza import Plaza
@@ -20,6 +21,8 @@ __all__ = [
     "CIUOCode",
     "Company",
     "Department",
+    "Displacement",
+    "DisplacementExtension",
     "LocationHistory",
     "OccupationalCategory",
     "Plaza",
