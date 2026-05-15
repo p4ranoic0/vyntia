@@ -15,18 +15,27 @@ from api.v1.documents.bundle_views import (
     HiringBundleItemViewSet,
     HiringDocumentBundleViewSet,
 )
+from api.v1.documents.dossier_views import (
+    DigitalDossierViewSet,
+    DocumentAccessLogViewSet,
+    DossierSectionViewSet,
+)
 from api.v1.documents.signature_views import DocumentSignatureViewSet
 from api.v1.documents.views import DocumentGenerationViewSet
 from api.v1.rrhh.views import DocumentosDigitalesViewSet
 
 app_name = "documents"
 
-# Main CRUD router for DigitalDocument + B.10 additions
+# Main CRUD router for DigitalDocument + B.10 + B.12 additions
 router = DefaultRouter()
 router.register(r"documents", DocumentosDigitalesViewSet, basename="document")
 router.register(r"signatures", DocumentSignatureViewSet, basename="document-signature")
 router.register(r"hiring-bundles", HiringDocumentBundleViewSet, basename="hiring-bundle")
 router.register(r"hiring-bundle-items", HiringBundleItemViewSet, basename="hiring-bundle-item")
+# B.12 — Legajo digital (Module 03.5)
+router.register(r"digital-dossiers", DigitalDossierViewSet, basename="digital-dossier")
+router.register(r"dossier-sections", DossierSectionViewSet, basename="dossier-section")
+router.register(r"document-access-logs", DocumentAccessLogViewSet, basename="document-access-log")
 
 # Sub-router for the function-style ViewSet that exposes generar-contrato/
 # generar-adenda/generar-certificado/etc. URL prefix kept as `documents/` so

@@ -14,6 +14,11 @@ from api.v1.rrhh.views import (
     EmpleadoViewSet,
 )
 
+from .legajo_views import (
+    JobHistoryViewSet,
+    SwornDeclarationViewSet,
+    WorkExperienceViewSet,
+)
 from .views import (
     CandidateEvaluationViewSet,
     CandidateViewSet,
@@ -42,6 +47,11 @@ router.register(r"job-applications", JobApplicationViewSet, basename="job-applic
 router.register(r"candidate-evaluations", CandidateEvaluationViewSet,
                 basename="candidate-evaluation")
 router.register(r"merit-rankings", MeritRankingViewSet, basename="merit-ranking")
+
+# B.12 — Legajo content (Module 03.5)
+router.register(r"work-experiences", WorkExperienceViewSet, basename="work-experience")
+router.register(r"sworn-declarations", SwornDeclarationViewSet, basename="sworn-declaration")
+router.register(r"job-histories", JobHistoryViewSet, basename="job-history")
 
 urlpatterns = [
     path("", include(router.urls)),
