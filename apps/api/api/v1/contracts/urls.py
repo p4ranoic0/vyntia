@@ -3,6 +3,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from api.v1.contracts.probation_views import ProbationPeriodViewSet
 from api.v1.contracts.views import TRegistroDeclarationViewSet
 from api.v1.rrhh.contratos_views import (
     ContractAmendmentViewSet,
@@ -17,6 +18,7 @@ router.register(r"contracts", ContratosAdendasViewSet, basename="contract")
 router.register(r"contract-amendments", ContractAmendmentViewSet, basename="contract-amendment-en")
 router.register(r"employment-data", DatosLaboralesViewSet, basename="employment-data")
 router.register(r"t-registro-declarations", TRegistroDeclarationViewSet, basename="t-registro-declaration")
+router.register(r"probation-periods", ProbationPeriodViewSet, basename="probation-period")
 
 urlpatterns = [
     path("", include(router.urls)),
