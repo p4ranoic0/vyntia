@@ -6,6 +6,7 @@ from .document_access_log import DocumentAccessLog
 from .document_signature import DocumentSignature
 from .document_template import DocumentTemplate
 from .hiring_bundle import HiringBundleItem, HiringDocumentBundle
+from .work_certificate import WorkCertificate
 
 __all__ = [
     "DigitalDocument",
@@ -16,4 +17,5 @@ __all__ = [
     "DossierSection",
     "HiringBundleItem",
     "HiringDocumentBundle",
+    "WorkCertificate",
 ]
