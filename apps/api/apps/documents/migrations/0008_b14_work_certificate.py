@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contracts', '0007_termination_severancesettlement_severanceline_and_more'),
+        ('contracts', '0007_b14_termination_severance'),
         ('documents', '0007_b12_access_log_contract_fk'),
         ('employees', '0011_b12_legajo_content'),
         ('tenancy', '0004_supportsession'),

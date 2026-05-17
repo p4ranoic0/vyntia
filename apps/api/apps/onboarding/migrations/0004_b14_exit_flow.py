@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contracts', '0007_termination_severancesettlement_severanceline_and_more'),
+        ('contracts', '0007_b14_termination_severance'),
         ('onboarding', '0003_b11_induction'),
         ('tenancy', '0004_supportsession'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

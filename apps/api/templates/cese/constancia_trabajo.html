@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Constancia de Trabajo — {{ employee_full_name }}</title>
+<style>
+  @page { size: A4 portrait; margin: 2cm 2.2cm; }
+  body { font-family: 'Inter', 'Helvetica', sans-serif; color: #1f2937; font-size: 12px; line-height: 1.55; }
+  .brand { color: #6C63FF; font-size: 24px; font-weight: bold; letter-spacing: 4px; }
+  .header { border-bottom: 2px solid #6C63FF; padding-bottom: 14px; margin-bottom: 24px; }
+  .title { font-size: 20px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .meta { color: #4b5563; font-size: 10px; margin-top: 4px; }
+  p { margin: 10px 0; text-align: justify; }
+  .firma { margin-top: 60px; }
+  .firma .line { border-top: 1px solid #1f2937; width: 240px; margin: 0 auto; }
+  .firma .role { text-align: center; font-size: 10px; color: #4b5563; margin-top: 4px; }
+  .legal { margin-top: 28px; font-size: 9px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">VYNTIA</div>
+  <div class="title">Constancia de Trabajo</div>
+  <div class="meta">N° {{ numero_constancia }} · Emitida el {{ fecha_emision|date:"d/m/Y" }}</div>
+</div>
+
+<p>
+  Por la presente, la institución certifica que el(la) Sr(a). <strong>{{ employee_full_name }}</strong>,
+  identificado(a) con documento <strong>{{ employee_doc_number }}</strong>,
+  prestó servicios para esta institución desempeñando el cargo de
+  <strong>{{ cargo }}</strong>{% if area_nombre %} en el área de <strong>{{ area_nombre }}</strong>{% endif %},
+  desde el <strong>{{ fecha_inicio|date:"d/m/Y" }}</strong> hasta el
+  <strong>{{ fecha_fin|date:"d/m/Y" }}</strong>.
+</p>
+
+<p>
+  Su última remuneración bruta mensual asciende a <strong>S/ {{ sueldo }}</strong>.
+  El motivo del cese fue: <strong>{{ motivo_cese }}</strong>.
+</p>
+
+<p>
+  Durante su permanencia, el(la) trabajador(a) cumplió con las funciones inherentes
+  al cargo conforme a las políticas y normativa vigente en la institución.
+</p>
+
+<p>
+  Se expide la presente Constancia de Trabajo a solicitud del(la) interesado(a)
+  para los fines que estime conveniente, en cumplimiento de lo dispuesto por el
+  Artículo 45 del Texto Único Ordenado del D. Leg. 728, aprobado por D.S. 003-97-TR.
+</p>
+
+<div class="firma">
+  <div class="line"></div>
+  <div class="role">Recursos Humanos</div>
+</div>
+
+<div class="legal">
+  Documento emitido por VYNTIA · Causal de cese (código interno): {{ causal_code }} ·
+  Esta constancia tiene carácter declarativo y no requiere visado externo.
+</div>
+</body>
+</html>
