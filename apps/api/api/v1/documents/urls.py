@@ -22,6 +22,7 @@ from api.v1.documents.dossier_views import (
 )
 from api.v1.documents.signature_views import DocumentSignatureViewSet
 from api.v1.documents.views import DocumentGenerationViewSet
+from api.v1.documents.work_certificate_views import WorkCertificateViewSet
 from api.v1.rrhh.views import DocumentosDigitalesViewSet
 
 app_name = "documents"
@@ -36,6 +37,8 @@ router.register(r"hiring-bundle-items", HiringBundleItemViewSet, basename="hirin
 router.register(r"digital-dossiers", DigitalDossierViewSet, basename="digital-dossier")
 router.register(r"dossier-sections", DossierSectionViewSet, basename="dossier-section")
 router.register(r"document-access-logs", DocumentAccessLogViewSet, basename="document-access-log")
+# B.14 — Constancia de Trabajo (Module 03.7 Art. 45 LPCL)
+router.register(r"work-certificates", WorkCertificateViewSet, basename="work-certificate")
 
 # Sub-router for the function-style ViewSet that exposes generar-contrato/
 # generar-adenda/generar-certificado/etc. URL prefix kept as `documents/` so

@@ -118,6 +118,17 @@ const DisplacementListPage = lazy(
   () => import('@/features/organization/pages/DisplacementListPage'),
 )
 
+// B.14 Desvinculación + liquidación (Module 03.7) — HR admin pages.
+const TerminationListPage = lazy(
+  () => import('@/features/contracts/pages/TerminationListPage'),
+)
+const SeveranceSettlementListPage = lazy(
+  () => import('@/features/contracts/pages/SeveranceSettlementListPage'),
+)
+const ExitFlowListPage = lazy(
+  () => import('@/features/onboarding/pages/ExitFlowListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -511,6 +522,38 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <DisplacementListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Desvinculación + liquidación — Module 03.7 (B.14) */}
+        <Route
+          path="/cese/terminaciones"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <TerminationListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/cese/liquidaciones"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <SeveranceSettlementListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/cese/flujo"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ExitFlowListPage />
               </Suspense>
             </AdminRoute>
           }
