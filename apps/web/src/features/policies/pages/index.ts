@@ -1,2 +1,5 @@
 export { default as PoliciesListPage } from './PoliciesListPage'
 export { default as PolicyAcknowledgmentInboxPage } from './PolicyAcknowledgmentInboxPage'
+export { default as StrategicPlanListPage } from './StrategicPlanListPage'
+export { default as WorkforcePlanListPage } from './WorkforcePlanListPage'
+export { default as ComplianceMatrixListPage } from './ComplianceMatrixListPage'
