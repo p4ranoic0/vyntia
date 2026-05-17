@@ -129,6 +129,14 @@ const ExitFlowListPage = lazy(
   () => import('@/features/onboarding/pages/ExitFlowListPage'),
 )
 
+// B.15a Policy manager (Module 01) — HR admin pages.
+const PoliciesListPage = lazy(
+  () => import('@/features/policies/pages/PoliciesListPage'),
+)
+const PolicyAcknowledgmentInboxPage = lazy(
+  () => import('@/features/policies/pages/PolicyAcknowledgmentInboxPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -554,6 +562,28 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <ExitFlowListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+
+        {/* Políticas — Module 01 (B.15a) */}
+        <Route
+          path="/politicas/admin"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PoliciesListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/politicas/acuses"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PolicyAcknowledgmentInboxPage />
               </Suspense>
             </AdminRoute>
           }
