@@ -137,6 +137,17 @@ const PolicyAcknowledgmentInboxPage = lazy(
   () => import('@/features/policies/pages/PolicyAcknowledgmentInboxPage'),
 )
 
+// B.15b Strategic + Workforce + Compliance (Module 01) — HR admin pages.
+const StrategicPlanListPage = lazy(
+  () => import('@/features/policies/pages/StrategicPlanListPage'),
+)
+const WorkforcePlanListPage = lazy(
+  () => import('@/features/policies/pages/WorkforcePlanListPage'),
+)
+const ComplianceMatrixListPage = lazy(
+  () => import('@/features/policies/pages/ComplianceMatrixListPage'),
+)
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -584,6 +595,36 @@ function AppRoutes() {
             <AdminRoute>
               <Suspense fallback={<LoadingSpinner />}>
                 <PolicyAcknowledgmentInboxPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/politicas/estrategico"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <StrategicPlanListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/politicas/dotacion"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <WorkforcePlanListPage />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/politicas/cumplimiento"
+          element={
+            <AdminRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ComplianceMatrixListPage />
               </Suspense>
             </AdminRoute>
           }
