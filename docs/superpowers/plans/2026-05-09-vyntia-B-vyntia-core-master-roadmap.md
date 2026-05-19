@@ -26,7 +26,7 @@
 | B.14 ✅ | `vyntia/B14-desvinculacion-liquidacion` | Módulo 03.7: Desvinculación + liquidación | B.10 | `2026-05-16-vyntia-B14-desvinculacion-liquidacion.md` | `f16f05f1` |
 | B.15a ✅ | `vyntia/B15a-policy-manager` | Módulo 01: Policy manager (Policy + Version + ApprovalFlow + Publication + Ack) | B.1 | `2026-05-17-vyntia-B15a-policy-manager.md` | `98f1bbf5` |
 | B.15b ✅ | `vyntia/B15b-strategic-workforce-compliance` | Módulo 01: Strategic + Workforce + Compliance | B.15a | `2026-05-17-vyntia-B15b-strategic-workforce-compliance.md` | `ce1534d1` |
-| B.16 ✅ | `vyntia/B16-e2e-close-out` | E2E + docs + tag `b-vyntia-core-complete` | B.1-B.15b | `2026-05-19-vyntia-B16-e2e-close-out.md` | *(this phase)* |
+| B.16 ✅ | `vyntia/B16-e2e-close-out` | E2E + docs + tag `b-vyntia-core-complete` | B.1-B.15b | `2026-05-19-vyntia-B16-e2e-close-out.md` | `4ffc2c66` |
 
 ## Order and dependencies
 
