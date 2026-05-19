@@ -10,9 +10,12 @@
 
 **Tagline:** *Donde el talento se convierte en valor.*
 
-**Active sub-project:** **Next: B — Migración funcional Vyntia Core** (Sub-projects A + C COMPLETE)
+**Active sub-project:** **Next: D — Vyntia Pay (planilla peruana real)** (Sub-projects A + C + B COMPLETE)
 - Foundation spec: `docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md`
+- B (Vyntia Core) spec: `docs/superpowers/specs/2026-05-09-vyntia-B-vyntia-core-functional-design.md`
+- B (Vyntia Core) summary: `docs/superpowers/summaries/2026-05-19-vyntia-B-vyntia-core-summary.md`
 - Sub-projects roadmap: `docs/ROADMAP_SUBPROJECTS.md`
+- Tags: `foundation-complete`, `c-multitenancy-complete`, `b-vyntia-core-complete`
 
 ---
 
@@ -242,10 +245,10 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 
 | Code | Sub-project | Status | Notes |
 |------|-------------|--------|-------|
-| **A** | Foundation (rebrand + restructure + cleanup) | **✅ COMPLETE (L0-L5 done)** | All layers merged |
-| **C** | Multi-tenancy + RLS | **✅ COMPLETE (C.0-C.8 done)** | Enables SaaS sales |
-| **B** | Migración funcional Vyntia Core | **NEXT** | Needs A + C |
-| D | Vyntia Pay (planilla peruana real) | not started | Starter MVP |
+| **A** | Foundation (rebrand + restructure + cleanup) | **✅ COMPLETE (L0-L5 done)** | All layers merged; tag `foundation-complete` |
+| **C** | Multi-tenancy + RLS | **✅ COMPLETE (C.0-C.8 done)** | Enables SaaS sales; tag `c-multitenancy-complete` |
+| **B** | Migración funcional Vyntia Core | **✅ COMPLETE (B.0-B.16 done)** | Absorbs E + F; tag `b-vyntia-core-complete` |
+| **D** | Vyntia Pay (planilla peruana real) | **NEXT** | Starter MVP; needs B |
 | ~20 más | See `docs/ROADMAP_SUBPROJECTS.md` | — | Each = own brainstorm + spec + plan |
 
 **Foundation layers (L0-L5):**
@@ -258,12 +261,17 @@ PostgreSQL `bd_vyntia` on localhost:5432. Legacy `bd_rrhh_intranet` left intact 
 
 ---
 
-## Test Baselines (preserved through L0)
+## Test Baselines (current, post-B.16)
 
-- Backend pytest: **161 passed, 7-8 failed (pre-existing accepted), 3 skipped** — DO NOT regress
-- Frontend vitest: **7 passed, 1 file load-failure** (Playwright e2e captured by vitest, pre-existing config bug)
+- Backend pytest: **982 passed, 1 failed (pre-existing `test_permisos_debug`), 17 skipped** — DO NOT regress
+- Frontend vitest: **178 passed across 28 test files** — DO NOT regress
+- Frontend tsc: **1 pre-existing error** (`BlankEnum.ts` in `src/generated/`) — DO NOT regress
+- Frontend ESLint: **≤ 278 warnings** (most under `src/generated/`) — DO NOT regress
+- Playwright opt-in suites: 2 (tenant-isolation, employment-lifecycle) — release-gate, run manually
+- Frontend build: **clean** (~10-12s)
+- `manage.py check`: **0 issues silenced**
 
-The 44 backend failures are pre-existing in master and were accepted as known issues (auth fixtures + DRF/pytest fixture compat bugs). They are NOT to be fixed as part of Foundation — separate sub-project.
+The Foundation-era 44 backend failures were resolved during B.1-B.5b polish wave. The 1 remaining pre-existing failure is `test_permisos_debug` (auth fixture compat bug, separately tracked).
 
 ---
 
