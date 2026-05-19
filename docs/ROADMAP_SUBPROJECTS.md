@@ -1,15 +1,15 @@
 # VYNTIA — Sub-Projects Roadmap
 
 > Source of truth for the post-Foundation build plan. Derived from Foundation Design Spec § 6 (2026-04-25).
-> **Foundation (sub-project A) and Multi-tenancy (sub-project C) are complete.** Start from row 3 (B).
-> **Sub-projects E (Extensión Organización) and F (Policies) are absorbed into B** per the B-spec (2026-05-09) — they are completed when B closes.
+> **Sub-projects A (Foundation), C (Multi-tenancy + RLS), and B (Vyntia Core Functional) are complete** — tagged `foundation-complete`, `c-multitenancy-complete`, and `b-vyntia-core-complete`. **Next: D (Vyntia Pay).**
+> **Sub-projects E (Extensión Organización) and F (Policies) were absorbed into B** per the B-spec (2026-05-09) — closed when B closed (2026-05-19).
 
 | # | Code | Sub-project | Needs before | Tier unlocked |
 |---|------|-------------|--------------|---------------|
-| 1 | **A** | Foundation (rebrand + restructure + cleanup) | — | — |
-| 2 | **C** | Multi-tenancy + Row-Level Security | A | Enables SaaS sales |
-| 3 | **B** | Migración funcional Vyntia Core | A, C | Vyntia Core with tenant |
-| 4 | **D** | Vyntia Pay (planilla peruana real — PLAME, T-Registro, AFPnet, CTS, gratificaciones) | B | **Starter tier** |
+| 1 | **A** ✅ | Foundation (rebrand + restructure + cleanup) — *complete 2026-05-07, tag `foundation-complete`* | — | — |
+| 2 | **C** ✅ | Multi-tenancy + Row-Level Security — *complete 2026-05-09, tag `c-multitenancy-complete`* | A | Enables SaaS sales |
+| 3 | **B** ✅ | Migración funcional Vyntia Core — *complete 2026-05-19, tag `b-vyntia-core-complete`* | A, C | Vyntia Core with tenant |
+| 4 | **D** | Vyntia Pay (planilla peruana real — PLAME, T-Registro, AFPnet, CTS, gratificaciones) — **NEXT** | B | **Starter tier** |
 | 5 | **N** | Asistencia + turnos | D | Starter + Attendance |
 | 6 | **P** | App móvil (React Native) | B | Employee mobile portal |
 | 7 | **S** | Billing SaaS (suscripciones, planes) | C | Automated billing |

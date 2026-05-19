@@ -6,26 +6,27 @@
 
 ## Phase table
 
-| Fase | Branch | Scope | Necesita | Plan detallado |
-|------|--------|-------|----------|----------------|
-| B.0  | `vyntia/B0-audit` | Audit & inventory (this phase) | A, C | `2026-05-09-vyntia-B0-audit.md` |
-| B.1  | `vyntia/B1-polish-baseline` | Polish wave: bug-fix baseline (pytest, tsc, lint, tenant audit fixes) | B.0 | TBD post-B.0 |
-| B.2  | `vyntia/B2-polish-identity` | Polish wave: identity (users, roles, RBAC UI) | B.1 | TBD |
-| B.3  | `vyntia/B3-polish-organization` | Polish wave: organization (departments, locations, company config) | B.1 | TBD |
-| B.4  | `vyntia/B4-polish-employees` | Polish wave: employees (Empleado + datos personales/familiares/académicos) | B.1 | TBD |
-| B.5  | `vyntia/B5-polish-contracts` | Polish wave: contracts + L3.10.3 stale consumer audit + ViewSet tenant gaps | B.1 | TBD |
-| B.5b | `vyntia/B5b-polish-documents-onboarding` | Polish wave: documents + onboarding (L3.11 + media segregation + email branding) | B.1 | TBD |
-| B.6  | `vyntia/B6-positions-orgchart` | Módulo 02: Position + OrgChart | B.3 | TBD |
-| B.7  | `vyntia/B7-ccf-salaryband` | Módulo 02: CCF (Ley 30709) + SalaryBand | B.6 | TBD |
-| B.8  | `vyntia/B8-mpp-cpe` | Módulo 02: MPP + CPE (SERVIR) | B.6 | TBD |
-| B.9  | `vyntia/B9-seleccion` | Módulo 03.1: Selección (7-model module) | B.6 | TBD |
-| B.10 | `vyntia/B10-vinculacion-tregistro` | Módulo 03.2: Vinculación + T-Registro | B.5 | TBD |
-| B.11 | `vyntia/B11-induccion-prueba` | Módulo 03.3+4: Inducción + Período de prueba | B.10 | TBD |
-| B.12 | `vyntia/B12-legajos-completos` | Módulo 03.5: Legajos digitales completos | B.5b | TBD |
-| B.13 | `vyntia/B13-desplazamiento` | Módulo 03.6: Desplazamiento (rotación, encargatura, destaque) | B.10 | TBD |
-| B.14 | `vyntia/B14-desvinculacion-liquidacion` | Módulo 03.7: Desvinculación + liquidación | B.10 | TBD |
-| B.15 | `vyntia/B15-policies` | Módulo 01: Policies | B.1 | TBD |
-| B.16 | `vyntia/B16-e2e-close-out` | E2E + docs + tag b-vyntia-core-complete | B.1-B.15 | TBD |
+| Fase | Branch | Scope | Necesita | Plan detallado | Merge SHA |
+|------|--------|-------|----------|----------------|-----------|
+| B.0  ✅ | `vyntia/B0-audit` | Audit & inventory | A, C | `2026-05-09-vyntia-B0-audit.md` | `4bb747b9` |
+| B.1  ✅ | `vyntia/B1-polish-baseline` | Polish wave: bug-fix baseline (pytest, tsc, lint, tenant audit fixes) | B.0 | `2026-05-09-vyntia-B1-polish-baseline.md` | `dff98e67` |
+| B.2  ✅ | `vyntia/B2-polish-identity` | Polish wave: identity (users, roles, RBAC UI) | B.1 | `2026-05-09-vyntia-B2-polish-identity.md` | `b529b149` |
+| B.3  ✅ | `vyntia/B3-polish-organization` | Polish wave: organization (departments, locations, company config) | B.1 | `2026-05-10-vyntia-B3-polish-organization.md` | `a98e3891` |
+| B.4  ✅ | `vyntia/B4-polish-employees` | Polish wave: employees | B.1 | `2026-05-10-vyntia-B4-polish-employees.md` | `0b3a3c99` |
+| B.5  ✅ | `vyntia/B5-polish-contracts` | Polish wave: contracts + L3.10.3 stale consumers + tenant gaps | B.1 | `2026-05-10-vyntia-B5-polish-contracts.md` | `c5e152d1` |
+| B.5b ✅ | `vyntia/B5b-polish-documents-onboarding` | Polish wave: documents + onboarding (L3.11 + media segregation + email branding) | B.1 | `2026-05-10-vyntia-B5b-polish-documents-onboarding.md` | `0059cd7f` |
+| B.6  ✅ | `vyntia/B6-positions-orgchart` | Módulo 02: Position + OrgChart | B.3 | `2026-05-10-vyntia-B6-positions-orgchart.md` | `79ccb27e` |
+| B.7  ✅ | `vyntia/B7-ccf-salaryband` | Módulo 02: CCF (Ley 30709) + SalaryBand | B.6 | `2026-05-10-vyntia-B7-ccf-salaryband.md` | `28265dcf` |
+| B.8  ✅ | `vyntia/B8-mpp-cpe` | Módulo 02: MPP + CPE (SERVIR) | B.6 | `2026-05-10-vyntia-B8-mpp-cpe.md` | `bb4130a0` |
+| B.9  ✅ | `vyntia/B9-seleccion` | Módulo 03.1: Selección (7-model module) | B.6 | `2026-05-10-vyntia-B9-seleccion.md` | `48c93ab7` |
+| B.10 ✅ | `vyntia/B10-vinculacion-tregistro` | Módulo 03.2: Vinculación + T-Registro | B.5 | `2026-05-14-vyntia-B10-vinculacion-tregistro.md` | `4dde71d9` |
+| B.11 ✅ | `vyntia/B11-induccion-prueba` | Módulo 03.3+4: Inducción + Período de prueba | B.10 | `2026-05-14-vyntia-B11-induccion-prueba.md` | `206a663a` |
+| B.12 ✅ | `vyntia/B12-legajos-completos` | Módulo 03.5: Legajos digitales completos | B.5b | `2026-05-14-vyntia-B12-legajos-completos.md` | `935b1068` |
+| B.13 ✅ | `vyntia/B13-desplazamiento` | Módulo 03.6: Desplazamiento (rotación, encargatura, destaque) | B.10 | `2026-05-15-vyntia-B13-desplazamiento.md` | `ec1c04f8` |
+| B.14 ✅ | `vyntia/B14-desvinculacion-liquidacion` | Módulo 03.7: Desvinculación + liquidación | B.10 | `2026-05-16-vyntia-B14-desvinculacion-liquidacion.md` | `f16f05f1` |
+| B.15a ✅ | `vyntia/B15a-policy-manager` | Módulo 01: Policy manager (Policy + Version + ApprovalFlow + Publication + Ack) | B.1 | `2026-05-17-vyntia-B15a-policy-manager.md` | `98f1bbf5` |
+| B.15b ✅ | `vyntia/B15b-strategic-workforce-compliance` | Módulo 01: Strategic + Workforce + Compliance | B.15a | `2026-05-17-vyntia-B15b-strategic-workforce-compliance.md` | `ce1534d1` |
+| B.16 ✅ | `vyntia/B16-e2e-close-out` | E2E + docs + tag `b-vyntia-core-complete` | B.1-B.15b | `2026-05-19-vyntia-B16-e2e-close-out.md` | *(this phase)* |
 
 ## Order and dependencies
 
@@ -126,3 +127,25 @@ Despite 1 backlog item (item #110), the scope is large: 7-model module (Personne
 - **Inventory:** `.planning/audit-B/INVENTORY.md` (source material from Tasks 1-10)
 - **ADRs:** `.planning/audit-B/ADRS.md` (6 architectural decision records)
 - **Audit plan:** `docs/superpowers/plans/2026-05-09-vyntia-B0-audit.md` (Tasks 1-13 + learnings)
+
+## Close-out
+
+**Sub-project B complete: 2026-05-19, tag `b-vyntia-core-complete`.**
+
+All 18 phases merged to `master` (B.0 → B.16). Module 01 (Policies +
+Strategic + Workforce + Compliance), Module 02 (Positions + CCF +
+MPP/CPE), and Module 03 (Selección → Vinculación → Inducción →
+Legajos → Desplazamiento → Desvinculación) are functional and
+tenant-scoped. Cross-cutting polish across all 6 Core apps
+(identity, organization, employees, contracts, documents,
+onboarding) eliminated the 132-item backlog from B.0 audit.
+
+Final baselines: **pytest 982/1/17**, **vitest 178/28 files**,
+**tsc 1 pre-existing**, **ESLint ≤ 278**, **build clean**,
+**manage.py check 0 silenced**. Lifecycle E2E suite
+(`apps/web/tests/e2e/employment-lifecycle.test.js`) gated by
+`RUN_LIFECYCLE_E2E=1` per ADR-B.5; runbook at
+`docs/operations/run-lifecycle-e2e.md`.
+
+**Next sub-project: D — Vyntia Pay** (planilla peruana real).
+Brainstorm + spec pending.

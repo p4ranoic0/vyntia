@@ -45,11 +45,17 @@ O desde la raíz: `npm run dev:web`.
 
 ## Estado del proyecto
 
-VYNTIA está en migración desde un repo intranet legacy. Ver
-`docs/superpowers/specs/2026-04-25-vyntia-foundation-design.md`
-para el plan completo.
+VYNTIA está en migración modular desde un repo intranet legacy.
+Roadmap de sub-proyectos: `docs/ROADMAP_SUBPROJECTS.md`.
 
-**Capa actual:** L1 — Rebrand superficial. Próximo: L2 — Django 5 upgrade.
+**Sub-proyectos completos:**
+- **A — Foundation** (rebrand + reestructura + Django 5 LTS) — tag `foundation-complete`.
+- **C — Multi-tenancy + RLS** (Postgres Row-Level Security + tenant context) — tag `c-multitenancy-complete`.
+- **B — Vyntia Core funcional** (17 fases: polish wave + Módulos 01-03 completos) — tag `b-vyntia-core-complete`.
+
+**Próximo:** **D — Vyntia Pay** (planilla peruana real: PLAME, T-Registro, AFPnet, CTS, gratificaciones).
+
+Specs y plans en `docs/superpowers/{specs,plans,summaries}/`.
 
 ## Licencia
 
