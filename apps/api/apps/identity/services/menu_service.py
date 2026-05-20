@@ -76,7 +76,7 @@ class MenuService:
     ) -> Dict[str, Any]:
         """Construye el nodo de menu recursivamente."""
         item = {
-            "id": f"modulo-{modulo.modulo_id}",
+            "id": f"modulo-{modulo.id}",
             "title": modulo.nombre_modulo,
             "icon": modulo.icono_modulo or "circle",
             "path": modulo.ruta_modulo or f"/{modulo.nombre_modulo.lower()}",

@@ -114,7 +114,7 @@ class Command(BaseCommand):
             if verbose:
                 for perm in orphan_perms:
                     self.stdout.write(
-                        f"   - {perm.nombre_permiso} (ID: {perm.permiso_id})"
+                        f"   - {perm.nombre_permiso} (ID: {perm.id})"
                     )
 
             if fix_orphans:
@@ -287,7 +287,7 @@ class Command(BaseCommand):
             if verbose:
                 for dup in duplicates:
                     perms = Permission.objects.filter(nombre_permiso=dup["nombre_permiso"])
-                    ids = ", ".join(str(p.permiso_id) for p in perms)
+                    ids = ", ".join(str(p.id) for p in perms)
                     self.stdout.write(f"   - {dup['nombre_permiso']}: IDs {ids}")
         else:
             self.stdout.write(self.style.SUCCESS("[OK] Sin permisos duplicados"))
