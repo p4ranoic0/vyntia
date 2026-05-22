@@ -74,7 +74,9 @@ apps/api/logs/
 
 # === Claude / agent state (restored from legacy) ===
 .planning/
-.claude/
+.claude/*
+!.claude/agents/
+!.claude/commands/
 .playwright-mcp/
 
 # === VS Code (allow shareable configs only) ===
