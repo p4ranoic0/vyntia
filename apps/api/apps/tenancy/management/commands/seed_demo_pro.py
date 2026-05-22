@@ -38,13 +38,16 @@ from apps.documents.services import dossier_service
 from apps.employees.models import (
     AcademicRecord,
     Candidate,
+    CandidateEvaluation,
     Employee,
     FamilyMember,
     JobApplication,
     JobPosting,
+    MeritRanking,
     PersonnelRequisition,
     SelectionStage,
 )
+from apps.employees.services import compute_merit_ranking
 from apps.identity.models import Permission, Role, RolePermission, User, UserRole
 from apps.organization.models import Department, Position
 from apps.tenancy.models import Tenant, TenantMembership
@@ -67,8 +70,10 @@ RRHH_USERNAME = "rrhh_demo_pro"
 RRHH_EMAIL = "rrhh@demo-pro.vyntia.pe"
 RRHH_PASSWORD = "DemoProRRHH123!"
 
-ROLE_ADMIN = "Admin"
-ROLE_RRHH = "RRHH"
+# Role names MUST match apps.core.constants.Roles. The audit catched the seed
+# using "Admin"/"RRHH" which never satisfied @require_hr (case-sensitive).
+ROLE_ADMIN = "Administrador RRHH"  # core.constants.Roles.ADMIN_RRHH
+ROLE_RRHH = "Analista RRHH"        # core.constants.Roles.ANALISTA_RRHH
 
 # Departments to create (siglas, nombre_unidad_organica)
 DEPARTMENTS = [
@@ -162,6 +167,7 @@ class Command(BaseCommand):
                 last="Demo Pro",
                 tipo="administrador",
                 membership_role="owner",
+                nivel_acceso="total",
             )
             rrhh = self._seed_user(
                 tenant=tenant,
@@ -172,6 +178,7 @@ class Command(BaseCommand):
                 last="RRHH Demo",
                 tipo="rrhh",
                 membership_role="admin",
+                nivel_acceso="departamental",
             )
             roles = self._seed_roles_and_rbac(tenant, admin, rrhh)
             depts = self._seed_departments(tenant)
@@ -180,10 +187,12 @@ class Command(BaseCommand):
             self._seed_family_members(tenant, empleados)
             self._seed_academic_records(tenant, empleados)
             candidates = self._seed_candidates(tenant)
-            requisition = self._seed_requisition(tenant, depts, positions, rrhh)
-            posting, applications = self._seed_posting(
+            requisition = self._seed_requisition(tenant, depts, positions, rrhh, admin)
+            posting, applications, stages = self._seed_posting(
                 tenant, requisition, candidates, admin
             )
+            evaluations = self._seed_evaluations(applications, stages, rrhh)
+            ranking = self._seed_ranking(posting)
             dossiers = self._seed_dossiers(tenant, empleados[:3])
 
         payload = {
@@ -213,6 +222,8 @@ class Command(BaseCommand):
                 "requisitions": 1 if requisition else 0,
                 "postings": 1 if posting else 0,
                 "applications": len(applications),
+                "evaluations": len(evaluations),
+                "ranking_entries": len(ranking),
                 "dossiers": len(dossiers),
             },
         }
@@ -231,6 +242,10 @@ class Command(BaseCommand):
 
         self.stdout.write(f"--fresh: wiping tenant {tenant.slug} ({tenant.id})...")
         # Order matters: delete leaves first to avoid PROTECT violations.
+        MeritRanking.objects.filter(posting__tenant=tenant).delete()
+        CandidateEvaluation.objects.filter(
+            application__posting__tenant=tenant
+        ).delete()
         JobApplication.objects.filter(tenant=tenant).delete()
         SelectionStage.objects.filter(posting__tenant=tenant).delete()
         JobPosting.objects.filter(tenant=tenant).delete()
@@ -296,21 +311,37 @@ class Command(BaseCommand):
         last,
         tipo,
         membership_role,
+        nivel_acceso="personal",
     ):
+        """Idempotent user provisioning.
+
+        `nivel_acceso` defaults to 'personal' (matches User model default) but
+        callers should override for admins/RRHH:
+          - 'total'         : sees everything (PL 1-9)
+          - 'departamental' : sees own department's PL 1-5 (RRHH operativo)
+          - 'personal'      : sees own data + PL 1-3 (default; employee role)
+        """
+        defaults = {
+            "email": email,
+            "nombres_usuario": first,
+            "apellidos_usuario": last,
+            "tipo_usuario": tipo,
+            "is_active": True,
+            "is_staff": True if tipo == "administrador" else False,
+            "nivel_acceso": nivel_acceso,
+        }
         user, created = User.objects.get_or_create(
             username=username,
-            defaults={
-                "email": email,
-                "nombres_usuario": first,
-                "apellidos_usuario": last,
-                "tipo_usuario": tipo,
-                "is_active": True,
-                "is_staff": True if tipo == "administrador" else False,
-            },
+            defaults=defaults,
         )
         if created:
             user.set_password(password)
             user.save()
+        else:
+            # Re-runs: re-sync nivel_acceso in case the seed was upgraded.
+            if user.nivel_acceso != nivel_acceso:
+                user.nivel_acceso = nivel_acceso
+                user.save(update_fields=["nivel_acceso"])
         TenantMembership.objects.update_or_create(
             tenant=tenant,
             user=user,
@@ -535,10 +566,15 @@ class Command(BaseCommand):
             out.append(c)
         return out
 
-    def _seed_requisition(self, tenant, depts, positions, rrhh_user):
+    def _seed_requisition(self, tenant, depts, positions, rrhh_user, admin_user):
+        """Seed a requisition that goes through the real dual-control workflow
+        (rrhh_user approves HR side, admin_user approves Finance side)
+        instead of jumping straight to status='approved'. This exercises the
+        dual control invariant added in Bloque D.
+        """
         position = positions["TI-03"]
         dept = depts["TI"]
-        req, _ = PersonnelRequisition.objects.update_or_create(
+        req, created = PersonnelRequisition.objects.update_or_create(
             tenant=tenant,
             code="REQ-DEMO-001",
             defaults={
@@ -550,9 +586,16 @@ class Command(BaseCommand):
                 "requested_count": 1,
                 "requested_start_date": date.today() + timedelta(days=30),
                 "estimated_monthly_cost": Decimal("3800.00"),
-                "status": "approved",
             },
         )
+        # Walk the real lifecycle: draft → pending_approval → approved.
+        # Only fire transitions if we are not already at the terminal state
+        # (idempotent re-runs must not re-trigger approvals).
+        if req.status not in ("approved", "fulfilled"):
+            if req.status == "draft":
+                req.submit_for_approval()
+            req.approve_hr(user=rrhh_user)
+            req.approve_finance(user=admin_user)
         return req
 
     def _seed_posting(self, tenant, requisition, candidates, admin_user):
@@ -573,7 +616,7 @@ class Command(BaseCommand):
             },
         )
 
-        SelectionStage.objects.update_or_create(
+        stage_curricular, _ = SelectionStage.objects.update_or_create(
             posting=posting,
             order=1,
             defaults={
@@ -585,7 +628,7 @@ class Command(BaseCommand):
                 "weight": Decimal("20.00"),
             },
         )
-        SelectionStage.objects.update_or_create(
+        stage_technical, _ = SelectionStage.objects.update_or_create(
             posting=posting,
             order=2,
             defaults={
@@ -597,7 +640,7 @@ class Command(BaseCommand):
                 "weight": Decimal("40.00"),
             },
         )
-        SelectionStage.objects.update_or_create(
+        stage_interview, _ = SelectionStage.objects.update_or_create(
             posting=posting,
             order=3,
             defaults={
@@ -609,6 +652,7 @@ class Command(BaseCommand):
                 "weight": Decimal("40.00"),
             },
         )
+        stages = [stage_curricular, stage_technical, stage_interview]
 
         applications = []
         for i, c in enumerate(candidates):
@@ -623,7 +667,58 @@ class Command(BaseCommand):
                 },
             )
             applications.append(app)
-        return posting, applications
+        return posting, applications, stages
+
+    def _seed_evaluations(self, applications, stages, evaluator):
+        """Seed CandidateEvaluation rows for applications past the curricular stage.
+
+        Each non-'received' candidate gets a curricular score; finalists also get
+        a technical score. This populates the B.9 ATS demo so MeritRanking can
+        actually rank instead of returning empty.
+        """
+        out = []
+        for i, app in enumerate(applications):
+            if app.status == "received":
+                continue
+            # Curricular score (everyone past received)
+            score_curr = Decimal("15.00") + Decimal(f"{(i * 0.5):.2f}")
+            eval_curr, _ = CandidateEvaluation.objects.update_or_create(
+                application=app,
+                stage=stages[0],
+                defaults={
+                    "evaluator": evaluator,
+                    "score": score_curr,
+                    "notes": f"Evaluación curricular demo — candidato {i + 1}",
+                },
+            )
+            out.append(eval_curr)
+            # Technical score (only finalists + in_evaluation reach here)
+            if app.status in ("finalist", "in_evaluation"):
+                score_tech = Decimal("14.00") + Decimal(f"{(i * 0.7):.2f}")
+                eval_tech, _ = CandidateEvaluation.objects.update_or_create(
+                    application=app,
+                    stage=stages[1],
+                    defaults={
+                        "evaluator": evaluator,
+                        "score": score_tech,
+                        "notes": f"Prueba técnica demo — candidato {i + 1}",
+                    },
+                )
+                out.append(eval_tech)
+        return out
+
+    def _seed_ranking(self, posting):
+        """Compute MeritRanking idempotently via the canonical service."""
+        try:
+            entries = compute_merit_ranking(posting=posting)
+        except Exception as exc:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"MeritRanking skipped: {type(exc).__name__}: {exc}"
+                )
+            )
+            return []
+        return entries
 
     def _seed_dossiers(self, tenant, empleados):
         out = []
