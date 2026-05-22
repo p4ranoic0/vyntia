@@ -109,6 +109,24 @@ class JobPosting(models.Model):
     def __str__(self):
         return f"{self.code or self.id} — {self.title} [{self.get_sector_mode_display()}]"
 
+    @staticmethod
+    def _business_days_between(start, end):
+        """Count Mon-Fri days in [start, end] inclusive of start, exclusive of end.
+
+        Hot-fix interino (2026-05-22): no considera feriados peruanos. Sub-proyecto
+        D agregará un catálogo de feriados nacionales + regionales (Ley 29408 y
+        leyes regionales) para descontarlos también.
+        """
+        if start is None or end is None or end <= start:
+            return 0
+        count = 0
+        cur = start
+        while cur < end:
+            if cur.weekday() < 5:  # 0=lunes ... 4=viernes
+                count += 1
+            cur += timedelta(days=1)
+        return count
+
     def _validate_servir_publication_requirements(self):
         """Hard checks for sector_mode='public_servir' before publishing."""
         errors = []
@@ -117,11 +135,14 @@ class JobPosting(models.Model):
         if not self.applications_open_at or not self.applications_close_at:
             errors.append("SERVIR exige plazos de apertura y cierre de postulaciones.")
         else:
-            delta = (self.applications_close_at - self.applications_open_at).days
-            if delta < self.MIN_PUBLIC_OPEN_BUSINESS_DAYS:
+            business_days = self._business_days_between(
+                self.applications_open_at, self.applications_close_at
+            )
+            if business_days < self.MIN_PUBLIC_OPEN_BUSINESS_DAYS:
                 errors.append(
                     f"SERVIR Art. 5: la convocatoria debe estar abierta al menos "
-                    f"{self.MIN_PUBLIC_OPEN_BUSINESS_DAYS} días (actual: {delta})."
+                    f"{self.MIN_PUBLIC_OPEN_BUSINESS_DAYS} días hábiles "
+                    f"(actual: {business_days})."
                 )
         if not self.transparency_published:
             errors.append(

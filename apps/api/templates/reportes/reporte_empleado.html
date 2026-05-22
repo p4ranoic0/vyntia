@@ -531,7 +531,7 @@
             </td>
             <td>{{ f.nombre_institucion }}</td>
             <td>
-              {{ f.nombre_carrera|default:f.carrera_especialidad|default:"-" }}
+              {{ f.nombre_carrera|default:"-" }}
             </td>
             <td>
               <span
@@ -540,7 +540,7 @@
                 {{ f.get_estado_estudios_display|default:f.estado_estudios }}
               </span>
             </td>
-            <td>{{ f.fecha_graduacion|date:"d/m/Y"|default:f.fecha_termino_estudios|date:"d/m/Y"|default:"-" }}</td>
+            <td>{{ f.fecha_graduacion|date:"d/m/Y"|default:f.fecha_fin|date:"d/m/Y"|default:"-" }}</td>
           </tr>
           {% endfor %}
         </tbody>

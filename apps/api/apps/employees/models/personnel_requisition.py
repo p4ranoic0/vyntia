@@ -119,9 +119,17 @@ class PersonnelRequisition(models.Model):
 
     @transaction.atomic
     def approve_hr(self, *, user):
-        """Mark HR approval. Flips to 'approved' if Finance also approved."""
+        """Mark HR approval. Flips to 'approved' if Finance also approved.
+
+        Dual control: rejects if `user` already approved this requisition as
+        Finance (segregation of duties — same person cannot wear both hats).
+        """
         if self.status not in ('draft', 'pending_approval'):
             raise ValidationError("La requisición no está en estado aprobable.")
+        if self.approved_by_finance_id and self.approved_by_finance_id == user.pk:
+            raise ValidationError(
+                "Control dual: el mismo usuario no puede aprobar como RRHH y como Finanzas."
+            )
         self.approved_by_hr = user
         if self.status == 'draft':
             self.status = 'pending_approval'
@@ -134,9 +142,17 @@ class PersonnelRequisition(models.Model):
 
     @transaction.atomic
     def approve_finance(self, *, user):
-        """Mark Finance approval. Flips to 'approved' if HR also approved."""
+        """Mark Finance approval. Flips to 'approved' if HR also approved.
+
+        Dual control: rejects if `user` already approved this requisition as
+        HR (segregation of duties).
+        """
         if self.status not in ('draft', 'pending_approval'):
             raise ValidationError("La requisición no está en estado aprobable.")
+        if self.approved_by_hr_id and self.approved_by_hr_id == user.pk:
+            raise ValidationError(
+                "Control dual: el mismo usuario no puede aprobar como Finanzas y como RRHH."
+            )
         self.approved_by_finance = user
         if self.status == 'draft':
             self.status = 'pending_approval'

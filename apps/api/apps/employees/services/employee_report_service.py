@@ -19,9 +19,14 @@ class EmpleadoReportService:
 
     @property
     def pdf_generator(self):
-        """Lazy-load PDFGenerator para evitar crash si WeasyPrint no esta disponible."""
+        """Lazy-load PDFGenerator para evitar crash si WeasyPrint no esta disponible.
+
+        Import absoluto: PDFGenerator vive en apps.documents.services, no en
+        apps.employees.services. El import relativo previo (`from .pdf_generator`)
+        rompía con ImportError porque el archivo no existe en este paquete.
+        """
         if self._pdf_generator is None:
-            from .pdf_generator import PDFGenerator
+            from apps.documents.services.pdf_generator import PDFGenerator
 
             self._pdf_generator = PDFGenerator()
         return self._pdf_generator
