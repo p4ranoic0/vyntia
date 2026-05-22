@@ -281,19 +281,60 @@ class EmploymentData(models.Model):
             return f"{self.horario_entrada.strftime('%H:%M')} - {self.horario_salida.strftime('%H:%M')}"
         return "No definido"
     
+    # Regímenes que generan obligación de planilla peruana (T-Registro / PLAME).
+    # Locación de servicios y consultoría son contratos civiles (4ta categoría
+    # tributaria) — NO se reportan en T-Registro de planilla (5ta) y NO generan
+    # gratificación / CTS / vacaciones laborales. Para queries de "empleados
+    # que entran en planilla del mes X", filtra por
+    # `regimen_laboral__in=EmploymentData.REGIMENES_PLANILLA`.
+    REGIMENES_PLANILLA = ('728', '276', '1057', 'practicas')
+
+    def genera_planilla(self):
+        """True si este vínculo laboral entra en T-Registro / PLAME peruana."""
+        return self.regimen_laboral in self.REGIMENES_PLANILLA
+
+    # Días de vacaciones anuales por régimen laboral peruano.
+    # Hot-fix interino del Sprint pre-D (2026-05-22). Sub-proyecto D
+    # reemplazará este map por una tabla configurable por tenant.
+    # Fuentes legales:
+    #   - 728 indefinido / 276 (funcionario público): D.Leg 713 Art. 10 → 30 días.
+    #   - MyPE: Ley 28015 Art. 47 → 15 días.
+    #   - 1057 (CAS): D.Leg 1057 Art. 6 → 30 días.
+    #   - Practicantes (Ley 28518): Art. 13 → 15 días.
+    #   - Locación de servicios: NO genera derecho a vacaciones (es civil, 4ta categoría).
+    #   - Consultoría: igual que locación.
+    _DIAS_VACACIONES_ANUALES_POR_REGIMEN = {
+        '728': 30,
+        '276': 30,
+        '1057': 30,
+        'practicas': 15,
+        'locacion': 0,
+        'consultoria': 0,
+    }
+
+    def dias_vacaciones_anuales(self):
+        """Días de vacaciones anuales según el régimen laboral.
+
+        TODO sub-proyecto D: reemplazar por tabla `RegimenLaboralConfig`
+        configurable por tenant (los MyPEs pueden ser 728 con 15 días
+        si son micro/pequeña empresa registradas).
+        """
+        return self._DIAS_VACACIONES_ANUALES_POR_REGIMEN.get(
+            self.regimen_laboral, 30
+        )
+
     def calcular_vacaciones_pendientes(self):
-        """Calcula los días de vacaciones pendientes."""
-        # Implementar lógica de cálculo de vacaciones
-        # basado en la antigüedad y días ya tomados
-        dias_por_ano = 30  # Días de vacaciones por año
+        """Días de vacaciones acumulados según régimen y antigüedad.
+
+        Locación/consultoría (civil, no laboral) retorna 0.
+        Para los demás regímenes: años_completos * días_por_año del régimen.
+        Días ya tomados deben restarse en una capa superior (vacaciones service).
+        """
+        dias_por_ano = self.dias_vacaciones_anuales()
+        if dias_por_ano == 0:
+            return 0
         anos_completos = self.antiguedad_anos
-        dias_acumulados = anos_completos * dias_por_ano
-        
-        # Aquí se restaría los días ya tomados
-        # dias_tomados = self.vacaciones_tomadas()
-        # return dias_acumulados - dias_tomados
-        
-        return dias_acumulados
+        return anos_completos * dias_por_ano
     
     def generar_codigo_empleado(self):
         """Genera un código único para el empleado."""
