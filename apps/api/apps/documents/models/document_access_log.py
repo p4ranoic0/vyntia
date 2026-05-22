@@ -30,10 +30,15 @@ class DocumentAccessLog(models.Model):
         related_name='+',
     )
 
+    # null=True so dossier-level events (consolidated_pdf aggregate) can be
+    # logged without a single DigitalDocument as target. Per-document
+    # accesses still set this FK normally.
     document = models.ForeignKey(
         'documents.DigitalDocument',
         on_delete=models.CASCADE,
         related_name='access_logs',
+        null=True,
+        blank=True,
     )
     user = models.ForeignKey(
         'identity.User',

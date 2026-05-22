@@ -1366,6 +1366,8 @@ class DocumentosDigitalesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet)
 
     def get_queryset(self):
         """Filter documents based on query parameters."""
+        from apps.documents.services import access_service
+
         queryset = super().get_queryset()
         user = self.request.user
 
@@ -1375,6 +1377,11 @@ class DocumentosDigitalesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet)
                 queryset = queryset.filter(empleado=user.empleado)
             else:
                 return queryset.none()
+
+        # PL gate (#118): hide documents whose required permission_level
+        # exceeds the requester's effective level. Maestro § 6.3.
+        user_level = access_service.user_permission_level(user)
+        queryset = queryset.filter(permission_level__lte=user_level)
 
         # Filter by employee
         empleado_id = self.request.query_params.get("empleado")

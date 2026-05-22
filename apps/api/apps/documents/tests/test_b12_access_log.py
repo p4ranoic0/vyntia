@@ -54,15 +54,17 @@ def standard_doc(employee):
 
 @pytest.fixture
 def hr_user(db):
+    """Departmental-level user — should access PL 1-5 docs (own department's sensitive)."""
     return User.objects.create(
         username='hr_b12', email='hr_b12@test.local',
         tipo_usuario='administrador', estado_usuario='activo',
-        nivel_acceso='alto',
+        nivel_acceso='departamental',
     )
 
 
 @pytest.fixture
 def admin_user(db):
+    """Total-access user — should access everything."""
     return User.objects.create(
         username='admin_b12', email='admin_b12@test.local',
         tipo_usuario='administrador', estado_usuario='activo',
@@ -72,19 +74,20 @@ def admin_user(db):
 
 @pytest.fixture
 def basic_user(db):
+    """Read-only user — should only access PL 1 docs."""
     return User.objects.create(
         username='basic_b12', email='basic_b12@test.local',
-        tipo_usuario='colaborador', estado_usuario='activo',
-        nivel_acceso='bajo',
+        tipo_usuario='consulta', estado_usuario='activo',
+        nivel_acceso='lectura',
     )
 
 
 @pytest.mark.django_db
 class TestUserPermissionLevel:
-    def test_bajo_to_1(self, basic_user):
+    def test_lectura_to_1(self, basic_user):
         assert access_service.user_permission_level(basic_user) == 1
 
-    def test_alto_to_5(self, hr_user):
+    def test_departamental_to_5(self, hr_user):
         assert access_service.user_permission_level(hr_user) == 5
 
     def test_total_to_9(self, admin_user):

@@ -2,9 +2,15 @@
 
 Implements the maestro § 6.3 "control de acceso granular por tipo de documento"
 requirement. Each DigitalDocument carries a numeric `permission_level` (1-9).
-A user's effective level is derived from their `nivel_acceso` string (per the
-identity app):
-  bajo=1 / medio=3 / alto=5 / total=9.
+A user's effective level is derived from their `nivel_acceso` string (per
+`apps.identity.User.NIVEL_ACCESO_CHOICES`):
+
+  total=9 (Acceso Total — RRHH gerencia, sin restricción)
+  departamental=5 (Acceso Departamental — jefes pueden ver lo sensible de su área)
+  personal=3 (Acceso Personal — default, lo propio + lo no sensible)
+  limitado=2 (Acceso Limitado — consulta)
+  lectura=1 (Solo Lectura — auditor/invitado)
+
 Access is granted iff effective_level >= required_level. Every check produces
 an entry in DocumentAccessLog (action='view' / 'download' / ... / 'denied').
 """
@@ -20,11 +26,15 @@ if TYPE_CHECKING:  # pragma: no cover
     from apps.identity.models import User
 
 
+# Maps User.nivel_acceso string → numeric level 1..9.
+# MUST stay in sync with User.NIVEL_ACCESO_CHOICES — drift caused the lockout
+# bug surfaced by the 2026-05-22 BD-poblada audit (#14 in PM report).
 _NIVEL_ACCESO_TO_LEVEL = {
-    'bajo': 1,
-    'medio': 3,
-    'alto': 5,
     'total': 9,
+    'departamental': 5,
+    'personal': 3,
+    'limitado': 2,
+    'lectura': 1,
 }
 
 
