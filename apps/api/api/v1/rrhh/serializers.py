@@ -725,6 +725,46 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Área no encontrada o inactiva.")
         return value
 
+    def validate_numero_documento(self, value):
+        """Validate document number format and uniqueness."""
+        if not value:
+            raise serializers.ValidationError("El número de documento es requerido.")
+        tipo = (self.initial_data.get("tipo_documento") or "DNI").upper()
+        if tipo == "DNI":
+            if not value.isdigit() or len(value) != 8:
+                raise serializers.ValidationError(
+                    "El DNI peruano debe tener exactamente 8 dígitos numéricos."
+                )
+        elif tipo == "CE":
+            if not value.isdigit() or not (8 <= len(value) <= 12):
+                raise serializers.ValidationError(
+                    "El Carné de Extranjería debe tener entre 8 y 12 dígitos."
+                )
+        if Employee.objects.filter(numero_documento=value).exists():
+            raise serializers.ValidationError(
+                "Ya existe un empleado con este número de documento."
+            )
+        return value
+
+    def validate_fecha_nacimiento(self, value):
+        """Validate birth date — no future, minimum age 18 (Ley 28518 practicantes 16-17 require an explicit dedicated endpoint, not the generic Create)."""
+        if value is None:
+            return value
+        today = timezone.now().date()
+        if value > today:
+            raise serializers.ValidationError(
+                "La fecha de nacimiento no puede ser futura."
+            )
+        # Minimum age 18 (Código del Niño y del Adolescente Art. 22).
+        # Practicantes 16-17 (Ley 28518) must use a dedicated intake flow that
+        # records parental consent and the practice agreement — NOT this generic Create.
+        edad_minima = today.replace(year=today.year - 18)
+        if value > edad_minima:
+            raise serializers.ValidationError(
+                "El empleado debe tener al menos 18 años. Para practicantes 16-17 use el flujo dedicado de Ley 28518."
+            )
+        return value
+
     @transaction.atomic
     def create(self, validated_data):
         """Create employee with all related data."""

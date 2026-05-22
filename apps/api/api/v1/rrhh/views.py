@@ -757,7 +757,7 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             )
 
 
-class DatosFamiliaresViewSet(viewsets.ModelViewSet):
+class DatosFamiliaresViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for FamilyMember management. Employees can manage their own records."""
 
     queryset = FamilyMember.objects.select_related("empleado")
@@ -801,7 +801,7 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
         empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     def create(self, request, *args, **kwargs):
         """Crear datos familiares — empleado solo puede crear para su propio legajo."""
@@ -858,7 +858,7 @@ class DatosFamiliaresViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class DatosAcademicosViewSet(viewsets.ModelViewSet):
+class DatosAcademicosViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """ViewSet for AcademicRecord management. Employees can manage their own records."""
 
     queryset = AcademicRecord.objects.select_related("empleado")
@@ -872,11 +872,12 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
     ]
     search_fields = ["nivel_educativo", "nombre_institucion", "nombre_carrera"]
     ordering_fields = [
-        "fecha_inicio_estudios",
-        "fecha_termino_estudios",
-        "tipo_formacion",
+        "fecha_inicio",
+        "fecha_fin",
+        "fecha_graduacion",
+        "nivel_educativo",
     ]
-    ordering = ["-fecha_inicio_estudios"]
+    ordering = ["-fecha_inicio"]
 
     def get_permissions(self):
         if self.action in (
@@ -902,7 +903,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
         empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     def create(self, request, *args, **kwargs):
         """Crear datos académicos — empleado solo puede crear para su propio legajo."""
@@ -959,7 +960,7 @@ class DatosAcademicosViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class CursosCertificacionesViewSet(viewsets.ModelViewSet):
+class CursosCertificacionesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     """CRUD for employee courses and certifications. Employees manage own records."""
 
     from apps.employees.models import Certification as _CursosCertificaciones
@@ -1001,7 +1002,7 @@ class CursosCertificacionesViewSet(viewsets.ModelViewSet):
         empleado_id = self.request.query_params.get("empleado")
         if empleado_id:
             queryset = queryset.filter(empleado_id=empleado_id)
-        return queryset
+        return self._filter_by_tenant(queryset)
 
     def create(self, request, *args, **kwargs):
         """Employee can only create curso records for their own legajo."""

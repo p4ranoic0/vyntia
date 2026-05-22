@@ -226,6 +226,14 @@ class SelectionStageViewSet(viewsets.ModelViewSet):
     ordering_fields = ['order']
     ordering = ['posting', 'order']
 
+    def get_queryset(self):
+        """SelectionStage has no direct tenant FK — filter via posting.tenant."""
+        queryset = super().get_queryset()
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is not None:
+            queryset = queryset.filter(posting__tenant=tenant)
+        return queryset
+
 
 class JobApplicationViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     queryset = JobApplication.objects.select_related(
@@ -298,6 +306,14 @@ class CandidateEvaluationViewSet(viewsets.ModelViewSet):
     filterset_fields = ['application', 'stage', 'evaluator', 'passed']
     ordering = ['stage__order']
 
+    def get_queryset(self):
+        """CandidateEvaluation has no direct tenant FK — filter via application.posting.tenant."""
+        queryset = super().get_queryset()
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is not None:
+            queryset = queryset.filter(application__posting__tenant=tenant)
+        return queryset
+
     def perform_create(self, serializer):
         serializer.save(evaluator=self.request.user)
 
@@ -310,3 +326,11 @@ class MeritRankingViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['posting', 'outcome']
     ordering = ['posting', 'rank']
+
+    def get_queryset(self):
+        """MeritRanking has no direct tenant FK — filter via posting.tenant."""
+        queryset = super().get_queryset()
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is not None:
+            queryset = queryset.filter(posting__tenant=tenant)
+        return queryset
