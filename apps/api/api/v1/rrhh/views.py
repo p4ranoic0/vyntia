@@ -28,7 +28,7 @@ from apps.core.exceptions import BusinessLogicError
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.responses import APIResponse
 from apps.core.viewsets import TenantAwareViewSetMixin
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Prefetch, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -524,6 +524,32 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user permissions and parameters."""
         queryset = super().get_queryset()
+
+        # N+1 fix (audit: 66 queries para 15 empleados): EmpleadoListSerializer
+        # solo necesita los datos laborales ACTIVOS (+area) y la ubicación ACTIVA
+        # (+area_destino). Prefetcheamos esas filas en bloque vía to_attr para que
+        # el serializer las lea de cache en lugar de disparar
+        # datos_laborales_actuales()/ubicacion_actual() por cada fila. La lista de
+        # prefetches rica (familiares, formación, etc.) solo aplica al detalle.
+        if self.action == "list":
+            from apps.organization.models import LocationHistory
+
+            queryset = queryset.prefetch_related(None).prefetch_related(
+                Prefetch(
+                    "datos_laborales",
+                    queryset=EmploymentData.objects.filter(
+                        estado_datos="activo"
+                    ).select_related("area"),
+                    to_attr="_datos_laborales_activos",
+                ),
+                Prefetch(
+                    "historial_ubicaciones",
+                    queryset=LocationHistory.objects.filter(
+                        estado_ubicacion="activo"
+                    ).select_related("area_destino"),
+                    to_attr="_ubicaciones_activas",
+                ),
+            )
 
         # Soft delete: Filter out inactive employees by default
         incluir_inactivos = (

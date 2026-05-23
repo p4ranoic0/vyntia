@@ -654,9 +654,30 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
             "ruta_fotografia",
         ]
 
+    @staticmethod
+    def _ubicacion_activa(obj):
+        """Active LocationHistory — uses the list-view prefetch cache if present.
+
+        EmpleadoViewSet.get_queryset() prefetches the active rows into
+        `_ubicaciones_activas` (to_attr) to avoid the per-row N+1. Outside that
+        path (detail, direct serializer use) we fall back to the model method.
+        """
+        cached = getattr(obj, "_ubicaciones_activas", None)
+        if cached is not None:
+            return cached[0] if cached else None
+        return obj.ubicacion_actual()
+
+    @staticmethod
+    def _datos_laborales_activos(obj):
+        """Active EmploymentData — uses the prefetch cache if present (see above)."""
+        cached = getattr(obj, "_datos_laborales_activos", None)
+        if cached is not None:
+            return cached[0] if cached else None
+        return obj.datos_laborales_actuales()
+
     def get_ubicacion_actual(self, obj):
         """Get current location info from LocationHistory or EmploymentData."""
-        ubicacion = obj.ubicacion_actual()
+        ubicacion = self._ubicacion_activa(obj)
         if ubicacion:
             return {
                 "id": ubicacion.area_destino.pk,
@@ -664,7 +685,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
                 "area_nombre": ubicacion.area_destino.nombre_unidad_organica,
             }
         # Fallback: obtener area desde datos laborales activos
-        datos_lab = obj.datos_laborales_actuales()
+        datos_lab = self._datos_laborales_activos(obj)
         if datos_lab and datos_lab.area:
             return {
                 "id": datos_lab.area.pk,
@@ -675,7 +696,7 @@ class EmpleadoListSerializer(serializers.ModelSerializer):
 
     def get_datos_laborales_resumen(self, obj):
         """Get summary of active datos laborales for list view."""
-        datos_lab = obj.datos_laborales_actuales()
+        datos_lab = self._datos_laborales_activos(obj)
         if not datos_lab:
             return None
         return {
