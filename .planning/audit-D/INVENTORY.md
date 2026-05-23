@@ -672,4 +672,171 @@ The legacy `PaySlip` model has an `archivo_pdf` field (line 48, Section 1) but t
 
 ## Section 5 — Regulatory rules inventory (N06-N09)
 
-(Filled by Task 6.)
+> Extracted 2026-05-23. Each row becomes one BACKLOG item in Task 7. Citations use real section numbers from source docs. Phases: D.2 = catálogo, D.4 = engine, D.6 = PaySlip/boleta, D.7 = CTS, D.8 = Gratificaciones, D.9 = PLAME exporter, D.10 = T-Registro, D.11 = AFPnet, D.12 = Liquidación.
+
+---
+
+### 5.1 N06 — Planilla Electrónica SUNAT (T-Registro + PLAME)
+
+| # | Rule | Citation | Phase affected |
+|---|------|----------|----------------|
+| N06-01 | PLAME (Formulario Virtual 0601) genera exactamente 10 archivos .txt + 1 ZIP: PLANI, JORNA, PDT, IMP, DERECH, PRACT, CUART, TERCE, EMPAL, ESTAB | N06 § 4.1 | D.9 |
+| N06-02 | Archivos PLAME: formato plano ASCII, separador pipe `\|`, salto de línea `\n`, fechas DD/MM/AAAA, decimales con punto, sin comillas | N06 § 4.2 | D.9 |
+| N06-03 | El ZIP de los 10 archivos es lo que se carga al PDT PLAME; no se pueden cargar archivos individuales | N06 § 4.4 | D.9 |
+| N06-04 | Plazo de presentación PLAME: según cronograma SUNAT por último dígito de RUC (entre el 11 y 24 del mes siguiente) | N06 § 1.2 | D.9 |
+| N06-05 | T-Registro alta: plazo hasta el primer día de prestación del trabajador (no hay gracia) | N06 § 1.1 | D.10 |
+| N06-06 | T-Registro baja: plazo hasta el día en que se produce el cese | N06 § 1.1 | D.10 |
+| N06-07 | T-Registro modificación: hasta 5 días después del hecho que origina la modificación | N06 § 6 | D.10 |
+| N06-08 | T-Registro declaraciones: tipos `alta`, `baja`, `modificacion`; cada una genera su propio archivo | N06 § 5.3 | D.10 |
+| N06-09 | PVS (Programa Validador SUNAT) valida: (1) número exacto de campos, (2) tipo y longitud, (3) existencia en tabla paramétrica, (4) habilitación por sector, (5) obligatoriedad según estructura, (6) no duplicidad en estructuras 4/5/6/9/10 | N06 § 1.3 | D.9 |
+| N06-10 | PVS debe ejecutarse antes del envío; el sistema debe replicar sus 6 validaciones internamente | N06 § 1.3 | D.9 |
+| N06-11 | Tabla 1 — Tipo de Documento: 00 Otros, 01 DNI, 04 Carnet Extranjería, 06 RUC, 07 Pasaporte, 08 PTP, 10 Doc.Trib, 11 Partida Nacimiento | N06 § 3.1 | D.2 |
+| N06-12 | Tabla 8 — Tipo de Trabajador: MVP D-A usa código 10 (Indeterminado 728) y 11 (Plazo fijo 728); otros regímenes (276, CAS, MYPE, agrario) son post-MVP | N06 § 3.6 | D.2 |
+| N06-13 | Tabla 9 — Ocupación: clasificación CIUO-08 de 4 dígitos; obligatorio en T-Registro por trabajador | N06 § 3.7 | D.2 |
+| N06-14 | Tabla 11 — Régimen Pensionario: 04 = ONP, 21 = AFP INTEGRA, 22 = AFP PRIMA, 23 = AFP PROFUTURO, 25 = AFP HABITAT, 32 = no pensionable | N06 § 3.9 | D.2 |
+| N06-15 | Tabla 12 — Tipo de Contrato: 01 = Indeterminado 728, 02 = Plazo fijo naturaleza temporal, 03 = Plazo fijo accidental, 04 = Plazo fijo obra/servicio; MVP cubre 01-04 | N06 § 3.10 | D.2 |
+| N06-16 | Tabla 13 — Régimen de Salud: 01 = EsSalud, 04 = EsSalud + EPS; campo obligatorio en T-Registro y PLAME | N06 § 3.11 | D.2 |
+| N06-17 | Tabla 17 — Motivo de cese: 01 Renuncia, 02 Despido, 03 Término contrato, 04 Fallecimiento, 08 Mutuo disenso, 11 Despido arbitrario (+ indemnización), 12 Despido falta grave (sin indem); todos generan liquidación | N06 § 3.12 | D.12 |
+| N06-18 | Tabla 18 — Tipo de Jornada: 1 Regular diurna, 2 Regular nocturna, 3 Atípica, 4 Reducida (<4h) | N06 § 3.13 | D.2 |
+| N06-19 | Tabla 21 — Suspensiones: 11 Maternidad (subsidio EsSalud), 12 Incapacidad temporal (empleador días 1-20; EsSalud día 21+), 14 Vacaciones (empleador), 21 Licencia sin goce (NO pago), 22 Huelga (NO pago) | N06 § 3.15 | D.4 |
+| N06-20 | Concepto 0101 Remuneración básica: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=SÍ | N06 § 3.16 | D.2 |
+| N06-21 | Concepto 0102 Alimentación principal especie: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=SÍ | N06 § 3.16 | D.2 |
+| N06-22 | Concepto 0103 Comisiones regulares: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=SÍ* (*solo promedio si ≥3 veces/semestre) | N06 § 3.16 | D.2 |
+| N06-23 | Concepto 0104 Asignación familiar: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=SÍ | N06 § 3.16 | D.2 |
+| N06-24 | Concepto 0106 Horas extras: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=SÍ* (*promedio si ≥3 veces/semestre) | N06 § 3.16 | D.2 |
+| N06-25 | Concepto 0107 Vacaciones: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS=NO | N06 § 3.16 | D.2 |
+| N06-26 | Concepto 0108 Reintegros: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=SÍ, CTS según concepto original | N06 § 3.16 | D.2 |
+| N06-27 | Concepto 0109 Gratificación Fiestas Patrias: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=NO** (**Ley 30334), CTS=NO | N06 § 3.16 | D.2 |
+| N06-28 | Concepto 0110 Gratificación Navidad: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=NO** (**Ley 30334), CTS=NO | N06 § 3.16 | D.2 |
+| N06-29 | Concepto 0111 Gratificación trunca: afecta Renta 5ta=SÍ, AFP=SÍ, EsSalud=NO** (**Ley 30334), CTS=NO | N06 § 3.16 | D.2 |
+| N06-30 | Concepto 0115 Movilidad supeditada a asistencia: NO afecta a ningún tributo/aporte/CTS | N06 § 3.16 | D.2 |
+| N06-31 | Concepto 0116 Refrigerio no principal: NO afecta a ningún tributo/aporte/CTS | N06 § 3.16 | D.2 |
+| N06-32 | Concepto 0120 CTS: NO afecta Renta 5ta (beneficio social), NO afecta AFP, NO afecta EsSalud, NO afecta CTS | N06 § 3.16 | D.2 |
+| N06-33 | Concepto 0501 Indemnización por vacaciones no gozadas: afecta parcialmente Renta 5ta; NO afecta AFP, EsSalud, CTS | N06 § 3.16 | D.2 |
+| N06-34 | Concepto 0503 Indemnización por despido arbitrario: NO afecta Renta 5ta, NO afecta AFP, EsSalud, CTS | N06 § 3.16 | D.2 |
+| N06-35 | Concepto 0601 Aporte obligatorio AFP fondo (10%): rubro descuentos del trabajador | N06 § 3.16 | D.2 |
+| N06-36 | Concepto 0605 Retención Renta 5ta Categoría: rubro tributos del trabajador; mapeado a retención mensual proyectiva | N06 § 3.16 | D.2 |
+| N06-37 | Concepto 0606 Comisión/Prima AFP (comisión AFP + prima SISCO): rubro descuentos del trabajador | N06 § 3.16 | D.2 |
+| N06-38 | Concepto 0607 Aporte voluntario con fin previsional AFP: rubro descuentos del trabajador | N06 § 3.16 | D.2 |
+| N06-39 | Concepto 0801 Aporte EsSalud 9%: rubro aportes del empleador | N06 § 3.16 | D.2 |
+| N06-40 | Todas las tablas paramétricas (Tabla 1, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22, etc.) deben existir como catálogos versionados en BD con campos `valid_from`, `valid_to` | N06 § 5.1 | D.2 |
+| N06-41 | Catálogos Tabla 22: cada concepto necesita metadata JSONB con matriz de afectación: `afecta_renta_5ta`, `afecta_afp`, `afecta_onp`, `afecta_essalud`, `afecta_cts`, `afecta_gratificacion` | N06 § 5.1 | D.2 |
+| N06-42 | Error crítico a prevenir: concepto creado sin mapeo a código SUNAT → campo código_sunat debe ser obligatorio en el formulario de creación de concepto | N06 § 7 | D.2 |
+| N06-43 | Error crítico a prevenir: trabajador AFP sin CUSPP registrado → validación cruzada con AFPnet obligatoria antes de generar PLAME | N06 § 7 | D.11 |
+| N06-44 | Error crítico a prevenir: diferencia entre T-Registro y PLAME (alta/baja no sincronizada) → eventos del sistema deben disparar ambas declaraciones automáticamente | N06 § 7 | D.10 |
+
+---
+
+### 5.2 N07 — Aportes a Pensiones y Salud (AFP, ONP, EsSalud, EPS, SCTR)
+
+| # | Rule | Citation | Phase affected |
+|---|------|----------|----------------|
+| N07-01 | Aporte obligatorio AFP al fondo: 10% de la remuneración asegurable del trabajador | N07 § 1.3 | D.4 |
+| N07-02 | Prima SISCO AFP (seguro invalidez, sobrevivencia, sepelio): 1.37% de la remuneración asegurable, con tope RMA | N07 § 1.3 | D.4 |
+| N07-03 | Tope RMA para prima SISCO (Abr-Jun 2026): S/ 12,598.91 actualizada trimestralmente por SBS; el exceso sobre RMA no paga prima pero sí fondo y comisión | N07 § 1.4 | D.4 |
+| N07-04 | Comisión AFP por flujo: % sobre remuneración mensual; Integra 1.55%, Prima 1.60%, Profuturo 1.69%, Habitat 1.47% | N07 § 1.2 | D.4 |
+| N07-05 | Comisión AFP sobre saldo (mixta — anual): % sobre fondo acumulado; Integra 1.00%, Prima 1.25%, Profuturo 0.68%, Habitat 1.25% | N07 § 1.2 | D.4 |
+| N07-06 | Comisión por flujo: solo pueden mantenerla afiliados antes del 01/02/2013; nuevos afiliados usan mixta por defecto | N07 § 1.5 | D.4 |
+| N07-07 | Licitación AFP 2025-2027: todos los nuevos afiliados al SPP entre 01/06/2025 y 31/05/2027 se incorporan obligatoriamente a Profuturo | N07 § 1.2 | D.4 |
+| N07-08 | Archivo AFPnet: Excel de 25 columnas (CUSPP, tipo doc, nro doc, apellidos, nombres, fecha nacimiento, sexo, relación laboral, fechas, días laborados/subsidiados/no laborados, motivo excepción, remuneración asegurable, aportes voluntarios, aporte empleador, tipo trabajo) | N07 § 1.6 | D.11 |
+| N07-09 | AFPnet soporta DNP (declaración sin pago) y DYP (declaración y pago); el sistema debe generar ambos tipos | N07 § 1.7 | D.11 |
+| N07-10 | Aporte ONP: 13% de la remuneración asegurable, sin tope; base mínima = RMV | N07 § 2.2 | D.4 |
+| N07-11 | Declaración ONP: vía PLAME mensual (no tiene archivo separado como AFPnet) | N07 § 2.2 | D.9 |
+| N07-12 | Cambio SNP→SPP es irreversible (salvo excepciones muy puntuales); el sistema no debe permitir cambio de AFP a ONP | N07 § 2.4 | D.4 |
+| N07-13 | EsSalud: aporte empleador 9% sobre remuneración; base mínima = RMV aunque el empleado ganó menos en el período | N07 § 3.2 | D.4 |
+| N07-14 | EsSalud régimen general D.Leg. 728: 9% empleador; MYPE Micro: 0% (trabajador a SIS); MYPE Pequeña: 9% empleador | N07 § 3.2 | D.4 |
+| N07-15 | Subsidio incapacidad temporal EsSalud: empleador paga días 1-20; EsSalud paga desde día 21 hasta 340/año | N07 § 3.3 | D.4 |
+| N07-16 | Subsidio maternidad: 98 días (49 pre + 49 post); 128 días en parto múltiple o discapacidad del bebé | N07 § 3.3 | D.4 |
+| N07-17 | CITT (Certificado de Incapacidad Temporal para el Trabajo): documento electrónico EsSalud que sustenta el descanso médico; sin CITT no se procesa subsidio | N07 § 3.4 | D.4 |
+| N07-18 | Latencia EsSalud post-cese: 2 meses de cobertura por cada 5 meses de aportes continuos previos; máximo 12 meses | N07 § 3.5 | D.12 (nota) |
+| N07-19 | Crédito EPS: 2.25% de la remuneración asegurable se deduce del aporte EsSalud del empleador (paga 6.75% efectivo a EsSalud) | N07 § 4.3 | D.4 |
+| N07-20 | Tope del crédito EPS: 10 RMV × número de trabajadores cubiertos por EPS | N07 § 4.3 | D.4 |
+| N07-21 | EPS: marcador por empleado "cobertura EPS sí/no"; cálculo crédito automático y factura EPS como egreso separado | N07 § 4.4 | D.4 |
+| N07-22 | SCTR obligatorio solo para actividades de alto riesgo (minería, construcción, hidrocarburos, electricidad, química, pesca); MVP D-A puede marcar como "no aplica" para régimen 728 oficinas | N07 § 5.2 | D.4 (nota) |
+| N07-23 | SCTR tiene dos coberturas: SCTR Salud (accidentes/enfermedades laborales) y SCTR Pensiones (invalidez/sobrevivencia); deben declararse como conceptos separados en PLAME (0803, 0804) | N07 § 5.3 | D.2 |
+| N07-24 | SENATI: 0.75% sobre planilla, solo empleadores de industria manufacturera con más de 20 trabajadores; concepto PLAME 0805 | N07 § 6.1 | D.2 (nota MVP) |
+| N07-25 | SENCICO: 0.2% sobre planilla, solo empleadores del sector construcción; concepto PLAME 0806 | N07 § 6.2 | D.2 (nota MVP) |
+| N07-26 | Seguro de Vida Ley 29549: obligatorio desde el primer día de labor; cobertura mínima 16 rem. muerte natural, 32 rem. muerte accidental, 32 rem. invalidez total permanente | N07 § 6.4 | D.4 |
+| N07-27 | RMA se actualiza trimestralmente por SBS; el sistema debe tener tabla de RMA versionada por trimestre con `valid_from`/`valid_to` | N07 § 1.4 | D.2 |
+| N07-28 | Tasas AFP deben actualizarse desde SBS cada licitación trienal; sistema necesita carga de tasas con vigencia por período | N07 § 1.2 | D.2 |
+
+---
+
+### 5.3 N08 — Beneficios Sociales (CTS, Gratificaciones, Vacaciones, Asignación Familiar, Utilidades)
+
+| # | Rule | Citation | Phase affected |
+|---|------|----------|----------------|
+| N08-01 | CTS fórmula general: `(Rem. Computable ÷ 12 × meses) + (Rem. Computable ÷ 360 × días)` | N08 § 1.3 | D.7 |
+| N08-02 | CTS remuneración computable incluye: remuneración básica + asignación familiar + 1/6 de la última gratificación percibida antes del depósito | N08 § 1.4 | D.7 |
+| N08-03 | CTS remuneración computable incluye promedio de conceptos variables del semestre si se percibieron 3 o más veces: horas extras, comisiones, bonificaciones por producción/eficiencia, bonos puntualidad/asistencia | N08 § 1.4 | D.7 |
+| N08-04 | CTS remuneración computable excluye (Art. 19-20 LPCL): gratificaciones extraordinarias, utilidades, movilidad supeditada a asistencia, refrigerio no principal, asignaciones por eventos personales, condiciones de trabajo, canasta de Navidad | N08 § 1.4 | D.7 |
+| N08-05 | CTS depósito Mayo: semestre noviembre-abril; plazo límite 15 de mayo; remuneración computable tomada al 30 de abril | N08 § 1.5 | D.7 |
+| N08-06 | CTS depósito Noviembre: semestre mayo-octubre; plazo límite 15 de noviembre; remuneración computable tomada al 31 de octubre | N08 § 1.5 | D.7 |
+| N08-07 | CTS trunca al cese: misma fórmula con meses y días desde el último depósito hasta fecha de cese; pago directo al trabajador en 48 horas (no depósito en cuenta CTS) | N08 § 1.6 | D.12 |
+| N08-08 | Ley 32322 (2025): disponibilidad 100% del fondo CTS hasta 31/12/2026 como medida temporal; históricamente solo 50% del excedente de 4 sueldos era disponible | N08 § 1.7 | D.7 (nota) |
+| N08-09 | Gratificación Fiestas Patrias: pago hasta el 15 de julio; base semestre enero-junio | N08 § 2.2 | D.8 |
+| N08-10 | Gratificación Navidad: pago hasta el 15 de diciembre; base semestre julio-diciembre | N08 § 2.2 | D.8 |
+| N08-11 | Fórmula gratificación: `Rem. Computable × (meses trabajados en el semestre ÷ 6)` | N08 § 2.3 | D.8 |
+| N08-12 | Gratificación remuneración computable: incluye asignación familiar y promedio de variables (≥3 veces/semestre); NO incluye 1/6 de gratificación anterior (diferencia con CTS) | N08 § 2.4 | D.8 |
+| N08-13 | Bonificación Extraordinaria Ley 30334: 9% del monto de la gratificación si en EsSalud; 6.75% si tiene cobertura EPS | N08 § 2.5 | D.8 |
+| N08-14 | Bonificación Extraordinaria Ley 30334: NO afecta AFP/ONP/EsSalud ni descuentos; SÍ afecta Renta 5ta | N08 § 2.5 | D.8 |
+| N08-15 | Bonificación Extraordinaria Ley 30334: se paga junto con la gratificación en el mismo plazo | N08 § 2.5 | D.8 |
+| N08-16 | Para percibir gratificación completa el trabajador debe estar en planilla al 15 de julio (FP) o 15 de diciembre (Navidad); si cesa antes aplica trunca | N08 § 2.7 | D.8 |
+| N08-17 | Gratificación trunca al cese: `Rem. Computable × (meses completos ÷ 6)`; derecho solo si cumplió al menos un mes completo en el semestre | N08 § 2.6 | D.12 |
+| N08-18 | Vacaciones: 30 días calendario por cada año completo de servicios, cumpliendo récord vacacional | N08 § 3.2 | D.4 |
+| N08-19 | Récord vacacional jornada 6 días/semana: mínimo 260 días efectivos trabajados en el año | N08 § 3.2 | D.4 |
+| N08-20 | Récord vacacional jornada 5 días/semana: mínimo 210 días efectivos trabajados en el año | N08 § 3.2 | D.4 |
+| N08-21 | Remuneración vacacional: equivalente a la remuneración regular del trabajador en el mes de su goce | N08 § 3.3 | D.4 |
+| N08-22 | Reducción vacacional: el trabajador puede vender hasta 15 días por escrito; queda con descanso mínimo de 15 días | N08 § 3.4 | D.4 (nota) |
+| N08-23 | Acumulación vacacional: hasta 2 períodos consecutivos por acuerdo escrito | N08 § 3.4 | D.4 (nota) |
+| N08-24 | Triple remuneración vacacional por no goce (Ley 30012): trabajador que no gozó vacaciones dentro del año siguiente a su adquisición recibe triple pago (1 rem. trabajo efectivo + 1 rem. descanso no gozado + 1 rem. indemnizatoria) | N08 § 3.5 | D.4 |
+| N08-25 | Vacaciones truncas al cese: `Rem. Computable × (meses + días/30) ÷ 12`; si no se alcanzó el año completo, solo indemnización proporcional | N08 § 3.6 | D.12 |
+| N08-26 | Incapacidad temporal: primeros 60 días cuentan como efectivos para el récord vacacional | N08 § 3.7 | D.4 (nota) |
+| N08-27 | Utilidades: aplica a empresas del régimen general IR 3ra categoría con más de 20 trabajadores | N08 § 4.2 | D.4 (nota) |
+| N08-28 | Porcentajes utilidades por sector: pesqueras/telecomunicaciones/industriales 10%, mineras/comercio/restaurantes 8%, otras actividades 5% | N08 § 4.3 | D.4 (nota) |
+| N08-29 | Distribución utilidades: 50% por días efectivamente laborados (proporcional asistencia) + 50% por monto de remuneraciones percibidas en el ejercicio | N08 § 4.4 | D.4 (nota) |
+| N08-30 | Tope utilidades por trabajador: máximo 18 remuneraciones mensuales; excedente va a FONDOEMPLEO | N08 § 4.5 | D.4 (nota) |
+| N08-31 | Plazo pago utilidades: 30 días naturales tras presentación de DJ Anual IR | N08 § 4.6 | D.4 (nota) |
+| N08-32 | Excluidos de utilidades: practicantes, trabajadores CAS, trabajadores a domicilio, MYPE en régimen especial | N08 § 4.7 | D.4 (nota) |
+| N08-33 | Asignación familiar: 10% de la RMV vigente; 2026 = S/ 113 (RMV S/ 1,130 × 10%) | N08 § 5.3 | D.4 |
+| N08-34 | Asignación familiar: derecho para trabajadores con uno o más hijos menores de 18 años, o hasta 24 si cursan estudios superiores/universitarios | N08 § 5.2 | D.4 |
+| N08-35 | Asignación familiar: monto fijo independiente del número de hijos; afecta CTS, gratificaciones, vacaciones, Renta 5ta, EsSalud, AFP/ONP | N08 § 5.4 | D.4 |
+| N08-36 | Asignación familiar requiere acreditación: partida de nacimiento; para hijos 18-24, constancia de estudios superiores vigente anualmente | N08 § 5.5 | D.4 |
+| N08-37 | Conceptos NO remunerativos (no forman RC): gratificaciones extraordinarias, utilidades, bonificación extraordinaria Ley 30334, movilidad, refrigerio, condiciones de trabajo, canasta navideña, asignaciones por fallecimiento/matrimonio/nacimiento | N08 § 6.1 | D.2 |
+| N08-38 | Liquidación de beneficios sociales al cese: plazo legal 48 horas tras el cese (Art. 3 Ley 27321, SUNAFIL exige cumplimiento estricto) | N08 § 7.1 | D.12 |
+| N08-39 | Conceptos típicos en liquidación: CTS trunca + gratificación trunca + vacaciones truncas/indemnización no goce + remuneración pendiente + bonif. extraordinaria 30334 + indemnización despido arbitrario (si aplica) + descuentos pendientes | N08 § 7.2 | D.12 |
+| N08-40 | Documentos a entregar al cese: Hoja de Liquidación firmada, Certificado de Trabajo (Art. 45 LPCL), constancia de cese para T-Registro, certificado de retenciones Renta 5ta del año | N08 § 7.3 | D.12 |
+| N08-41 | Indemnización despido arbitrario: 1.5 remuneraciones por año de servicio, tope 12 remuneraciones; solo para causales despido arbitrario/indirecto | N08 § 7.2 | D.12 |
+| N08-42 | Prescripción laboral: 4 años desde el día siguiente al cese (Ley 27321); el sistema debe conservar toda la data de planilla para reconstruir el histórico | N08 § 8 | D.4 |
+| N08-43 | Horas extras en CTS: computan solo si se percibieron 3 o más veces en el semestre (promedio); si <3 veces, no computan | N08 § 9 | D.7 |
+| N08-44 | Gratificación anterior (1/6) en CTS: incluida en CTS pero NO en gratificación siguiente; es asimétrica | N08 § 9 | D.7 |
+
+---
+
+### 5.4 N09 — Impuesto a la Renta de 5ta Categoría
+
+| # | Rule | Citation | Phase affected |
+|---|------|----------|----------------|
+| N09-01 | UIT 2026: S/ 5,500 (D.S. 301-2025-EF); deducción automática de 7 UIT = S/ 38,500 | N09 § 3.1 | D.4 |
+| N09-02 | Deducción fija de 7 UIT: si RBA proyectada ≤ 7 UIT → retención mensual = 0; no se retiene nada | N09 § 3.2 | D.4 |
+| N09-03 | Deducción adicional hasta 3 UIT (D.Leg. 1258, S/ 16,500 en 2026): SOLO aplica en regularización anual; NUNCA en retención mensual | N09 § 3.3 | D.4 (nota) |
+| N09-04 | Escala progresiva Renta 5ta (2025-2026): hasta 5 UIT = 8%, 5-20 UIT = 14%, 20-35 UIT = 17%, 35-45 UIT = 20%, más de 45 UIT = 30% | N09 § 4 | D.4 |
+| N09-05 | Tramos en soles 2026: 0–27,500 (8%), 27,500–110,000 (14%), 110,000–192,500 (17%), 192,500–247,500 (20%), 247,500+ (30%) | N09 § 4.1 | D.4 |
+| N09-06 | Paso 1 RBA: `Rem. mensual × meses restantes del año (incl. actual) + Rem. percibidas meses anteriores + Gratificaciones ordinarias del año (jul y dic proyectadas o percibidas) + Bonificación Extraordinaria Ley 30334 (proyectada) + otros ingresos regulares proyectables` | N09 § 5.1 | D.4 |
+| N09-07 | Ingresos extraordinarios (bono único, utilidades, reintegros, gratificación extraordinaria) NO se proyectan; se adicionan al mes en que se pagan | N09 § 5.1 | D.4 |
+| N09-08 | Paso 2 Renta Neta Anual Proyectada: `RNAP = RBA − 7 UIT`; si RNAP ≤ 0 → no hay retención | N09 § 5.2 | D.4 |
+| N09-09 | Paso 3 Impuesto Anual Proyectado (IAP): aplicar escala progresiva a RNAP tramo por tramo | N09 § 5.3 | D.4 |
+| N09-10 | Paso 4 Retención mensual: `IAP ÷ denominador del mes` | N09 § 5.4 | D.4 |
+| N09-11 | Denominadores mensuales: Enero=12, Feb=12, Mar=12, Abr=9, May=8, Jun=8, Jul=8, Ago=5, Sep=4, Oct=4, Nov=4 | N09 § 5.4 | D.4 |
+| N09-12 | Diciembre — ajuste final: `Retención dic = IAP(definitivo) − Retenciones acumuladas ene-nov`; NO hay denominador; regulariza el impuesto definitivo del año | N09 § 5.5 | D.4 |
+| N09-13 | Retención mensual no puede ser negativa; si la regularización da negativa, se arrastra como crédito para el siguiente mes | N09 § 11.4 | D.4 |
+| N09-14 | Total retenido en el año no puede exceder el IAP definitivo; el exceso es devolución al trabajador | N09 § 11.4 | D.4 |
+| N09-15 | Certificado de Rentas y Retenciones: emisión anual antes del 1 de marzo del año siguiente; y al cese si el trabajador cesa durante el año | N09 § 7.1 | D.12 |
+| N09-16 | Conceptos NO afectos a Renta 5ta: CTS, indemnizaciones (despido arbitrario, vacacional, por muerte), condiciones de trabajo (movilidad, refrigerio, ropa, EPP), subsidios (incapacidad, maternidad, lactancia, sepelio), movilidad supeditada a asistencia | N09 § 10 | D.2 |
+| N09-17 | Bonificación Extraordinaria Ley 30334: NO afecta EsSalud/AFP/ONP pero SÍ afecta Renta 5ta | N09 § 10 | D.4 |
+| N09-18 | Extranjeros no domiciliados: retención 30% sobre monto bruto sin deducción, sin escala progresiva; cambia a régimen domiciliados tras 183 días continuos | N09 § 9.5 | D.4 |
+| N09-19 | Prácticas pre/profesionales (Ley 28518): subvenciones NO son renta 5ta; NO se retiene 5ta, NO se aporta EsSalud ni AFP/ONP obligatorio | N09 § 9.4 | D.4 |
+| N09-20 | Cambios retroactivos (ajuste salarial mid-year): el motor debe recalcular RBA desde enero del año fiscal; Event Sourcing permite reconstrucción de cualquier mes histórico | N09 § 11.3 | D.4 |
+| N09-21 | UIT es anual (fijada por D.S. de fin del año anterior); no puede haber cambio de UIT a mitad del ejercicio | N09 § 11.3 | D.4 |
+| N09-22 | Regularización anual: trabajadores con más de un empleador; o que apliquen deducción 3 UIT; lo gestiona el trabajador ante SUNAT (no el empleador) | N09 § 8 | D.4 (nota) |
+| N09-23 | Empleado régimen 276: se retiene 5ta sobre remuneración total excepto aguinaldos (aguinaldos no afectan 5ta) | N09 § 11.4 | D.4 (nota) |
