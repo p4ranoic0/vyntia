@@ -125,10 +125,35 @@ export const dossierService = {
   },
 
   async downloadConsolidatedPdf(id: string): Promise<Blob> {
-    const r = await apiClient.get<Blob>(`${DOSSIERS}/${id}/consolidated-pdf/`, {
-      responseType: 'blob',
-    })
-    return r.data
+    try {
+      const r = await apiClient.get<Blob>(`${DOSSIERS}/${id}/consolidated-pdf/`, {
+        responseType: 'blob',
+      })
+      return r.data
+    } catch (err: unknown) {
+      // The backend gates the download by permission_level (PL gate #118).
+      // On 403, axios returns the APIResponse error body as a Blob — we must
+      // read it to surface the human-readable message instead of the
+      // generic "Request failed with status code 403".
+      const e = err as {
+        response?: { status?: number; data?: Blob | { message?: string } }
+        message?: string
+      }
+      const status = e?.response?.status
+      if (status === 403 && e.response?.data instanceof Blob) {
+        const text = await e.response.data.text()
+        try {
+          const parsed = JSON.parse(text) as { message?: string }
+          throw new Error(
+            parsed?.message ||
+              'No tiene permisos suficientes para descargar este legajo.',
+          )
+        } catch (parseErr) {
+          // Not JSON — fall through to original error
+        }
+      }
+      throw err
+    }
   },
 
   async listAccessLogs(documentId?: string): Promise<DocumentAccessLog[]> {

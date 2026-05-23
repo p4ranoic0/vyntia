@@ -186,6 +186,31 @@ function NuevoEmpleadoDialog({ open, onClose, onCreated }: NuevoEmpleadoDialogPr
       toast.error('Completa los campos obligatorios')
       return
     }
+    // Inline DNI validation mirrors the backend EmpleadoCreateSerializer
+    // (8 numeric digits for tipo=DNI). Surfaces the error before the round-trip.
+    const tipoDoc = (form.tipo_documento || 'DNI').toUpperCase()
+    if (tipoDoc === 'DNI' && !/^\d{8}$/.test(form.numero_documento)) {
+      toast.error('El DNI peruano debe tener exactamente 8 dígitos numéricos.')
+      return
+    }
+    if (tipoDoc === 'CE' && !/^\d{8,12}$/.test(form.numero_documento)) {
+      toast.error('El Carné de Extranjería debe tener entre 8 y 12 dígitos.')
+      return
+    }
+    // If fecha_nacimiento is provided, enforce age >= 18 (matches backend).
+    if (form.fecha_nacimiento) {
+      const dob = new Date(form.fecha_nacimiento)
+      const today = new Date()
+      const minDob = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
+      if (dob > today) {
+        toast.error('La fecha de nacimiento no puede ser futura.')
+        return
+      }
+      if (dob > minDob) {
+        toast.error('El empleado debe tener al menos 18 años.')
+        return
+      }
+    }
     setLoading(true)
     try {
       const result = await onboardingService.crear(form)
@@ -194,6 +219,22 @@ function NuevoEmpleadoDialog({ open, onClose, onCreated }: NuevoEmpleadoDialogPr
       onCreated()
       onClose()
     } catch (err) {
+      // DRF 400 responses come as { field: ["message1", "message2"], ... }.
+      // Show field-level messages so the user knows what to fix instead of a
+      // generic "Request failed with status code 400".
+      const resp = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
+      if (resp && typeof resp === 'object') {
+        const inner = (resp as { data?: Record<string, unknown> }).data ?? resp
+        const messages: string[] = []
+        for (const [field, val] of Object.entries(inner)) {
+          if (Array.isArray(val)) messages.push(`${field}: ${val.join(', ')}`)
+          else if (typeof val === 'string') messages.push(`${field}: ${val}`)
+        }
+        if (messages.length) {
+          toast.error(messages.join(' · '))
+          return
+        }
+      }
       toast.error(err instanceof Error ? err.message : 'Error al crear el empleado')
     } finally {
       setLoading(false)

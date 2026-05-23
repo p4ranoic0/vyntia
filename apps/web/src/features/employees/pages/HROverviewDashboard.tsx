@@ -476,7 +476,7 @@ function PlanillasList({ planillas, loading }: { planillas: PlanillaMensual[]; l
   return (
     <div className="space-y-4">
       {planillas.slice(0, 5).map((p) => {
-        const estado = (p.status ?? 'borrador').toLowerCase()
+        const estado = (p.estado ?? 'borrador').toLowerCase()
         const pct = PLANILLA_ESTADO_PCT[estado] ?? 10
         const color = PLANILLA_ESTADO_COLOR[estado] ?? 'hsl(var(--muted-foreground))'
         return (
@@ -493,7 +493,7 @@ function PlanillasList({ planillas, loading }: { planillas: PlanillaMensual[]; l
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold">{pct}%</span>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-mono">
-                  {p.estado_texto ?? p.status ?? '—'}
+                  {p.estado_texto ?? p.estado ?? '—'}
                 </span>
               </div>
             </div>
@@ -586,7 +586,7 @@ function buildAlertas(
 
   if (planillas && planillas.length > 0) {
     const latest = planillas[0]
-    const estado = (latest.status ?? '').toLowerCase()
+    const estado = (latest.estado ?? '').toLowerCase()
     if (estado === 'aprobada' || estado === 'pagada') {
       alerts.push({
         tipo: 'success',
@@ -655,7 +655,7 @@ export default function HROverviewDashboard() {
 
   // Latest planilla progress for KPI card
   const latestPlanilla = planillas[0]
-  const planillaEstado = (latestPlanilla?.status ?? 'borrador').toLowerCase()
+  const planillaEstado = (latestPlanilla?.estado ?? 'borrador').toLowerCase()
   const planillaPct = PLANILLA_ESTADO_PCT[planillaEstado] ?? 0
 
   // Alerts derived from real data
