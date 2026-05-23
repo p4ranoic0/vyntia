@@ -38,13 +38,31 @@ def _quantize(value) -> Decimal:
 
 
 def _months_between(start: date, end: date) -> int:
-    """Whole months between two dates (inclusive end)."""
+    """Whole completed months of service between two dates.
+
+    A month is "completed" only once its day-of-month anniversary is reached:
+    01-Ene → 01-Feb = 1 mes; 01-Jun → 15-Jun = 0 meses (fracción). El conteo NO
+    suma +1 inclusivo (bug audit contracts-v1): la fracción de mes no debe
+    pagarse como mes completo en CTS / vacaciones truncas / gratificación.
+    """
     if end < start:
         return 0
     months = (end.year - start.year) * 12 + (end.month - start.month)
-    if end.day >= start.day:
-        months += 1
+    if end.day < start.day:
+        months -= 1
     return max(months, 0)
+
+
+def _minus_one_year(d: date) -> date:
+    """d trasladado un año atrás, manejando 29-feb (→ 28-feb en año no bisiesto).
+
+    `date.replace(year=...)` lanza ValueError para 29-feb cuando el año destino
+    no es bisiesto (bug audit contracts-v1: cese 29-feb crasheaba la liquidación).
+    """
+    try:
+        return d.replace(year=d.year - 1)
+    except ValueError:
+        return d.replace(year=d.year - 1, day=28)
 
 
 def _current_semester_start(reference: date) -> date:
@@ -97,13 +115,10 @@ def _compute_vac_truncas(
     dias_acumulados_no_gozados: Decimal | None = None,
 ) -> tuple[Decimal, dict, str]:
     """Vacaciones truncas: días por mes trabajado del último año × jornal."""
-    inicio_año = date(fecha_cese.year, fecha_cese.month, fecha_cese.day)
-    inicio_año = max(
-        fecha_inicio,
-        date(fecha_cese.year - 1, fecha_cese.month, fecha_cese.day)
-        if fecha_cese >= date(fecha_cese.year, fecha_cese.month, 1)
-        else fecha_inicio,
-    )
+    # Ventana del último año de servicio: desde un año antes del cese (o el
+    # inicio del contrato si es más reciente) hasta el cese. _minus_one_year
+    # maneja el cese 29-feb sin crashear (audit contracts-v1).
+    inicio_año = max(fecha_inicio, _minus_one_year(fecha_cese))
     meses = _months_between(inicio_año, fecha_cese)
     meses = min(meses, 12)
     dias_proporcionales = Decimal(meses) * Decimal('2.5')
@@ -143,9 +158,8 @@ def _compute_indemnizacion(
 ) -> tuple[Decimal, dict, str]:
     """Indemnización despido arbitrario: 1.5 sueldos/año, capped 12 sueldos.
 
-    Años se calcula como (fecha_cese - fecha_inicio).days / 365 (no usamos
-    _months_between para evitar +1 inclusivo que infla el resultado en plazos
-    redondos como 730 días).
+    Años se calcula como (fecha_cese - fecha_inicio).days / 365 — la
+    indemnización requiere precisión fraccional de año, no meses completos.
     """
     if causal not in CAUSALES_INDEMNIZACION:
         return Decimal('0'), {

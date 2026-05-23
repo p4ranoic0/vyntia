@@ -166,7 +166,9 @@ class EmploymentData(models.Model):
         unique_together = [['empleado', 'fecha_inicio_contrato']]
     
     def __str__(self):
-        return f"{self.empleado.nombre_completo} - {self.cargo_empleado} ({self.area.nombre_area})"
+        # Department expone siglas_area / nombre_unidad_organica (no 'nombre_area').
+        area_label = self.area.siglas_area if self.area_id else "—"
+        return f"{self.empleado.nombre_completo} - {self.cargo_empleado} ({area_label})"
     
     @property
     def sueldo_total(self):
@@ -338,7 +340,8 @@ class EmploymentData(models.Model):
     
     def generar_codigo_empleado(self):
         """Genera un código único para el empleado."""
-        area_codigo = self.area.codigo_area[:3].upper() if self.area.codigo_area else 'GEN'
+        # Department no tiene 'codigo_area'; usamos siglas_area como prefijo.
+        area_codigo = self.area.siglas_area[:3].upper() if (self.area_id and self.area.siglas_area) else 'GEN'
         # B.4 #59: PK field was renamed to id (UUID) after L3.10.4e.
         # Use last 8 hex chars of UUID as the readable short code.
         empleado_numero = str(self.empleado.id).replace("-", "")[-8:].upper()
