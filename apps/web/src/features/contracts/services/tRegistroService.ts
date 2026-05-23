@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /**
  * tRegistroService — frontend client for B.10 T-Registro SUNAT (Module 03.2).
@@ -176,10 +177,14 @@ export const tRegistroService = {
   },
 
   async downloadAnexo3Txt(id: string): Promise<Blob> {
-    const r = await apiClient.get<Blob>(
-      `${BASE}/${id}/anexo3-txt/`,
-      { responseType: 'blob' },
-    )
-    return r.data
+    try {
+      const r = await apiClient.get<Blob>(
+        `${BASE}/${id}/anexo3-txt/`,
+        { responseType: 'blob' },
+      )
+      return r.data
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
 }

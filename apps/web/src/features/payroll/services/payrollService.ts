@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/api/api";
+import { unwrapBlobError } from "@/shared/api/blob";
 
 export type TipoConceptoRemuneracion = "ingreso" | "descuento";
 
@@ -706,21 +707,29 @@ export const payrollService = {
   },
 
   async downloadBoletaPdf(id: string): Promise<Blob> {
-    const response = await apiClient.get(
-      `/api/v1/payroll/payslips/${id}/pdf/`,
-      {
-        responseType: "blob",
-      },
-    );
-    return response.data as Blob;
+    try {
+      const response = await apiClient.get(
+        `/api/v1/payroll/payslips/${id}/pdf/`,
+        {
+          responseType: "blob",
+        },
+      );
+      return response.data as Blob;
+    } catch (err) {
+      throw await unwrapBlobError(err);
+    }
   },
 
   async descargaMasivaBoletas(planillaId: string): Promise<Blob> {
-    const response = await apiClient.getBlob(
-      `/api/v1/payroll/payslips/descarga-masiva/`,
-      { planilla_id: planillaId },
-    );
-    return response.data;
+    try {
+      const response = await apiClient.getBlob(
+        `/api/v1/payroll/payslips/descarga-masiva/`,
+        { planilla_id: planillaId },
+      );
+      return response.data;
+    } catch (err) {
+      throw await unwrapBlobError(err);
+    }
   },
 
   // ========== Calendarios de Pago ==========

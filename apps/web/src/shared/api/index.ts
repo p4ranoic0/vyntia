@@ -21,6 +21,7 @@ export {
   isServerError,
   isValidationError,
 } from "./errorUtils";
+export { unwrapBlobError } from "./blob";
 export {
   extractCollection,
   normalizeEmployee,
