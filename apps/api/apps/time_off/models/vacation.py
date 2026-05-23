@@ -160,7 +160,7 @@ class VacationConfiguration(models.Model):
     
     def __str__(self):
         if self.tipo_configuracion == 'area' and self.area:
-            return f"Configuración {self.area.nombre_area} - {self.dias_por_ano} días"
+            return f"Configuración {self.area.nombre_unidad_organica} - {self.dias_por_ano} días"
         elif self.tipo_configuracion == 'empleado' and self.empleado:
             return f"Configuración {self.empleado.nombre_completo} - {self.dias_por_ano} días"
         else:
