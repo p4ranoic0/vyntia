@@ -578,20 +578,20 @@ class EmpleadoSerializer(serializers.ModelSerializer):
         return value
 
     def validate_fecha_nacimiento(self, value):
-        """Validate birth date."""
-        if value:
-            if value > timezone.now().date():
-                raise serializers.ValidationError(
-                    "La fecha de nacimiento no puede ser futura."
-                )
-
-            # Check minimum age (18 years)
-            edad_minima = timezone.now().date() - timedelta(days=18 * 365)
-            if value > edad_minima:
-                raise serializers.ValidationError(
-                    "El empleado debe ser mayor de 18 años."
-                )
-
+        """Validate birth date — no future, minimum age 18 (calendar-correct)."""
+        if value is None:
+            return value
+        today = timezone.now().date()
+        if value > today:
+            raise serializers.ValidationError(
+                "La fecha de nacimiento no puede ser futura."
+            )
+        # Calendar-correct minimum age (no leap-year drift from days=18*365).
+        edad_minima = today.replace(year=today.year - 18)
+        if value > edad_minima:
+            raise serializers.ValidationError(
+                "El empleado debe ser mayor de 18 años."
+            )
         return value
 
 
@@ -726,7 +726,14 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_numero_documento(self, value):
-        """Validate document number format and uniqueness."""
+        """Validate document number format and uniqueness PER TENANT.
+
+        The DB constraint is `UniqueConstraint(fields=['tenant','numero_documento'])`,
+        so two tenants CAN share a DNI. The validator must scope its uniqueness
+        check by the request's tenant — otherwise the second tenant onboarding
+        an employee with a DNI already used by tenant A receives a false
+        validation error (audit v3 — N2).
+        """
         if not value:
             raise serializers.ValidationError("El número de documento es requerido.")
         tipo = (self.initial_data.get("tipo_documento") or "DNI").upper()
@@ -740,7 +747,12 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "El Carné de Extranjería debe tener entre 8 y 12 dígitos."
                 )
-        if Employee.objects.filter(numero_documento=value).exists():
+        request = self.context.get("request")
+        tenant = getattr(request, "tenant", None) if request is not None else None
+        qs = Employee.objects.filter(numero_documento=value)
+        if tenant is not None:
+            qs = qs.filter(tenant=tenant)
+        if qs.exists():
             raise serializers.ValidationError(
                 "Ya existe un empleado con este número de documento."
             )
@@ -1341,14 +1353,24 @@ class OnboardingIniciarSerializer(serializers.Serializer):
     fecha_nacimiento = serializers.DateField(required=False, allow_null=True)
 
     def validate_numero_documento(self, value):
-        if Employee.objects.filter(numero_documento=value).exists():
+        request = self.context.get("request")
+        tenant = getattr(request, "tenant", None) if request is not None else None
+        qs = Employee.objects.filter(numero_documento=value)
+        if tenant is not None:
+            qs = qs.filter(tenant=tenant)
+        if qs.exists():
             raise serializers.ValidationError(
                 "Ya existe un empleado con este numero de documento."
             )
         return value
 
     def validate_correo_personal(self, value):
-        if Employee.objects.filter(correo_personal=value).exists():
+        request = self.context.get("request")
+        tenant = getattr(request, "tenant", None) if request is not None else None
+        qs = Employee.objects.filter(correo_personal=value)
+        if tenant is not None:
+            qs = qs.filter(tenant=tenant)
+        if qs.exists():
             raise serializers.ValidationError("Ya existe un empleado con este correo.")
         return value
 

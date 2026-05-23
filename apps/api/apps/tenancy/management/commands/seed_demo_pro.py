@@ -29,11 +29,12 @@ import json
 from datetime import date, time, timedelta
 from decimal import Decimal
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.contracts.models import Contract, EmploymentData
-from apps.documents.models import DigitalDossier
+from apps.documents.models import DigitalDossier, DocumentAccessLog
 from apps.documents.services import dossier_service
 from apps.employees.models import (
     AcademicRecord,
@@ -242,6 +243,8 @@ class Command(BaseCommand):
 
         self.stdout.write(f"--fresh: wiping tenant {tenant.slug} ({tenant.id})...")
         # Order matters: delete leaves first to avoid PROTECT violations.
+        # Document access log first — it FKs DigitalDocument which FKs Employee.
+        DocumentAccessLog.objects.filter(tenant=tenant).delete()
         MeritRanking.objects.filter(posting__tenant=tenant).delete()
         CandidateEvaluation.objects.filter(
             application__posting__tenant=tenant
@@ -350,23 +353,25 @@ class Command(BaseCommand):
         return user
 
     def _seed_roles_and_rbac(self, tenant, admin_user, rrhh_user):
-        admin_role, _ = Role.objects.get_or_create(
-            tenant=tenant,
-            nombre_rol=ROLE_ADMIN,
-            defaults={
-                "descripcion_rol": "Administrador del tenant",
-                "nivel_jerarquico": 10,
-                "es_rol_sistema": False,
-            },
+        """Provision global system roles (via setup_roles_permisos) and link the
+        demo-pro users to them via tenant-scoped UserRole rows.
+
+        The previous version of this seed created per-tenant duplicates of
+        "Administrador RRHH" / "Analista RRHH", which had no RolePermission
+        assignments — so `admin.permisos_activos().count() == 0` and every
+        @require_permissions endpoint returned 403. Fixed in v3 by delegating
+        role+permission+RolePermission creation to the canonical command
+        `setup_roles_permisos` (which works at the global scope, tenant=None)
+        and pointing UserRole.rol at the global rows.
+        """
+        # Idempotent: setup_roles_permisos uses get_or_create for everything.
+        call_command("setup_roles_permisos", verbosity=0)
+
+        admin_role = Role.objects.get(
+            tenant__isnull=True, nombre_rol=ROLE_ADMIN
         )
-        rrhh_role, _ = Role.objects.get_or_create(
-            tenant=tenant,
-            nombre_rol=ROLE_RRHH,
-            defaults={
-                "descripcion_rol": "Recursos Humanos",
-                "nivel_jerarquico": 8,
-                "es_rol_sistema": False,
-            },
+        rrhh_role = Role.objects.get(
+            tenant__isnull=True, nombre_rol=ROLE_RRHH
         )
         UserRole.objects.update_or_create(
             tenant=tenant,
