@@ -1,16 +1,17 @@
 # Sub-project D — Vyntia Pay — Master Roadmap
 
-> Tentative phase structure for sub-project D. Will be **CONFIRMED** by D.0 audit (Task 13 of D.0 plan).
+> Confirmed phase structure for sub-project D. **CONFIRMED** by D.0 audit 2026-05-23.
 > Source spec: `docs/superpowers/specs/2026-05-23-vyntia-D-vyntia-pay-design.md` (commit `bdbe7c02`).
-> Spec date: 2026-05-23. Roadmap version: **TENTATIVE** (pre-D.0 audit).
+> Spec date: 2026-05-23. Roadmap version: **CONFIRMED 2026-05-23 (per D.0 audit — see .planning/audit-D/ROADMAP-D.md)**.
 
 ## Phase table
 
 | Fase | Branch | Scope | Necesita | Plan detallado | Sign-off | Merge SHA |
 |------|--------|-------|----------|----------------|----------|-----------|
 | D.0  | `vyntia/D0-audit` | Audit & inventory (legacy payroll cero-consumo confirm, BACKLOG ~80-120 regulatory rules, 8 ADRs) | A, C, B | `2026-05-23-vyntia-D0-audit.md` | — | TBD |
-| D.1  | `vyntia/D1-polish-baseline` | Polish wave: drop 9 modelos legacy + skeleton greenfield apps.payroll/ + audit_lite payroll payloads | D.0 | TBD | — | TBD |
-| D.2  | `vyntia/D2-catalogo-regulatorio` | TaxParameter + PayrollConcept (Tabla 22 oficial) + RegimenConfig + seed `seed_payroll_catalog` | D.1 | TBD | — | TBD |
+| D.1a | `vyntia/D1a-migrate-consumers` | Migrate 5 active consumers (views.py, serializers.py, remuneraciones_views.py, payrollService.ts, HROverviewDashboard) to stub endpoints or deprecation wrapper | D.0 | TBD post-D.0 | — | TBD |
+| D.1b | `vyntia/D1b-drop-legacy` | Drop 9 legacy models + 2 services + 2 migrations + 1 management command + AuditEvent.schema_version migration | D.1a | TBD | — | TBD |
+| D.2  | `vyntia/D2-catalogo-regulatorio` | TaxParameter + PayrollConcept (Tabla 22 oficial) + RegimenConfig + seed `seed_payroll_catalog` | D.1b | TBD | — | TBD |
 | D.3  | `vyntia/D3-compensation-contract` | Compensation modelo versionado + admin CRUD + migrate command desde EmploymentData | D.2 | TBD | — | TBD |
 | D.4  | `vyntia/D4-engine-728` | Regime728Strategy.compute_payslip completo (ingresos, descuentos, Renta 5ta, EsSalud, AFP/ONP) + ~30 golden cartilla SUNAT | D.2, D.3 | TBD | ⚠️ | TBD |
 | D.5  | `vyntia/D5-payroll-run-lifecycle` | PayrollRun state machine + service + PayrollAdjustment + admin UI lifecycle + audit events | D.4 | TBD | — | TBD |
@@ -26,10 +27,20 @@
 
 ⚠️ = **Regulatory sign-off gate** — merge bloqueado hasta que el user firme `.planning/dpay/D<N>/REGULATORY-SIGNOFF.md` con `APPROVED`.
 
+## Adjustments by D.0 audit
+
+> Full detail in `.planning/audit-D/ROADMAP-D.md`. Summary of 5 adjustments applied:
+
+1. **D.1 SPLIT into D.1a + D.1b (CRITICAL)** — cero-consumo audit (Task 2) FAILED: 5 active consumers found (`views.py`, `serializers.py`, `remuneraciones_views.py`, `payrollService.ts`, `HROverviewDashboard`). D.1a migrates consumers first; D.1b drops legacy only after consumers are safely migrated. Total phase count grows 15 → 16.
+2. **D.2 dependency updated** — D.2 now depends on D.1b (was D.1). Dependency cascade propagated through all downstream phases.
+3. **D.4 split deferred** — D.4 has 32 BACKLOG items (densest phase). Candidate split (D.4a/D.4b) identified but NOT applied: keep as single phase, revisit at D.4 kickoff if Renta 5ta requires a separate compute pass.
+4. **D.4/D.7 blockers CLEARED** — `business_days_between` + `holidays.py` landed and verified by Task 3/Task 5. D.4 and D.7 can proceed without external prerequisite work. `AuditEvent.schema_version` migration addressed in D.1b scope.
+5. **All 8 ADRs accepted** — ADR-D.1 through ADR-D.8 status = `accepted`. No `proposed` status remaining. D.1a can proceed immediately after D.0 merges.
+
 ## Order and dependencies
 
 ```
-D.0 → D.1 → D.2 → D.3
+D.0 → D.1a → D.1b → D.2 → D.3
                    ↓
                   D.4 ⚠️
                    ↓
@@ -45,7 +56,7 @@ D.0 → D.1 → D.2 → D.3
             D.14 (close-out)
 ```
 
-**Camino crítico secuencial:** D.0 → D.1 → D.2 → D.3 → D.4 → D.5 → D.6 → D.14 = ~14-17 días.
+**Camino crítico secuencial:** D.0 → D.1a → D.1b → D.2 → D.3 → D.4 → D.5 → D.6 → D.14 = ~14-17 días.
 **Con paralelización post-D.5:** ~10-12 días (D.7∥D.8 luego D.12; D.9∥D.10∥D.11 paralelas; D.13 paralela).
 **Hazard:** paralelización requiere git worktree por terminal (ver memoria `concurrent_terminals_git_hazard.md`) para evitar resets cruzados sobre tree compartido.
 
@@ -78,9 +89,9 @@ D.0 audit produce el set de 8 ADRs antes que D.1 toque código:
 - ADR-D.7 PVS validator scope (qué reglas replicamos)
 - ADR-D.8 Regulatory sign-off workflow (.planning/dpay/D<N>/REGULATORY-SIGNOFF.md template)
 
-## Adjustments anticipated by audit
+## Pre-audit anticipated adjustments (reference only — now resolved above)
 
-D.0 audit puede ajustar la roadmap. Anticipated adjustments (a confirmar):
+D.0 audit podía ajustar la roadmap. Adjustments confirmed — see "Adjustments by D.0 audit" section above.
 
 ### Posible split de D.4
 
@@ -98,11 +109,12 @@ Si los 10 archivos PLAME se vuelven 10 implementaciones distintas, considerar sp
 
 Si user al hacer sign-off de D.4 detecta gap (ej. componente faltante de la remuneración computable), se inserta D.4c antes de D.5 con el fix. Mismo patrón para D.7/D.8.
 
-## Dependencies verified (tentative, pre-audit)
+## Dependencies verified (confirmed post-D.0 audit, 2026-05-23)
 
 - D.0 (audit) depende de A, C, B ✓ (todos completos)
-- D.1 (polish) depende de D.0 ✓
-- D.2 (catalogo) depende de D.1 ✓
+- D.1a (migrate consumers) depende de D.0 ✓ — D.1 split required; cero-consumo FAILED (5 active consumers)
+- D.1b (drop legacy) depende de D.1a ✓
+- D.2 (catalogo) depende de D.1b ✓ (was D.1 — updated per D.1 split)
 - D.3 (Compensation) depende de D.2 ✓
 - D.4 (engine) depende de D.2 + D.3 ✓
 - D.5 (lifecycle) depende de D.4 ✓
@@ -118,11 +130,12 @@ Si user al hacer sign-off de D.4 detecta gap (ej. componente faltante de la remu
 
 ## Estimated effort
 
-~3-4 semanas calendario para los 15 fases (3-4× más rápido que B porque scope técnico es menor — 11 modelos nuevos vs 62 de B; pero densidad calculatoria es mayor).
+~3-4 semanas calendario para los 16 fases (3-4× más rápido que B porque scope técnico es menor — 11 modelos nuevos vs 62 de B; pero densidad calculatoria es mayor).
 
 Por fase:
 - D.0 audit: 1-2 días (1 person)
-- D.1 polish: 1 día
+- D.1a migrate consumers: 2-3 días
+- D.1b drop legacy: 1 día
 - D.2-D.3 setup: 2 días c/u
 - D.4 engine: 3-4 días + sign-off latency
 - D.5-D.6: 2-3 días c/u
@@ -138,7 +151,7 @@ Por fase:
 
 | Métrica | Pre-D actual | Target post-D |
 |---|---|---|
-| Backend pytest passing | 985 | ~1100+ |
+| Backend pytest passing | 1058 (confirmed D.0 Task 5 + Task 10) | ~1100+ |
 | Backend pytest failing | 1 (`test_permisos_debug` pre-existing) | 1 (mismo) |
 | Frontend vitest | 178/28 files | ~200+/35+ |
 | Frontend tsc | 1 (BlankEnum.ts pre-existing) | 1 (mismo) |
