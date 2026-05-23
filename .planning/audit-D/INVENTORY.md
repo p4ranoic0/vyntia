@@ -416,7 +416,200 @@ def can_access(user, document) -> bool:
 
 ## Section 3 — Frontend payroll legacy + portal empleado
 
-(Filled by Task 4.)
+### 4.1 Inventory of `apps/web/src/features/payroll/` files
+
+**File count:** 13 files (8 pages, 1 service, 2 hooks, 2 index files)
+
+| File | Type | External consumers? | API calls | D-I disposition |
+|---|---|---|---|---|
+| `index.ts` | Index re-export | None (module index) | None | ✅ KEEP (module structure) |
+| `pages/index.ts` | Index re-export | None (module index) | None | ✅ KEEP |
+| `pages/BoletasPagoPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/payslips/`, `/api/v1/payroll/monthly-runs/` | ⚠️ ACTIVE (legacy boleta viewer) — D.6 replaces |
+| `pages/ConfiguracionRemuneracionesPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/compensation-configurations/` | ⚠️ ACTIVE (legacy concept catalog) — D.2 replaces |
+| `pages/ConfiguracionUitPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/tax-parameters/` | ⚠️ ACTIVE (legacy UIT config) — D.2 replaces |
+| `pages/DescuentosMasivosPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/mass-deductions/` | ⚠️ ACTIVE (legacy bulk deductions) — D.13 replaces |
+| `pages/PlanillasMensualesPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/monthly-runs/`, `/api/v1/payroll/details/` | ⚠️ ACTIVE (legacy payroll runs) — D.5 replaces |
+| `pages/ProcesoPlanillasPage.tsx` | Admin page | Imported by `App.tsx` (routing) | Multiple `/api/v1/payroll/*` endpoints | ⚠️ ACTIVE (legacy payroll workflow) — D.5 replaces |
+| `pages/RemuneracionesHomePage.tsx` | Admin page (home/dashboard) | Imported by `App.tsx` (routing) | `/api/v1/payroll/compensation-configurations/` | ⚠️ ACTIVE (legacy payroll menu) — D.1 redirects or hides |
+| `pages/ReportesRemuneracionesPage.tsx` | Admin page | Imported by `App.tsx` (routing) | `/api/v1/payroll/monthly-runs/` | ⚠️ ACTIVE (legacy payroll reports) — D.9/D.11 replace with PLAME/AFPnet |
+| `services/index.ts` | Index re-export | None (module index) | None | ✅ KEEP |
+| `services/payrollService.ts` | Service layer | Consumed by all 8 pages above | **30+ calls** to `/api/v1/payroll/*` endpoints (see list below) | ⚠️ CRITICAL CONSUMER — must preserve endpoints through D.1–D.5 transition |
+| `hooks/index.ts` | Index re-export | None (module index) | None | ✅ KEEP |
+| `hooks/useRemuneraciones.ts` | Custom hook | Consumed by payroll pages (indirectly via service) | Uses `payrollService` functions | ⚠️ ACTIVE (wrapper hook) — maintained through transition |
+
+**API endpoint coverage in `payrollService.ts`:**
+
+| Endpoint family | Method count | Endpoints | Status |
+|---|---|---|---|
+| `/api/v1/payroll/compensation-configurations/` | 4 | list, create, update, remove | ⚠️ Active (D.2 replaces) |
+| `/api/v1/payroll/afp-configurations/` | 4 | listAfp, createAfp, updateAfp, removeAfp | ⚠️ Active (D.2 replaces) |
+| `/api/v1/payroll/tax-parameters/` | 6 | listUit, getUit, createUit, updateUit, removeUit, activarUit | ⚠️ Active (D.2 replaces) |
+| `/api/v1/payroll/monthly-runs/` | 10 | list, get, create, update, remove, generar, regenerar, calcular, preview, aprobar, estadisticas | ⚠️ Active (D.5 replaces) |
+| `/api/v1/payroll/details/` | 6 | list, get, create, update, remove + direct import | ⚠️ Active (D.5 replaces) |
+| `/api/v1/payroll/mass-deductions/` | 7 | list, get, create, update, remove, procesar, anular | ⚠️ Active (D.13 replaces) |
+| `/api/v1/payroll/payslips/` | 4 | list, get, downloadBoletaPdf, descargaMasivaBoletas | ⚠️ Active (D.6 replaces) |
+| `/api/v1/payroll/payment-schedules/` | 6 | list, get, create, update, remove, getCalendario | ⚠️ Active (D.5 replaces) |
+| **Total** | **47 method calls** | **8 endpoint families** | All legacy; D.1–D.6 preserve URIs but replace backend handlers |
+
+**Task 2 finding confirmed:** Frontend is an **ACTIVE CONSUMER** of legacy payroll endpoints. D-I FAIL confirmed — these endpoints must be preserved through the transition or frontend must be redirected per phase. See Section 1 Pre-D-I migration tasks.
+
+---
+
+### 4.2 Inventory of `EmployeeLayout.tsx` structure
+
+**File:** `apps/web/src/shared/layout/EmployeeLayout.tsx` | **Status:** ✅ READY for D.6 extension
+
+**Current layout structure:**
+
+- **Type:** Functional React component accepting `{ children, title?, description? }`
+- **Visual structure:**
+  - Header section with title + optional description (lines 55–67)
+  - Horizontal navigation tabs section (lines 69–99) — using React Router Links
+  - Content area (lines 101–104) — renders `children`
+- **Navigation pattern:** Tab-based with active state detection via `location.pathname` matching
+
+**Current menu items for `tipo_usuario === 'empleado'` context:**
+
+The component does **NOT explicitly check `tipo_usuario`**. Instead, it is used by the employee-facing data pages in `App.tsx` (lines 292–296):
+- `/empleados/datos-personales` → `DatosPersonalesPage`
+- `/empleados/datos-laborales` → `DatosLaboralesPage`
+- `/empleados/datos-academicos` → `DatosAcademicosPage`
+- `/empleados/datos-familiares` → `DatosFamiliaresPage`
+
+The `EmployeeLayout` provides **4 hardcoded sub-menu tabs** (not role-gated):
+
+| Tab | Icon | Route | Description |
+|---|---|---|---|
+| Datos Personales | Users | `/empleados/datos-personales` | Información personal del empleado |
+| Datos Laborales | Briefcase | `/empleados/datos-laborales` | Información laboral y contractual |
+| Datos Académicos | GraduationCap | `/empleados/datos-academicos` | Formación académica y certificaciones |
+| Datos Familiares | Heart | `/empleados/datos-familiares` | Información familiar y contactos de emergencia |
+
+**D.6 `/mis-boletas` integration pattern:**
+
+✅ **Clean extension point identified.** To add `/mis-boletas` in D.6:
+
+1. **Add to `subMenuItems` array** (line 19):
+   ```typescript
+   {
+     title: 'Mis Boletas',
+     icon: FileText, // or ReceiptText from lucide-react
+     href: '/mis-boletas',
+     description: 'Descarga de boletas de pago'
+   }
+   ```
+
+2. **Create route in `App.tsx`** (sibling to lines 292–296):
+   ```typescript
+   <Route path="/mis-boletas" element={
+     <OnboardingRoute>
+       <EmployeeLayout title="Mis Boletas" description="...">
+         <MisBoletasPage />
+       </EmployeeLayout>
+     </OnboardingRoute>
+   } />
+   ```
+
+3. **No layout restructure needed** — `EmployeeLayout` already handles navigation routing correctly; just add the menu item and the corresponding `App.tsx` route.
+
+---
+
+### 4.3 Inventory of employee-facing routes
+
+**Search:** `App.tsx` lines 173–215 and 278–303 show employee route discrimination pattern.
+
+**Route pattern found (lines 178, 183, 197, 202):**
+```typescript
+enabled: user?.tipo_usuario === 'empleado'
+if (user?.tipo_usuario !== 'empleado') return <Navigate to="/" replace />
+```
+
+**Current employee-facing routes (no role guard, open to all authenticated users):**
+
+| Path | Component | Guard | Notes |
+|---|---|---|---|
+| `/` | `<Dashboard />` | `OnboardingRoute` (checks onboarding state) | Home; shared by all users |
+| `/dashboard` | `<Dashboard />` | `OnboardingRoute` | Alias for `/` |
+| `/vacaciones` | `<VacacionesManagementPage />` | None (open to all authenticated) | Vacation request submission |
+| `/vacaciones/nueva-solicitud` | `<NuevaSolicitudPage />` | None | New vacation request |
+| `/vacaciones/solicitudes` | `<SolicitudesPage />` | None | My vacation requests |
+| `/legajo` | `<LegajoPage />` | None | View own legajo (document file) |
+| `/legajo/:empleadoId` | `<LegajoPage />` | None | View employee legajo (admin access gated in component) |
+| `/empleados/datos-personales` | `<DatosPersonalesPage />` | None | View/edit own personal data |
+| `/empleados/datos-laborales` | `<DatosLaboralesPage />` | None | View/edit own employment data |
+| `/empleados/datos-academicos` | `<DatosAcademicosPage />` | None | View/edit own academic data |
+| `/empleados/datos-familiares` | `<DatosFamiliaresPage />` | None | View/edit own family data |
+| `/onboarding` | `<OnboardingPage />` | `OnboardingGuard` (role check + onboarding state) | Employee onboarding flow (new hires only) |
+
+**Key observations:**
+
+1. **No `/mis-boletas` route currently exists.** D.6 must add it here.
+2. **No explicit `tipo_usuario === 'empleado'` guard on employee routes.** Access control is implemented **in component logic** (e.g., `DatosPersonalesPage` checks if user is viewing own record).
+3. **`OnboardingRoute` wrapper** (lines 173–189) redirects employees with incomplete onboarding to `/onboarding`; other users pass through.
+4. **`OnboardingGuard` wrapper** (lines 192–214) enforces that only employees with incomplete onboarding can access `/onboarding`.
+5. **Employee routes live alongside admin routes.** Discrimination happens via `AdminRoute` wrapper on admin pages (lines 162–170: requires `isAdminOrRRHH()`).
+
+**D.6 integration:** Add route after line 296:
+```typescript
+<Route path="/mis-boletas" element={
+  <OnboardingRoute>
+    <EmployeeLayout title="Mis Boletas" description="Tus boletas de pago">
+      <MisBoletasPage />
+    </EmployeeLayout>
+  </OnboardingRoute>
+} />
+```
+
+---
+
+### 4.4 Inventory of boleta-generation templates
+
+**Backend template search:**
+
+Template files found in `apps/api/templates/`:
+- `adendas/`, `certificados/`, `cese/`, `contratos/`, `desplazamiento/`, `induccion/`, `legajo/`, `mpp/`, `reportes/`, etc.
+
+**Boleta search result:** ❌ **NO boleta_*.html template found.**
+
+The legacy `PaySlip` model has an `archivo_pdf` field (line 48, Section 1) but there is **no corresponding HTML template** for boleta rendering.
+
+**Implication for D.6:**
+
+- D.6 must **create a new boleta HTML template** from scratch (or port from INTRANET legacy if available).
+- D.6 will generate boleta PDFs via the new `PaySlip.generate_pdf()` service method.
+- **Recommended template location:** `apps/api/templates/boletas/boleta_pago.html` (parallel to existing structure).
+
+**Templates that may offer reusable structural patterns:**
+
+| Template | Purpose | Reusable for D.6? |
+|---|---|---|
+| `contratos/contrato_728.html` | Contract document | Partial (header/footer, signature block) |
+| `certificados/certificado_laboral.html` | Labor certificate | Partial (employee header block) |
+| `cese/constancia_trabajo.html` | Termination certificate | Partial (employee identifiers) |
+| `legajo/consolidated_index.html` | Legajo index | Likely not (document listing, not pay stub) |
+
+**D.6 design notes:**
+- Boleta must show: period, employee ID, salary components, deductions, net-to-pay
+- Should reuse employee header pattern from contratos/certificados
+- PDF generation via ReportLab (per CLAUDE.md — xhtml2pdf and WeasyPrint unavailable on Windows)
+- Template must be single-line Django tags (no multi-line `{% %}` per CLAUDE.md gotcha)
+
+---
+
+### 4.5 Summary: D-I disposition for frontend payroll
+
+**Frontend payroll legacy status:** ⚠️ **ACTIVE CONSUMER of legacy backend endpoints**
+
+| Component | Consumers | Status | D-I action required? |
+|---|---|---|---|
+| **8 admin pages** (Config, Planillas, Boletas, etc.) | `App.tsx` routing | Active, functional | ✅ Routes preserved; handlers replaced per phase D.1–D.6 |
+| **`payrollService.ts`** | All 8 pages + HROverviewDashboard | Active, 47 method calls | ✅ Endpoints preserved through transition; replaced per phase |
+| **`useRemuneraciones.ts`** | Payroll pages (indirect) | Active wrapper | ✅ Maintained as-is |
+| **`EmployeeLayout.tsx`** | Will be used by `/mis-boletas` (D.6) | Ready to extend | ✅ No changes in D.1; add menu item in D.6 |
+| **Employee routes** (vacaciones, legajo, datos, onboarding) | All authenticated users | Active, working | ✅ `/mis-boletas` added in D.6 |
+| **Boleta templates** | Legacy `PaySlip` generation | ❌ None found | ❌ **D.6 creates new template** |
+
+**Conclusion:** Frontend payroll is **NOT a D-I greenfield candidate**. Legacy endpoints must be preserved and progressively replaced per phase. No frontend code changes required in D.0 or D.1; full redesign happens D.2–D.6.
 
 ## Section 4 — Cross-cutting deuda técnica affecting D
 
