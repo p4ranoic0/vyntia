@@ -400,8 +400,15 @@ class FamilyMember(models.Model):
     @classmethod
     def hijos_menores(cls, empleado=None):
         """Obtiene los hijos menores de edad."""
-        from datetime import timedelta
-        fecha_limite = date.today() - timedelta(days=18*365)  # 18 años atrás
+        # Calendar-correct "18 años atrás" — `timedelta(days=18*365)` drifts ~4-5
+        # days over 18 years (leap years) and could misclassify a child near the
+        # boundary. Same técnica que `_today_minus_18` (Bloque G): replace year,
+        # colapsando Feb-29 → Feb-28 en años no bisiestos (V4-N5).
+        today = date.today()
+        try:
+            fecha_limite = today.replace(year=today.year - 18)
+        except ValueError:
+            fecha_limite = today.replace(year=today.year - 18, day=28)
         
         queryset = cls.objects.filter(
             parentesco='hijo',
