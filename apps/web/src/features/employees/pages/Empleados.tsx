@@ -1,6 +1,7 @@
 import { Skeleton } from '@/shared/components/LoadingSkeleton'
 import { ProfileImage } from '@/shared/components/ProfileImage'
 import { TabAcademicos, TabFamiliares, TabLaborales, TabPersonales } from '@/features/employees/components'
+import { BatchImportDrawer } from '@/features/employees/components/BatchImportDrawer'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -57,6 +58,7 @@ import {
     MoreHorizontal,
     Phone,
     Search,
+    Upload,
     UserPlus,
     Users
 } from 'lucide-react'
@@ -317,6 +319,7 @@ export function Empleados() {
   const [showInactive, setShowInactive] = useState(false)
   const [editTarget, setEditTarget] = useState<Empleado | null>(null)
   const [showNuevo, setShowNuevo] = useState(false)
+  const [showImport, setShowImport] = useState(false)
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
@@ -437,6 +440,11 @@ export function Empleados() {
         onClose={() => setShowNuevo(false)}
         onCreated={() => refetch()}
       />
+      <BatchImportDrawer
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={() => refetch()}
+      />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -446,10 +454,16 @@ export function Empleados() {
             {totalCount} empleado{totalCount !== 1 ? 's' : ''} registrado{totalCount !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={() => setShowNuevo(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Nuevo Empleado
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowImport(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            Importar CSV
+          </Button>
+          <Button onClick={() => setShowNuevo(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Nuevo Empleado
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}

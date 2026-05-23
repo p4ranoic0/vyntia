@@ -11,7 +11,6 @@ Lifecycle: draft → published → in_evaluation → closed | declared_void.
 'cancelled' available before publication.
 """
 import uuid
-from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
@@ -111,21 +110,14 @@ class JobPosting(models.Model):
 
     @staticmethod
     def _business_days_between(start, end):
-        """Count Mon-Fri days in [start, end] inclusive of start, exclusive of end.
+        """Días hábiles (lun-vie, sin feriados) en [start, end): incl. start, excl. end.
 
-        Hot-fix interino (2026-05-22): no considera feriados peruanos. Sub-proyecto
-        D agregará un catálogo de feriados nacionales + regionales (Ley 29408 y
-        leyes regionales) para descontarlos también.
+        Delega en `apps.core.business_days` (catálogo de feriados peruanos
+        Ley 29408). Antes era un hot-fix interino que no descontaba feriados.
         """
-        if start is None or end is None or end <= start:
-            return 0
-        count = 0
-        cur = start
-        while cur < end:
-            if cur.weekday() < 5:  # 0=lunes ... 4=viernes
-                count += 1
-            cur += timedelta(days=1)
-        return count
+        from apps.core.business_days import business_days_between
+
+        return business_days_between(start, end)
 
     def _validate_servir_publication_requirements(self):
         """Hard checks for sector_mode='public_servir' before publishing."""

@@ -106,6 +106,17 @@ export interface DatosAcademicos {
   documento_sustentatorio?: string;
 }
 
+// Batch import (#130)
+export interface BatchImportRowError {
+  row: number;
+  errors: Record<string, unknown>;
+}
+
+export interface BatchImportResult {
+  created: number;
+  errors: BatchImportRowError[];
+}
+
 // Servicio para gestión de empleados
 export const employeesService = {
   /**
@@ -153,6 +164,37 @@ export const employeesService = {
       return response.data;
     } catch (error) {
       console.error("Error creating employee:", error);
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  /**
+   * Importar empleados masivamente desde un CSV (#130).
+   *
+   * Validación todo-o-nada en el backend: si alguna fila falla (HTTP 422),
+   * no se crea ningún empleado y se devuelve el reporte de errores por fila.
+   * Tanto el caso exitoso (201) como el rechazado (422) se normalizan al
+   * mismo shape { created, errors } para que el componente lo muestre igual.
+   */
+  async batchImport(file: File): Promise<BatchImportResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await apiClient.post<{ data: BatchImportResult }>(
+        "/api/v1/employees/batch-import/",
+        formData,
+      );
+      return response.data.data;
+    } catch (error) {
+      // 422 = filas con errores de validación; el reporte viene en .errors
+      const response = (
+        error as {
+          response?: { status?: number; data?: { errors?: BatchImportResult } };
+        }
+      ).response;
+      if (response?.status === 422 && response.data?.errors) {
+        return response.data.errors;
+      }
       throw new Error(getErrorMessage(error));
     }
   },
