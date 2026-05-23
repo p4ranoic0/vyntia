@@ -551,10 +551,20 @@ class EmpleadoSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate_numero_documento(self, value):
-        """Validate document number uniqueness and format."""
+        """Validate document number uniqueness PER TENANT and format.
+
+        The DB constraint is `UniqueConstraint(fields=['tenant','numero_documento'])`,
+        so two tenants CAN share a DNI. This legacy read/update serializer must scope
+        its uniqueness check by the request's tenant — mirroring the fix already in
+        EmpleadoCreateSerializer (audit v4 — N2).
+        """
         if value:
-            # Check uniqueness
+            # Check uniqueness scoped to the request's tenant
+            request = self.context.get("request")
+            tenant = getattr(request, "tenant", None) if request is not None else None
             queryset = Employee.objects.filter(numero_documento=value)
+            if tenant is not None:
+                queryset = queryset.filter(tenant=tenant)
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():

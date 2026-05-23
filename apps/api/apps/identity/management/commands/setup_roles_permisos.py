@@ -111,10 +111,20 @@ class Command(BaseCommand):
             action="store_true",
             help="Recrear asignaciones rol-permiso incluso si ya existen",
         )
+        parser.add_argument(
+            "--seed-admin",
+            action="store_true",
+            help=(
+                "Crear el usuario admin/Admin123! con rol Super Administrador. "
+                "OFF por defecto — credenciales hardcoded son un riesgo en prod. "
+                "Usar solo en entornos de desarrollo/demo locales."
+            ),
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
         force = options.get("force", False)
+        seed_admin = options.get("seed_admin", False)
 
         # 1. Crear roles
         self.stdout.write(self.style.MIGRATE_HEADING("Creando roles..."))
@@ -179,38 +189,44 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"  Asignaciones: {asignaciones_created} creadas"))
 
-        # 4. Crear usuario admin si no existe
-        self.stdout.write(self.style.MIGRATE_HEADING("Verificando usuario admin..."))
-        admin_user, created = User.objects.get_or_create(
-            username="admin",
-            defaults={
-                "email": "admin@vyntia.local",
-                "tipo_usuario": "administrador",
-                "nivel_acceso": "total",
-                "is_staff": True,
-                "is_superuser": True,
-            },
-        )
-        if created:
-            admin_user.set_password("Admin123!")
-            admin_user.save()
-            self.stdout.write(self.style.SUCCESS("  + User admin creado (password: Admin123!)"))
-        else:
-            self.stdout.write("  = User admin ya existe")
-
-        # Asignar rol Super Administrador al admin
-        try:
-            rol_admin = Role.objects.get(nombre_rol="Super Administrador")
-            _, created = UserRole.objects.get_or_create(
-                usuario=admin_user,
-                rol=rol_admin,
-                defaults={"estado_asignacion": "activo"},
+        # 4. Crear usuario admin — SOLO con --seed-admin (riesgo prod: creds hardcoded)
+        if seed_admin:
+            self.stdout.write(self.style.MIGRATE_HEADING("Verificando usuario admin..."))
+            admin_user, created = User.objects.get_or_create(
+                username="admin",
+                defaults={
+                    "email": "admin@vyntia.local",
+                    "tipo_usuario": "administrador",
+                    "nivel_acceso": "total",
+                    "is_staff": True,
+                    "is_superuser": True,
+                },
             )
             if created:
-                self.stdout.write(self.style.SUCCESS("  + Role Super Administrador asignado a admin"))
+                admin_user.set_password("Admin123!")
+                admin_user.save()
+                self.stdout.write(self.style.SUCCESS("  + User admin creado (password: Admin123!)"))
             else:
-                self.stdout.write("  = Role Super Administrador ya asignado a admin")
-        except Role.DoesNotExist:
-            self.stdout.write(self.style.WARNING("  ! Role Super Administrador no encontrado"))
+                self.stdout.write("  = User admin ya existe")
+
+            # Asignar rol Super Administrador al admin
+            try:
+                rol_admin = Role.objects.get(nombre_rol="Super Administrador")
+                _, created = UserRole.objects.get_or_create(
+                    usuario=admin_user,
+                    rol=rol_admin,
+                    defaults={"estado_asignacion": "activo"},
+                )
+                if created:
+                    self.stdout.write(self.style.SUCCESS("  + Role Super Administrador asignado a admin"))
+                else:
+                    self.stdout.write("  = Role Super Administrador ya asignado a admin")
+            except Role.DoesNotExist:
+                self.stdout.write(self.style.WARNING("  ! Role Super Administrador no encontrado"))
+        else:
+            self.stdout.write(self.style.MIGRATE_HEADING("Usuario admin OMITIDO (sin --seed-admin)"))
+            self.stdout.write(
+                "  i Pasa --seed-admin para crear admin/Admin123! en entornos de desarrollo."
+            )
 
         self.stdout.write(self.style.SUCCESS("\nSetup completado exitosamente."))

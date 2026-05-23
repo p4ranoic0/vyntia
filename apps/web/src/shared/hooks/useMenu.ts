@@ -49,31 +49,22 @@ export const useMenu = () => {
    * Función para cargar el menú desde el contexto de autenticación
    */
   const loadMenu = async () => {
-    console.log('🎯 useMenu: Iniciando loadMenu')
-    console.log('🔐 useMenu: isAuthenticated:', isAuthenticated)
-    console.log('👤 useMenu: user:', user)
-    console.log('📋 useMenu: modules:', modules)
-    
     if (!isAuthenticated || !user) {
-      console.log('❌ useMenu: Usuario no autenticado, limpiando menú')
       setMenuItems([])
       stopLoading()
       return
     }
 
     try {
-      console.log('⏳ useMenu: Iniciando carga del menú')
       startLoading()
       setError(null)
-      
+
       // Obtener módulos accesibles desde el servicio de autenticación
       const accessibleModules = authService.getAccessibleModules(modules || [], permissions || [])
-      console.log('✅ useMenu: Módulos accesibles obtenidos:', accessibleModules)
-      
+
       // Convertir módulos a formato MenuItem
       const menuItemsFromModules = convertModulesToMenuItems(accessibleModules)
-      console.log('✅ useMenu: Menú convertido exitosamente:', menuItemsFromModules)
-      
+
       setMenuItems(menuItemsFromModules)
     } catch (err) {
       console.error('❌ useMenu: Error al cargar el menú:', err)
@@ -97,7 +88,6 @@ export const useMenu = () => {
       setMenuItems(fallbackMenu)
     } finally {
       stopLoading()
-      console.log('🏁 useMenu: Carga del menú finalizada')
     }
   }
 

@@ -203,10 +203,6 @@ class ApiClient {
 
   // Manejar errores de autenticación
   private handleAuthenticationError(): void {
-    console.log(
-      "Authentication error - clearing user data and redirecting to login",
-    );
-
     // Limpiar datos del usuario del localStorage
     localStorage.removeItem("user_data");
     localStorage.removeItem("access_token");

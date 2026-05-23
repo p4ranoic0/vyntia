@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /** Job factor reference data (R.M. 243-2018-TR). System-wide. */
 export interface JobFactor {
@@ -289,10 +290,14 @@ export const ccfService = {
 
   // Excel template + import
   async downloadTemplate(): Promise<Blob> {
-    const r = await apiClient.get('/api/v1/compensation/ccf/template-excel/', {
-      responseType: 'blob',
-    })
-    return r.data as Blob
+    try {
+      const r = await apiClient.get('/api/v1/compensation/ccf/template-excel/', {
+        responseType: 'blob',
+      })
+      return r.data as Blob
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
   async uploadCCFExcel(file: File, ccfTitle: string): Promise<CCFImportResult> {
     const formData = new FormData()
