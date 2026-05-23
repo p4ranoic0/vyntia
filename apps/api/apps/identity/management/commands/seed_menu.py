@@ -204,7 +204,26 @@ MENU_STRUCTURE = [
         "ruta": "/legajo",
         "orden": 8,
         "permisos": "ver_empleados",
-        "hijos": [],
+        "hijos": [
+            {
+                "nombre": "Mi Legajo",
+                "icono": "folder",
+                "ruta": "/legajo",
+                "orden": 1,
+                "permisos": "ver_empleados",
+            },
+            {
+                # B.12 — DigitalDossierListPage (Module 03.5). Ruta protegida por
+                # AdminRoute en el FE y RRHHPermission en el backend (admin + RRHH).
+                # ver_empleados lo poseen todos esos roles (gestionar_usuarios es
+                # admin-only y ocultaría el ítem a Analista/Jefe RRHH que sí entran).
+                "nombre": "Gestión de Legajos",
+                "icono": "folder-cog",
+                "ruta": "/legajos-digitales",
+                "orden": 2,
+                "permisos": "ver_empleados",
+            },
+        ],
     },
     {
         "nombre": "Remuneraciones",

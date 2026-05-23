@@ -41,6 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useEmpleados } from '@/features/employees/hooks/useEmployees'
 import { useDebounce } from '@/shared/hooks/useDebounce'
+import { validateDNI, validateCE, validateAge18Plus } from '@/shared/utils/peruvianValidation'
 import { contractsService } from '@/features/contracts/services/contractsService'
 import { employeesService } from '@/features/employees/services/employeesService'
 import { OnboardingCreateData, onboardingService } from '@/features/onboarding/services/onboardingService'
@@ -186,27 +187,26 @@ function NuevoEmpleadoDialog({ open, onClose, onCreated }: NuevoEmpleadoDialogPr
       toast.error('Completa los campos obligatorios')
       return
     }
-    // Inline DNI validation mirrors the backend EmpleadoCreateSerializer
-    // (8 numeric digits for tipo=DNI). Surfaces the error before the round-trip.
+    // Document/age validation mirrors the backend EmpleadoCreateSerializer.
+    // Centralized in @/shared/utils/peruvianValidation (V4-N6) so D-Pay and
+    // onboarding share one source of truth. Surfaces errors before the round-trip.
     const tipoDoc = (form.tipo_documento || 'DNI').toUpperCase()
-    if (tipoDoc === 'DNI' && !/^\d{8}$/.test(form.numero_documento)) {
+    if (tipoDoc === 'DNI' && !validateDNI(form.numero_documento)) {
       toast.error('El DNI peruano debe tener exactamente 8 dígitos numéricos.')
       return
     }
-    if (tipoDoc === 'CE' && !/^\d{8,12}$/.test(form.numero_documento)) {
+    if (tipoDoc === 'CE' && !validateCE(form.numero_documento)) {
       toast.error('El Carné de Extranjería debe tener entre 8 y 12 dígitos.')
       return
     }
     // If fecha_nacimiento is provided, enforce age >= 18 (matches backend).
     if (form.fecha_nacimiento) {
       const dob = new Date(form.fecha_nacimiento)
-      const today = new Date()
-      const minDob = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
-      if (dob > today) {
+      if (dob > new Date()) {
         toast.error('La fecha de nacimiento no puede ser futura.')
         return
       }
-      if (dob > minDob) {
+      if (!validateAge18Plus(form.fecha_nacimiento)) {
         toast.error('El empleado debe tener al menos 18 años.')
         return
       }

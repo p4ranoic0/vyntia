@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /**
  * inductionService — frontend client for B.11 Induction (Module 03.3).
@@ -153,10 +154,14 @@ export const inductionService = {
   },
 
   async downloadCertificatePdf(id: string): Promise<Blob> {
-    const r = await apiClient.get<Blob>(`${PLANS}/${id}/certificate-pdf/`, {
-      responseType: 'blob',
-    })
-    return r.data
+    try {
+      const r = await apiClient.get<Blob>(`${PLANS}/${id}/certificate-pdf/`, {
+        responseType: 'blob',
+      })
+      return r.data
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
 
   async markTaskDone(taskId: string): Promise<InductionTask> {

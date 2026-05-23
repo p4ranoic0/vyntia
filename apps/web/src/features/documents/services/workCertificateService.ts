@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /**
  * workCertificateService — frontend client for B.14 Constancia de Trabajo
@@ -75,9 +76,13 @@ export const workCertificateService = {
   },
 
   async downloadPdf(id: string): Promise<Blob> {
-    const r = await apiClient.get<Blob>(`${BASE}/${id}/download-pdf/`, {
-      responseType: 'blob',
-    })
-    return r.data
+    try {
+      const r = await apiClient.get<Blob>(`${BASE}/${id}/download-pdf/`, {
+        responseType: 'blob',
+      })
+      return r.data
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
 }

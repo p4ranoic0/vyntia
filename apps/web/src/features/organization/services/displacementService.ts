@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /**
  * displacementService — frontend client for B.13 Displacement (Module 03.6).
@@ -174,9 +175,13 @@ export const displacementService = {
   },
 
   async downloadResolutionPdf(id: string): Promise<Blob> {
-    const r = await apiClient.get<Blob>(`${BASE}/${id}/resolution-pdf/`, {
-      responseType: 'blob',
-    })
-    return r.data
+    try {
+      const r = await apiClient.get<Blob>(`${BASE}/${id}/resolution-pdf/`, {
+        responseType: 'blob',
+      })
+      return r.data
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
 }

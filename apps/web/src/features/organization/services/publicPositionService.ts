@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/api'
+import { unwrapBlobError } from '@/shared/api/blob'
 
 /**
  * publicPositionService — frontend client for B.8 public-sector instruments:
@@ -190,10 +191,14 @@ export const publicPositionService = {
 
   // MPP
   async downloadMPP(registerId: string): Promise<Blob> {
-    const r = await apiClient.get(
-      `/api/v1/organization/position-registers/${registerId}/mpp-pdf/`,
-      { responseType: 'blob' },
-    )
-    return r.data as Blob
+    try {
+      const r = await apiClient.get(
+        `/api/v1/organization/position-registers/${registerId}/mpp-pdf/`,
+        { responseType: 'blob' },
+      )
+      return r.data as Blob
+    } catch (err) {
+      throw await unwrapBlobError(err)
+    }
   },
 }
