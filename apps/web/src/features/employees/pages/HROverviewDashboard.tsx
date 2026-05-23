@@ -735,7 +735,7 @@ export default function HROverviewDashboard() {
           label="Planilla más reciente"
           value={planillaPct}
           suffix="%"
-          sub={latestPlanilla ? `${formatPeriodo(latestPlanilla.periodo)} · ${latestPlanilla.estado_texto ?? latestPlanilla.status ?? '—'}` : 'Sin planillas'}
+          sub={latestPlanilla ? `${formatPeriodo(latestPlanilla.periodo)} · ${latestPlanilla.estado_texto ?? latestPlanilla.estado ?? '—'}` : 'Sin planillas'}
           accent="hsl(var(--chart-5))"
           delay={240}
           loading={planillasQuery.isLoading}

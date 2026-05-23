@@ -410,7 +410,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
     def roles_activos(self):
-        """Obtiene los roles activos del usuario, filtrados por tenant context si activo (B.2 #48)."""
+        """Obtiene los roles activos del usuario.
+
+        Bajo tenant context, retorna los roles asignados al usuario en ese
+        tenant (vía UserRole) **incluyendo los roles globales del sistema**
+        (Role.tenant=None — "Administrador RRHH", "Super Administrador", etc.,
+        creados por `setup_roles_permisos`). Esto soporta el modelo "los roles
+        de sistema son definiciones globales que cada tenant referencia",
+        introducido por el seed_demo_pro v3.
+
+        Sin tenant context, retorna todos los UserRole del usuario sin
+        filtrar — útil para shells administrativos y comandos de gestión.
+
+        Bug v4 corregido: antes del Bloque G, `roles_qs.filter(tenant=tenant)`
+        rechazaba roles globales bajo tenant context, dejando admin con 0
+        permisos en HTTP real (ver docs/agent-reports/pm/2026-05-22-empleados-v4.md).
+        """
+        from django.db.models import Q
+
         from .roles import Role
         from .rbac import UserRole
         from apps.tenancy.context import get_current_tenant
@@ -433,11 +450,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         roles_qs = Role.objects.filter(pk__in=roles_ids, estado_rol="activo")
         if tenant is not None:
-            roles_qs = roles_qs.filter(tenant=tenant)
+            # Accept tenant-scoped AND global system roles (tenant__isnull).
+            roles_qs = roles_qs.filter(Q(tenant=tenant) | Q(tenant__isnull=True))
         return roles_qs
 
     def permisos_activos(self):
-        """Obtiene los permisos activos del usuario via roles, filtrados por tenant si activo (B.2 #48)."""
+        """Obtiene los permisos activos del usuario via roles.
+
+        Bajo tenant context, retorna RolePermission y Permission tanto del
+        tenant como globales (tenant__isnull=True). Ver `roles_activos`
+        docstring para el modelo de "roles de sistema globales".
+        """
+        from django.db.models import Q
+
         from .roles import Permission
         from .rbac import RolePermission
         from apps.tenancy.context import get_current_tenant
@@ -445,7 +470,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         tenant = get_current_tenant()
 
         try:
-            roles = self.roles_activos()  # already tenant-filtered (B.2 #48)
+            roles = self.roles_activos()  # already tenant-aware (global + scoped)
             if not roles.exists():
                 return Permission.objects.none()
 
@@ -455,13 +480,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
             rp_qs = RolePermission.objects.filter(rol__in=roles)
             if tenant is not None:
-                rp_qs = rp_qs.filter(tenant=tenant)
+                rp_qs = rp_qs.filter(Q(tenant=tenant) | Q(tenant__isnull=True))
 
             permiso_ids = rp_qs.values_list("permiso_id", flat=True).distinct()
 
             perm_qs = Permission.objects.filter(pk__in=permiso_ids, estado_permiso="activo")
             if tenant is not None:
-                perm_qs = perm_qs.filter(tenant=tenant)
+                perm_qs = perm_qs.filter(Q(tenant=tenant) | Q(tenant__isnull=True))
             return perm_qs
         except Exception:
             return Permission.objects.none()

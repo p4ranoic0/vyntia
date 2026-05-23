@@ -132,24 +132,27 @@ export const dossierService = {
       return r.data
     } catch (err: unknown) {
       // The backend gates the download by permission_level (PL gate #118).
-      // On 403, axios returns the APIResponse error body as a Blob — we must
-      // read it to surface the human-readable message instead of the
-      // generic "Request failed with status code 403".
+      // On 4xx with `responseType: 'blob'` axios returns the APIResponse
+      // error body as a Blob — we must read it to surface the
+      // human-readable message instead of the generic "Request failed".
       const e = err as {
-        response?: { status?: number; data?: Blob | { message?: string } }
+        response?: { status?: number; data?: unknown }
         message?: string
       }
       const status = e?.response?.status
-      if (status === 403 && e.response?.data instanceof Blob) {
-        const text = await e.response.data.text()
+      const data = e?.response?.data
+      if (status && status >= 400 && data instanceof Blob) {
+        // Parse first (do not throw inside the try — the inner catch would
+        // swallow the friendly Error and we'd fall through to `throw err`).
+        let parsed: { message?: string } | null = null
         try {
-          const parsed = JSON.parse(text) as { message?: string }
-          throw new Error(
-            parsed?.message ||
-              'No tiene permisos suficientes para descargar este legajo.',
-          )
-        } catch (parseErr) {
-          // Not JSON — fall through to original error
+          const text = await data.text()
+          parsed = JSON.parse(text) as { message?: string }
+        } catch {
+          parsed = null
+        }
+        if (parsed?.message) {
+          throw new Error(parsed.message)
         }
       }
       throw err

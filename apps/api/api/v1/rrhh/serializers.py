@@ -33,6 +33,21 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 
+def _today_minus_18(today):
+    """Return `today` minus 18 calendar years, safely.
+
+    `today.replace(year=today.year - 18)` raises ValueError when today is
+    Feb 29 and `year - 18` is not a leap year (next occurrences:
+    2028-02-29, 2032-02-29, ...). We collapse the edge to Feb 28 of the
+    target year, which is the conventional Peruvian civil-code reading
+    (a person born Feb 29 turns 18 on Feb 28 in non-leap years).
+    """
+    try:
+        return today.replace(year=today.year - 18)
+    except ValueError:
+        return today.replace(year=today.year - 18, day=28)
+
+
 class AreaSerializer(serializers.ModelSerializer):
     """Serializer for Department model."""
 
@@ -587,7 +602,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
                 "La fecha de nacimiento no puede ser futura."
             )
         # Calendar-correct minimum age (no leap-year drift from days=18*365).
-        edad_minima = today.replace(year=today.year - 18)
+        edad_minima = _today_minus_18(today)
         if value > edad_minima:
             raise serializers.ValidationError(
                 "El empleado debe ser mayor de 18 años."
@@ -770,7 +785,7 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
         # Minimum age 18 (Código del Niño y del Adolescente Art. 22).
         # Practicantes 16-17 (Ley 28518) must use a dedicated intake flow that
         # records parental consent and the practice agreement — NOT this generic Create.
-        edad_minima = today.replace(year=today.year - 18)
+        edad_minima = _today_minus_18(today)
         if value > edad_minima:
             raise serializers.ValidationError(
                 "El empleado debe tener al menos 18 años. Para practicantes 16-17 use el flujo dedicado de Ley 28518."
