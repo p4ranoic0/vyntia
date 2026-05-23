@@ -213,7 +213,7 @@ class WordTemplateService:
             # Buscar salario del último contrato activo
             from apps.contracts.models import Contract
             contrato = Contract.objects.filter(
-                empleado=empleado, status='activo'
+                empleado=empleado, status='ACTIVO'
             ).order_by('-fecha_inicio').first()
             if contrato:
                 salario = str(contrato.salario_bruto)

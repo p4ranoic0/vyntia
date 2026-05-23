@@ -15,6 +15,7 @@ Fuentes: D.S. 003-97-TR (LPCL consolidado), D.S. 001-97-TR (CTS), Ley 27735
 """
 from __future__ import annotations
 
+import calendar
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -37,16 +38,30 @@ def _quantize(value) -> Decimal:
     return value.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 
-def _months_between(start: date, end: date) -> int:
-    """Whole completed months of service between two dates.
+def _is_month_end(d: date) -> bool:
+    """True si d es el último día calendario de su mes."""
+    return d.day == calendar.monthrange(d.year, d.month)[1]
 
-    A month is "completed" only once its day-of-month anniversary is reached:
-    01-Ene → 01-Feb = 1 mes; 01-Jun → 15-Jun = 0 meses (fracción). El conteo NO
-    suma +1 inclusivo (bug audit contracts-v1): la fracción de mes no debe
-    pagarse como mes completo en CTS / vacaciones truncas / gratificación.
+
+def _months_between(start: date, end: date) -> int:
+    """Meses calendario completos de servicio entre dos fechas.
+
+    Convención de planilla peruana ("mes calendario completo") aplicada a CTS,
+    gratificación trunca y vacaciones truncas:
+
+    - NO suma +1 inclusivo (bug audit contracts-v1): una fracción que no llega
+      al aniversario del día NO cuenta como mes (01-Jun → 15-Jun = 0 meses).
+    - SÍ completa el mes cuando el cese cae el último día calendario del mes
+      (hallazgo audit contracts-v2): el ~99% de ceses en Perú son a fin de mes,
+      y trabajar el mes íntegro lo completa (01-Jul → 31-Dic = 6 meses, no 5;
+      Ley 27735 / D.S. 005-2002-TR grati, D.S. 001-97-TR CTS, D.S. 012-92-TR
+      vacaciones). Tratamos el cese a fin de mes como el día 1 del mes siguiente.
     """
     if end < start:
         return 0
+    if _is_month_end(end):
+        end = (date(end.year + 1, 1, 1) if end.month == 12
+               else date(end.year, end.month + 1, 1))
     months = (end.year - start.year) * 12 + (end.month - start.month)
     if end.day < start.day:
         months -= 1
