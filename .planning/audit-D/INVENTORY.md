@@ -90,7 +90,329 @@
 
 ## Section 2 — Cross-app touch-points D will consume
 
-(Filled by Task 3.)
+### apps.employees.Employee
+
+**File:** `apps/api/apps/employees/models/employee.py` | **Table:** `empleado`
+
+Fields D-Pay engine will read:
+
+| Field | Type | Semantic notes for D |
+|---|---|---|
+| `id` | `UUIDField` (PK) | Primary join key across all D models |
+| `tenant` | FK → `tenancy.Tenant` | Row-level isolation — every D query must filter by tenant |
+| `numero_documento` | `CharField(20)` | Identifier on boleta header; must match T-Registro worker_doc_number |
+| `tipo_documento` | `CharField(10)` | Choices: `DNI`, `CE`, `PASAPORTE`, `OTROS`; maps to SUNAT Tabla 2 codes in TRegistroDeclaration |
+| `nombres_empleado` | `CharField(100)` | Boleta header first line |
+| `apellido_paterno` | `CharField(100)` | Boleta header |
+| `apellido_materno` | `CharField(100)` | Boleta header |
+| `fecha_nacimiento` | `DateField` (nullable) | Age at period close → drives AFP prima SISCO eligibility ceiling |
+| `estado_empleado` | `CharField(15)` | Choices: `activo`, `inactivo`, `suspendido`, `cesado`. D only processes `activo` employees in a PayrollRun |
+| `genero_empleado` | `CharField(15)` | Choices: `masculino`, `femenino`, `otro`, `no_especifica`; needed for T-Registro `worker_gender` field |
+| `estado_civil` | `CharField(15)` | Informational for boleta header |
+| `direccion_domicilio` | `CharField(200)` | Boleta header address block |
+| `distrito_domicilio` | `CharField(100)` | Boleta header address block |
+| `sistema_pensiones` | `CharField(20)` | **Critical for D.4.** Choices: `ONP`, `AFP PRIMA`, `AFP INTEGRA`, `AFP PROFUTURO`, `AFP HABITAT`, plus `PENSIONISTA-*`, `SIN PENSION`. Drives ONP (13%) vs AFP (10% + comisión + prima) branch in compute_payslip |
+| `tipo_comision` | `CharField(10)` (nullable) | `FLUJO` or `MIXTA` — AFP commission method. D.4 reads this to select correct AFP rate row from TaxParameter |
+| `codigo_cuspp` | `CharField(20)` (nullable) | AFP CUSPP code; needed in TRegistroDeclaration + AFPnet export |
+| `tipo_seguro_salud` | `CharField(10)` | Choices: `ESSALUD`, `EPS`, `PRIVADO`, `NINGUNO`; D.4 switches employer EsSalud 9% vs EPS credit 2.25% path |
+| `es_padre_familia` | `BooleanField` | Used with `asignacion_familiar` — note: actual family-member eligibility check is in `apps.employees.FamilyMember`, not this flag alone |
+| `tiene_suspension_renta_cuarta_vigente` | `BooleanField` | If True + `fecha_inicio/fin_suspension_renta` covers the period, renta 5ta retention is suppressed for that period |
+| `entidad_bancaria` | `CharField(100)` | For payment disbursement metadata on boleta |
+| `numero_cuenta_bancaria` | `CharField(30)` | Payment disbursement |
+| `numero_cci` | `CharField(30)` | CCI for interbank transfer |
+
+**Non-obvious semantics:**
+- `tenant` is nullable (`null=True, blank=True`) at the model level but constrained via `UniqueConstraint(["tenant", "numero_documento"])` — in practice every production row has a non-null tenant.
+- There is NO `nombre_completo` database column; it is a `@property` → `f"{nombres_empleado} {apellido_paterno} {apellido_materno}"`. Do not reference in ORM `.values()` calls.
+- `estado_empleado` is independent of `EmploymentData.estado_datos`; an employee can be `activo` with an `inactivo` EmploymentData record. D must join both and filter `estado_datos='activo'` as well.
+- Pension system split: the employee carries their own `sistema_pensiones` and `tipo_comision`, not the EmploymentData — D.4 reads directly from Employee, not from EmploymentData.
+
+---
+
+### apps.contracts.EmploymentData
+
+**File:** `apps/api/apps/contracts/models/employment_data.py` | **Table:** `datos_laborales`
+
+Fields D reads:
+
+| Field | Type | Semantic notes for D |
+|---|---|---|
+| `id` | `UUIDField` (PK) | |
+| `empleado` | FK → `employees.Employee` | Reverse accessor: `employee.datos_laborales` |
+| `tenant` | FK → `tenancy.Tenant` | Tenant isolation |
+| `area` | FK → `organization.Department` | Department for PayrollRun grouping/reporting. Department has NO `nombre` field — use `siglas_area` or `nombre_unidad_organica` |
+| `regimen_laboral` | `CharField(20)` | **Primary eligibility gate for D.** See `REGIMENES_PLANILLA` constant below |
+| `fecha_ingreso` | `DateField` | Seniority start — used by CTS, gratification, indemnization calculations |
+| `fecha_inicio_contrato` | `DateField` | Contract validity window start |
+| `fecha_fin_contrato` | `DateField` (nullable) | Contract end; NULL = indefinite |
+| `fecha_cese` | `DateField` (nullable) | Cessation date; if set, employee is no longer in active payroll |
+| `sueldo_basico` | `DecimalField(10,2)` | **Current source of basic salary for D.3 migration.** D.3 introduces `Compensation` model; until then D reads this field. |
+| `asignacion_familiar` | `DecimalField(8,2)` | Already denormalized here as amount. D.4 must verify this reflects 10% of RMV per N08 § 5 — the field is a stored amount, not computed dynamically |
+| `bonificacion_especial` | `DecimalField(8,2)` | Ad-hoc special bonus — not an AFP/CTS-affecting concept by default |
+| `otras_bonificaciones` | `DecimalField(8,2)` | Catch-all; D must determine Tabla-22 classification for each bonus before including in remuneración computable |
+| `estado_datos` | `CharField(15)` | `activo`, `inactivo`, `suspendido`. D filters `estado_datos='activo'` |
+| `cargo_empleado` | `CharField(100)` | Job title string on boleta |
+| `jornada_laboral` | `CharField(15)` | `completa`, `parcial`, `por_horas` — affects proportional calcs for part-time |
+| `horas_semanales` | `DecimalField(4,2)` | Default 40.00 — used in pro-rata for part-time payroll |
+| `position` | FK → `organization.Position` (nullable) | B.6 catalog FK; `cargo_empleado` string preserved as legacy |
+
+**`REGIMENES_PLANILLA` constant** — defined at line 292 of employment_data.py:
+
+```python
+REGIMENES_PLANILLA = ('728', '276', '1057', 'practicas')
+```
+
+Locación (`locacion`) and consultoría (`consultoria`) are civil contracts (4ta categoría) and are **excluded** from T-Registro/PLAME. D-A ships 728-only in MVP; the filter used in D.4 should be:
+
+```python
+EmploymentData.objects.filter(
+    regimen_laboral='728',
+    estado_datos='activo',
+    fecha_cese__isnull=True,
+    tenant=tenant,
+)
+```
+
+**Important:** The `REGIMEN_LABORAL_CHOICES` list on the model does NOT include `'mype'` — the spec notes D-A ships 728 only, but also notes MyPE employees may have 728+15 vacation days. The hardcoded vacation map `_DIAS_VACACIONES_ANUALES_POR_REGIMEN` at line 308 includes a TODO for sub-project D to replace with configurable `RegimenLaboralConfig`.
+
+**UniqueConstraint:** `['empleado', 'fecha_inicio_contrato']` — one EmploymentData row per employee per contract start date.
+
+---
+
+### apps.contracts.Contract + ContractAmendment
+
+**Files:** `contract.py` (table: `contratos_adendas`) + `contract_amendment.py` (table: `contract_amendments`)
+
+**Contract fields D reads:**
+
+| Field | Type | Semantic notes for D |
+|---|---|---|
+| `id` | `UUIDField` (PK) | |
+| `empleado` | FK → `employees.Employee` | Via `employee.contratos_adendas` reverse accessor |
+| `tenant` | FK → `tenancy.Tenant` | |
+| `numero_contrato` | `CharField(50)` | Unique per tenant via constraint |
+| `tipo_documento` | `CharField(25)` | Choices include `LEY_728_FIJO`, `LEY_728_INDETERMINADO`, `LEY_728_FIJO_SUPLENCIA` — D.10 auto-creates TRegistroDeclaration based on this |
+| `fecha_inicio` | `DateField` | Contract start — used by `severance_service.compute_settlement` |
+| `fecha_fin` | `DateField` (nullable) | NULL for indefinite contracts |
+| `salario_bruto` | `DecimalField(10,2)` | Gross salary snapshot on contract. Note: `severance_service` reads `contract.salario_bruto` directly, NOT `EmploymentData.sueldo_basico` |
+| `status` | `CharField(15)` | DB column `estado`. Choices: `BORRADOR`, `PENDIENTE`, `ACTIVO`, `VENCIDO`, `TERMINADO`, `ANULADO`. D only processes `ACTIVO` contracts |
+| `area` | FK → `organization.Department` | Has direct area FK (unlike EmploymentData path) |
+
+**⚠️ Salary data divergence risk:** `Contract.salario_bruto` and `EmploymentData.sueldo_basico` are stored independently. After a salary amendment, only `EmploymentData.sueldo_basico` may be updated (or only `Contract` via `ContractAmendment.nuevo_salario`). D.3 must establish `Compensation` as the single source of truth and reconcile these two fields.
+
+**ContractAmendment fields D reads (for D.3 salary history):**
+
+| Field | Type | Semantic notes for D |
+|---|---|---|
+| `id` | `UUIDField` (PK) | |
+| `parent_contract` | FK → `contracts.Contract` | Reverse accessor: `contract.amendments` |
+| `tipo_documento` | `CharField(25)` | `ADENDA_SALARIAL`, `ADENDA_CARGO`, `ADENDA_HORARIO`, `ADENDA_EXTENSION` |
+| `fecha_inicio` | `DateField` | Effective date of amendment |
+| `nuevo_salario` | `DecimalField(10,2)` (nullable) | New gross salary (only for `ADENDA_SALARIAL`) |
+| `status` | `CharField(15)` | Same choices as Contract.status |
+
+---
+
+### apps.contracts.Termination
+
+**File:** `apps/api/apps/contracts/models/termination.py` | **Table:** `termination`
+
+**Status flow:**
+
+```
+draft → in_progress → completed → liquidated → baja_t_registro_done
+                                              ↘ (cancelled from any state except baja_t_registro_done)
+```
+
+**Key fields D reads:**
+
+| Field | Type | Semantic notes for D |
+|---|---|---|
+| `id` | `UUIDField` (PK) | |
+| `tenant` | FK → `tenancy.Tenant` | |
+| `contract` | OneToOneField → `contracts.Contract` | Reverse: `contract.termination` |
+| `employee` | FK → `employees.Employee` | Reverse: `employee.terminations` |
+| `regimen` | `CharField(10)` | `728`, `276`, `cas`, `mype`, `otros` — drives which CAUSALES apply |
+| `causal` | `CharField(30)` | See CAUSALES list; `despido_arbitrario` and `despido_indirecto` trigger `indemnizacion` line in settlement |
+| `status` | `CharField(30)` | Flow above; D.12 hooks in at `completed` status |
+| `fecha_cese` | `DateField` | Last day of formal employment — critical for all trunca calculations |
+| `last_day_worked` | `DateField` (nullable) | May differ from `fecha_cese` if employee had pending vacation |
+| `baja_t_registro` | OneToOneField → `contracts.TRegistroDeclaration` (nullable) | D.10 auto-creates a `baja` declaration from `PayrollRun.close()` and links it here |
+
+**D.12 hook point:** D.12 extends `compute_settlement` — it calls `severance_service.compute_settlement(termination, ...)` which is currently imported via `apps.contracts.services.severance_service`. D.12 replaces the 4 formula functions with `Regime728Strategy.compute_severance()`.
+
+---
+
+### apps.contracts.SeveranceSettlement + SeveranceLine
+
+**File:** `apps/api/apps/contracts/models/severance_settlement.py` | **Tables:** `severance_settlement`, `severance_line`
+
+**B.14 minimum legal scope — 4 (+ 1 generic) SeveranceLine components:**
+
+| `component` code | Legal basis | Formula (current B.14 minimum) | D.12 replacement |
+|---|---|---|---|
+| `cts` | D.S. 001-97-TR | `(sueldo × meses_semestre) / 6`, capped at `sueldo` | `Regime728Strategy.compute_cts()` — adds 1/6 grati to remuneración computable |
+| `vac_truncas` | D.S. 012-92-TR | `jornal × (meses_año × 2.5 días)` | `Regime728Strategy` uses time_off actual accrual vs proportional, whichever higher |
+| `grat_trunca` | Ley 27735 | `(sueldo × meses_semestre) / 6` | `Regime728Strategy.compute_gratification()` called in severance context |
+| `indemnizacion` | LPCL Art. 38 | `sueldo × 1.5 × (días/365)`, capped 12 sueldos; only for `despido_arbitrario` / `despido_indirecto` | `Regime728Strategy.compute_severance()` — same formula, different inputs |
+| `otros` | Manual | Generic adjustment line | Preserved as-is |
+
+**`compute_settlement` signature (current):**
+
+```python
+@transaction.atomic
+def compute_settlement(
+    termination: Termination,
+    *,
+    user=None,
+    dias_acumulados_no_gozados: Decimal | None = None,
+) -> SeveranceSettlement:
+```
+
+**Idempotent:** deletes and recreates all lines on re-call. D.12 will extend this function or replace it entirely with Strategy-aware version.
+
+**SeveranceSettlement key fields for D.12:**
+
+| Field | Type | Notes |
+|---|---|---|
+| `status` | `CharField(10)` | `draft → computed → paid → void` |
+| `sueldo_base` | `DecimalField(12,2)` | Snapshot of gross salary at cese |
+| `fecha_inicio_contrato` | `DateField` | From `contract.fecha_inicio` |
+| `fecha_cese` | `DateField` | From `termination.fecha_cese` |
+| `total_amount` | `DecimalField(14,2)` | Recomputed via `recompute_total()` (sums all SeveranceLine.amount) |
+| `manual_override` | `JSONField` | Keyed by `component_code` — allows manual amount overrides without re-running engine |
+
+**⚠️ Current formula gaps vs full N08 spec (D.12 must address):**
+- CTS formula uses `sueldo/6 × meses` — missing 1/6 gratificación in remuneración computable per D.S. 001-97-TR Art. 9
+- Vacaciones truncas: uses `meses × 2.5` (30 days/12 months) but does not consult actual `time_off` accrual records
+- No Renta 5ta regularization al cese (see ADR-D.5)
+- No `renta_5ta_regularizacion_cese` line type in COMPONENTS yet (D.12 must add)
+
+---
+
+### apps.contracts.TRegistroDeclaration
+
+**File:** `apps/api/apps/contracts/models/t_registro_declaration.py` | **Table:** `t_registro_declaration`
+
+**`declaration_type` choices:** `alta`, `baja`, `modificacion`
+
+**Status flow:**
+
+```
+draft → validated (PVS) → submitted (SUNAT) → accepted
+                                             ↘ rejected
+```
+
+**Key fields for D.10:**
+
+| Field | Type | Notes |
+|---|---|---|
+| `declaration_type` | `CharField(20)` | D.10 creates `baja` declarations from `PayrollRun.close()` when a termination is linked |
+| `status` | `CharField(20)` | `draft`, `validated`, `submitted`, `accepted`, `rejected` |
+| `contract` | FK → `contracts.Contract` | |
+| `employee` | FK → `employees.Employee` | |
+| `regimen_laboral_code` | `CharField(3)` | Default `'728'` — for D-A 728-only MVP |
+| `regimen_pensionario` | `CharField(20)` | `snp` (ONP), `spp` (AFP), `decreto_19990`, `decreto_20530`, `sin_regimen` |
+| `pension_provider_code` | `CharField(10)` | AFP code if SPP |
+| `cuspp` | `CharField(20)` | From `Employee.codigo_cuspp` |
+| `remuneracion_basica` | `DecimalField(12,2)` | Salary snapshot for T-Registro |
+| `anexo3_txt` | `TextField` | Generated Anexo 3 plain-text payload |
+| `pvs_errors` | `JSONField(list)` | PVS validation errors; must be `[]` before `mark_validated()` |
+| `sunat_reference` | `CharField(64)` | SUNAT constancia number |
+
+**D.10 trigger point:** `PayrollRun.close()` will iterate over employees whose `Termination.status = 'completed'` in the closed period and auto-create `TRegistroDeclaration(declaration_type='baja')`. The declaration is linked back to `Termination.baja_t_registro`.
+
+**UniqueConstraint:** `(tenant, contract, declaration_type)` where `status IN ('submitted', 'accepted')` — prevents duplicate active T-Registro submissions.
+
+---
+
+### apps.audit_lite.AuditEvent
+
+**File:** `apps/api/apps/audit_lite/models.py` | **Table:** `audit_lite_event`
+
+**Current field shape:**
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `UUIDField` (PK) | |
+| `tenant` | FK → `tenancy.Tenant` | Non-nullable — every event is tenant-scoped |
+| `actor_user` | FK → `AUTH_USER_MODEL` (nullable) | Null for system-initiated events |
+| `action` | `CharField(128)` | Dotted action name e.g. `"employee.terminated"`. D will register `payroll.*` namespaced actions |
+| `target_model` | `CharField(128)` | Dotted model label e.g. `"employees.Employee"` |
+| `target_id` | `CharField(64)` | String PK of target (UUID or int as str) |
+| `payload_json` | `JSONField` (default `dict`) | Mutation snapshot: before/after, reason, etc. Free-form |
+| `created_at` | `DateTimeField` (auto, indexed) | Event timestamp |
+
+**🚨 CRITICAL FINDING — `schema_version` field DOES NOT EXIST.**
+
+The current `AuditEvent` model has **no `schema_version` field**. ADR-D.3 proposes adding it with `default=1`. This requires a migration in D.1. Without it, payroll event payloads cannot be versioned for forward-compat / future ES migration.
+
+**ADR-D.3 migration required in D.1:**
+```python
+models.IntegerField(default=1, help_text="Payload schema version for forward-compat")
+```
+
+**Existing B-era event types (for naming convention reference):** `employee.terminated`, `contract.amendment_applied`, `tregistro.submitted`, etc.
+
+**Composite indexes available:** `(tenant, action, -created_at)` and `(target_model, target_id)` — D queries should filter by `tenant + action` for per-payroll-run event lookups.
+
+---
+
+### apps.documents.services.access_service
+
+**File:** `apps/api/apps/documents/services/access_service.py`
+
+D.6 PaySlip permission gate reuses these functions:
+
+**`user_permission_level(user) -> int`**
+
+```python
+def user_permission_level(user) -> int:
+```
+
+- Input: any User object (or None / unauthenticated)
+- Output: integer 0-9 derived from `user.nivel_acceso` string
+- Level map: `total=9`, `departamental=5`, `personal=3`, `limitado=2`, `lectura=1`
+- Returns `0` for unauthenticated/None, `1` as fallback for unrecognized `nivel_acceso`
+
+**`can_access(user, document) -> bool`**
+
+```python
+def can_access(user, document) -> bool:
+```
+
+- Returns `True` iff `user_permission_level(user) >= int(document.permission_level or 0)`
+- D.6 PaySlip viewset will set `permission_level` appropriately (e.g., `3` = personal, readable only by the employee themselves or RRHH)
+
+**`log_access(*, document, user, action, ip, user_agent, notes) -> DocumentAccessLog`**
+
+- Persists a `DocumentAccessLog` entry for every access check
+- D.6 should call this (or `check_and_log`) on every boleta view/download
+
+**`check_and_log(*, document, user, action, ip, user_agent) -> bool`**
+
+- Combined check + log — preferred for D.6 endpoint gating
+- Logs `action` on grant, `'denied'` on reject
+
+**⚠️ Coupling note:** These functions reference `apps.documents.models.DocumentAccessLog` and `apps.documents.models.DigitalDocument`. D.6 `PaySlip` is a different model. D.6 will need to either: (a) inherit from `DigitalDocument`, (b) create a parallel `PaySlipAccessLog` model with a similar permission gate, or (c) adapt `can_access` to accept any object with a `permission_level` attribute. Decision belongs to ADR-D.7.
+
+---
+
+### apps.core.business_days
+
+**File:** `apps/api/apps/core/business_days.py`
+
+**🚨 BLOCKER: File does NOT exist.**
+
+`business_days.py` was planned as part of terminal-2 prep work but has **not been merged** as of audit date 2026-05-23.
+
+**Impact:**
+- **[BLOCKER for D.4]** — `Regime728Strategy.compute_payslip` does not need business days directly, but CTS deposit due date validation (15-May / 15-Nov; if that date is a holiday, next business day) requires a `business_days_between` helper.
+- **[BLOCKER for D.7]** — `CtsDeposit` due date alert service needs to compute "next business day in Peru" relative to the statutory 15-May/15-Nov dates.
+
+**Resolution options (to be decided in BACKLOG):**
+1. Merge terminal-2 branch before D.4 starts (preferred)
+2. Fold implementation into D.4 as an internal task: implement `apps/core/business_days.py` with at minimum `is_business_day(d, region='PE')` and `next_business_day(d, region='PE')` using a hardcoded feriados peruanos list for 2026-2027
 
 ## Section 3 — Frontend payroll legacy + portal empleado
 
