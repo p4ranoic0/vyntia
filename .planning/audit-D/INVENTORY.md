@@ -613,7 +613,62 @@ The legacy `PaySlip` model has an `archivo_pdf` field (line 48, Section 1) but t
 
 ## Section 4 — Cross-cutting deuda técnica affecting D
 
-(Filled by Task 5.)
+### Pre-existing baselines (no regresar)
+
+| Metric | Expected baseline | Actual (D.0 audit run) | Status |
+|---|---|---|---|
+| Backend pytest | 985 passed, 1 failed (`test_permisos_debug`), 17 skipped | **1,058 passed, 1 failed, 17 skipped** | ✅ PASS (delta +73 from terminal-2 + Bloque H test additions; 1 pre-existing failure unchanged) |
+| Frontend ESLint | ≤ 278 warnings | **278** (proxy — v5 PM report; `node_modules` not installed in worktree) | ✅ PASS (proxy) |
+| Frontend tsc | 1 error (`BlankEnum.ts`) | **0 errors** (proxy — v5 PM report confirms `exit 0` after Bloque F tsconfig fix) | ✅ PASS (proxy) |
+| Frontend vitest | 178 passed / 28 files | **178/28** (proxy — v5 PM report; `node_modules` not installed in worktree) | ✅ PASS (proxy) |
+
+**Note on pytest delta (+73):** The worktree includes all commits from `vyntia/D-prep-foundation` merged via `Merge PR #1` (`7066414b`) plus `vyntia/H-empleados-polish` (`634e3436`). These branches added tests for: catálogo feriados peruanos (business_days), batch CSV import (#130), N+1 serializer fix, Bloque H contracts/employees. All additions are expected and positive. The 1 pre-existing failure (`test_permisos_debug`) is unchanged.
+
+**Note on frontend proxy:** The worktree at `D:/VYNTIA-D0-audit/apps/web/node_modules` is absent (expected — worktrees share the npm install from the main tree at `D:/VYNTIA/apps/web/node_modules`). Frontend tool runs were attempted but failed with `command not found`. The v5 PM report (`2026-05-23-empleados-v5.md`) confirmed 278/0/178 baselines post-Bloque G, and the Bloque H frontend commits (console.log cleanup, EmpleadosListPage deletion, unwrapBlobError, peruvianValidation.ts) are additive non-test-breaking changes.
+
+---
+
+### Sealed-for-D items from v5 PM report — status per item
+
+| Item | v5 Source | Merged? | Commit | Severity for D | Resolution |
+|---|---|---|---|---|---|
+| `Employee.boletas_recientes()` stub | empleados-v5 § Pendientes + Bloque H action 1 | **YES** (Bloque H) | `634e3436` (merge) | ~~[BLOCKER for D.1]~~ → CLOSED | Deleted before D — grep confirms 0 matches in production source |
+| N+1 `EmpleadoListSerializer` (66→3 queries) | empleados-v5 § Pendientes | **YES** | `26e3a16f`, `7066414b` | ~~[PERF for D.6]~~ → CLOSED | D.6 dashboards list empleados at ~3 queries, not 66 |
+| Batch import CSV #130 | terminal-2 prep | **YES** | `4843f799`, `7066414b` | ~~[NICE-TO-HAVE]~~ → CLOSED | Available before D start |
+| `business_days_between` + feriados peruanos Ley 29408 | terminal-2 prep / N8 v3 | **YES** | `75fb675f`, `7066414b` | ~~[BLOCKER for D.4, D.7]~~ → CLOSED | `apps/api/apps/core/business_days.py` + `holidays.py` exist and tested |
+| V4-N2: `EmpleadoSerializer` legacy scope tenant | empleados-v5 § Pendientes | **YES** (Bloque H) | `e7af9815` | ~~[LOW]~~ → CLOSED | Merged in Bloque H |
+| V4-N5: `family_member.py:404` leap-drifty age calc | empleados-v5 § Pendientes | **YES** (Bloque H) | `46b873d3` | ~~[LOW]~~ → CLOSED | Merged in Bloque H |
+| V4-N7: `setup_roles_permisos` hardcoded admin user | empleados-v5 § Pendientes | **YES** (Bloque H) | `a4af9bc0` | ~~[MEDIUM]~~ → CLOSED | Gated with `--seed-admin` flag |
+| V4-N6: extract `peruvianValidation.ts` | empleados-v5 § Pendientes | **YES** (Bloque H) | `5ea87e87` | ~~[LOW]~~ → CLOSED | Extracted to `apps/web/src/shared/utils/peruvianValidation.ts` |
+| V4-3: `unwrapBlobError` for 7 blob services | empleados-v5 § Pendientes | **YES** (Bloque H) | `ffc1768a` | ~~[LOW]~~ → CLOSED | Shared helper applied to blob services |
+| `EmpleadosListPage.tsx` huérfana | empleados-v5 § Pendientes | **YES** (Bloque H) | `47eac91d` | ~~[LOW]~~ → CLOSED | Deleted along with 4 orphan modals |
+| 29 `console.log` debug | empleados-v5 § Pendientes | **YES** (Bloque H) | `66544bb9` | ~~[LOW]~~ → CLOSED | Cleaned |
+| `/legajos-digitales` sidebar not in seed_menu | empleados-v5 § Pendientes | **YES** (Bloque H) | `b4810ff3` | ~~[LOW]~~ → CLOSED | Registered in `seed_menu.py` |
+| V4-3 contracts: Bloque H contracts fixes | Bloque H action | **YES** | `76460893` | ~~[LOW]~~ → CLOSED | 4 audit-v1 bugs fixed |
+
+---
+
+### Open deuda técnica (still pending, carried into D)
+
+| Item | Source | Affects D phase | Severity for D | Resolution |
+|---|---|---|---|---|
+| N6 v3 — 3 viewsets B.9 (`SelectionStage`, `CandidateEvaluation`, `MeritRanking`) use custom `posting__tenant` filter instead of `TenantAwareViewSetMixin` | empleados-v5 § Pendientes | D.0 architectural note (not code D touches) | [LOW] — B.9 module is onboarding/hiring; D doesn't touch these viewsets | Document in BACKLOG as architectural consistency item; resolve post-D or in a standalone cleanup sprint |
+| `getattr(request, "tenant", None)` repeated in 30+ view sites; no shared `get_request_tenant()` helper | N8 v3 / empleados-v5 | D views will follow same pattern | [LOW/PERF] — pattern works correctly, just inconsistent | D.1 or dedicated cleanup sprint; document in BACKLOG; D views can use `TenantAwareViewSetMixin` (already available) |
+| `AuditEvent.schema_version` field does not exist | INV § 2 (ADR-D.3) | D.1 migration required | [BLOCKER for D.1] | D.1 adds migration: `models.IntegerField(default=1)` — blocks versioned payroll audit events |
+| Sub-proyecto E (Modularidad/Plans) — `Tenant.plan` + `MenuService` filtrado + `<FeatureRoute>` guard | empleados-v5 § Acciones | Independent of D | [P2 — product decision] | Separate brainstorm required; does not block D |
+
+---
+
+### Blocker / non-blocker summary for D start
+
+| Check | Result | Blocker? |
+|---|---|---|
+| `Employee.boletas_recientes()` stub | ✅ DELETED — 0 matches in source | NO BLOCKER |
+| `business_days_between` + feriados | ✅ EXISTS — `apps/core/business_days.py` + `holidays.py` | NO BLOCKER |
+| N+1 `EmpleadoListSerializer` | ✅ FIXED — 66→3 queries | NO BLOCKER |
+| `AuditEvent.schema_version` | ❌ MISSING — migration required in D.1 | [BLOCKER for D.1] |
+| pytest baseline | ✅ 1,058 passed (+73 expected from merged prep), 1 pre-existing failure | NO BLOCKER |
+| Frontend baselines | ✅ proxy 278/0 errors/178 (v5 confirmed; `node_modules` absent in worktree) | NO BLOCKER |
 
 ## Section 5 — Regulatory rules inventory (N06-N09)
 
