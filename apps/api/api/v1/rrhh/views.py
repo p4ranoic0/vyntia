@@ -600,6 +600,44 @@ class EmpleadoViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             },
         )
 
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="batch-import",
+        parser_classes=[MultiPartParser],
+    )
+    @invalidate_cache(["view_cache:empleados:*", "view_cache:empleado_detail:*"])
+    @require_hr()
+    def batch_import(self, request):
+        """Importar empleados masivamente desde un CSV (#130).
+
+        Multipart con el archivo en el campo `file`. Validación todo-o-nada:
+        si alguna fila falla, no se crea ningún empleado y se devuelven todos
+        los errores con su número de fila (422). Reusa EmpleadoCreateSerializer.
+        """
+        file_obj = request.FILES.get("file")
+        if file_obj is None:
+            return APIResponse.error(
+                message="Adjunte un archivo CSV en el campo 'file'.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from api.v1.employees.batch_import import import_employees_from_csv
+
+        result = import_employees_from_csv(file_obj, request)
+        if result["errors"]:
+            return APIResponse.validation_error(
+                errors=result,
+                message=(
+                    f"Importación rechazada: {len(result['errors'])} fila(s) con "
+                    f"errores. No se creó ningún empleado."
+                ),
+            )
+        return APIResponse.created(
+            data=result,
+            message=f"{result['created']} empleado(s) importado(s) correctamente.",
+        )
+
     @action(detail=True, methods=["get"])
     @require_permissions(["ver_empleados"])
     def datos_completos(self, request, pk=None):
