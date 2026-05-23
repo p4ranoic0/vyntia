@@ -272,9 +272,8 @@ const VacacionesManagementPage: React.FC = () => {
     cargarDatos()
   }, [user, toast, esGestor, esJefe])
 
-  const handleVerDetalleSolicitud = (solicitud: SolicitudVacaciones) => {
+  const handleVerDetalleSolicitud = () => {
     // TODO: Implementar navegación a detalle de solicitud
-    console.log('Ver detalle de solicitud:', solicitud.id)
   }
 
   const handleNuevaSolicitud = () => {
