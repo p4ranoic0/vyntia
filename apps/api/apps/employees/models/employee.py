@@ -10,7 +10,6 @@ import uuid
 from datetime import date
 
 from django.db import models
-from django.utils import timezone
 
 # from ..managers import EmpleadoManager  # Comentado temporalmente para evitar error de importación
 
@@ -307,16 +306,3 @@ class Employee(models.Model):
         return AcademicRecord.objects.filter(empleado=self).order_by(
             "-fecha_graduacion"
         )
-
-    def boletas_recientes(self, meses=6):
-        """Obtiene las boletas de pago recientes."""
-        from datetime import timedelta
-
-        fecha_limite = timezone.now().date() - timedelta(days=meses * 30)
-        # Aquí se implementaría la lógica para obtener boletas
-        # return PaySlip.objects.filter(
-        #     empleado=self,
-        #     fecha_pago__gte=fecha_limite
-        # ).order_by('-fecha_pago')
-        return []  # ).order_by('-fecha_pago')
-        return []
