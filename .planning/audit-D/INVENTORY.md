@@ -681,7 +681,7 @@ The legacy `PaySlip` model has an `archivo_pdf` field (line 48, Section 1) but t
 | # | Rule | Citation | Phase affected |
 |---|------|----------|----------------|
 | N06-01 | PLAME (Formulario Virtual 0601) genera exactamente 10 archivos .txt + 1 ZIP: PLANI, JORNA, PDT, IMP, DERECH, PRACT, CUART, TERCE, EMPAL, ESTAB | N06 § 4.1 | D.9 |
-| N06-02 | Archivos PLAME: formato plano ASCII, separador pipe `\|`, salto de línea `\n`, fechas DD/MM/AAAA, decimales con punto, sin comillas | N06 § 4.2 | D.9 |
+| N06-02 | Archivos PLAME: formato plano ASCII, separador pipe `&#124;`, salto de línea `\n`, fechas DD/MM/AAAA, decimales con punto, sin comillas | N06 § 4.2 | D.9 |
 | N06-03 | El ZIP de los 10 archivos es lo que se carga al PDT PLAME; no se pueden cargar archivos individuales | N06 § 4.4 | D.9 |
 | N06-04 | Plazo de presentación PLAME: según cronograma SUNAT por último dígito de RUC (entre el 11 y 24 del mes siguiente) | N06 § 1.2 | D.9 |
 | N06-05 | T-Registro alta: plazo hasta el primer día de prestación del trabajador (no hay gracia) | N06 § 1.1 | D.10 |
