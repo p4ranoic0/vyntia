@@ -146,7 +146,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Filtrar contratos activos próximos a vencer
             queryset = self.get_queryset().filter(
-                status="activo",
+                status="ACTIVO",
                 fecha_fin__lte=fecha_limite,
                 fecha_fin__gte=timezone.now().date(),
             )
@@ -226,14 +226,14 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Estadísticas generales
             total_contratos = queryset.count()
-            contratos_activos = queryset.filter(status="activo").count()
-            contratos_vencidos = queryset.filter(status="vencido").count()
-            contratos_terminados = queryset.filter(status="terminado").count()
+            contratos_activos = queryset.filter(status="ACTIVO").count()
+            contratos_vencidos = queryset.filter(status="VENCIDO").count()
+            contratos_terminados = queryset.filter(status="TERMINADO").count()
 
             # Estadísticas por tipo
             stats_por_tipo = queryset.values("tipo_documento").annotate(
                 total=Count("id"),
-                activos=Count("id", filter=Q(status="activo")),
+                activos=Count("id", filter=Q(status="ACTIVO")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -242,7 +242,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
                 "area__siglas_area", "area__nombre_unidad_organica"
             ).annotate(
                 total=Count("id"),
-                activos=Count("id", filter=Q(status="activo")),
+                activos=Count("id", filter=Q(status="ACTIVO")),
                 valor_total=Sum("salario_bruto"),
             )
 
@@ -253,7 +253,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Valor total de contratos activos
             valor_total_activos = (
-                queryset.filter(status="activo").aggregate(total=Sum("salario_bruto"))[
+                queryset.filter(status="ACTIVO").aggregate(total=Sum("salario_bruto"))[
                     "total"
                 ]
                 or 0
@@ -297,12 +297,12 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             # Estadísticas básicas — use get_queryset() for proper tenant scoping
             qs = self.get_queryset()
             total_contratos = qs.count()
-            contratos_activos = qs.filter(status="activo").count()
+            contratos_activos = qs.filter(status="ACTIVO").count()
 
             # Contratos por vencer en los próximos 30 días
             fecha_limite = timezone.now().date() + timedelta(days=30)
             contratos_por_vencer = qs.filter(
-                status="activo",
+                status="ACTIVO",
                 fecha_fin__lte=fecha_limite,
                 fecha_fin__gte=timezone.now().date(),
             ).count()
@@ -316,7 +316,7 @@ class ContratosAdendasViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
 
             # Empleados con contratos activos
             empleados_con_contratos = (
-                qs.filter(status="activo")
+                qs.filter(status="ACTIVO")
                 .values("empleado")
                 .distinct()
                 .count()

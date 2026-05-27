@@ -15,6 +15,7 @@ Fuentes: D.S. 003-97-TR (LPCL consolidado), D.S. 001-97-TR (CTS), Ley 27735
 """
 from __future__ import annotations
 
+import calendar
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -37,14 +38,46 @@ def _quantize(value) -> Decimal:
     return value.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 
+def _is_month_end(d: date) -> bool:
+    """True si d es el último día calendario de su mes."""
+    return d.day == calendar.monthrange(d.year, d.month)[1]
+
+
 def _months_between(start: date, end: date) -> int:
-    """Whole months between two dates (inclusive end)."""
+    """Meses calendario completos de servicio entre dos fechas.
+
+    Convención de planilla peruana ("mes calendario completo") aplicada a CTS,
+    gratificación trunca y vacaciones truncas:
+
+    - NO suma +1 inclusivo (bug audit contracts-v1): una fracción que no llega
+      al aniversario del día NO cuenta como mes (01-Jun → 15-Jun = 0 meses).
+    - SÍ completa el mes cuando el cese cae el último día calendario del mes
+      (hallazgo audit contracts-v2): el ~99% de ceses en Perú son a fin de mes,
+      y trabajar el mes íntegro lo completa (01-Jul → 31-Dic = 6 meses, no 5;
+      Ley 27735 / D.S. 005-2002-TR grati, D.S. 001-97-TR CTS, D.S. 012-92-TR
+      vacaciones). Tratamos el cese a fin de mes como el día 1 del mes siguiente.
+    """
     if end < start:
         return 0
+    if _is_month_end(end):
+        end = (date(end.year + 1, 1, 1) if end.month == 12
+               else date(end.year, end.month + 1, 1))
     months = (end.year - start.year) * 12 + (end.month - start.month)
-    if end.day >= start.day:
-        months += 1
+    if end.day < start.day:
+        months -= 1
     return max(months, 0)
+
+
+def _minus_one_year(d: date) -> date:
+    """d trasladado un año atrás, manejando 29-feb (→ 28-feb en año no bisiesto).
+
+    `date.replace(year=...)` lanza ValueError para 29-feb cuando el año destino
+    no es bisiesto (bug audit contracts-v1: cese 29-feb crasheaba la liquidación).
+    """
+    try:
+        return d.replace(year=d.year - 1)
+    except ValueError:
+        return d.replace(year=d.year - 1, day=28)
 
 
 def _current_semester_start(reference: date) -> date:
@@ -97,13 +130,10 @@ def _compute_vac_truncas(
     dias_acumulados_no_gozados: Decimal | None = None,
 ) -> tuple[Decimal, dict, str]:
     """Vacaciones truncas: días por mes trabajado del último año × jornal."""
-    inicio_año = date(fecha_cese.year, fecha_cese.month, fecha_cese.day)
-    inicio_año = max(
-        fecha_inicio,
-        date(fecha_cese.year - 1, fecha_cese.month, fecha_cese.day)
-        if fecha_cese >= date(fecha_cese.year, fecha_cese.month, 1)
-        else fecha_inicio,
-    )
+    # Ventana del último año de servicio: desde un año antes del cese (o el
+    # inicio del contrato si es más reciente) hasta el cese. _minus_one_year
+    # maneja el cese 29-feb sin crashear (audit contracts-v1).
+    inicio_año = max(fecha_inicio, _minus_one_year(fecha_cese))
     meses = _months_between(inicio_año, fecha_cese)
     meses = min(meses, 12)
     dias_proporcionales = Decimal(meses) * Decimal('2.5')
@@ -143,9 +173,8 @@ def _compute_indemnizacion(
 ) -> tuple[Decimal, dict, str]:
     """Indemnización despido arbitrario: 1.5 sueldos/año, capped 12 sueldos.
 
-    Años se calcula como (fecha_cese - fecha_inicio).days / 365 (no usamos
-    _months_between para evitar +1 inclusivo que infla el resultado en plazos
-    redondos como 730 días).
+    Años se calcula como (fecha_cese - fecha_inicio).days / 365 — la
+    indemnización requiere precisión fraccional de año, no meses completos.
     """
     if causal not in CAUSALES_INDEMNIZACION:
         return Decimal('0'), {
