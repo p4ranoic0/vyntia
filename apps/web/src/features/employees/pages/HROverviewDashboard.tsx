@@ -140,14 +140,21 @@ function usePlanillasMes() {
   return useQuery<PlanillaMensual[]>({
     queryKey: ['dashboard', 'planillas-mes'],
     queryFn: async () => {
-      const response = await apiClient.get<{ data?: PlanillaMensual[]; results?: PlanillaMensual[] }>(
-        '/api/v1/payroll/monthly-runs/',
-        { page_size: 6, ordering: '-periodo' },
-      )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = response.data as any
-      return raw?.data ?? raw?.results ?? []
+      try {
+        const response = await apiClient.get<{ data?: PlanillaMensual[]; results?: PlanillaMensual[] }>(
+          '/api/v1/payroll/monthly-runs/',
+          { page_size: 6, ordering: '-periodo' },
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const raw = response.data as any
+        return raw?.data ?? raw?.results ?? []
+      } catch {
+        // Payroll module is being rebuilt in Vyntia Pay (D); endpoint returns 501
+        // until D.5. Show an empty widget instead of an error state.
+        return []
+      }
     },
+    retry: false,
     staleTime: 5 * 60 * 1000,
   })
 }

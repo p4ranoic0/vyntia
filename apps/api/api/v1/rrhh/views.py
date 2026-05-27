@@ -5,7 +5,6 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from apps.payroll.models import AfpConfiguration, CompensationConfiguration
 from apps.contracts.models import EmploymentData
 from apps.documents.models import DigitalDocument
 from apps.employees.models import (
@@ -47,8 +46,6 @@ from .permissions import (
 from .serializers import (
     AreaListSerializer,
     AreaSerializer,
-    ConfiguracionAfpSerializer,
-    ConfiguracionRemuneracionSerializer,
     DatosAcademicosSerializer,
     DatosFamiliaresSerializer,
     DatosLaboralesSerializer,
@@ -1179,124 +1176,8 @@ class DatosLaboralesViewSet(TenantAwareViewSetMixin, viewsets.ModelViewSet):
             )
 
 
-class ConfiguracionRemuneracionViewSet(viewsets.ModelViewSet):
-    """ViewSet para catálogo maestro de conceptos de remuneración."""
-
-    queryset = CompensationConfiguration.objects.all()
-    serializer_class = ConfiguracionRemuneracionSerializer
-    permission_classes = [RRHHPermission]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-    search_fields = ["codigo", "nombre", "descripcion"]
-    ordering_fields = ["tipo", "orden", "nombre", "estado"]
-    ordering = ["tipo", "orden", "nombre"]
-
-    @require_authenticated()
-    def list(self, request, *args, **kwargs):
-        """Listar conceptos de remuneración - requiere autenticación."""
-        return super().list(request, *args, **kwargs)
-
-    @require_authenticated()
-    def retrieve(self, request, *args, **kwargs):
-        """Obtener concepto específico - requiere autenticación."""
-        return super().retrieve(request, *args, **kwargs)
-
-    @require_hr()
-    def create(self, request, *args, **kwargs):
-        """Crear concepto de remuneración - requiere rol RRHH."""
-        return super().create(request, *args, **kwargs)
-
-    @require_hr()
-    def update(self, request, *args, **kwargs):
-        """Actualizar concepto de remuneración - requiere rol RRHH."""
-        return super().update(request, *args, **kwargs)
-
-    @require_hr()
-    def partial_update(self, request, *args, **kwargs):
-        """Actualizar parcialmente - requiere rol RRHH."""
-        return super().partial_update(request, *args, **kwargs)
-
-    @require_admin()
-    def destroy(self, request, *args, **kwargs):
-        """Eliminar concepto - requiere rol administrador."""
-        return super().destroy(request, *args, **kwargs)
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        tipo = self.request.query_params.get("tipo")
-        if tipo:
-            queryset = queryset.filter(tipo=tipo)
-
-        estado = self.request.query_params.get("estado")
-        if estado:
-            queryset = queryset.filter(estado=estado)
-
-        return queryset
-
-
-class ConfiguracionAfpViewSet(viewsets.ModelViewSet):
-    """ViewSet para parámetros AFP de planilla."""
-
-    queryset = AfpConfiguration.objects.all()
-    serializer_class = ConfiguracionAfpSerializer
-    permission_classes = [RRHHPermission]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-    search_fields = ["afp_nombre", "vigencia_mes"]
-    ordering_fields = ["vigencia_mes", "afp_nombre", "estado"]
-    ordering = ["-vigencia_mes", "afp_nombre"]
-
-    @require_authenticated()
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @require_authenticated()
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @require_hr()
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @require_hr()
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @require_hr()
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @require_admin()
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        afp_nombre = self.request.query_params.get("afp_nombre")
-        if afp_nombre:
-            queryset = queryset.filter(afp_nombre__icontains=afp_nombre)
-
-        vigencia_mes = self.request.query_params.get("vigencia_mes")
-        if vigencia_mes:
-            queryset = queryset.filter(vigencia_mes=vigencia_mes)
-
-        estado = self.request.query_params.get("estado")
-        if estado:
-            queryset = queryset.filter(estado=estado)
-
-        return queryset
-
-
+# ConfiguracionRemuneracionViewSet removido - D.1a (apps.payroll decoupled)
+# ConfiguracionAfpViewSet removido - D.1a (apps.payroll decoupled)
 # RegPermisosViewSet removido - modelo legacy eliminado
 
 

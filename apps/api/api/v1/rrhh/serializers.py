@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from apps.onboarding.models import OnboardingProcess
-from apps.payroll.models import AfpConfiguration, CompensationConfiguration
 from apps.contracts.models import (
     Contract,
     EmploymentData,
@@ -358,143 +357,8 @@ class DatosLaboralesSerializer(serializers.ModelSerializer):
         return data
 
 
-class ConfiguracionRemuneracionSerializer(serializers.ModelSerializer):
-    """Serializer para tabla maestra de conceptos de remuneración."""
-
-    es_activo = serializers.ReadOnlyField()
-
-    class Meta:
-        model = CompensationConfiguration
-        fields = [
-            "id",
-            "tipo",
-            "codigo",
-            "nombre",
-            "descripcion",
-            "porcentaje",
-            "monto_fijo",
-            "aplica_base_imponible",
-            "orden",
-            "status",
-            "es_activo",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "es_activo",
-            "created_at",
-            "updated_at",
-        ]
-
-    def validate_codigo(self, value):
-        """Normaliza el código para evitar duplicados por casing/espacios."""
-        value = value.strip().upper()
-        queryset = CompensationConfiguration.objects.filter(
-            tipo=self.initial_data.get("tipo"), codigo=value
-        )
-        if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
-        if queryset.exists():
-            raise serializers.ValidationError(
-                "Ya existe un concepto con este código para el tipo seleccionado."
-            )
-        return value
-
-    def validate(self, data):
-        """Valida reglas básicas del concepto."""
-        porcentaje = data.get("porcentaje")
-        monto_fijo = data.get("monto_fijo")
-
-        if porcentaje is not None and porcentaje < 0:
-            raise serializers.ValidationError(
-                {"porcentaje": "El porcentaje no puede ser negativo."}
-            )
-
-        if monto_fijo is not None and monto_fijo < 0:
-            raise serializers.ValidationError(
-                {"monto_fijo": "El monto fijo no puede ser negativo."}
-            )
-
-        if porcentaje == 0 and monto_fijo == 0:
-            raise serializers.ValidationError(
-                "Debe definir porcentaje o monto fijo para el concepto."
-            )
-
-        return data
-
-
-class ConfiguracionAfpSerializer(serializers.ModelSerializer):
-    """Serializer para configuración de aportes y descuentos AFP."""
-
-    es_activo = serializers.ReadOnlyField()
-
-    class Meta:
-        model = AfpConfiguration
-        fields = [
-            "id",
-            "afp_nombre",
-            "vigencia_mes",
-            "aporte_obligatorio_pct",
-            "comision_flujo_pct",
-            "comision_mixta_pct",
-            "prima_seguro_pct",
-            "remuneracion_max_asegurable",
-            "status",
-            "es_activo",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "es_activo",
-            "created_at",
-            "updated_at",
-        ]
-
-    def validate_vigencia_mes(self, value):
-        if len(value) != 7 or value[4] != "-":
-            raise serializers.ValidationError("El formato debe ser YYYY-MM.")
-        return value
-
-    def validate(self, data):
-        for field in [
-            "aporte_obligatorio_pct",
-            "comision_flujo_pct",
-            "comision_mixta_pct",
-            "prima_seguro_pct",
-        ]:
-            value = data.get(field)
-            if value is not None and (value < 0 or value > 100):
-                raise serializers.ValidationError(
-                    {field: "El porcentaje debe estar entre 0 y 100."}
-                )
-
-        if (
-            data.get("remuneracion_max_asegurable") is not None
-            and data["remuneracion_max_asegurable"] <= 0
-        ):
-            raise serializers.ValidationError(
-                {"remuneracion_max_asegurable": "Debe ser mayor a cero."}
-            )
-
-        afp_nombre = data.get("afp_nombre")
-        vigencia_mes = data.get("vigencia_mes")
-        if afp_nombre and vigencia_mes:
-            queryset = AfpConfiguration.objects.filter(
-                afp_nombre__iexact=afp_nombre.strip(),
-                vigencia_mes=vigencia_mes,
-            )
-            if self.instance:
-                queryset = queryset.exclude(pk=self.instance.pk)
-            if queryset.exists():
-                raise serializers.ValidationError(
-                    "Ya existe configuración para esta AFP y vigencia."
-                )
-
-        return data
-
-
+# ConfiguracionRemuneracionSerializer removido - D.1a (apps.payroll decoupled)
+# ConfiguracionAfpSerializer removido - D.1a (apps.payroll decoupled)
 # RegUbicacionSerializer eliminado - modelo legacy
 
 
