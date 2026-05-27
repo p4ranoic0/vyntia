@@ -32,7 +32,7 @@
 | D.1   | 10 |  2 |  3 |    15 |
 | D.2   | 14 |  9 |  2 |    25 |
 | D.3   |  2 |  2 |  0 |     4 |
-| D.4   | 14 | 14 |  4 |    32 |
+| D.4   | 14 |  9 |  4 |    27 |
 | D.5   |  2 |  2 |  0 |     4 |
 | D.6   |  4 |  4 |  0 |     8 |
 | D.7   |  4 |  2 |  1 |     7 |
@@ -40,7 +40,7 @@
 | D.9   |  2 |  2 |  2 |     6 |
 | D.10  |  2 |  2 |  1 |     5 |
 | D.11  |  0 |  2 |  2 |     4 |
-| D.12  |  0 |  0 |  1 |     1 |
+| D.12  |  0 |  5 |  1 |     6 |
 | D.13  |  0 |  0 |  0 |     0 |
 | D.14  |  0 |  0 |  0 |     0 |
 
@@ -163,10 +163,10 @@
 | 109 | **AFPnet CUSPP pre-validation before export** — warn if any AFP employee has `codigo_cuspp=null`; block export until all CUSPPs registered | backend | regulatory | P2 | D.11 | 107 | 1h | N06-43 |
 | 110 | **AFPnet multi-AFP split** — single PayrollRun may have employees across 4 AFP funds; generate one AFPnet file per AFP (Integra, Prima, Profuturo, Habitat) | backend | regulatory | P2 | D.11 | 107 | 1h | N07-04 |
 | 111 | **CTS trunca in D.12 settlement** — call `Regime728Strategy.compute_cts()` with `meses_desde_ultimo_deposito` + `dias`; D.12 replaces B.14 minimal formula (add 1/6 grati to remuneración computable) | backend | regulatory | P2 | D.12 | 82,84 | 3h | N08-07; INV § 2 SeveranceSettlement gaps |
-| 112 | **Vacaciones truncas in D.12 settlement** — `Rem_Computable × (meses + dias/30) ÷ 12`; D.12 should consult actual `time_off` accrual records vs proportional formula (whichever higher) | backend | regulatory | P1 | D.4 | 56 | 2h | N08-25; INV § 2 SeveranceLine vac_truncas |
-| 113 | **Gratificación trunca in D.12 settlement** — `Rem_Computable × (meses_completos ÷ 6)`; ≥1 complete month required | backend | regulatory | P1 | D.4 | 89,92 | 1h | N08-17; INV § 2 SeveranceLine grat_trunca |
-| 114 | **Indemnización despido arbitrario in D.12 settlement** — `sueldo × 1.5 × (años)`, capped 12 sueldos; only for `causal='despido_arbitrario'` or `'despido_indirecto'` | backend | regulatory | P1 | D.4 | 43 | 1h | N08-41; INV § 2 SeveranceLine indemnizacion |
-| 115 | **Certificado de Rentas y Retenciones** — generate annual certificate before March 1 of following year; also on-demand at cese; shows all monthly retenciones 5ta | backend | regulatory | P1 | D.4 | 48 | 2h | N09-15 |
-| 116 | **Liquidación documents at cese** — D.12 generates: Hoja de Liquidación + Certificado de Trabajo (Art. 45 LPCL) + Certificado Rentas 5ta del año; `SeveranceSettlement.generate_documents()` | backend | regulatory | P1 | D.4 | 115 | 3h | N08-40 |
+| 112 | **Vacaciones truncas in D.12 settlement** — `Rem_Computable × (meses + dias/30) ÷ 12`; D.12 should consult actual `time_off` accrual records vs proportional formula (whichever higher) | backend | regulatory | P1 | D.12 | 56 | 2h | N08-25; INV § 2 SeveranceLine vac_truncas |
+| 113 | **Gratificación trunca in D.12 settlement** — `Rem_Computable × (meses_completos ÷ 6)`; ≥1 complete month required | backend | regulatory | P1 | D.12 | 89,92 | 1h | N08-17; INV § 2 SeveranceLine grat_trunca |
+| 114 | **Indemnización despido arbitrario in D.12 settlement** — `sueldo × 1.5 × (años)`, capped 12 sueldos; only for `causal='despido_arbitrario'` or `'despido_indirecto'` | backend | regulatory | P1 | D.12 | 43 | 1h | N08-41; INV § 2 SeveranceLine indemnizacion |
+| 115 | **Certificado de Rentas y Retenciones** — generate annual certificate before March 1 of following year; also on-demand at cese; shows all monthly retenciones 5ta | backend | regulatory | P1 | D.12 | 48 | 2h | N09-15 |
+| 116 | **Liquidación documents at cese** — D.12 generates: Hoja de Liquidación + Certificado de Trabajo (Art. 45 LPCL) + Certificado Rentas 5ta del año; `SeveranceSettlement.generate_documents()` | backend | regulatory | P1 | D.12 | 115 | 3h | N08-40 |
 | 117 | **B.9 viewsets tenant consistency** — 3 onboarding viewsets (`SelectionStage`, `CandidateEvaluation`, `MeritRanking`) use custom `posting__tenant` filter instead of `TenantAwareViewSetMixin`; document as architectural inconsistency; resolve post-D or standalone cleanup sprint | backend | deuda | P2 | D.1 | — | 2h | INV § 4 open deuda |
 | 118 | **Motivo cese Tabla 17 codes** — map `Termination.causal` values to SUNAT Tabla 17 codes: 01 Renuncia, 02 Despido, 03 Término contrato, 04 Fallecimiento, 08 Mutuo disenso, 11 Despido arbitrario, 12 Despido falta grave; required for T-Registro baja + PLAME | backend | regulatory | P0 | D.2 | 18 | 1h | N06-17 |

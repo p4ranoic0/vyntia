@@ -27,7 +27,26 @@
 
 ## Order and dependencies
 
-(Diagram from master roadmap — reproduce here.)
+```
+D.0 → D.1a → D.1b → D.2 → D.3
+                            ↓
+                           D.4 ⚠️
+                            ↓
+                           D.5 → D.6
+                            ↓     ↓
+         ┌──────────┬───────┼──────────┬──────────┐
+         ↓          ↓       ↓          ↓          ↓
+        D.7 ⚠️    D.8 ⚠️   D.9       D.10       D.11   D.13
+         └──────────┘                 (paralelas tras D.5)
+               ↓
+             D.12 ⚠️ (necesita D.4 + D.7 + D.8 + B.14)
+               ↓
+             D.14 (close-out)
+```
+
+**Camino crítico secuencial:** D.0 → D.1a → D.1b → D.2 → D.3 → D.4 → D.5 → D.6 → D.14.
+**Paralelizable tras D.5:** D.7∥D.8 (luego D.12), D.9∥D.10∥D.11∥D.13. Cada terminal paralelo requiere git worktree propio (ver `concurrent_terminals_git_hazard`).
+⚠️ = gate de sign-off regulatorio (D.4, D.7, D.8, D.12).
 
 ## Adjustments by audit (filled by Task 9)
 
@@ -85,6 +104,16 @@ Pending: `AuditEvent.schema_version` migration — addressed in D.1b scope.
 ### Adjustment 5: All 8 ADRs accepted
 
 ADR-D.1 through ADR-D.8 status = `accepted` (set by Task 8). No `proposed` status remaining. D.1a can proceed immediately after D.0 merges.
+
+---
+
+### Adjustment 6: PayrollRun state vocabulary to reconcile in D.5
+
+Documentación interna divergente sobre los estados del `PayrollRun`:
+- **BACKLOG #70** define el state machine en español de 6 estados: `borrador → procesando → generada → aprobada → cerrada → anulada`.
+- **ADR-D.3 / ADR-D.4** describen 5 estados en inglés (`DRAFT → CALCULATED → APPROVED → CLOSED → REOPENED`) y embeben esos nombres en los `event_type` de audit (`payroll.run.calculated`, etc.).
+
+No mapean 1:1 (falta `REOPENED`/`reabierta` en la lista español; sobran `procesando`/`generada`). **D.5 debe elegir un único vocabulario** antes de codificar el modelo. Recomendación: estados de modelo en español (coherente con el dominio establecido en B), `event_type` de audit en inglés namespaced (`payroll.run.*`), con un mapa explícito estado-español → event_type-inglés en el servicio. No bloquea D.1-D.4.
 
 ---
 
