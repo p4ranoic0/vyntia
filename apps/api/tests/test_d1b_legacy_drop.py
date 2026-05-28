@@ -56,9 +56,26 @@ def test_legacy_payroll_models_are_gone():
         assert not hasattr(payroll_models, name), f"{name} still importable"
 
 
-def test_payroll_app_models_are_catalog_only():
-    """After D.2 the payroll app holds exactly the 3 greenfield catalog models."""
+def test_payroll_app_registry_has_no_legacy_models():
+    """The payroll app registry never contains any of the 7 uniquely-legacy
+    model class names (D.1b invariant). Greenfield models are added per phase
+    (catalog in D.2, Compensation in D.3, etc.) — those are NOT asserted here
+    so the test stays stable across phases; see
+    `test_legacy_payroll_models_are_gone` for the module-level check.
+    `PayrollConcept` and `TaxParameter` names are intentionally NOT in the
+    forbidden set: they are reused by the D.2 greenfield models (different
+    schema)."""
     from django.apps import apps as django_apps
 
     names = {m.__name__ for m in django_apps.get_app_config("payroll").get_models()}
-    assert names == {"PayrollConcept", "RegimenConfig", "TaxParameter"}
+    forbidden = {
+        "AfpConfiguration",
+        "CompensationConfiguration",
+        "MonthlyPayroll",
+        "PayrollDetail",
+        "MassDeduction",
+        "PaySlip",
+        "PaymentSchedule",
+    }
+    leaked = names & forbidden
+    assert not leaked, f"Legacy models still in registry: {leaked}"
