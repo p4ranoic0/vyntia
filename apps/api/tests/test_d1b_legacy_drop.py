@@ -36,24 +36,29 @@ def test_payroll_audit_action_namespace():
 
 
 def test_legacy_payroll_models_are_gone():
+    """The uniquely-legacy model names are no longer importable.
+
+    Note: `PayrollConcept` and `TaxParameter` names are *reused* by the D.2
+    greenfield catalog models (different schema), so they are intentionally
+    not in this list — the legacy versions of those classes are gone.
+    """
     import apps.payroll.models as payroll_models
 
-    assert payroll_models.__all__ == []
     for name in (
         "AfpConfiguration",
         "CompensationConfiguration",
         "MonthlyPayroll",
         "PayrollDetail",
-        "PayrollConcept",
         "MassDeduction",
         "PaySlip",
         "PaymentSchedule",
-        "TaxParameter",
     ):
         assert not hasattr(payroll_models, name), f"{name} still importable"
 
 
-def test_payroll_app_has_no_models():
+def test_payroll_app_models_are_catalog_only():
+    """After D.2 the payroll app holds exactly the 3 greenfield catalog models."""
     from django.apps import apps as django_apps
 
-    assert list(django_apps.get_app_config("payroll").get_models()) == []
+    names = {m.__name__ for m in django_apps.get_app_config("payroll").get_models()}
+    assert names == {"PayrollConcept", "RegimenConfig", "TaxParameter"}
