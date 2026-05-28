@@ -1,25 +1,9 @@
-"""Payroll models — re-exports for backward-compatible imports."""
+"""Payroll models.
 
-from .compensation import (
-    AfpConfiguration,
-    CompensationConfiguration,
-    MassDeduction,
-    MonthlyPayroll,
-    PaymentSchedule,
-    PayrollConcept,
-    PayrollDetail,
-    PaySlip,
-)
-from .tax_parameter import TaxParameter
+Emptied in D.1b — the 9 legacy models (AfpConfiguration, CompensationConfiguration,
+MonthlyPayroll, PayrollDetail, PayrollConcept, MassDeduction, PaySlip,
+PaymentSchedule, TaxParameter) were dropped after D.1a decoupled all consumers.
+Greenfield Vyntia Pay models are added from D.2 onward.
+"""
 
-__all__ = [
-    "AfpConfiguration",
-    "CompensationConfiguration",
-    "MassDeduction",
-    "MonthlyPayroll",
-    "PaymentSchedule",
-    "PayrollConcept",
-    "PayrollDetail",
-    "PaySlip",
-    "TaxParameter",
-]
+__all__: list[str] = []
