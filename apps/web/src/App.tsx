@@ -37,6 +37,7 @@ import DescuentosMasivosPage from '@/features/payroll/pages/DescuentosMasivosPag
 import PlanillasMensualesPage from '@/features/payroll/pages/PlanillasMensualesPage'
 import ProcesoPlanillasPage from '@/features/payroll/pages/ProcesoPlanillasPage'
 import RemuneracionesHomePage from '@/features/payroll/pages/RemuneracionesHomePage'
+import EstructuraSalarialPage from '@/features/payroll/pages/EstructuraSalarialPage'
 import ReportesRemuneracionesPage from '@/features/payroll/pages/ReportesRemuneracionesPage'
 import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage'
 import PermissionsPage from '@/features/identity/pages/PermissionsPage'
@@ -634,6 +635,15 @@ function AppRoutes() {
         <Route path="/vacaciones/periodos" element={<AdminRoute><PeriodosPage /></AdminRoute>} />
         <Route path="/vacaciones/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
         <Route path="/vacaciones/configuracion" element={<AdminRoute><ConfiguracionPage /></AdminRoute>} />
+
+        {/* Estructura salarial (D.3) — Vyntia Pay */}
+        <Route path="/estructura-salarial" element={
+          <AdminRoute>
+            <AdminLayout>
+              <EstructuraSalarialPage />
+            </AdminLayout>
+          </AdminRoute>
+        } />
 
         {/* Remuneraciones - modulo principal y submenus */}
         <Route path="/remuneraciones" element={<AdminRoute><RemuneracionesHomePage /></AdminRoute>} />
