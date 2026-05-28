@@ -59,6 +59,11 @@ class AuditEvent(models.Model):
         help_text="Snapshot of the mutation: before/after, reason, etc.",
     )
 
+    schema_version = models.IntegerField(
+        default=1,
+        help_text="Payload schema version for forward-compat (ADR-D.3).",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
