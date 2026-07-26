@@ -72,6 +72,9 @@ apps/api/media/
 apps/api/staticfiles/
 apps/api/logs/
 
+# Estado y logs en runtime del lanzador (scripts/dev.ps1)
+.dev/
+
 # === Claude / agent state (restored from legacy) ===
 .planning/
 .claude/*
