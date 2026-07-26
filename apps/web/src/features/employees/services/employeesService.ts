@@ -261,7 +261,7 @@ export const employeesService = {
     async get(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/employment-data/`, {
-          params: { empleado: empleadoId },
+          empleado: empleadoId,
         });
         return response.data;
       } catch (error) {
@@ -289,7 +289,7 @@ export const employeesService = {
     async getAll(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/family-members/`, {
-          params: { empleado: empleadoId },
+          empleado: empleadoId,
         });
         return response.data;
       } catch (error) {
@@ -349,7 +349,7 @@ export const employeesService = {
     async getAll(empleadoId: string) {
       try {
         const response = await apiClient.get(`/api/v1/academic-records/`, {
-          params: { empleado: empleadoId },
+          empleado: empleadoId,
         });
         return response.data;
       } catch (error) {

@@ -414,9 +414,10 @@ export const payrollService = {
       } as unknown as typeof params;
     }
 
-    const response = await apiClient.get("/api/v1/payroll/tax-parameters/", {
-      params: requestParams,
-    });
+    const response = await apiClient.get(
+      "/api/v1/payroll/tax-parameters/",
+      requestParams,
+    );
     return extractTypedList<ConfiguracionUit>(response.data);
   },
 

@@ -25,7 +25,9 @@ export function OnboardingEmployeePage() {
     queryKey: ['legajo-docs', empleadoId],
     queryFn: async () => {
       const res = await apiClient.get('/api/v1/documents/documents/', {
-        params: { empleado: empleadoId, es_version_actual: 'true', page_size: 50 },
+        empleado: empleadoId,
+        es_version_actual: 'true',
+        page_size: 50,
       })
       // Unwrap paginated APIResponse: { success, data: { results: [...] }, meta: { pagination } }
       const raw = res.data

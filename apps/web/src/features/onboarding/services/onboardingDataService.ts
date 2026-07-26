@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/api/api'
 
 // --- DatosFamiliares ---
 export async function getFamiliares(empleadoId: number) {
-  const res = await apiClient.get('/api/v1/family-members/', { params: { empleado: empleadoId } })
+  const res = await apiClient.get('/api/v1/family-members/', { empleado: empleadoId })
   const raw = res.data
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? []
 }
@@ -23,7 +23,7 @@ export async function deleteFamiliar(id: number) {
 
 // --- DatosAcademicos ---
 export async function getAcademicos(empleadoId: number) {
-  const res = await apiClient.get('/api/v1/academic-records/', { params: { empleado: empleadoId } })
+  const res = await apiClient.get('/api/v1/academic-records/', { empleado: empleadoId })
   const raw = res.data
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? []
 }
@@ -40,7 +40,7 @@ export async function updateAcademico(id: number, data: Record<string, unknown>)
 
 // --- CursosCertificaciones ---
 export async function getCursos(empleadoId: number) {
-  const res = await apiClient.get('/api/v1/certifications/', { params: { empleado: empleadoId } })
+  const res = await apiClient.get('/api/v1/certifications/', { empleado: empleadoId })
   const raw = res.data
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? []
 }
@@ -62,7 +62,9 @@ export async function deleteCurso(id: number) {
 // --- Constancias de trabajo (DocumentosDigitales query) ---
 export async function getConstanciasTrabajo(empleadoId: number) {
   const res = await apiClient.get('/api/v1/documents/documents/', {
-    params: { empleado: empleadoId, tipo_documento: 'constancia_trabajo', es_version_actual: 'true' },
+    empleado: empleadoId,
+    tipo_documento: 'constancia_trabajo',
+    es_version_actual: 'true',
   })
   const raw = res.data
   return raw?.data?.results ?? raw?.results ?? raw?.data ?? []
