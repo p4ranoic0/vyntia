@@ -135,6 +135,16 @@ const mockAuthResponse: AuthResponse = {
   user: mockUser,
 };
 
+/**
+ * Query-string params for `get`/`getBlob`. These take the params object
+ * *directly* — the client wraps it in axios' `{ params }` config itself.
+ * `params?: never` makes the common `get(url, { params: {...} })` slip a
+ * compile error instead of silently serializing `?params[x]=…`, which the
+ * backend ignores and answers with an unfiltered list.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- open-ended query params
+type QueryParams = Record<string, any> & { params?: never };
+
 class ApiClient {
   private readonly axiosInstance: AxiosInstance;
 
@@ -351,7 +361,7 @@ class ApiClient {
   // Métodos HTTP genéricos simplificados
   async get<T>(
     endpoint: string,
-    params?: Record<string, any>,
+    params?: QueryParams,
   ): Promise<AxiosResponse<T>> {
     return this.axiosInstance.get(endpoint, { params });
   }
@@ -374,7 +384,7 @@ class ApiClient {
 
   async getBlob(
     endpoint: string,
-    params?: Record<string, any>,
+    params?: QueryParams,
   ): Promise<AxiosResponse<Blob>> {
     return this.axiosInstance.get(endpoint, {
       params,

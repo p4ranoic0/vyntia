@@ -1,5 +1,10 @@
 import { apiClient } from "@/shared/api/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export interface PaginationParams {
   page?: number;
@@ -29,7 +34,11 @@ export function useEmpleados(params?: PaginationParams) {
   return useQuery({
     queryKey: ["empleados", cleanParams],
     queryFn: () => apiClient.getEmpleados(cleanParams),
-    keepPreviousData: true,
+    // React Query v5: `keepPreviousData: true` (v4) was removed and is ignored
+    // silently. Without this the query key change on every debounced search term
+    // produces a fresh pending query, the page falls back to its full skeleton,
+    // and the search input unmounts — losing focus mid-typing.
+    placeholderData: keepPreviousData,
   });
 }
 
